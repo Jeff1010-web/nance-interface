@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import Image from 'next/image'
+import Link from 'next/link'
 import styles from '../styles/Home.module.css'
 import ConversionFunnelChart from '../components/ConversionFunnelChart.js'
 import ApprovalChart from '../components/ApprovalRateChart.js'
@@ -14,9 +15,12 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
+        <h1 className="text-3xl font-bold underline">
           DAO Analytics
         </h1>
+        <Link href="https://mirror.xyz/itamarg.eth/Cxs_pTvMQ3-Udj1MYDZW46OZxGnHET1cHQX_tTozckw">
+          <a>Methodology: DAO health</a>
+        </Link>
         <br/>
 
         <div className={styles.grid}>
