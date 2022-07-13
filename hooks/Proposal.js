@@ -37,6 +37,21 @@ query {
 }
 `
 
+const PROPOSAL_VOTES_QUERY = `
+query {
+  proposals (
+    first: 1000
+    where: {
+      space: "jbdao.eth"
+    }
+  ) {
+    start
+    votes
+    scores_total
+  }
+}
+`
+
 // Proposal:
 // 1. Group proposals by funding cycle
 // 2. Calculate approve rate
@@ -60,6 +75,47 @@ export function useProposalGroups() {
   const { loading, error, data: proposalData } = useQuery(PROPOSALS_QUERY);
 
   return { data: groupProposalsByDate(proposalData?.proposals), loading };
+}
+
+export function useProposalParticipations() {
+  const { loading, error, data } = useQuery(PROPOSALS_QUERY);
+
+  if (loading) {
+    return { loading, data };
+  }
+
+  const groups = data?.proposals?.reduce((acc, proposal) => {
+    const date = new Date(proposal.start * 1000);
+    date.setSeconds(0);
+    date.setMinutes(0);
+    date.setHours(0);
+    const start = date.getTime() / 1000;
+    if (!acc[start]) {
+      acc[start] = {
+        totalVotes: 0,
+        totalScores: 0
+      };
+    }
+
+    acc[start]['totalVotes'] += proposal.votes;
+    acc[start]['totalScores'] += proposal.scores_total;
+    return acc;
+  }, {});
+  console.log(groups);
+
+  if (!groups) {
+    return { loading, data };
+  }
+
+  const chartData = Object.keys(groups).map((time) => {
+    return {
+      'key': format(new Date(time * 1000), 'LLL, yy'),
+      'vote_percentage': 100.0 * groups[time]['totalVotes'] / 3501
+    }
+  })
+  console.log(chartData);
+
+  return { data: chartData, loading };
 }
 
 export function useProposalsExtended() {

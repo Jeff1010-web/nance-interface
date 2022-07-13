@@ -33,7 +33,7 @@ export default function ConversionFunnelChart() {
 
 
   return (
-    <ResponsiveContainer width="80%" height="80%" minWidth="800px" minHeight="300px">
+    <ResponsiveContainer width="80%" height="80%" minWidth="32rem" minHeight="20rem">
       <FunnelChart width={730} height={250}>
         <Tooltip />
         <Funnel
