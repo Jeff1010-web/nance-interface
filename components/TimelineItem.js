@@ -16,11 +16,11 @@ export default function TimelineItem({ date, title, text, imgSrc, linkText, link
       <p>
         {text}
       </p>
-      <div class="rounded-lg overflow-hidden my-2">
+      <div className="rounded-lg overflow-hidden my-2">
         <img src={imgSrc} alt={imgSrc} />
       </div>
-      <div class="pt-4 pb-2">
-        <a class="bg-amber-200 hover:bg-opacity-60 transition rounded-md px-3 py-2 text-xs"
+      <div className="pt-4 pb-2">
+        <a className="bg-amber-200 hover:bg-opacity-60 transition rounded-md px-3 py-2 text-xs"
           href={link} target="_blank" rel="noreferrer">
           {linkText}
         </a>
