@@ -17,7 +17,7 @@ export default function Metric() {
           JuiceboxDAO Health Metrics
         </h1>
         <Link href="https://mirror.xyz/itamarg.eth/Cxs_pTvMQ3-Udj1MYDZW46OZxGnHET1cHQX_tTozckw">
-          <a className="text-2xl hover:underline">Methodology: "DAO health: 9 starter metrics"</a>
+          <a className="text-2xl hover:underline">Methodology: &quot;DAO health: 9 starter metrics&quot;</a>
         </Link>
         <br/>
 
