@@ -11,11 +11,13 @@ export default function History() {
       <TopNav/>
 
       <VerticalTimeline>
-        <TimelineItem />
-        <TimelineItem />
-        <TimelineItem />
-        <TimelineItem />
-        <TimelineItem />
+        <TimelineItem
+          date="7/18/2021"
+          title="First public tweet"
+          text="jango tweeted about Juicebox deployment."
+          imgSrc="/images/timeline/first-deployment.jpg"
+          linkText="View tweet"
+          link="https://twitter.com/me_jango/status/1416454601151221765" />
       </VerticalTimeline>
     </div>
   )
