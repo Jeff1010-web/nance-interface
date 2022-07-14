@@ -1,18 +1,25 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
+
 import ConversionFunnelChart from '../components/ConversionFunnelChart.js'
 import ApprovalChart from '../components/ApprovalRateChart.js'
 import VoteParticipationChart from '../components/VoteParticipationChart.js'
+import Profile from '../components/Profile.js'
 
 export default function Home() {
   return (
     <div className="px-8">
       <Head>
-        <title>JuiceTools</title>
+        <title>JuiceTool</title>
         <meta name="description" content="A bunch of homebrew tools" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      <header className="flex mt-5">
+        <div className="gap-6 flex-1"></div>
+        <Profile />
+      </header>
 
       <main className="min-h-screen py-16 flex-1 flex flex-col justify-center items-center">
         <h1 className="text-7xl font-medium">

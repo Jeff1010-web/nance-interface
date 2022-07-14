@@ -71,7 +71,7 @@ function groupProposalsByDate(proposals) {
   }, {});
 };
 
-export function useProposalGroups() {
+function useProposalGroups() {
   const { loading, error, data: proposalData } = useQuery(PROPOSALS_QUERY);
 
   return { data: groupProposalsByDate(proposalData?.proposals), loading };
@@ -101,7 +101,7 @@ export function useProposalParticipations() {
     acc[start]['totalScores'] += proposal.scores_total;
     return acc;
   }, {});
-  console.log(groups);
+  console.log('useProposalParticipations', groups);
 
   if (!groups) {
     return { loading, data };
@@ -113,12 +113,11 @@ export function useProposalParticipations() {
       'vote_percentage': 100.0 * groups[time]['totalVotes'] / 3501
     }
   })
-  console.log(chartData);
 
   return { data: chartData, loading };
 }
 
-export function useProposalsExtended() {
+function useProposalsExtended() {
   // Load all proposals
   const {
     loading: proposalLoading,
@@ -164,7 +163,6 @@ export function useProposalsExtended() {
       ...proposal
     }
   });
-  console.log(proposalExtended);
 
   return { data: proposalExtended, loading };
 }
@@ -191,12 +189,11 @@ export function useApprovalGroups() {
 
     acc[start]['total'] += 1;
     if (proposal.approved) {
-      console.log('Approved');
       acc[start]['approved'] +=1
     }
     return acc;
   }, {});
-  console.log(groups);
+  console.log('useApprovalGroups', groups);
 
   if (!groups) {
     return { loading, data };
@@ -209,7 +206,6 @@ export function useApprovalGroups() {
       'total_proposals': groups[time].total
     }
   })
-  console.log(chartData);
 
   return { data: chartData, loading };
 }
