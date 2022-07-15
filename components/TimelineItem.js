@@ -1,6 +1,6 @@
 import { VerticalTimelineElement }  from 'react-vertical-timeline-component';
 
-export default function TimelineItem({ date, title, text, imgSrc, linkText, link }) {
+export default function TimelineItem({ date, title, text, imgSrc, linkText, link, iconSrc }) {
   return (
     <VerticalTimelineElement
       className="vertical-timeline-element--work"
@@ -8,7 +8,7 @@ export default function TimelineItem({ date, title, text, imgSrc, linkText, link
       contentStyle={{ background: 'rgb(235, 235, 235)', color: 'rgb(21, 28, 59)' }}
       contentArrowStyle={{ borderRight: '7px solid  rgb(235, 235, 235)' }}
       iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
-      icon={<img className="rounded-full" src="https://juicebox.money/assets/banana-ol.png" alt="Vercel Logo" />}
+      icon={<img className="rounded-full" src={iconSrc || "https://juicebox.money/assets/banana-ol.png"} alt="Vercel Logo" />}
     >
       <h2 className="vertical-timeline-element-title capitalize">
         {title}

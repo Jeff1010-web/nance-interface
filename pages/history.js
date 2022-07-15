@@ -16,15 +16,17 @@ export default function History() {
             text="jango creates the first commit in the Github repo of juicebox-interface."
             imgSrc="/images/timeline/first-commit.jpg"
             linkText="View commit"
-            link="https://github.com/jbx-protocol/juice-interface/commit/0537abeefa21168dddf942ca52d9e938975afabc" />
-
+            link="https://github.com/jbx-protocol/juice-interface/commit/0537abeefa21168dddf942ca52d9e938975afabc"
+            iconSrc="/images/timeline/jango.jpeg" />
+          
           <TimelineItem
             date="7/18/2021"
             title="First Public Tweet"
             text="jango tweeted about Juicebox deployment."
             imgSrc="/images/timeline/first-deployment.jpg"
             linkText="View tweet"
-            link="https://twitter.com/me_jango/status/1416454601151221765" />
+            link="https://twitter.com/me_jango/status/1416454601151221765"
+            iconSrc="/images/timeline/jango.jpeg" />
 
           <TimelineItem
             date="8/16/2021"
@@ -35,12 +37,32 @@ export default function History() {
             link="https://snapshot.org/#/jbdao.eth/proposal/QmeJESaxVPbRtNybEg42CduDAquPLPPcTTZZ6aybCQrjRy" />
 
           <TimelineItem
+            date="11/1/2021"
+            title="Purchase JB Crewnecks for the Community"
+            text="This would allow JB to reward contributors with something other than funds or in addition too. "
+            imgSrc="/images/timeline/crewnecks.jpg"
+            linkText="Read proposal"
+            link="https://snapshot.org/#/jbdao.eth/proposal/0xa38b9d35cceadd65f549cd3ec95835026d3d221d4e1ddd0cdf8daff70628f6e1"
+            iconSrc="images/timeline/0xstvg.jpeg" />
+
+          <TimelineItem
             date="11/15/2021"
             title="ConstitutionDAO Launch"
             text="they said 'We are buying the United States Constitution.'"
             imgSrc="/images/timeline/constitution.jpg"
             linkText="View tweet"
-            link="https://twitter.com/ConstitutionDAO/status/1460062961117147141" />
+            link="https://twitter.com/ConstitutionDAO/status/1460062961117147141"
+            iconSrc="/images/timeline/constitutiondao.jpeg" />
+
+          <TimelineItem
+            date="2/1/2022"
+            title="PeelDAO Launch"
+            text="Create a Frontend DAO comprising of the JB’s frontend contributors to internally handle frontend matters of Juicebox."
+            imgSrc="/images/timeline/peel.jpg"
+            linkText="Read proposal"
+            link="https://snapshot.org/#/jbdao.eth/proposal/0xf017b82be62ab9d0d82945408d7e34a21289d58a8e9ffff3e380352db2167fd0"
+            iconSrc="/images/timeline/peeldao.jpeg" />
+
 
         </VerticalTimeline>
       </div>
