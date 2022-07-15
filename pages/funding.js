@@ -3,21 +3,21 @@ import Layout from "../components/Layout"
 export default function Funding() {
     return (
         <Layout>
-            <div class="bg-grey-lightest border-b">
-                <div class="xs:py-8 xs:px-8 md:px-4 lg:px-0 sm:py-12 sm:pt-6 sm:max-w-3xl m-auto">
-                    <div class="text-4xl text-nouns pb-6 tracking-wide">
+            <div className="bg-grey-lightest border-b">
+                <div className="xs:py-8 xs:px-8 md:px-4 lg:px-0 sm:py-12 sm:pt-6 sm:max-w-3xl m-auto">
+                    <div className="text-4xl text-nouns pb-6 tracking-wide">
                         Funding: Proposals
                     </div>
-                    <div class="sm:flex sm:items-center ">
-                        <div class="sm:flex-auto mb-4">
-                            <p class="text-md font-medium mt-4">Resources allocated for the Juicebox ecosystems.</p>
+                    <div className="sm:flex sm:items-center ">
+                        <div className="sm:flex-auto mb-4">
+                            <p className="text-md font-medium mt-4">Resources allocated for the Juicebox ecosystems.</p>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="relative sm:py-6">
-                <div class="relative max-w-7xl mx-auto">
-                    <div class="xs:mt-6 sm:mt-0 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
+            <div className="relative sm:py-6">
+                <div className="relative max-w-7xl mx-auto">
+                    <div className="xs:mt-6 sm:mt-0 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
                         <FundedProjectCard
                             coverImg="https://s3-us-west-2.amazonaws.com/anchor-generated-image-bank/production/podcast_uploaded_nologo400/20172808/20172808-1639932274124-70f0c914e9d5f.jpg"
                             title="Produce Juicebox Podcast"
@@ -81,31 +81,31 @@ export default function Funding() {
 
 function FundedProjectCard({ coverImg, title, description, link, author, authorImg, authorTwitter, date }) {
     return (
-        <div class="flex flex-col rounded-lg shadow-lg overflow-hidden">
-            <div class="flex-shrink-0">
+        <div className="flex flex-col rounded-lg shadow-lg overflow-hidden">
+            <div className="flex-shrink-0">
                 <a href={link} target="_blank" rel="noreferrer">
-                    <img class="h-48 w-full object-cover" src={coverImg} alt="" />
+                    <img className="h-48 w-full object-cover" src={coverImg} alt="" />
                 </a>
             </div>
-            <div class="flex-1 bg-white p-6 flex flex-col justify-between">
-                <div class="flex-1">
-                    <a href={link} target="_blank" rel="noreferrer" class="block mt-2">
-                        <p class="text-xl text-nouns tracking-wide text-gray-900">{title}</p>
-                        <p class="mt-3 text-base text-gray-500">{description}</p>
+            <div className="flex-1 bg-white p-6 flex flex-col justify-between">
+                <div className="flex-1">
+                    <a href={link} target="_blank" rel="noreferrer" className="block mt-2">
+                        <p className="text-xl text-nouns tracking-wide text-gray-900">{title}</p>
+                        <p className="mt-3 text-base text-gray-500">{description}</p>
                     </a>
                 </div>
-                <div class="mt-6 flex items-center">
-                    <div class="flex-shrink-0">
+                <div className="mt-6 flex items-center">
+                    <div className="flex-shrink-0">
                         <a href={authorTwitter || "https://twitter.com/juiceboxETH"} target="_blank" rel="noreferrer">
-                            <span class="sr-only">{author}</span>
-                            <img class="h-10 w-10 rounded-full" src={authorImg || "https://pbs.twimg.com/profile_images/1439973770643443714/GW7Vf9qj_400x400.png"} alt={title} />
+                            <span className="sr-only">{author}</span>
+                            <img className="h-10 w-10 rounded-full" src={authorImg || "https://pbs.twimg.com/profile_images/1439973770643443714/GW7Vf9qj_400x400.png"} alt={title} />
                         </a>
                     </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900">
+                    <div className="ml-3">
+                        <p className="text-sm font-medium text-gray-900">
                             <a href={authorTwitter || "https://twitter.com/juiceboxETH"} target="_blank" rel="noreferrer">{author}</a>
                         </p>
-                        <div class="flex space-x-1 text-sm text-gray-500">{date}</div>
+                        <div className="flex space-x-1 text-sm text-gray-500">{date}</div>
                     </div>
                 </div>
             </div>
