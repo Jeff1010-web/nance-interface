@@ -24,7 +24,7 @@ export default function Home() {
 
 function HomeCard({ link, linkText }) {
   return (
-      <div className="m-4 p-6 text-left no-underline rounded-xl border-solid border-slate-100 border-2 max-w-xl transition-colors hover:border-blue-400 hover:text-blue-400">
+      <div className="m-4 p-6 text-left no-underline rounded-xl border-solid border-slate-300 border-2 max-w-xl transition-colors hover:border-blue-400 hover:text-blue-400">
           <Link href={link}>
           <h2 className="text-2xl">{linkText} &rarr;</h2>
           </Link>

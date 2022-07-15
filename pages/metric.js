@@ -19,17 +19,17 @@ export default function Metric() {
           <br/>
 
           <div className="flex items-center justify-center flex-wrap max-w-fit text-inherit">
-            <div className="m-4 p-6 text-left no-underline rounded-xl border-solid border-slate-100 border-2 max-w-xl transition-colors hover:border-blue-400 hover:text-blue-400">
+            <div className="m-4 p-6 text-left no-underline rounded-xl border-solid border-slate-300 border-2 max-w-xl transition-colors hover:border-blue-400 hover:text-blue-400">
               <h2 className="text-2xl mb-4">Member Conversion Funnel</h2>
               <ConversionFunnelChart />
             </div>
 
-            <div className="m-4 p-6 text-left no-underline rounded-xl border-solid border-slate-100 border-2 max-w-xl transition-colors hover:border-blue-400 hover:text-blue-400">
+            <div className="m-4 p-6 text-left no-underline rounded-xl border-solid border-slate-300 border-2 max-w-xl transition-colors hover:border-blue-400 hover:text-blue-400">
               <h2 className="text-2xl mb-4">Proposal Approval Rate</h2>
               <ApprovalChart />
             </div>
 
-            <div className="m-4 p-6 text-left no-underline rounded-xl border-solid border-slate-100 border-2 max-w-xl transition-colors hover:border-blue-400 hover:text-blue-400">
+            <div className="m-4 p-6 text-left no-underline rounded-xl border-solid border-slate-300 border-2 max-w-xl transition-colors hover:border-blue-400 hover:text-blue-400">
               <h2 className="text-2xl mb-4">Voter Participation</h2>
               <VoteParticipationChart />
             </div>
