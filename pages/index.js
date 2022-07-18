@@ -5,9 +5,9 @@ export default function Home() {
   return (
     <Layout home>
       <div className="px-8">
-        <main className="min-h-screen py-16 flex-1 flex flex-col items-center">
+        <div className="py-16 flex-1 flex flex-col items-center">
           <h1 className="text-7xl font-medium">
-            Juicebox Center
+            JuiceTool
           </h1>
           <br/>
 
@@ -17,7 +17,7 @@ export default function Home() {
             <HomeCard link="/funding" linkText="Funded Projects" imgSrc="images/character/pina.png" bgColor="bg-sky-500" />
             <HomeCard link="/history" linkText="Timeline" imgSrc="images/character/blueberry.png" bgColor="bg-purple-500" />
           </div>
-        </main>
+        </div>
       </div>
     </Layout>
   )
