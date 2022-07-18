@@ -11,10 +11,11 @@ export default function Home() {
           </h1>
           <br/>
 
-          <div className="flex items-center flex-wrap max-w-fit text-inherit">
-            <HomeCard link="/metric" linkText="DAO Health Metrics" />
-            <HomeCard link="/funding" linkText="Funded Projects" />
-            <HomeCard link="/history" linkText="Timeline" />
+          <div className="mt-5 sm:mx-auto grid grid-cols-2 xs:gap-3 sm:gap-8 sm:justify-center md:mt-8 lg:grid-flow-col">
+            <HomeCard link="/progress" linkText="Feature Progress" imgSrc="images/character/orange_lady.png" bgColor="bg-red-500" />
+            <HomeCard link="/metric" linkText="Health Metrics" imgSrc="images/character/banana.png" bgColor="bg-emerald-500" />
+            <HomeCard link="/funding" linkText="Funded Projects" imgSrc="images/character/pina.png" bgColor="bg-sky-500" />
+            <HomeCard link="/history" linkText="Timeline" imgSrc="images/character/blueberry.png" bgColor="bg-purple-500" />
           </div>
         </main>
       </div>
@@ -22,12 +23,19 @@ export default function Home() {
   )
 }
 
-function HomeCard({ link, linkText }) {
+function HomeCard({ link, linkText, imgSrc, bgColor }) {
   return (
-      <div className="m-4 p-6 text-left no-underline rounded-xl border-solid border-slate-300 border-2 max-w-xl transition-colors hover:border-blue-400 hover:text-blue-400">
-          <Link href={link}>
-          <h2 className="text-2xl">{linkText} &rarr;</h2>
-          </Link>
-      </div>
+      <Link href={link}>
+        <div class="mt-3 sm:mt-0">
+          <div class="nounish_button" id="one">
+            <button class="group block text-nouns rounded-xl sm:cursor-pointer transition duration-200 xs:h-40 xs:w-40 sm:h-48 sm:w-48 bg-gray-100 focus-within:ring-2 relative focus-within:ring-offset-2 focus-within:ring-offset-gray-100 hover:ring-2 hover:ring-grey-base focus-within:ring-grey-base overflow-hidden m-auto">
+              <div class={`absolute bottom-0 w-full px-4 py-1 justify-center text-lg flex items-end ${bgColor} font-light text-white shadow-lg`}>
+                {linkText}
+              </div>
+              <img class="object-cover w-full h-full" src={imgSrc} alt={linkText} />
+            </button>
+          </div>
+        </div>
+      </Link>
   )
 }
