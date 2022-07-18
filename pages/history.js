@@ -4,8 +4,10 @@ import 'react-vertical-timeline-component/style.min.css';
 
 export default function History() {
   return (
-    <Layout>
-      <div className="px-8">
+    <Layout 
+      pageTitle="Moments & Milestones"
+      pageDescription="A timeline of JuiceboxDAO's major milestones and noteworthy moments that have happened since the project's inception.">
+      <div className="py-12">
         <VerticalTimeline>
           <TimelineItem
             date="1/26/2021"

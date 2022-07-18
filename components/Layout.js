@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Head from 'next/head'
 import Profile from '../components/Profile.js'
 
-export default function Layout({ children, home }) {
+export default function Layout({ children, home, pageTitle, pageDescription }) {
   return (
     <div>
       <Head>
@@ -21,7 +21,25 @@ export default function Layout({ children, home }) {
         <div className="gap-6 flex-1"></div>
         <Profile />
       </header>
-      <main>{children}</main>
+      <main>
+        {!home && (
+          <div className="bg-grey-lightest border-b">
+            <div className="xs:py-8 xs:px-8 md:px-4 lg:px-0 sm:py-12 sm:pt-6 sm:max-w-3xl m-auto">
+                <div className="text-4xl text-nouns pb-6 tracking-wide">
+                    {pageTitle || "No title"}
+                </div>
+                <div className="sm:flex sm:items-center ">
+                    <div className="sm:flex-auto mb-4">
+                        <p className="text-md font-medium mt-4">
+                          {pageDescription || "No description"}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        )}
+        {children}
+      </main>
     </div>
   )
 }

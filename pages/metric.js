@@ -12,17 +12,11 @@ import { useApprovalGroups, useProposalParticipations } from '../hooks/Proposal'
 
 export default function Metric() {
   return (
-    <Layout>
+    <Layout 
+      pageTitle="JuiceboxDAO Health Metrics"
+      pageDescription="">
       <div className="px-8">
-        <main className="min-h-screen py-16 flex-1 flex flex-col justify-center items-center">
-          <h1 className="text-7xl font-medium">
-            JuiceboxDAO Health Metrics
-          </h1>
-          <Link href="https://mirror.xyz/itamarg.eth/Cxs_pTvMQ3-Udj1MYDZW46OZxGnHET1cHQX_tTozckw">
-            <a className="text-2xl hover:underline">Methodology: &quot;DAO health: 9 starter metrics&quot;</a>
-          </Link>
-          <br/>
-
+        <div className="min-h-screen py-12 flex-1 flex flex-col items-center">
           <div className="flex items-center justify-center flex-wrap max-w-fit text-inherit">
             <div className="m-4 p-6 text-left no-underline rounded-xl border-solid border-slate-300 border-2 max-w-xl transition-colors hover:border-blue-400 hover:text-blue-400">
               <h2 className="text-2xl mb-4">Member Conversion Funnel</h2>
@@ -39,7 +33,7 @@ export default function Metric() {
               <VoteParticipationChart />
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </Layout>
   )

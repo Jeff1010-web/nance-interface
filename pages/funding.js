@@ -2,20 +2,10 @@ import Layout from "../components/Layout"
 
 export default function Funding() {
     return (
-        <Layout>
-            <div className="bg-grey-lightest border-b">
-                <div className="xs:py-8 xs:px-8 md:px-4 lg:px-0 sm:py-12 sm:pt-6 sm:max-w-3xl m-auto">
-                    <div className="text-4xl text-nouns pb-6 tracking-wide">
-                        Funding: Proposals
-                    </div>
-                    <div className="sm:flex sm:items-center ">
-                        <div className="sm:flex-auto mb-4">
-                            <p className="text-md font-medium mt-4">Resources allocated for the Juicebox ecosystems.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="relative sm:py-6">
+        <Layout 
+            pageTitle="Funded Projects"
+            pageDescription="Resources allocated for the Juicebox ecosystems.">
+            <div className="relative sm:py-12">
                 <div className="relative max-w-7xl mx-auto">
                     <div className="xs:mt-6 sm:mt-0 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
                         <FundedProjectCard

@@ -26,7 +26,7 @@ function MyApp({ Component, pageProps }) {
   return (
     <WagmiConfig client={wagmiClient}>
       <ClientContext.Provider value={graphqlClient}>
-        <Component {...pageProps} />;
+        <Component {...pageProps} />
       </ClientContext.Provider>
     </WagmiConfig>
   )
