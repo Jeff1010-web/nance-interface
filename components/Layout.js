@@ -25,7 +25,7 @@ export default function Layout({ children, home, pageTitle, pageDescription }) {
         {!home && (
           <div className="bg-grey-lightest border-b">
             <div className="xs:py-8 xs:px-8 md:px-4 lg:px-0 sm:py-12 sm:pt-6 sm:max-w-3xl m-auto">
-                <div className="text-4xl text-nouns pb-6 tracking-wide">
+                <div className="text-4xl pb-6 tracking-wide">
                     {pageTitle || "No title"}
                 </div>
                 <div className="sm:flex sm:items-center ">
@@ -41,7 +41,7 @@ export default function Layout({ children, home, pageTitle, pageDescription }) {
         {children}
         
         <div className="relative xs:px-6 sm:px-0 text-black font-medium gap-2 items-center w-full flex flex-col text-center">
-          <p>JuiceTool curates docs and tools around Juicebox ecosystem, currently maintained by twodam</p>
+          <p>JuiceTool curates docs and tools around Juicebox ecosystem.</p>
           <div className="flex gap-8 items-center">
             <a href="https://twitter.com/juiceboxETH" target="_blank" rel="noreferrer">
               <svg className="w-6 h-8 fill-black hover:fill-gray-400 transition cursor-pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

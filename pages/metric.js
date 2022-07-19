@@ -14,7 +14,7 @@ export default function Metric() {
   return (
     <Layout 
       pageTitle="JuiceboxDAO Health Metrics"
-      pageDescription="">
+      pageDescription="This page is still under development, metrics may not be correct.">
       <div className="px-8">
         <div className="min-h-screen py-12 flex-1 flex flex-col items-center">
           <div className="flex items-center justify-center flex-wrap max-w-fit text-inherit">
