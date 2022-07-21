@@ -40,7 +40,11 @@ export default function Snapshot() {
                                     </div>
                                 )}
                                 <div className="flex flex-row space-x-1">
-                                    <span>Remaining time: {formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true })}</span>
+                                    <span>Remaining time: 
+                                        <span className="text-orange-400">
+                                            &nbsp;{formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true })}
+                                        </span>
+                                    </span>
                                 </div>
                                 <div className="flex flex-row space-x-1">
                                     <span>Scores: {(proposal.scores_total).toLocaleString(undefined)}</span>

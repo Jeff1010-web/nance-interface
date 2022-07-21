@@ -191,14 +191,16 @@ export function useVotedData(space, address) {
   });
 
   let votes = {};
-  data?.votes.forEach(vote => {
-    console.log(vote);
-    votes[vote.proposal.id] = {
-      choice: vote.proposal.choices[vote.choice-1],
-      score: vote.vp,
-      created: vote.created
-    }
-  });
+  if (address) {
+    data?.votes.forEach(vote => {
+      console.log(vote);
+      votes[vote.proposal.id] = {
+        choice: vote.proposal.choices[vote.choice-1],
+        score: vote.vp,
+        created: vote.created
+      }
+    });
+  }
   console.log("votedData", votes);
 
   return { data: votes, loading };
