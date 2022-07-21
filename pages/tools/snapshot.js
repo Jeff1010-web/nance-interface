@@ -32,7 +32,7 @@ export default function Snapshot() {
                     {loading && <div className="text-center">Loading proposals...</div>}
                     {!loading && (
                         proposalsData.map(proposal => (
-                            <a href={`https://snapshot.org/#/${space}/proposal/${proposal.id}`} target="_blank" rel="noreferrer" className={`${(votedIds.includes(proposal.id) && hide) ? "hidden" : "block"} border-2 rounded-xl m-3 p-3 hover:border-slate-800 transition-colors max-w-3xl`}>
+                            <a key={proposal.id} href={`https://snapshot.org/#/${space}/proposal/${proposal.id}`} target="_blank" rel="noreferrer" className={`${(votedIds.includes(proposal.id) && hide) ? "hidden" : "block"} border-2 rounded-xl m-3 p-3 hover:border-slate-800 transition-colors max-w-3xl`}>
                                 <h3 className="text-xl font-semibold">{proposal.title}</h3>
                                 {votedIds.includes(proposal.id) && (
                                     <div className="flex flex-row space-x-1 text-orange-400">
@@ -48,7 +48,7 @@ export default function Snapshot() {
                                 </div>
                                 <div className="flex flex-row space-x-1 pb-2">
                                     {Object.keys(proposal.voteByChoice).map(choice => (
-                                        <span>{choice}: {(proposal.voteByChoice[choice]).toLocaleString(undefined)}</span>
+                                        <span key={choice}>{choice}: {(proposal.voteByChoice[choice]).toLocaleString(undefined)}</span>
                                     ))}
                                 </div>
                                 <div id={`proposal-${proposal.id}-content`} className="h-40 overflow-hidden hover:overflow-scroll border-t-2">
