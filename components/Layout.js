@@ -6,13 +6,13 @@ export default function Layout({ children, home, pageTitle, pageDescription }) {
   return (
     <div>
       <Head>
-        <title>JuiceTool</title>
+        <title>{pageTitle} | JuiceTool</title>
         <meta name="description" content="A bunch of homebrew tools" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <header className="flex mt-5">
         {!home && (
-          <div className="flex m-5 p-3 bg-amber-200 text-2xl rounded-xl border-3 border-solid border-slate-200 gap-4 items-center transition-colors hover:border-blue-400 hover:text-blue-400">
+          <div className="flex m-5 p-3 bg-amber-200 text-2xl rounded-xl border-3 border-solid border-slate-200 gap-4 items-center transition-colors hover:bg-amber-300">
             <Link href="/">
               <a>← Back to home</a>
             </Link>
@@ -40,7 +40,7 @@ export default function Layout({ children, home, pageTitle, pageDescription }) {
         )}
         {children}
         
-        <div className="relative xs:px-6 sm:px-0 text-black font-medium gap-2 items-center w-full flex flex-col text-center">
+        <div className="relative mt-3 xs:px-6 sm:px-0 text-black font-medium gap-2 items-center w-full flex flex-col text-center">
           <p>JuiceTool curates docs and tools around Juicebox ecosystem.</p>
           <div className="flex gap-8 items-center">
             <a href="https://twitter.com/juiceboxETH" target="_blank" rel="noreferrer">
