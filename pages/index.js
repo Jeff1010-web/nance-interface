@@ -17,6 +17,7 @@ export default function Home() {
             <HomeCard link="/metric" linkText="Health Metrics" imgSrc="images/character/banana.png" bgColor="bg-emerald-500" />
             <HomeCard link="/funding" linkText="Funded Projects" imgSrc="images/character/pina.png" bgColor="bg-sky-500" />
             <HomeCard link="/history" linkText="Timeline" imgSrc="images/character/blueberry.png" bgColor="bg-purple-500" />
+            <HomeCard link="/tools/snapshot" linkText="Snapshot Helper" imgSrc="images/character/bank_grandpa.png" bgColor="bg-orange-500" />
           </div>
         </div>
       </div>

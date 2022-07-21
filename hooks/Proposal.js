@@ -178,7 +178,7 @@ function useProposalsExtended() {
   return { data: proposalExtended, loading };
 }
 
-export function useVotedProposalIds(space, address) {
+export function useVotedData(space, address) {
   // Load voted proposals
   const {
     loading,
@@ -189,12 +189,19 @@ export function useVotedProposalIds(space, address) {
       voter: address ? address : ""
     }
   });
-  if (address) {
-    const votedProposalIds = data?.votes.map(vote => vote.proposal.id);
-    return { data: votedProposalIds, loading };
-  } else {
-    return { data: [], loading };
-  }
+
+  let votes = {};
+  data?.votes.forEach(vote => {
+    console.log(vote);
+    votes[vote.proposal.id] = {
+      choice: vote.proposal.choices[vote.choice-1],
+      score: vote.vp,
+      created: vote.created
+    }
+  });
+  console.log("votedData", votes);
+
+  return { data: votes, loading };
 }
 
 export function useProposalsExtendedOf(space) {
