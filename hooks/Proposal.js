@@ -37,17 +37,70 @@ query {
 }
 `
 
-const PROPOSAL_VOTES_QUERY = `
-query {
-  proposals (
-    first: 1000
+const ACTIVE_PROPOSALS_QUERY = `
+query ActiveProposals($space: String) {
+  proposals(
+    first: 20
+    skip: 0
     where: {
-      space: "jbdao.eth"
+      space: $space,
+      state: "active"
     }
+    orderBy: "created",
+    orderDirection: desc
   ) {
-    start
-    votes
-    scores_total
+    id,
+    title,
+    start,
+    end,
+    choices,
+    votes,
+    scores_total,
+    body
+  }
+}
+`
+
+const VOTES_BY_PROPOSALID_QUERY = `
+query VotesByProposalId($space: String, $proposalIds: [String]) {
+  votes (
+    first: 10000
+    where: {
+      space: $space,
+      proposal_in: $proposalIds
+    }
+    orderBy: "created",
+    orderDirection: desc
+  ) {
+    voter
+    vp
+    proposal {
+      id
+      choices
+    }
+    choice
+  }
+}
+`
+
+const VOTED_PROPOSALS_QUERY = `
+query VotedProposals($space: String, $voter: String) {
+  votes (
+    first: 20
+    where: {
+      space: $space,
+      voter: $voter
+    }
+    orderBy: "created",
+    orderDirection: desc
+  ) {
+    proposal {
+      id,
+      choices
+    },
+    choice
+    vp
+    created
   }
 }
 `
@@ -75,6 +128,126 @@ function useProposalGroups() {
   const { loading, error, data: proposalData } = useQuery(PROPOSALS_QUERY);
 
   return { data: groupProposalsByDate(proposalData?.proposals), loading };
+}
+
+function useProposalsExtended() {
+  // Load all proposals
+  const {
+    loading: proposalLoading,
+    data: proposalData
+  } = useQuery(PROPOSALS_QUERY);
+
+  // Load all votes
+  const {
+    loading: voteLoading,
+    data: voteData
+  } = useQuery(VOTES_QUERY);
+
+  const loading = proposalLoading || voteLoading;
+  // { [proposalId]: { [choice]: score } }
+  const votes = voteData?.votes.reduce((acc, vote) => {
+    if(!acc[vote.proposal.id]) {
+      acc[vote.proposal.id] = [0,0,0]
+    }
+
+    // 1-index, 1 means affirmative
+    acc[vote.proposal.id][vote.choice-1] += vote.vp;
+    return acc
+  }, {});
+
+  const proposalExtended = proposalData?.proposals.map((proposal) => {
+    if(votes === undefined || votes[proposal.id] === undefined) {
+      return { ...proposal }
+    }
+
+    return {
+      voteByChoice: votes[proposal.id],
+      approved: isApproved(
+        proposal.start,
+        votes[proposal.id][0] / (
+          // For Against Abstain, Abstain didn't count
+          votes[proposal.id][0] + votes[proposal.id][1]
+        ),
+        votes[proposal.id][0],
+        proposal.votes
+      ),
+      ...proposal
+    }
+  });
+
+  return { data: proposalExtended, loading };
+}
+
+export function useVotedProposalIds(space, address) {
+  // Load voted proposals
+  const {
+    loading,
+    data
+  } = useQuery(VOTED_PROPOSALS_QUERY, {
+    variables: {
+      space: space,
+      voter: address ? address : ""
+    }
+  });
+  if (address) {
+    const votedProposalIds = data?.votes.map(vote => vote.proposal.id);
+    return { data: votedProposalIds, loading };
+  } else {
+    return { data: [], loading };
+  }
+}
+
+export function useProposalsExtendedOf(space) {
+  // Load active proposals
+  const {
+    loading: proposalLoading,
+    data: proposalData
+  } = useQuery(ACTIVE_PROPOSALS_QUERY, {
+    variables: {
+      space: space
+    }
+  });
+
+  // Load related votes
+  const {
+    loading: voteLoading,
+    data: voteData
+  } = useQuery(VOTES_BY_PROPOSALID_QUERY, {
+    variables: {
+      space: space,
+      proposalIds: proposalData?.proposals.map(proposal => proposal.id)
+    }
+  });
+
+  const loading = proposalLoading || voteLoading;
+  // { [proposalId]: { [choice]: score } }
+  const votes = voteData?.votes.reduce((acc, vote) => {
+    if(!acc[vote.proposal.id]) {
+      acc[vote.proposal.id] = {};
+      vote.proposal.choices.forEach(choice => {
+        acc[vote.proposal.id][choice] = 0;
+      });
+    }
+
+    // 1-index, 1 means affirmative
+    acc[vote.proposal.id][vote.proposal.choices[vote.choice-1]] += vote.vp;
+    return acc
+  }, {});
+
+  let proposalExtended = proposalData?.proposals.map((proposal) => {
+    if(votes === undefined || votes[proposal.id] === undefined) {
+      return { ...proposal }
+    }
+
+    return {
+      voteByChoice: votes[proposal.id],
+      ...proposal
+    }
+  })
+
+  console.log('proposalExtendedOf', proposalExtended);
+
+  return { data: proposalExtended, loading };
 }
 
 export function useProposalParticipations() {
@@ -115,56 +288,6 @@ export function useProposalParticipations() {
   })
 
   return { data: chartData, loading };
-}
-
-function useProposalsExtended() {
-  // Load all proposals
-  const {
-    loading: proposalLoading,
-    error: proposalError,
-    data: proposalData
-  } = useQuery(PROPOSALS_QUERY);
-
-  // Load all votes
-  const {
-    loading: voteLoading,
-    error: voteError,
-    data: voteData
-  } = useQuery(VOTES_QUERY);
-
-  const loading = proposalLoading || voteLoading;
-  // { [proposalId]: { [choice]: score } }
-  const votes = voteData?.votes.reduce((acc, vote) => {
-    if(!acc[vote.proposal.id]) {
-      acc[vote.proposal.id] = [0,0,0]
-    }
-
-    // 1-index, 1 means affirmative
-    acc[vote.proposal.id][vote.choice-1] += vote.vp;
-    return acc
-  }, {});
-
-  const proposalExtended = proposalData?.proposals.map((proposal) => {
-    if(votes === undefined || votes[proposal.id] === undefined) {
-      return { ...proposal }
-    }
-
-    return {
-      voteByChoice: votes[proposal.id],
-      approved: isApproved(
-        proposal.start,
-        votes[proposal.id][0] / (
-          // For Against Abstain, Abstain didn't count
-          votes[proposal.id][0] + votes[proposal.id][1]
-        ),
-        votes[proposal.id][0],
-        proposal.votes
-      ),
-      ...proposal
-    }
-  });
-
-  return { data: proposalExtended, loading };
 }
 
 export function useApprovalGroups() {

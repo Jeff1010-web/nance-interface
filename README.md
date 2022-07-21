@@ -14,3 +14,4 @@ npm install && npm run build && npm run export
 * [graphql-hooks to query with graphql](https://github.com/nearform/graphql-hooks)
 * [wagmi & ethers to interact with chains](https://github.com/tmm/wagmi)
 * [react-vertical-timeline](https://github.com/stephane-monnot/react-vertical-timeline)
+* [react-markdown](https://github.com/remarkjs/react-markdown)
