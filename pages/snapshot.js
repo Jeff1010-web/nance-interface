@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import { fromUnixTime, formatDistanceToNow } from 'date-fns'
 import { ResponsiveContainer, PieChart, Pie, Tooltip, Cell, Legend } from 'recharts';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = ['#0ea5e9', '#dc2626', '#d97706', '#FFBB28', '#FF8042'];
 
 const RADIAN = Math.PI / 180;
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
@@ -72,7 +72,11 @@ export default function Snapshot() {
                                             </span>
                                         </span>
                                         <span>Votes: {proposal.votes}</span>
-                                        <span>Quorum: {formatNumber(proposal.scores_total)} / {formatNumber(proposal.quorum)}</span>
+                                        <span>
+                                            Quorum:
+                                            <span className={(proposal.scores_total<proposal.quorum) && "text-orange-400"}> {formatNumber(proposal.scores_total)} </span>
+                                            / {formatNumber(proposal.quorum)}
+                                        </span>
                                     </div>
 
                                     <div className="grow">
@@ -83,7 +87,7 @@ export default function Snapshot() {
                                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                     ))}
                                                 </Pie>
-                                                <Tooltip />
+                                                <Tooltip formatter={(value, name, props) => formatNumber(value)} />
                                                 <Legend width={100} wrapperStyle={{ top: 10, right: 0, backgroundColor: '#f5f5f5', border: '1px solid #d5d5d5', borderRadius: 3, lineHeight: '40px' }} />
                                             </PieChart>
                                         </ResponsiveContainer>
