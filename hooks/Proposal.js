@@ -55,6 +55,7 @@ query ActiveProposals($space: String) {
     end,
     choices,
     votes,
+    quorum,
     scores_total,
     body
   }
@@ -193,7 +194,6 @@ export function useVotedData(space, address) {
   let votes = {};
   if (address) {
     data?.votes.forEach(vote => {
-      console.log(vote);
       votes[vote.proposal.id] = {
         choice: vote.proposal.choices[vote.choice-1],
         score: vote.vp,
