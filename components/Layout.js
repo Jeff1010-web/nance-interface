@@ -14,7 +14,7 @@ export default function Layout({ children, home, pageTitle, pageDescription }) {
         {!home && (
           <div className="flex m-5 p-3 bg-amber-200 text-2xl rounded-xl border-3 border-solid border-slate-200 gap-4 items-center transition-colors hover:bg-amber-300">
             <Link href="/">
-              <a>← Back to home</a>
+              <a>Homepage</a>
             </Link>
           </div>
         )}
