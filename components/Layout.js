@@ -6,7 +6,7 @@ export default function Layout({ children, home, pageTitle, pageDescription }) {
   return (
     <div>
       <Head>
-        <title>{pageTitle} | JuiceTool</title>
+        <title>{`${pageTitle} | JuiceTool`}</title>
         <meta name="description" content="A bunch of homebrew tools" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
