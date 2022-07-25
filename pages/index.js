@@ -9,7 +9,6 @@ export default function Home() {
           <h1 className="text-7xl font-medium">
             JuiceTool
           </h1>
-          <p className="text-2xl">Want to jump into the rabbit hole of Juicebox? LFG</p>
           <br/>
 
           <div className="mt-5 sm:mx-auto grid grid-cols-2 xs:gap-3 sm:gap-8 sm:justify-center md:mt-12 lg:grid-flow-col">
@@ -17,7 +16,16 @@ export default function Home() {
             <HomeCard link="/metric" linkText="Health Metrics" imgSrc="images/character/banana.png" bgColor="bg-emerald-500" />
             <HomeCard link="/funding" linkText="Funded Projects" imgSrc="images/character/pina.png" bgColor="bg-sky-500" />
             <HomeCard link="/history" linkText="Timeline" imgSrc="images/character/blueberry.png" bgColor="bg-purple-500" />
-            <HomeCard link="/snapshot" linkText="Snapshot Helper" imgSrc="images/character/bank_grandpa.png" bgColor="bg-orange-500" />
+          </div>
+
+          <div className="mt-5 sm:mx-auto grid grid-rows-2 xs:gap-3 sm:gap-8 sm:justify-center md:mt-12 lg:grid-flow-row">
+            <span className='text-3xl'>Tools</span>
+            <Link href="/snapshot">
+              <span>
+                <span className='underline'>Snapshot Voting Helper</span>
+                , load overview of proposals, filter by voted/above-quorum status.
+              </span>
+            </Link>
           </div>
         </div>
       </div>

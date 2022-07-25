@@ -40,7 +40,7 @@ export default function Layout({ children, home, pageTitle, pageDescription }) {
         )}
         {children}
         
-        <div className="relative mt-3 xs:px-6 sm:px-0 text-black font-medium gap-2 items-center w-full flex flex-col text-center">
+        <div className="relative mt-3 xs:px-6 sm:px-0 text-black font-medium gap-2 items-center w-full flex flex-col text-center border-t pt-4">
           <p>JuiceTool curates docs and tools around Juicebox ecosystem.</p>
           <div className="flex gap-8 items-center">
             <a href="https://twitter.com/juiceboxETH" target="_blank" rel="noreferrer">
