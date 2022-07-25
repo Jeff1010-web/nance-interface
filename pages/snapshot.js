@@ -1,5 +1,6 @@
 import Layout from "../components/Layout";
 import { useState } from 'react';
+import { useRouter } from 'next/router'
 import { useProposalsExtendedOf, useVotedData } from "../hooks/Proposal";
 import { useAccount } from 'wagmi'
 import ReactMarkdown from 'react-markdown'
@@ -25,19 +26,28 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
     );
 };
 
+const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
+const formatNumber = (num) => formatter.format(num);
+
 export default function Snapshot() {
+    // router
+    const router = useRouter();
+    let { space } = router.query;
+    // default space
+    if (!space) {
+        space = "jbdao.eth";
+    }
+    // state
     const { address, isConnected } = useAccount();
-    const [space, setSpace] = useState('jbdao.eth');
     const [hide, setHide] = useState(false);
     const [hideAboveQuorum, setHideAboveQuorum] = useState(false);
+    // load data
     const { loading: proposalsLoading, data: proposalsData } = useProposalsExtendedOf(space);
     const { loading: votedLoading, data: votedData } = useVotedData(space, isConnected ? address : null)
     const loading = proposalsLoading || votedLoading;
-
+    // process data
     const votedIds = votedData ? Object.keys(votedData) : [];
     const aboveQuorumIds = proposalsData ? proposalsData.filter(proposal => proposal.scores_total >= proposal.quorum).map(proposal => proposal.id) : [];
-    const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
-    const formatNumber = (num) => formatter.format(num);
 
     return (
         <Layout
@@ -46,7 +56,7 @@ export default function Snapshot() {
             <div className="flex my-6 flex-col">
                 <div id="space-selector" className="flex justify-center gap-x-3">
                     <input type="text" className="rounded-xl pl-2" id="snapshot-space-input" placeholder="What's your space" />
-                    <button id="load-btn" onClick={() => setSpace(document.getElementById("snapshot-space-input").value)} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load Active Proposals</button>
+                    <button id="load-btn" onClick={() => router.push('/snapshot?space=' + document.getElementById("snapshot-space-input").value, undefined, { shallow: true })} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load Active Proposals</button>
                 </div>
                 <div id="operator-status" className="flex justify-center pt-3">
                     <span>Enabled filters: {hide && "Hide Voted Proposals"} {hide && hideAboveQuorum && " | "} {hideAboveQuorum && "Hide Proposals Above Quorum"}</span>
@@ -60,7 +70,7 @@ export default function Snapshot() {
                     {loading && <div className="text-center">Loading proposals...</div>}
                     {!loading && (
                         proposalsData.map(proposal => (
-                            <a key={proposal.id} href={`https://snapshot.org/#/${space}/proposal/${proposal.id}`} target="_blank" rel="noreferrer" className={`${((votedIds.includes(proposal.id) && hide) || (aboveQuorumIds.includes(proposal.id) && hideAboveQuorum)) ? "hidden" : "block"} border-2 rounded-xl m-3 p-3 hover:border-slate-800 transition-colors max-w-3xl`}>
+                            <div key={proposal.id} className={`${((votedIds.includes(proposal.id) && hide) || (aboveQuorumIds.includes(proposal.id) && hideAboveQuorum)) ? "hidden" : "block"} border-2 rounded-xl m-3 p-3 hover:border-slate-800 transition-colors max-w-3xl`}>
                                 <h3 className="text-xl font-semibold">{proposal.title}</h3>
                                 <br/>
                                 <div id={`proposal-analytic-${proposal.id}`} className="flex">
@@ -80,9 +90,10 @@ export default function Snapshot() {
                                         <span>Votes: {proposal.votes}</span>
                                         <span>
                                             Quorum:
-                                            <span className={(proposal.scores_total<proposal.quorum) && "text-orange-400"}> {formatNumber(proposal.scores_total)} </span>
+                                            <span className={(proposal.scores_total<proposal.quorum) ? "text-orange-400" : undefined}> {formatNumber(proposal.scores_total)} </span>
                                             / {formatNumber(proposal.quorum)}
                                         </span>
+                                        <a className="rounded-xl border-3 p-1 bg-amber-200 border-solid border-slate-200" href={`https://snapshot.org/#/${space}/proposal/${proposal.id}`} target="_blank" rel="noreferrer">Check this on Snapshot</a>
                                     </div>
 
                                     <div className="grow">
@@ -103,7 +114,7 @@ export default function Snapshot() {
                                     <br />
                                     <ReactMarkdown>{proposal.body}</ReactMarkdown>
                                 </div>
-                            </a>
+                            </div>
                         ))  
                     )}
                 </div>

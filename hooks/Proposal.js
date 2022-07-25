@@ -201,7 +201,6 @@ export function useVotedData(space, address) {
       }
     });
   }
-  console.log("votedData", votes);
 
   return { data: votes, loading };
 }
@@ -254,8 +253,6 @@ export function useProposalsExtendedOf(space) {
     }
   })
 
-  console.log('proposalExtendedOf', proposalExtended);
-
   return { data: proposalExtended, loading };
 }
 
@@ -283,7 +280,6 @@ export function useProposalParticipations() {
     acc[start]['totalScores'] += proposal.scores_total;
     return acc;
   }, {});
-  console.log('useProposalParticipations', groups);
 
   if (!groups) {
     return { loading, data };
@@ -325,7 +321,6 @@ export function useApprovalGroups() {
     }
     return acc;
   }, {});
-  console.log('useApprovalGroups', groups);
 
   if (!groups) {
     return { loading, data };
