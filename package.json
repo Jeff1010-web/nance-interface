@@ -1,6 +1,7 @@
 {
   "name": "juicetools",
   "version": "0.1.0",
+  "funding": "https://www.juicebox.money/@twodam",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
@@ -10,6 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@jbx-protocol/contracts-v1": "^2.0.0",
     "date-fns": "^2.28.0",
     "ethers": "^5.6.9",
     "graphql-hooks": "^5.11.4",
