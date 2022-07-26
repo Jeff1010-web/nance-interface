@@ -25,8 +25,10 @@ export default function Profile() {
   useEffect(() => {
     if (isConnected) {
       setText(ensName || shortenAddress(address))
+    } else {
+      setText('Connect')
     }
-  })
+  }, [isConnected, ensName, address])
 
   return (
     <div className="flex m-5 p-3 bg-amber-200 text-2xl rounded-xl border-3 border-solid border-slate-200 gap-4 items-center transition-colors hover:bg-amber-300">
