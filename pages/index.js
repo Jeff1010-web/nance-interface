@@ -18,12 +18,18 @@ export default function Home() {
             <HomeCard link="/history" linkText="Timeline" imgSrc="images/character/blueberry.png" bgColor="bg-purple-500" />
           </div>
 
-          <div className="mt-5 sm:mx-auto grid grid-rows-2 xs:gap-3 sm:gap-8 sm:justify-center md:mt-12 lg:grid-flow-row">
+          <div className="mt-5 sm:mx-auto grid grid-rows-2 xs:gap-3 sm:gap-4 sm:justify-center md:mt-12 lg:grid-flow-row">
             <span className='text-3xl'>Tools</span>
             <Link href="/snapshot">
               <span>
                 <span className='underline'>Snapshot Voting Helper</span>
                 , load overview of proposals, filter by voted/above-quorum status.
+              </span>
+            </Link>
+            <Link href="/juicebox">
+              <span>
+                <span className='underline'>[WIP] Juicebox Reconfiguration Helper</span>
+                , import/export hex data, preview with basic interface.
               </span>
             </Link>
           </div>
