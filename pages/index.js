@@ -28,7 +28,7 @@ export default function Home() {
             </Link>
             <Link href="/juicebox">
               <span>
-                <span className='underline'>[WIP] Juicebox Reconfiguration Helper</span>
+                <span className='underline'>Juicebox Reconfiguration Helper</span>
                 , import/export hex data, preview with basic interface.
               </span>
             </Link>
