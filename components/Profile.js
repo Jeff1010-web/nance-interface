@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAccount, useConnect, useDisconnect, useEnsName } from 'wagmi'
 import { InjectedConnector } from 'wagmi/connectors/injected'
-
-const shortenAddress = (address) => {
-  return address.substring(0, 6) + '...' + address.substring(address.length - 4)
-}
+import { shortenAddress } from '../libs/address'
 
 export default function Profile() {
   const { address, isConnected } = useAccount()
