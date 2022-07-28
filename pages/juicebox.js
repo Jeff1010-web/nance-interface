@@ -7,18 +7,9 @@ import { fromUnixTime, formatDistanceToNow, format } from 'date-fns'
 
 import { utils } from 'ethers'
 import { useContractRead, useContractReads } from 'wagmi';
-import FundingCycles from '@jbx-protocol/contracts-v1/deployments/mainnet/FundingCycles.json';
-import ModStore from '@jbx-protocol/contracts-v1/deployments/mainnet/ModStore.json';
+import { FundingCycleContract, ModStoreContract } from "../libs/contractsV1";
 import FormattedAddress from "../components/FormattedAddress";
-
-const fundingCycleContract = {
-    addressOrName: FundingCycles.address,
-    contractInterface: FundingCycles.abi
-}
-const modStoreContract = {
-    addressOrName: ModStore.address,
-    contractInterface: ModStore.abi
-}
+import FormattedProject from "../components/FormattedProject";
 
 const onEnter = (e) => {
     if(e.keyCode == 13) {
@@ -37,7 +28,7 @@ export default function Juicebox() {
     }
 
     const { data, isLoading } = useContractRead({
-        ...fundingCycleContract,
+        ...FundingCycleContract,
         functionName: 'currentOf',
         args: projectId
     })
@@ -51,7 +42,9 @@ export default function Juicebox() {
             pageTitle="Juicebox Reconfiguration Helper"
             pageDescription="import/export hex data, preview with basic interface.">
 
-            <div id="project-selector" className="flex justify-center gap-x-3 pt-2">
+            <div id="project-selector" className="flex gap-x-3 pt-2">
+                <span className="text-sm">Current:</span>
+                <FormattedProject projectId={projectId} />
                 <input type="number" min="1" className="rounded-xl pl-2" id="project-input" placeholder="Input project id here" onKeyDown={onEnter} />
                 <button id="load-btn" onClick={() => router.push('/juicebox?project=' + document.getElementById("project-input").value, undefined, { shallow: true })} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Project</button>
             </div>
@@ -111,12 +104,12 @@ function FundingConfig({cycleData}) {
     const { data: modData, isLoading } = useContractReads({
         contracts: [
           {
-            ...modStoreContract,
+            ...ModStoreContract,
             functionName: 'payoutModsOf',
             args: [cycleData.projectId, cycleData.configured]
           },
           {
-            ...modStoreContract,
+            ...ModStoreContract,
             functionName: 'ticketModsOf',
             args: [cycleData.projectId, cycleData.configured]
           }
@@ -173,7 +166,7 @@ function FundingConfig({cycleData}) {
                     {modData?.[0].map(parsePayoutMod).map(mod => (
                         <tr key={`${mod.beneficiary}-${mod.projectId}`}>
                             <td>
-                                {mod.projectId != 0 && `@${mod.projectId} `}
+                                {mod.projectId != 0 && <FormattedProject projectId={mod.projectId} />}
                                 <FormattedAddress address={mod.beneficiary} />:&nbsp;
                             </td>
                             <td>{mod.percent/100 + "%"} ({utils.formatEther(amountSubFee(cycleData.target, cycleData.fee)) * mod.percent / 10000})</td>
