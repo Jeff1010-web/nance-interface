@@ -3,7 +3,7 @@
 ### Build
 
 ```
-npm install && npm run build && npm run export
+yarn install && yarn build && yarn export
 ```
 
 ### Framework & Library
