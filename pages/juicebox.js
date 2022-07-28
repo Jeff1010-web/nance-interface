@@ -52,10 +52,11 @@ export default function Juicebox() {
     }
 
     const iface = new utils.Interface(TerminalV1Contract.contractInterface);
-    const parseV1Reconfig = (raw) => {
+    const loadV1Reconfig = (raw) => {
         const ret = iface.parseTransaction({data: raw, value: 0});
         console.info("📗 TerminalV1.interface.parse >", raw, ret.args);
         setPreviewArgs(ret.args);
+        router.push(`/juicebox?project=${ret.args._projectId.toNumber()}`, undefined, { shallow: true })
     }
     const loadProject = () => {
         setPreviewArgs(undefined);
@@ -77,7 +78,7 @@ export default function Juicebox() {
             </div>
             <div id="v1-reconfig-loader" className="flex justify-center gap-x-3 pt-2">
                 <input type="text" className="rounded-xl pl-2" id="v1-reconfig-input" placeholder="Paste raw data here" onKeyDown={genOnEnter("load-v1-reconfig-btn")} />
-                <button id="load-v1-reconfig-btn" onClick={() => parseV1Reconfig(document.getElementById("v1-reconfig-input").value)} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Reconfig</button>
+                <button id="load-v1-reconfig-btn" onClick={() => loadV1Reconfig(document.getElementById("v1-reconfig-input").value)} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Reconfig</button>
             </div>
             <br />
             {previewArgs ? <FundingConfigPreivew previewArgs={previewArgs} /> : <FundingConfig properties={data} />}
