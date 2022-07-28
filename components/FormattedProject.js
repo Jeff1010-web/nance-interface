@@ -8,8 +8,7 @@ export default function FormattedProject({projectId}) {
         ...ProjectsContract,
         functionName: 'handleOf',
         args: projectId
-    })
-    console.info("📗 FormattedProject >", projectId, rawHandle);
+    });
 
     return (
         <Link href={`/juicebox?project=${encodeURIComponent(projectId)}`}>
