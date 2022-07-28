@@ -9,6 +9,7 @@ import { utils } from 'ethers'
 import { useContractRead, useContractReads } from 'wagmi';
 import FundingCycles from '@jbx-protocol/contracts-v1/deployments/mainnet/FundingCycles.json';
 import ModStore from '@jbx-protocol/contracts-v1/deployments/mainnet/ModStore.json';
+import FormattedAddress from "../components/FormattedAddress";
 
 const fundingCycleContract = {
     addressOrName: FundingCycles.address,
@@ -172,7 +173,8 @@ function FundingConfig({cycleData}) {
                     {modData?.[0].map(parsePayoutMod).map(mod => (
                         <tr key={`${mod.beneficiary}-${mod.projectId}`}>
                             <td>
-                                {mod.projectId == 0 ? shortenAddress(mod.beneficiary) : `@${mod.projectId}(${shortenAddress(mod.beneficiary)})`}:&nbsp;
+                                {mod.projectId != 0 && `@${mod.projectId} `}
+                                <FormattedAddress address={mod.beneficiary} />:&nbsp;
                             </td>
                             <td>{mod.percent/100 + "%"} ({utils.formatEther(amountSubFee(cycleData.target, cycleData.fee)) * mod.percent / 10000})</td>
                         </tr>
@@ -190,7 +192,7 @@ function FundingConfig({cycleData}) {
                     {modData?.[1].map(parseTicketMod).map(mod => (
                         <tr key={`${mod.beneficiary}`}>
                             <td>
-                                {shortenAddress(mod.beneficiary)}:&nbsp;
+                                <FormattedAddress address={mod.beneficiary} />:&nbsp;
                             </td>
                             <td>{mod.percent/100 + "%"}</td>
                         </tr>
