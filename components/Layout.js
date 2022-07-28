@@ -42,6 +42,7 @@ export default function Layout({ children, home, pageTitle, pageDescription }) {
         
         <div className="relative mt-3 xs:px-6 sm:px-0 text-black font-medium gap-2 items-center w-full flex flex-col text-center border-t pt-4">
           <p>JuiceTool curates docs and tools around Juicebox ecosystem.</p>
+          <a target="_blank" rel="noopener noreferrer" href="https://www.juicebox.money/@twodam" className="p-2 text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Sponsor on Juicebox</a>
           <div className="flex gap-8 items-center">
             <a href="https://twitter.com/juiceboxETH" target="_blank" rel="noreferrer">
               <svg className="w-6 h-8 fill-black hover:fill-gray-400 transition cursor-pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
