@@ -5,8 +5,8 @@ export default function FormattedAddress({ address }) {
     const { data: ensName } = useEnsName({ address })
 
     return (
-        <span className="text-sm">
+        <a target="_blank" rel="noopener noreferrer" className="hover:underline" href={`https://etherscan.io/address/${encodeURIComponent(address)}`}>
             {ensName || shortenAddress(address)}
-        </span>
+        </a>
     )
 }

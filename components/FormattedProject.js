@@ -13,7 +13,7 @@ export default function FormattedProject({projectId}) {
 
     return (
         <Link href={`/juicebox?project=${encodeURIComponent(projectId)}`}>
-            <a className="text-sm hover:underline">
+            <a className="hover:underline">
                 @{(rawHandle && parseBytes32String(rawHandle)) || projectId}&nbsp;
             </a>
         </Link>
