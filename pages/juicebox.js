@@ -1,9 +1,7 @@
 import Layout from "../components/Layout";
-import { useRouter } from 'next/router'
-import { useState, useEffect } from "react";
-import { shortenAddress } from "../libs/address";
+import { useRouter } from 'next/router';
 import { amountSubFee } from "../libs/math";
-import { fromUnixTime, formatDistanceToNow, format } from 'date-fns'
+import { fromUnixTime, format } from 'date-fns'
 
 import { utils } from 'ethers'
 import { useContractRead, useContractReads } from 'wagmi';
@@ -42,12 +40,13 @@ export default function Juicebox() {
             pageTitle="Juicebox Reconfiguration Helper"
             pageDescription="import/export hex data, preview with basic interface.">
 
-            <div id="project-selector" className="flex gap-x-3 pt-2">
+            <div id="project-selector" className="flex justify-center gap-x-3 pt-2">
                 <span className="text-sm">Current:</span>
                 <FormattedProject projectId={projectId} />
                 <input type="number" min="1" className="rounded-xl pl-2" id="project-input" placeholder="Input project id here" onKeyDown={onEnter} />
                 <button id="load-btn" onClick={() => router.push('/juicebox?project=' + document.getElementById("project-input").value, undefined, { shallow: true })} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Project</button>
             </div>
+            <br />
             <FundingConfig cycleData={data} />
         </Layout>
     )
@@ -144,7 +143,7 @@ function FundingConfig({cycleData}) {
     }
 
     return (
-        <div id="project-detail" className="px-2">
+        <div id="project-detail" className="px-2 m-2 flex justify-center rounded-xl shadow-sm">
             <table>
                 <tbody>
                     {Object.entries(parsed).map(entry => (
