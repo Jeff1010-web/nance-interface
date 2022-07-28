@@ -2,6 +2,7 @@ import Layout from "../components/Layout";
 import { useRouter } from 'next/router'
 import { useState, useEffect } from "react";
 import { shortenAddress } from "../libs/address";
+import { amountSubFee } from "../libs/math";
 import { fromUnixTime, formatDistanceToNow, format } from 'date-fns'
 
 import { utils } from 'ethers'
@@ -173,7 +174,7 @@ function FundingConfig({cycleData}) {
                             <td>
                                 {mod.projectId == 0 ? shortenAddress(mod.beneficiary) : `@${mod.projectId}(${shortenAddress(mod.beneficiary)})`}:&nbsp;
                             </td>
-                            <td>{mod.percent/100 + "%"} ({utils.formatEther(cycleData.target) / 105 * 100 * mod.percent / 10000})</td>
+                            <td>{mod.percent/100 + "%"} ({utils.formatEther(amountSubFee(cycleData.target, cycleData.fee)) * mod.percent / 10000})</td>
                         </tr>
                     ))}
                     <tr>
