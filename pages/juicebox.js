@@ -18,6 +18,17 @@ function genOnEnter(elementId) {
     }
 }
 
+function orderByPercent(a, b) {
+    if (a.percent > b.percent) {
+        return -1;
+    }
+    if (a.percent < b.percent) {
+        return 1;
+    }
+    // a must be equal to b
+    return 0;
+}
+
 export default function Juicebox() {
     // router
     const router = useRouter();
@@ -46,6 +57,10 @@ export default function Juicebox() {
         console.info("📗 TerminalV1.interface.parse >", raw, ret.args);
         setPreviewArgs(ret.args);
     }
+    const loadProject = () => {
+        setPreviewArgs(undefined);
+        router.push('/juicebox?project=' + document.getElementById("project-input").value, undefined, { shallow: true })
+    }
     
     return (
         <Layout
@@ -58,7 +73,7 @@ export default function Juicebox() {
             </div>
             <div id="project-selector" className="flex justify-center gap-x-3 pt-2">
                 <input type="number" min="1" className="rounded-xl pl-2" id="project-input" placeholder="Input project id here" onKeyDown={genOnEnter("load-project-btn")} />
-                <button id="load-project-btn" onClick={() => router.push('/juicebox?project=' + document.getElementById("project-input").value, undefined, { shallow: true })} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Project</button>
+                <button id="load-project-btn" onClick={loadProject} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Project</button>
             </div>
             <div id="v1-reconfig-loader" className="flex justify-center gap-x-3 pt-2">
                 <input type="text" className="rounded-xl pl-2" id="v1-reconfig-input" placeholder="Paste raw data here" onKeyDown={genOnEnter("load-v1-reconfig-btn")} />
@@ -147,7 +162,7 @@ function FundingConfigPreivew({previewArgs}) {
         return <Loading />
     }
 
-    console.log("📗 TerminalV1.payoutMod.pecentage >", properties.target, fee);
+    console.log("📗 TerminalV1.payoutMod.percentage >", properties.target, fee);
 
     return (
         <div id="project-detail" className="p-2 m-2 flex justify-center rounded-xl shadow-sm border-2">
@@ -169,7 +184,7 @@ function FundingConfigPreivew({previewArgs}) {
                             <span className="text-amber-300">Funding distribution</span>
                         </td>
                     </tr>
-                    {payoutMods.map(mod => (
+                    {[].concat(payoutMods).sort(orderByPercent).map(mod => (
                         <tr key={`${mod.beneficiary}-${mod.projectId}`}>
                             <td>
                                 {mod.projectId != 0 && <FormattedProject projectId={mod.projectId.toNumber()} />}
@@ -188,7 +203,7 @@ function FundingConfigPreivew({previewArgs}) {
                             <span className="text-amber-300">Reserved Token</span>
                         </td>
                     </tr>
-                    {ticketMods.map(mod => (
+                    {[].concat(ticketMods).sort(orderByPercent).map(mod => (
                         <tr key={`${mod.beneficiary}`}>
                             <td>
                                 <FormattedAddress address={mod.beneficiary} />:&nbsp;
@@ -267,7 +282,7 @@ function FundingConfig({properties}) {
                             <span className="text-amber-300">Funding distribution</span>
                         </td>
                     </tr>
-                    {modData?.[0].map(parsePayoutMod).map(mod => (
+                    {[].concat(modData?.[0]).sort(orderByPercent).map(parsePayoutMod).map(mod => (
                         <tr key={`${mod.beneficiary}-${mod.projectId}`}>
                             <td>
                                 {mod.projectId != 0 && <FormattedProject projectId={mod.projectId} />}
@@ -286,7 +301,7 @@ function FundingConfig({properties}) {
                             <span className="text-amber-300">Reserved Token</span>
                         </td>
                     </tr>
-                    {modData?.[1].map(parseTicketMod).map(mod => (
+                    {[].concat(modData?.[1]).sort(orderByPercent).map(parseTicketMod).map(mod => (
                         <tr key={`${mod.beneficiary}`}>
                             <td>
                                 <FormattedAddress address={mod.beneficiary} />:&nbsp;
