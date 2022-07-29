@@ -102,12 +102,15 @@ export default function SnapshotSpace() {
                     <input type="checkbox" id="under-quorum-checkbox" onClick={filterHandlerWith(setFilterByUnderQuorum)} />
                     <label htmlFor="under-quorum-checkbox">Under Quorum</label>
                 </div>
+                <div className="pt-3">
+                    {!loading && filteredProposals.length != 0 && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>}
+                </div>
                 <div className="flex flex-row flex-wrap pt-4 mx-4 px-20 justify-center">
                     {loading && <div className="text-center">Loading proposals...</div>}
                     {!loading && (
                         filteredProposals.map(proposal => <ProposalCard key={proposal.id} space={space} proposal={proposal} voted={votedData[proposal.id]} />)
                     )}
-                    {!loading && filteredProposals.length == 0 && <div className="text-center">No proposals found</div>}
+                    {!loading && filteredProposals.length == 0 && <div className="text-center">No proposals found.</div>}
                 </div>
             </div>
         </Layout>
