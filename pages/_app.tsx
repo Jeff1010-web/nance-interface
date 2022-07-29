@@ -2,12 +2,11 @@ import '../styles/globals.css'
 import { GraphQLClient, ClientContext } from 'graphql-hooks'
 import {
   WagmiConfig, createClient,
-  configureChains, chain,
-  defaultChains,
+  configureChains, chain
 } from 'wagmi'
 import { publicProvider } from 'wagmi/providers/public'
 
-const { chains, provider, webSocketProvider } = configureChains(
+const { provider, webSocketProvider } = configureChains(
   [chain.mainnet, chain.polygon],
   [publicProvider()],
 )

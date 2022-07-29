@@ -1,7 +1,11 @@
 import { shortenAddress } from "../libs/address";
 import { useEnsName } from "wagmi";
 
-export default function FormattedAddress({ address }) {
+export interface Props {
+    address: string;
+}
+
+export default function FormattedAddress({ address }: Props) {
     const { data: ensName } = useEnsName({ address })
 
     return (

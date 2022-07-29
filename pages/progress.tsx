@@ -1,4 +1,5 @@
-import Layout from '../components/Layout.js'
+import { PropsWithChildren } from 'react';
+import Layout from '../components/Layout'
 
 export default function Progress() {
     return (
@@ -66,7 +67,7 @@ export default function Progress() {
     )
 }
 
-function FeatureCard({ children, coverImg, title, description, link, date }) {
+function FeatureCard({ children, coverImg, title, description, link, date }: PropsWithChildren<any>) {
     return (
         <div className="flex flex-col rounded-lg shadow-lg overflow-hidden">
             <div className="flex-shrink-0">

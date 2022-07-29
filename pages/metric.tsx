@@ -1,5 +1,4 @@
-import Link from 'next/link'
-import Layout from '../components/Layout.js'
+import Layout from '../components/Layout'
 
 import {
   ResponsiveContainer, 
@@ -88,7 +87,7 @@ function ConversionFunnelChart() {
 function ApprovalRateChart() {
   const { loading, data } = useApprovalGroups();
 
-  if (loading) return 'Loading...'
+  if (loading) return <div className="text-center">Loading...</div>
 
   const renderCustomBarLabel = ({ payload, x, y, width, height, value }) => {
     return <text x={x + width / 2} y={y} fill="#666" textAnchor="middle" dy={-6}>{`${value}`}</text>;
@@ -124,7 +123,7 @@ function ApprovalRateChart() {
 function VoteParticipationChart() {
   const { loading, data } = useProposalParticipations();
 
-  if (loading) return 'Loading...'
+  if (loading) return <div className="text-center">Loading...</div>
 
   const renderCustomAxisTick = ({ x, y, stroke, payload }) => {
     return (

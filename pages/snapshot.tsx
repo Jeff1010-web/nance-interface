@@ -56,7 +56,7 @@ export default function Snapshot() {
             <div className="flex my-6 flex-col">
                 <div id="space-selector" className="flex justify-center gap-x-3">
                     <input type="text" className="rounded-xl pl-2" id="snapshot-space-input" placeholder="What's your space" />
-                    <button id="load-btn" onClick={() => router.push('/snapshot?space=' + document.getElementById("snapshot-space-input").value, undefined, { shallow: true })} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load Active Proposals</button>
+                    <button id="load-btn" onClick={() => router.push('/snapshot?space=' + (document.getElementById("snapshot-space-input") as HTMLInputElement).value, undefined, { shallow: true })} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load Active Proposals</button>
                 </div>
                 <div id="operator-status" className="flex justify-center pt-3">
                     <span>Enabled filters: {hide && "Hide Voted Proposals"} {hide && hideAboveQuorum && " | "} {hideAboveQuorum && "Hide Proposals Above Quorum"}</span>

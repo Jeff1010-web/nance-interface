@@ -1,8 +1,15 @@
 import Link from 'next/link'
 import Head from 'next/head'
-import Profile from '../components/Profile.js'
+import Profile from '../components/Profile'
+import { PropsWithChildren } from 'react'
 
-export default function Layout({ children, home, pageTitle, pageDescription }) {
+export interface Props {
+  home?: boolean,
+  pageTitle: string,
+  pageDescription?: string
+}
+
+export default function Layout({ children, home = false, pageTitle, pageDescription = "" }: PropsWithChildren<Props>) {
   return (
     <div>
       <Head>
@@ -26,12 +33,12 @@ export default function Layout({ children, home, pageTitle, pageDescription }) {
           <div className="bg-grey-lightest border-b">
             <div className="xs:py-8 xs:px-8 md:px-4 lg:px-0 sm:py-12 sm:pt-6 sm:max-w-3xl m-auto">
                 <div className="text-4xl pb-6 tracking-wide">
-                    {pageTitle || "No title"}
+                    {pageTitle}
                 </div>
                 <div className="sm:flex sm:items-center ">
                     <div className="sm:flex-auto mb-4">
                         <p className="text-md font-medium mt-4">
-                          {pageDescription || "No description"}
+                          {pageDescription}
                         </p>
                     </div>
                 </div>

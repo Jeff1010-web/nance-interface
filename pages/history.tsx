@@ -1,4 +1,4 @@
-import Layout from '../components/Layout.js'
+import Layout from '../components/Layout'
 import { VerticalTimeline, VerticalTimelineElement }  from 'react-vertical-timeline-component';
 import 'react-vertical-timeline-component/style.min.css';
 
@@ -69,7 +69,7 @@ export default function History() {
   )
 }
 
-function TimelineItem({ date, title, text, imgSrc, linkText, link, iconSrc }) {
+function TimelineItem({ date, title, text, imgSrc, linkText, link, iconSrc = "https://juicebox.money/assets/banana-ol.png" }) {
   return (
     <VerticalTimelineElement
       className="vertical-timeline-element--work"
@@ -77,7 +77,7 @@ function TimelineItem({ date, title, text, imgSrc, linkText, link, iconSrc }) {
       contentStyle={{ background: 'rgb(235, 235, 235)', color: 'rgb(21, 28, 59)' }}
       contentArrowStyle={{ borderRight: '7px solid  rgb(235, 235, 235)' }}
       iconStyle={{ background: 'rgb(33, 150, 243)', color: '#fff' }}
-      icon={<img className="rounded-full" src={iconSrc || "https://juicebox.money/assets/banana-ol.png"} alt="Vercel Logo" />}
+      icon={<img className="rounded-full" src={iconSrc} alt="Vercel Logo" />}
     >
       <h2 className="vertical-timeline-element-title capitalize">
         {title}

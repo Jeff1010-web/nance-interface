@@ -3,22 +3,22 @@ import { useRouter } from 'next/router';
 import { amountSubFee } from "../libs/math";
 import { fromUnixTime, format } from 'date-fns'
 
-import { utils } from 'ethers'
+import { BigNumber, BigNumberish, utils } from 'ethers'
 import { useContractRead, useContractReads } from 'wagmi';
 import { FundingCycleContract, ModStoreContract, TerminalV1Contract } from "../libs/contractsV1";
 import FormattedAddress from "../components/FormattedAddress";
 import FormattedProject from "../components/FormattedProject";
 import { useState } from "react";
 
-function genOnEnter(elementId) {
-    return (e) => {
+function genOnEnter(elementId: string) {
+    return (e: { keyCode: number; }) => {
         if(e.keyCode == 13) {
             document.getElementById(elementId).click();
         }
     }
 }
 
-function orderByPercent(a, b) {
+function orderByPercent(a: { percent: number; }, b: { percent: number; }) {
     if (a.percent > b.percent) {
         return -1;
     }
@@ -33,7 +33,7 @@ export default function Juicebox() {
     // router
     const router = useRouter();
     const { project: projectParam } = router.query;
-    let projectId = parseInt(projectParam);
+    let projectId = parseInt(projectParam as string);
     // default space
     if (!projectId) {
         projectId = 1;
@@ -52,7 +52,8 @@ export default function Juicebox() {
     }
 
     const iface = new utils.Interface(TerminalV1Contract.contractInterface);
-    const loadV1Reconfig = (raw) => {
+    const loadV1Reconfig = () => {
+        const raw = (document.getElementById("v1-reconfig-input") as HTMLInputElement).value
         const ret = iface.parseTransaction({data: raw, value: 0});
         console.info("📗 TerminalV1.interface.parse >", raw, ret.args);
         setPreviewArgs(ret.args);
@@ -60,7 +61,7 @@ export default function Juicebox() {
     }
     const loadProject = () => {
         setPreviewArgs(undefined);
-        router.push('/juicebox?project=' + document.getElementById("project-input").value, undefined, { shallow: true })
+        router.push('/juicebox?project=' + (document.getElementById("project-input") as HTMLInputElement).value, undefined, { shallow: true })
     }
     
     return (
@@ -78,7 +79,7 @@ export default function Juicebox() {
             </div>
             <div id="v1-reconfig-loader" className="flex justify-center gap-x-3 pt-2">
                 <input type="text" className="rounded-xl pl-2" id="v1-reconfig-input" placeholder="Paste raw data here" onKeyDown={genOnEnter("load-v1-reconfig-btn")} />
-                <button id="load-v1-reconfig-btn" onClick={() => loadV1Reconfig(document.getElementById("v1-reconfig-input").value)} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Reconfig</button>
+                <button id="load-v1-reconfig-btn" onClick={loadV1Reconfig} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Reconfig</button>
             </div>
             <br />
             {previewArgs ? <FundingConfigPreivew previewArgs={previewArgs} /> : <FundingConfig properties={data} />}
@@ -86,13 +87,13 @@ export default function Juicebox() {
     )
 }
 
-function hexToBytes(hex) {
+function hexToBytes(hex: string) {
     for (var bytes = [], c = 0; c < hex.length; c += 2)
         bytes.push(parseInt(hex.substr(c, 2), 16));
     return bytes;
 }
 
-function parseV1Metadata(raw) {
+function parseV1Metadata(raw: { toHexString: () => string; }) {
     const bytes = hexToBytes(raw.toHexString()).reverse();
     let ret = {
         version: bytes[0],
@@ -105,7 +106,7 @@ function parseV1Metadata(raw) {
     return ret;
 }
 
-function parsePayoutMod(raw) {
+function parsePayoutMod(raw: { projectId: { toNumber: () => any; }; beneficiary: any; percent: any; preferUnstaked: any; lockedUntil: any; allocator: any; }) {
     return {
         projectId: raw.projectId.toNumber(),
         beneficiary: raw.beneficiary,
@@ -116,7 +117,7 @@ function parsePayoutMod(raw) {
     }
 }
 
-function parseTicketMod(raw) {
+function parseTicketMod(raw: { beneficiary: any; percent: any; preferUnstaked: any; lockedUntil: any; }) {
     return {
         beneficiary: raw.beneficiary,
         percent: raw.percent,
@@ -140,7 +141,7 @@ function FundingConfigPreivew({previewArgs}) {
         _ticketMods: ticketMods
     } = previewArgs;
     const currencySign = properties.currency.toNumber() == 0 ? "Ξ" : "$";
-    const formatCurrency = (amount) => currencySign + utils.formatEther(amount ?? 0);
+    const formatCurrency = (amount: BigNumberish) => currencySign + utils.formatEther(amount ?? 0);
     const parsed = {
         projectId: projectId.toNumber(),
         target: formatCurrency(properties.target),
@@ -176,12 +177,12 @@ function FundingConfigPreivew({previewArgs}) {
                         </tr>
                     ))}
                     <tr>
-                        <td colSpan="2">
+                        <td colSpan={2}>
                             <hr />
                         </td>
                     </tr>
                     <tr>
-                        <td colSpan="2">
+                        <td colSpan={2}>
                             <span className="text-amber-300">Funding distribution</span>
                         </td>
                     </tr>
@@ -191,16 +192,16 @@ function FundingConfigPreivew({previewArgs}) {
                                 {mod.projectId != 0 && <FormattedProject projectId={mod.projectId.toNumber()} />}
                                 <FormattedAddress address={mod.beneficiary} />:&nbsp;
                             </td>
-                            <td>{mod.percent/100 + "%"} ({utils.formatEther(amountSubFee(properties.target, fee)) * mod.percent / 10000})</td>
+                            <td>{mod.percent/100 + "%"} ({utils.formatEther(amountSubFee(properties.target, fee as unknown as BigNumber).mul(mod.percent).div(10000))})</td>
                         </tr>
                     ))}
                     <tr>
-                        <td colSpan="2">
+                        <td colSpan={2}>
                             <hr />
                         </td>
                     </tr>
                     <tr>
-                        <td colSpan="2">
+                        <td colSpan={2}>
                             <span className="text-amber-300">Reserved Token</span>
                         </td>
                     </tr>
@@ -274,12 +275,12 @@ function FundingConfig({properties}) {
                         </tr>
                     ))}
                     <tr>
-                        <td colSpan="2">
+                        <td colSpan={2}>
                             <hr />
                         </td>
                     </tr>
                     <tr>
-                        <td colSpan="2">
+                        <td colSpan={2}>
                             <span className="text-amber-300">Funding distribution</span>
                         </td>
                     </tr>
@@ -289,16 +290,16 @@ function FundingConfig({properties}) {
                                 {mod.projectId != 0 && <FormattedProject projectId={mod.projectId} />}
                                 <FormattedAddress address={mod.beneficiary} />:&nbsp;
                             </td>
-                            <td>{mod.percent/100 + "%"} ({utils.formatEther(amountSubFee(properties.target, properties.fee)) * mod.percent / 10000})</td>
+                            <td>{mod.percent/100 + "%"} ({utils.formatEther(amountSubFee(properties.target, properties.fee).mul(mod.percent).div(10000))})</td>
                         </tr>
                     ))}
                     <tr>
-                        <td colSpan="2">
+                        <td colSpan={2}>
                             <hr />
                         </td>
                     </tr>
                     <tr>
-                        <td colSpan="2">
+                        <td colSpan={2}>
                             <span className="text-amber-300">Reserved Token</span>
                         </td>
                     </tr>
