@@ -20,10 +20,10 @@ export default function Home() {
 
           <div className="mt-5 sm:mx-auto grid grid-rows-2 xs:gap-3 sm:gap-4 sm:justify-center md:mt-12 lg:grid-flow-row">
             <span className='text-3xl'>Tools</span>
-            <Link href="/snapshot">
+            <Link href="/snapshot/jbdao.eth">
               <span>
-                <span className='underline'>Snapshot Voting Helper</span>
-                , load overview of proposals, filter by voted/above-quorum status.
+                <span className='underline'>Snapshot Plus</span>
+                , search in titles, filters, overview and more.
               </span>
             </Link>
             <Link href="/juicebox">
