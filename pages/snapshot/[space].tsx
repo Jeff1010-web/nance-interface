@@ -283,7 +283,7 @@ function VotingModal({address, spaceId, proposalId, proposalTitle, choices}: Vot
                         Choices:&nbsp;
                         <select id="choice-selector" className="rounded-xl">
                             {choices.map((choice, index) => (
-                                <option value={index+1}>{choice}</option>
+                                <option key={index+1} value={index+1}>{choice}</option>
                             ))}
                         </select>
                     </div>
