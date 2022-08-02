@@ -1,5 +1,5 @@
 import Layout from "../../components/Layout";
-import { useState } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router'
 import { useProposalsExtendedOf } from "../../hooks/ProposalsExtendedOf";
 import { useAccount } from 'wagmi'
@@ -7,6 +7,10 @@ import ReactMarkdown from 'react-markdown'
 import { fromUnixTime, formatDistanceToNow } from 'date-fns'
 import { ResponsiveContainer, PieChart, Pie, Tooltip, Cell, Legend } from 'recharts';
 import useFollowedSpaces from "../../hooks/FollowedSpaces";
+import snapshot from '@snapshot-labs/snapshot.js';
+import { Web3Provider } from '@ethersproject/providers';
+import { Button, Modal } from 'flowbite-react';
+import useVotingPower from "../../hooks/VotingPower";
 
 const COLORS = ['#ABC9FF', '#FF8B8B', '#FFDEDE', '#FFBB28', '#FF8042'];
 
@@ -38,6 +42,10 @@ function genOnEnter(elementId: string) {
     }
 }
 
+const hub = 'https://hub.snapshot.org'; // or https://testnet.snapshot.org for testnet
+const client = new snapshot.Client712(hub);
+const Web3Context = createContext(undefined);
+
 export default function SnapshotSpace() {
     // router
     const router = useRouter();
@@ -60,10 +68,12 @@ export default function SnapshotSpace() {
     const [filterByUnderQuorum, setFilterByUnderQuorum] = useState(false);
     const [keyword, setKeyword] = useState('');
     const [limit, setLimit] = useState(10);
+    const [web3, setWeb3] = useState(undefined);
+    const connectedAddress = isConnected ? address : "";
     // load data
     const { loading, data } = useProposalsExtendedOf(
         space as string, filterByActive, 
-        keyword, isConnected ? address : "",
+        keyword, connectedAddress,
         limit);
     const { proposalsData, votedData } = data;
     console.info("📗 SnapshotSpace.useProposalsExtendedOf.data ->", data);
@@ -93,6 +103,10 @@ export default function SnapshotSpace() {
         }
     }
 
+    useEffect(() => {
+        setWeb3(new Web3Provider(window.ethereum));
+    }, []);
+
     return (
         <Layout
             pageTitle="Snapshot Plus"
@@ -100,7 +114,7 @@ export default function SnapshotSpace() {
             <div className="flex my-6 flex-col gap-y-3">
                 <div id="space-navigate" className="flex justify-center gap-x-2">
                     <p>Navigate to: </p>
-                    <FollowedSpaces address={isConnected ? address : ""} />
+                    <FollowedSpaces address={connectedAddress} />
                     <p>or</p>
                     <input type="text" className="rounded-xl p-2" id="space-input" placeholder="Input space id" onKeyDown={navigateToNewSpace} />
                 </div>
@@ -134,24 +148,26 @@ export default function SnapshotSpace() {
                     {!loading && filteredProposals.length != 0 && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>}
                 </div>
                 <div className="flex flex-row flex-wrap mx-4 px-20 justify-center">
-                    {loading && <div className="text-center">Loading proposals...</div>}
-                    {!loading && (
-                        filteredProposals.map(proposal => <ProposalCard key={proposal.id} space={space} proposal={proposal} voted={votedData[proposal.id]} />)
-                    )}
-                    {!loading && filteredProposals.length == 0 && <div className="text-center">No proposals found.</div>}
+                    <Web3Context.Provider value={web3}>
+                        {loading && <div className="text-center">Loading proposals...</div>}
+                        {!loading && (
+                            filteredProposals.map(proposal => <ProposalCard key={proposal.id} spaceId={space} proposal={proposal} voted={votedData[proposal.id]} address={connectedAddress} />)
+                        )}
+                        {!loading && filteredProposals.length == 0 && <div className="text-center">No proposals found.</div>}
+                    </Web3Context.Provider>
                 </div>
             </div>
         </Layout>
     )
 }
 
-function ProposalCard({key, space, proposal, voted}) {
+function ProposalCard({key, spaceId, proposal, voted, address}) {
     return (
         <div key={key} className="border-2 rounded-xl m-3 p-3 hover:border-slate-800 transition-colors max-w-3xl">
             <h3 className="text-xl font-semibold">{proposal.title}</h3>
             <br/>
             <div id={`proposal-analytic-${proposal.id}`} className="flex">
-                <div className="flex flex-col grow">
+                <div className="flex flex-col grow gap-y-2">
                     {voted && (
                         <span>Voted: 
                             <span className="text-orange-400">
@@ -170,7 +186,8 @@ function ProposalCard({key, space, proposal, voted}) {
                         <span className={(proposal.scores_total<proposal.quorum) ? "text-orange-400" : undefined}> {formatNumber(proposal.scores_total)} </span>
                         / {formatNumber(proposal.quorum)}
                     </span>
-                    <a className="rounded-xl border-3 mt-2 p-2 bg-amber-200 border-solid border-slate-200" href={`https://snapshot.org/#/${space}/proposal/${proposal.id}`} target="_blank" rel="noreferrer">Check this on Snapshot</a>
+                    <VotingModal address={address} spaceId={spaceId} proposalId={proposal.id} proposalTitle={proposal.title} choices={proposal.choices} />
+                    <a className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm" href={`https://snapshot.org/#/${spaceId}/proposal/${proposal.id}`} target="_blank" rel="noreferrer">Snapshot page</a>
                 </div>
 
                 <div className="grow">
@@ -218,5 +235,71 @@ function FollowedSpaces({address}) {
                 </option>
             ))}
         </select>
+    )
+}
+
+interface VotingProps {
+    address: string;
+    spaceId: string;
+    proposalId: string;
+    proposalTitle: string;
+    choices: string[];
+}
+
+function VotingModal({address, spaceId, proposalId, proposalTitle, choices}: VotingProps) {
+    const web3 = useContext(Web3Context);
+    const [show, setShow] = useState(false);
+    const { data: vp, loading } = useVotingPower(address, spaceId, proposalId);
+
+    const vote = async () => {
+        const choice = (document.getElementById("choice-selector") as HTMLInputElement).value;
+        try {
+            const receipt = await client.vote(web3, address, {
+                space: spaceId,
+                proposal: proposalId,
+                type: 'single-choice',
+                choice: choice
+            });
+            console.info("📗 VotingModal ->", {spaceId, proposalId, choice, proposalTitle}, receipt);
+            setShow(false);
+        } catch (e) {
+            console.error("🔴 VotingModal ->", e);
+        }
+    }
+
+    return (
+        <>
+            <button id="load-btn" onClick={() => setShow(true)} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Vote</button>
+            <Modal
+                show={show}
+                onClose={() => setShow(false)}
+            >
+                <Modal.Header>
+                    Voting | {proposalTitle}
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="space-y-6">
+                        <p>Your voting power: {formatNumber(vp)}</p>
+                        Choices:&nbsp;
+                        <select id="choice-selector" className="rounded-xl">
+                            {choices.map((choice, index) => (
+                                <option value={index+1}>{choice}</option>
+                            ))}
+                        </select>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button onClick={vote}>
+                        Vote
+                    </Button>
+                    <Button
+                        color="gray"
+                        onClick={() => setShow(false)}
+                    >
+                        Cancel
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     )
 }
