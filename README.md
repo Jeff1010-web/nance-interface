@@ -16,3 +16,5 @@ yarn install && yarn build && yarn export
 * [react-vertical-timeline](https://github.com/stephane-monnot/react-vertical-timeline)
 * [react-markdown](https://github.com/remarkjs/react-markdown)
 * [tailwindcss, a utility-first CSS framework](https://tailwindcss.com/)
+* [snapshot.js](https://github.com/snapshot-labs/snapshot.js)
+* [flowbite, components on top of Tailwind CSS](https://github.com/themesberg/flowbite-react)
