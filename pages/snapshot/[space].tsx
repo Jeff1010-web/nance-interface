@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import { useProposalsExtendedOf } from "../../hooks/ProposalsExtendedOf";
 import { useAccount } from 'wagmi'
 import ReactMarkdown from 'react-markdown'
-import { fromUnixTime, formatDistanceToNow } from 'date-fns'
+import { fromUnixTime, formatDistanceToNow, isPast } from 'date-fns'
 import { ResponsiveContainer, PieChart, Pie, Tooltip, Cell, Legend } from 'recharts';
 import useFollowedSpaces from "../../hooks/FollowedSpaces";
 import snapshot from '@snapshot-labs/snapshot.js';
@@ -186,7 +186,7 @@ function ProposalCard({spaceId, proposal, voted, address}) {
                         <span className={(proposal.scores_total<proposal.quorum) ? "text-orange-400" : undefined}> {formatNumber(proposal.scores_total)} </span>
                         / {formatNumber(proposal.quorum)}
                     </span>
-                    <VotingModal address={address} spaceId={spaceId} proposalId={proposal.id} proposalTitle={proposal.title} choices={proposal.choices} />
+                    <VotingModal address={address} spaceId={spaceId} proposalId={proposal.id} proposalTitle={proposal.title} choices={proposal.choices} disabled={isPast(fromUnixTime(proposal.end))} />
                     <a className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm" href={`https://snapshot.org/#/${spaceId}/proposal/${proposal.id}`} target="_blank" rel="noreferrer">Snapshot page</a>
                 </div>
 
@@ -204,7 +204,7 @@ function ProposalCard({spaceId, proposal, voted, address}) {
                     </ResponsiveContainer>
                 </div>
             </div>
-            <div id={`proposal-${proposal.id}-content`} className="h-40 overflow-hidden hover:overflow-scroll border-t-2">
+            <div id={`proposal-${proposal.id}-content`} className="h-40 overflow-hidden hover:overflow-scroll border-t-2 mt-2">
                 <br />
                 <ReactMarkdown>{proposal.body}</ReactMarkdown>
             </div>
@@ -239,6 +239,7 @@ function FollowedSpaces({address}) {
 }
 
 interface VotingProps {
+    disabled?: boolean;
     address: string;
     spaceId: string;
     proposalId: string;
@@ -246,7 +247,7 @@ interface VotingProps {
     choices: string[];
 }
 
-function VotingModal({address, spaceId, proposalId, proposalTitle, choices}: VotingProps) {
+function VotingModal({address, spaceId, proposalId, proposalTitle, choices, disabled}: VotingProps) {
     const web3 = useContext(Web3Context);
     const [show, setShow] = useState(false);
     const { data: vp, loading } = useVotingPower(address, spaceId, proposalId);
@@ -269,7 +270,9 @@ function VotingModal({address, spaceId, proposalId, proposalTitle, choices}: Vot
 
     return (
         <>
-            <button id="load-btn" onClick={() => setShow(true)} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Vote</button>
+            {disabled ? 
+                (<button id="load-btn" disabled className="px-4 py-2 font-semibold text-sm bg-gray-200 rounded-xl shadow-sm">Vote</button>)
+            :   (<button id="load-btn" onClick={() => setShow(true)} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Vote</button>)}
             <Modal
                 show={show}
                 onClose={() => setShow(false)}
