@@ -77,7 +77,8 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
   // Load proposals
   const {
     loading: proposalLoading,
-    data: proposalData
+    data: proposalData,
+    error: proposalError
   } = useQuery(PROPOSALS_QUERY, {
     variables: {
       space: space,
@@ -89,7 +90,8 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
   // Load related votes
   const {
     loading: voteLoading,
-    data: voteData
+    data: voteData,
+    error: voteError
   } = useQuery(VOTES_BY_PROPOSALID_QUERY, {
     variables: {
       first: proposalData?.proposals.map(proposal => proposal.votes).reduce((a, b) => a + b, 0),
@@ -100,7 +102,8 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
   // Load voted proposals
   const {
     loading: votedLoading,
-    data: votedRawData
+    data: votedRawData,
+    error: votedError
   } = useQuery(VOTED_PROPOSALS_QUERY, {
     variables: {
       space: space,
@@ -144,5 +147,5 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
     }
   })
 
-  return { data: {proposalsData, votedData}, loading };
+  return { data: {proposalsData, votedData}, loading, error: proposalError || voteError || votedError };
 }

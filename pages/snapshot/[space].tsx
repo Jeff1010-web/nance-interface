@@ -52,7 +52,7 @@ export default function SnapshotSpace() {
     const [web3, setWeb3] = useState(undefined);
     const connectedAddress = isConnected ? address : "";
     // load data
-    const { loading, data } = useProposalsExtendedOf(
+    const { loading, data, error } = useProposalsExtendedOf(
         space as string, filterByActive, 
         keyword, connectedAddress,
         limit);
@@ -97,7 +97,7 @@ export default function SnapshotSpace() {
                     <p>Navigate to: </p>
                     <FollowedSpaces address={connectedAddress} />
                     <p>or</p>
-                    <input type="text" className="rounded-xl p-0.5" id="space-input" placeholder="Input space id" onKeyDown={navigateToNewSpace} />
+                    <input type="text" className="rounded-xl p-2" id="space-input" placeholder="Input space id" onKeyDown={navigateToNewSpace} />
                 </div>
                 <div id="proposal-filters" className="flex justify-center gap-x-2">
                     <p>Filters: </p>
@@ -126,15 +126,15 @@ export default function SnapshotSpace() {
                     <button id="load-btn" onClick={updateKeywordAndLimit} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Search within {space}</button>
                 </div>
                 <div className="underline">
-                    {!loading && filteredProposals.length != 0 && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>}
+                    {!loading && filteredProposals?.length && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>}
+                    {error && <div className="text-center">Something wrong.</div>}
                 </div>
                 <div className="flex flex-row flex-wrap mx-4 px-20 justify-center">
                     <Web3Context.Provider value={web3}>
                         {loading && <div className="text-center">Loading proposals...</div>}
-                        {!loading && (
+                        {!loading && !error && (
                             filteredProposals.map(proposal => <ProposalCard key={proposal.id} spaceId={space} proposal={proposal} voted={votedData[proposal.id]} address={connectedAddress} />)
                         )}
-                        {!loading && filteredProposals.length == 0 && <div className="text-center">No proposals found.</div>}
                     </Web3Context.Provider>
                 </div>
             </div>
@@ -257,7 +257,7 @@ function FollowedSpaces({address}) {
     }
 
     return (
-        <select id="followed-spaces" className="rounded-xl p-0.5" onChange={handleChanges}>
+        <select id="followed-spaces" className="rounded-xl p-2" onChange={handleChanges}>
             <option key="none" value="none">- Followed Space -</option>
             {data && Object.entries(data).map(entry => (
                 <option key={entry[0]} value={entry[0]}>
