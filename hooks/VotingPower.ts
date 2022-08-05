@@ -1,7 +1,7 @@
 import { useQuery } from 'graphql-hooks'
 
 const QUERY = `
-query VotingPowerQuery($voter: String!, $space: String, $proposal: String) {
+query VotingPowerQuery($voter: String!, $space: String!, $proposal: String) {
     vp (
       voter: $voter
       space: $space

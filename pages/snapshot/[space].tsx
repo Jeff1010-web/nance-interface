@@ -161,9 +161,9 @@ export default function SnapshotSpace() {
     )
 }
 
-function ProposalCard({key, spaceId, proposal, voted, address}) {
+function ProposalCard({spaceId, proposal, voted, address}) {
     return (
-        <div key={key} className="border-2 rounded-xl m-3 p-3 hover:border-slate-800 transition-colors max-w-3xl">
+        <div className="border-2 rounded-xl m-3 p-3 hover:border-slate-800 transition-colors max-w-3xl">
             <h3 className="text-xl font-semibold">{proposal.title}</h3>
             <br/>
             <div id={`proposal-analytic-${proposal.id}`} className="flex">
@@ -258,7 +258,7 @@ function VotingModal({address, spaceId, proposalId, proposalTitle, choices}: Vot
                 space: spaceId,
                 proposal: proposalId,
                 type: 'single-choice',
-                choice: choice
+                choice: parseInt(choice)
             });
             console.info("📗 VotingModal ->", {spaceId, proposalId, choice, proposalTitle}, receipt);
             setShow(false);
