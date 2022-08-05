@@ -5,31 +5,12 @@ import { useProposalsExtendedOf } from "../../hooks/ProposalsExtendedOf";
 import { useAccount } from 'wagmi'
 import ReactMarkdown from 'react-markdown'
 import { fromUnixTime, formatDistanceToNow, isPast } from 'date-fns'
-import { ResponsiveContainer, PieChart, Pie, Tooltip, Cell, Legend } from 'recharts';
+import { ResponsiveContainer, PieChart, Pie, Tooltip as TooltipInChart, Cell, Legend } from 'recharts';
 import useFollowedSpaces from "../../hooks/FollowedSpaces";
 import snapshot from '@snapshot-labs/snapshot.js';
 import { Web3Provider } from '@ethersproject/providers';
-import { Button, Modal } from 'flowbite-react';
+import { Button, Modal, Tooltip } from 'flowbite-react';
 import useVotingPower from "../../hooks/VotingPower";
-
-const COLORS = ['#ABC9FF', '#FF8B8B', '#FFDEDE', '#FFBB28', '#FF8042'];
-
-const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-    if (percent < 0.08) {
-        return null;
-    }
-
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    return (
-    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-        {`${(percent * 100).toFixed(0)}%`}
-    </text>
-    );
-};
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -116,7 +97,7 @@ export default function SnapshotSpace() {
                     <p>Navigate to: </p>
                     <FollowedSpaces address={connectedAddress} />
                     <p>or</p>
-                    <input type="text" className="rounded-xl p-2" id="space-input" placeholder="Input space id" onKeyDown={navigateToNewSpace} />
+                    <input type="text" className="rounded-xl p-0.5" id="space-input" placeholder="Input space id" onKeyDown={navigateToNewSpace} />
                 </div>
                 <div id="proposal-filters" className="flex justify-center gap-x-2">
                     <p>Filters: </p>
@@ -166,8 +147,8 @@ function ProposalCard({spaceId, proposal, voted, address}) {
         <div className="border-2 rounded-xl m-3 p-3 hover:border-slate-800 transition-colors max-w-3xl">
             <h3 className="text-xl font-semibold">{proposal.title}</h3>
             <br/>
-            <div id={`proposal-analytic-${proposal.id}`} className="flex">
-                <div className="flex flex-col grow gap-y-2">
+            <div id={`proposal-analytic-${proposal.id}`} className="flex gap-x-2">
+                <div className="w-1/3 flex flex-col grow gap-y-2">
                     {voted && (
                         <span>Voted: 
                             <span className="text-orange-400">
@@ -187,21 +168,11 @@ function ProposalCard({spaceId, proposal, voted, address}) {
                         / {formatNumber(proposal.quorum)}
                     </span>
                     <VotingModal address={address} spaceId={spaceId} proposalId={proposal.id} proposalTitle={proposal.title} choices={proposal.choices} disabled={isPast(fromUnixTime(proposal.end))} />
-                    <a className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm" href={`https://snapshot.org/#/${spaceId}/proposal/${proposal.id}`} target="_blank" rel="noreferrer">Snapshot page</a>
+                    <a className="px-4 py-2 font-semibold text-center text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm" href={`https://snapshot.org/#/${spaceId}/proposal/${proposal.id}`} target="_blank" rel="noreferrer">Snapshot page</a>
                 </div>
 
-                <div className="grow">
-                    <ResponsiveContainer width="100%" height="100%" minWidth="20rem" minHeight="12rem">
-                        <PieChart>
-                            <Pie data={Object.entries(proposal.voteByChoice).map(entry => { return {"name": entry[0], "value": entry[1]}; })} dataKey="value" cx="50%" cy="130%" outerRadius="80" nameKey="name" fill="#8884d8" label={renderCustomizedLabel} labelLine={false} >
-                                {Object.entries(proposal.voteByChoice).map(entry => { return {"name": entry[0], "value": entry[1]}; }).map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip formatter={(value, name, props) => formatNumber(value)} />
-                            <Legend width={100} wrapperStyle={{ top: 10, right: 0, backgroundColor: '#f5f5f5', border: '1px solid #d5d5d5', borderRadius: 3, lineHeight: '40px' }} />
-                        </PieChart>
-                    </ResponsiveContainer>
+                <div className="w-2/3 truncate">
+                    <VotesPieChart data={proposal.voteByChoice} />
                 </div>
             </div>
             <div id={`proposal-${proposal.id}-content`} className="h-40 overflow-hidden hover:overflow-scroll border-t-2 mt-2">
@@ -210,6 +181,65 @@ function ProposalCard({spaceId, proposal, voted, address}) {
             </div>
         </div>
     )
+}
+
+const COLORS = ['#ABC9FF', '#FF8B8B', '#FFDEDE', '#FFBB28', '#FF8042'];
+
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+    if (percent < 0.08) {
+        return null;
+    }
+
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+        {`${(percent * 100).toFixed(0)}%`}
+    </text>
+    );
+}
+const renderLegend = (props) => {
+    const { payload } = props;
+  
+    return (
+      <ul>
+        {
+          payload.map((entry, index) => (
+            <li key={`item-${index}`} className="px-2 truncate">
+                <Tooltip
+                    content={entry.value}
+                    trigger="hover"
+                >
+                    <svg width="14" height="14" viewBox="0 0 32 32" version="1.1" className="inline-block mr-1">
+                        <path stroke="none" fill={COLORS[index % COLORS.length]} d="M0,4h32v24h-32z" className="recharts-legend-icon"></path>
+                    </svg>
+                    <span style={{color: COLORS[index % COLORS.length]}}>{entry.value}</span>
+                </Tooltip>
+            </li>
+          ))
+        }
+      </ul>
+    );
+}
+
+function VotesPieChart({data}: {[choice: string]: number}) {
+    const entries = Object.entries(data);
+    return (
+        <ResponsiveContainer>
+            <PieChart>
+                <Pie data={entries.map(entry => { return { "name": entry[0], "value": entry[1] }; })} dataKey="value" cx="30%" cy={80} outerRadius={80} nameKey="name" fill="#8884d8" label={renderCustomizedLabel} labelLine={false}>
+                    {entries.map(entry => { return { "name": entry[0], "value": entry[1] }; }).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                </Pie>
+                <TooltipInChart formatter={(value, name, props) => formatNumber(value)} />
+                <Legend width={150} wrapperStyle={{ top: 10, right: 10, backgroundColor: '#f5f5f5', border: '1px solid #d5d5d5', borderRadius: 3, lineHeight: '40px' }} content={renderLegend} />
+            </PieChart>
+        </ResponsiveContainer>
+    );
 }
 
 function FollowedSpaces({address}) {
@@ -227,8 +257,8 @@ function FollowedSpaces({address}) {
     }
 
     return (
-        <select id="followed-spaces" className="rounded-xl p-1" onChange={handleChanges}>
-            <option key="none" value="none">-Followed Spaces-</option>
+        <select id="followed-spaces" className="rounded-xl p-0.5" onChange={handleChanges}>
+            <option key="none" value="none">- Followed Space -</option>
             {data && Object.entries(data).map(entry => (
                 <option key={entry[0]} value={entry[0]}>
                     {entry[0]}{entry[1] > 0 && ` (${entry[1]})`}
@@ -283,7 +313,7 @@ function VotingModal({address, spaceId, proposalId, proposalTitle, choices, disa
                 <Modal.Body>
                     <div className="space-y-6">
                         <p>Your voting power: {formatNumber(vp)}</p>
-                        Choices:&nbsp;
+                        Choice:&nbsp;
                         <select id="choice-selector" className="rounded-xl">
                             {choices.map((choice, index) => (
                                 <option key={index+1} value={index+1}>{choice}</option>
