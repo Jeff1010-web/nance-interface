@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Head from 'next/head'
 import Profile from '../components/Profile'
 import { PropsWithChildren } from 'react'
+import ErrorBoundary from './ErrorBoundary'
 
 export interface Props {
   home?: boolean,
@@ -26,7 +27,9 @@ export default function Layout({ children, home = false, pageTitle, pageDescript
           </div>
         )}
         <div className="gap-6 flex-1"></div>
-        <Profile />
+        <ErrorBoundary>
+          <Profile />
+        </ErrorBoundary>
       </header>
       <main>
         {!home && (
@@ -45,7 +48,9 @@ export default function Layout({ children, home = false, pageTitle, pageDescript
             </div>
         </div>
         )}
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
         
         <div className="relative mt-3 xs:px-6 sm:px-0 text-black font-medium gap-2 items-center w-full flex flex-col text-center border-t pt-4">
           <p>JuiceTool curates docs and tools around Juicebox ecosystem.</p>
