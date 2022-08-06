@@ -85,7 +85,9 @@ export default function SnapshotSpace() {
     }
 
     useEffect(() => {
-        setWeb3(new Web3Provider(window.ethereum));
+        if (window.ethereum) {
+            setWeb3(new Web3Provider(window.ethereum));
+        }
     }, []);
 
     return (
@@ -147,7 +149,7 @@ function ProposalCard({spaceId, proposal, voted, address}) {
         <div className="border-2 rounded-xl m-3 p-3 hover:border-slate-800 transition-colors max-w-3xl">
             <h3 className="text-xl font-semibold">{proposal.title}</h3>
             <br/>
-            <div id={`proposal-analytic-${proposal.id}`} className="flex gap-x-2">
+            <div id={`proposal-analytic-${proposal.id}`} className="flex gap-x-2 h-48">
                 <div className="w-1/3 flex flex-col grow gap-y-2">
                     {voted && (
                         <span>Voted: 
@@ -167,8 +169,10 @@ function ProposalCard({spaceId, proposal, voted, address}) {
                         <span className={(proposal.scores_total<proposal.quorum) ? "text-orange-400" : undefined}> {formatNumber(proposal.scores_total)} </span>
                         / {formatNumber(proposal.quorum)}
                     </span>
-                    <VotingModal address={address} spaceId={spaceId} proposalId={proposal.id} proposalTitle={proposal.title} choices={proposal.choices} disabled={isPast(fromUnixTime(proposal.end))} />
-                    <a className="px-4 py-2 font-semibold text-center text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm" href={`https://snapshot.org/#/${spaceId}/proposal/${proposal.id}`} target="_blank" rel="noreferrer">Snapshot page</a>
+                    <div className="flex flex-row gap-x-2">
+                        <VotingModal address={address} spaceId={spaceId} proposalId={proposal.id} proposalTitle={proposal.title} choices={proposal.choices} expired={isPast(fromUnixTime(proposal.end))} />
+                        <a className="px-4 py-2 font-semibold text-center text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm" href={`https://snapshot.org/#/${spaceId}/proposal/${proposal.id}`} target="_blank" rel="noreferrer">Snapshot</a>
+                    </div>
                 </div>
 
                 <div className="w-2/3 truncate">
@@ -269,7 +273,7 @@ function FollowedSpaces({address}) {
 }
 
 interface VotingProps {
-    disabled?: boolean;
+    expired?: boolean;
     address: string;
     spaceId: string;
     proposalId: string;
@@ -277,7 +281,7 @@ interface VotingProps {
     choices: string[];
 }
 
-function VotingModal({address, spaceId, proposalId, proposalTitle, choices, disabled}: VotingProps) {
+function VotingModal({address, spaceId, proposalId, proposalTitle, choices, expired}: VotingProps) {
     const web3 = useContext(Web3Context);
     const [show, setShow] = useState(false);
     const { data: vp, loading } = useVotingPower(address, spaceId, proposalId);
@@ -298,11 +302,36 @@ function VotingModal({address, spaceId, proposalId, proposalTitle, choices, disa
         }
     }
 
+    const renderDisabledButton = (reason) => {
+        return (
+            <Tooltip
+                content={reason}
+                trigger="hover"
+            >
+                <button id="load-btn" disabled className="px-4 py-2 font-semibold text-sm bg-gray-200 rounded-xl shadow-sm">Vote</button>
+            </Tooltip>
+        )
+    }
+
+    if (loading) {
+        return renderDisabledButton("Loading...");
+    }
+    
+    if (expired) {
+        return renderDisabledButton("Proposal has expired");
+    }
+
+    if (!web3) {
+        return renderDisabledButton("MetaMask not found");
+    }
+
+    if (address === '') {
+        return renderDisabledButton("Wallet not connected");
+    }
+
     return (
         <>
-            {disabled ? 
-                (<button id="load-btn" disabled className="px-4 py-2 font-semibold text-sm bg-gray-200 rounded-xl shadow-sm">Vote</button>)
-            :   (<button id="load-btn" onClick={() => setShow(true)} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Vote</button>)}
+            <button id="load-btn" onClick={() => setShow(true)} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Vote</button>
             <Modal
                 show={show}
                 onClose={() => setShow(false)}
