@@ -293,7 +293,8 @@ function VotingModal({address, spaceId, proposalId, proposalTitle, choices, expi
                 space: spaceId,
                 proposal: proposalId,
                 type: 'single-choice',
-                choice: parseInt(choice)
+                choice: parseInt(choice),
+                app: 'juicetool'
             });
             console.info("📗 VotingModal ->", {spaceId, proposalId, choice, proposalTitle}, receipt);
             setShow(false);
