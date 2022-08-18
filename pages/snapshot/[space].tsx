@@ -1,4 +1,3 @@
-import Layout from "../../components/Layout";
 import { createContext, useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router'
 import { useProposalsExtendedOf } from "../../hooks/ProposalsExtendedOf";
@@ -11,6 +10,7 @@ import snapshot from '@snapshot-labs/snapshot.js';
 import { Web3Provider } from '@ethersproject/providers';
 import { Button, Modal, Tooltip } from 'flowbite-react';
 import useVotingPower from "../../hooks/VotingPower";
+import SiteNav from "../../components/SiteNav";
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -91,9 +91,8 @@ export default function SnapshotSpace() {
     }, []);
 
     return (
-        <Layout
-            pageTitle="Snapshot Plus"
-            pageDescription="Third-party client with some features. Click proposal and you will go to related page on Snapshot.">
+        <>
+            <SiteNav pageTitle={`${space} Proposals`} currentIndex={5} />
             <div className="flex my-6 flex-col gap-y-3">
                 <div id="space-navigate" className="flex justify-center gap-x-2">
                     <p>Navigate to: </p>
@@ -140,7 +139,7 @@ export default function SnapshotSpace() {
                     </Web3Context.Provider>
                 </div>
             </div>
-        </Layout>
+        </>
     )
 }
 

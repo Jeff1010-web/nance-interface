@@ -1,11 +1,10 @@
 import { PropsWithChildren } from 'react';
-import Layout from '../components/Layout'
+import SiteNav from '../components/SiteNav';
 
 export default function Progress() {
     return (
-        <Layout 
-            pageTitle="Progress"
-            pageDescription="Progress of various features under development.">
+        <>
+            <SiteNav pageTitle="Progress" currentIndex={1} />
             <div className="relative sm:py-12 border-b">
                 <div className="relative max-w-7xl mx-auto">
                     <div className="xs:mt-6 sm:mt-0 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
@@ -63,7 +62,7 @@ export default function Progress() {
                     </div>
                 </div>
             </div>
-        </Layout>
+        </>
     )
 }
 

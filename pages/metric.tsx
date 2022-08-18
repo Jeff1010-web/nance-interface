@@ -1,5 +1,3 @@
-import Layout from '../components/Layout'
-
 import {
   ResponsiveContainer, 
   ComposedChart, FunnelChart, BarChart,
@@ -8,12 +6,12 @@ import {
   XAxis, YAxis, 
   Tooltip, Legend, LabelList } from 'recharts';
 import { useApprovalGroups, useProposalParticipations } from '../hooks/Proposal';
+import SiteNav from '../components/SiteNav';
 
 export default function Metric() {
   return (
-    <Layout 
-      pageTitle="JuiceboxDAO Health Metrics"
-      pageDescription="This page is still under development, metrics may not be correct.">
+    <>
+      <SiteNav pageTitle="JuiceboxDAO Health Metrics" currentIndex={2} />
       <div className="px-8">
         <div className="min-h-screen py-12 flex-1 flex flex-col items-center">
           <div className="flex items-center justify-center flex-wrap max-w-fit text-inherit">
@@ -34,7 +32,7 @@ export default function Metric() {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   )
 }
 

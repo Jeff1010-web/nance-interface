@@ -1,10 +1,9 @@
-import Layout from "../components/Layout"
+import SiteNav from "../components/SiteNav"
 
 export default function Funding() {
     return (
-        <Layout 
-            pageTitle="Funded Projects"
-            pageDescription="Resources allocated for the Juicebox ecosystems.">
+        <>
+            <SiteNav pageTitle="Funded Projects" currentIndex={3} />
             <div className="relative sm:py-12">
                 <div className="relative max-w-7xl mx-auto">
                     <div className="xs:mt-6 sm:mt-0 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
@@ -65,7 +64,7 @@ export default function Funding() {
                     </div>
                 </div>
             </div>
-        </Layout>
+        </>
     )
 }
 

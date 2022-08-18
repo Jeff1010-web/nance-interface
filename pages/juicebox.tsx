@@ -1,4 +1,3 @@
-import Layout from "../components/Layout";
 import { useRouter } from 'next/router';
 import { amountSubFee } from "../libs/math";
 import { fromUnixTime, format } from 'date-fns'
@@ -9,6 +8,7 @@ import { FundingCycleContract, ModStoreContract, TerminalV1Contract } from "../l
 import FormattedAddress from "../components/FormattedAddress";
 import FormattedProject from "../components/FormattedProject";
 import { useState } from "react";
+import SiteNav from "../components/SiteNav";
 
 function genOnEnter(elementId: string) {
     return (e: { keyCode: number; }) => {
@@ -65,10 +65,8 @@ export default function Juicebox() {
     }
     
     return (
-        <Layout
-            pageTitle="Juicebox Reconfiguration Helper"
-            pageDescription="import/export hex data, preview with basic interface.">
-
+        <>
+            <SiteNav pageTitle="Juicebox Reconfiguration Helper" currentIndex={6} />
             <div id="project-status" className="flex justify-center py-2">
                 Current:&nbsp;<FormattedProject projectId={projectId} />
                 {previewArgs && <span className="text-amber-300">(Preview Mode)</span>}
@@ -83,7 +81,7 @@ export default function Juicebox() {
             </div>
             <br />
             {previewArgs ? <FundingConfigPreivew previewArgs={previewArgs} /> : <FundingConfig properties={data} />}
-        </Layout>
+        </>
     )
 }
 

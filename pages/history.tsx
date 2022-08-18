@@ -1,12 +1,11 @@
-import Layout from '../components/Layout'
 import { VerticalTimeline, VerticalTimelineElement }  from 'react-vertical-timeline-component';
 import 'react-vertical-timeline-component/style.min.css';
+import SiteNav from '../components/SiteNav';
 
 export default function History() {
   return (
-    <Layout 
-      pageTitle="Moments & Milestones"
-      pageDescription="A timeline of JuiceboxDAO's major milestones and noteworthy moments that have happened since the project's inception.">
+    <>
+      <SiteNav pageTitle="Moment & Milestones" currentIndex={4} />
       <div className="py-12">
         <VerticalTimeline>
           <TimelineItem
@@ -65,7 +64,7 @@ export default function History() {
 
         </VerticalTimeline>
       </div>
-    </Layout>
+    </>
   )
 }
 
