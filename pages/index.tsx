@@ -1,9 +1,10 @@
-import Layout from '../components/Layout'
 import Link from 'next/link'
+import SiteNav from '../components/SiteNav'
 
 export default function Home() {
   return (
-    <Layout home pageTitle="Home">
+    <>
+      <SiteNav pageTitle={`Home`} currentIndex={0} />
       <div className="px-8">
         <div className="py-16 flex-1 flex flex-col items-center">
           <h1 className="text-7xl font-medium">
@@ -35,7 +36,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   )
 }
 

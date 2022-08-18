@@ -11,22 +11,21 @@ const user = {
     imageUrl:
         'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
 }
-const navigation = [
-    { name: 'Home', href: '/', current: false },
-    { name: 'Progress', href: '/progress', current: false },
-    { name: 'Metric', href: '/metric', current: false },
-    { name: 'Funding', href: '/funding', current: false },
-    { name: 'Timeline', href: '/history', current: false },
-    { name: 'Snapshot', href: '/snapshot/jbdao.eth', current: false },
-    { name: 'Juicebox', href: '/juicebox', current: false },
-]
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
 export default function SiteNav({ pageTitle, currentIndex }) {
-    const currentNavigation = navigation;
+    const navigation = [
+        { name: 'Home', href: '/', current: false },
+        { name: 'Progress', href: '/progress', current: false },
+        { name: 'Metric', href: '/metric', current: false },
+        { name: 'Funding', href: '/funding', current: false },
+        { name: 'Timeline', href: '/history', current: false },
+        { name: 'Snapshot', href: '/snapshot/jbdao.eth', current: false },
+        { name: 'Juicebox', href: '/juicebox', current: false },
+    ]
     navigation[currentIndex].current = true;
 
     return (
