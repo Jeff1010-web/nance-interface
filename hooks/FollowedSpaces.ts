@@ -36,7 +36,12 @@ query Proposals($spaceIds: [String]) {
   }
 `
 
-export default function useFollowedSpaces(address: string): {data: { [id: string]: number }, loading: boolean} {
+interface FollowedSpacesData {
+    id: string,
+    status: boolean
+}
+
+export default function useFollowedSpaces(address: string): {data: FollowedSpacesData[], loading: boolean} {
     // Load spaces
     const { loading: spacesLoading, data: spacesData } = useQuery(SPACES_QUERY, {
         variables: {
@@ -61,6 +66,7 @@ export default function useFollowedSpaces(address: string): {data: { [id: string
         acc[proposal.space.id]++;
         return acc;
     }, spaceMap);
+    const ret = activeProposalCounts ? Object.entries(activeProposalCounts).map(([id, count]) => ({id, status: count > 0})) : [];
 
-    return { loading: spacesLoading || proposalsLoading, data: activeProposalCounts };
+    return { loading: spacesLoading || proposalsLoading, data: ret };
 }

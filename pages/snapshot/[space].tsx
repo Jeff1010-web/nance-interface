@@ -1,16 +1,16 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, MouseEventHandler } from 'react';
 import { useRouter } from 'next/router'
 import { useProposalsExtendedOf } from "../../hooks/ProposalsExtendedOf";
 import { useAccount } from 'wagmi'
 import ReactMarkdown from 'react-markdown'
 import { fromUnixTime, formatDistanceToNow, isPast } from 'date-fns'
 import { ResponsiveContainer, PieChart, Pie, Tooltip as TooltipInChart, Cell, Legend } from 'recharts';
-import useFollowedSpaces from "../../hooks/FollowedSpaces";
 import snapshot from '@snapshot-labs/snapshot.js';
 import { Web3Provider } from '@ethersproject/providers';
 import { Button, Modal, Tooltip } from 'flowbite-react';
 import useVotingPower from "../../hooks/VotingPower";
 import SiteNav from "../../components/SiteNav";
+import SpaceProposalNavigator from '../../components/SpaceProposalNavigator';
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -32,12 +32,6 @@ export default function SnapshotSpace() {
     const router = useRouter();
     const { space } = router.query;    
     // handler
-    const filterHandlerWith = (setFunc) => {
-        return (e) => {
-            const newStatus = (document.getElementById(e.target.id) as HTMLInputElement).checked;
-            setFunc(newStatus);
-        }
-    }
     const updateKeywordAndLimit = () => {
         setKeyword((document.getElementById("proposal-keyword") as HTMLInputElement).value);
         setLimit(parseInt((document.getElementById("proposal-limit") as HTMLInputElement).value));
@@ -71,11 +65,6 @@ export default function SnapshotSpace() {
         return true;
     });
 
-    const navigateToNewSpace = (e: { keyCode: number; }) => {
-        if(e.keyCode == 13) {
-            router.push(`/snapshot/${(document.getElementById("space-input") as HTMLInputElement).value}`)
-        }
-    }
     function genOnEnter(elementId: string) {
         return (e: { keyCode: number; }) => {
             if(e.keyCode == 13) {
@@ -83,6 +72,12 @@ export default function SnapshotSpace() {
             }
         }
     }
+
+    const filterOptions = [
+        {id: "active", name: "Active", value: filterByActive, setter: setFilterByActive},
+        {id: "not-voted", name: "Haven't voted", value: filterByNotVoted, setter: setFilterByNotVoted},
+        {id: "under-quorum", name: "Under quorum", value: filterByUnderQuorum, setter: setFilterByUnderQuorum}
+    ]
 
     useEffect(() => {
         if (window.ethereum) {
@@ -93,27 +88,10 @@ export default function SnapshotSpace() {
     return (
         <>
             <SiteNav pageTitle={`${space} Proposals`} currentIndex={5} />
+            <SpaceProposalNavigator spaceId={space as string} address={address} options={filterOptions} />
             <div className="flex my-6 flex-col gap-y-3">
                 <div id="space-navigate" className="flex justify-center gap-x-2">
-                    <p>Navigate to: </p>
-                    <FollowedSpaces address={connectedAddress} />
-                    <p>or</p>
-                    <input type="text" className="rounded-xl p-2" id="space-input" placeholder="Input space id" onKeyDown={navigateToNewSpace} />
-                </div>
-                <div id="proposal-filters" className="flex justify-center gap-x-2">
-                    <p>Filters: </p>
-                    <div className="flex gap-x-1">
-                        <input type="checkbox" id="active-checkbox" onClick={filterHandlerWith(setFilterByActive)} />
-                        <label htmlFor="active-checkbox">Active</label>
-                    </div>
-                    <div className="flex gap-x-1">
-                        <input type="checkbox" id="voted-checkbox" onClick={filterHandlerWith(setFilterByNotVoted)} />
-                        <label htmlFor="voted-checkbox">Not Voted</label>
-                    </div>
-                    <div className="flex gap-x-1">
-                        <input type="checkbox" id="under-quorum-checkbox" onClick={filterHandlerWith(setFilterByUnderQuorum)} />
-                        <label htmlFor="under-quorum-checkbox">Under Quorum</label>
-                    </div>
+                    <SpaceNavigator router={router} />
                 </div>
                 <div id="proposal-search" className="flex justify-center gap-x-3">
                     <input type="text" className="rounded-xl p-2" id="proposal-keyword" placeholder="Input keyword in titles" onKeyDown={genOnEnter("load-btn")} />
@@ -127,7 +105,7 @@ export default function SnapshotSpace() {
                     <button id="load-btn" onClick={updateKeywordAndLimit} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Search within {space}</button>
                 </div>
                 <div className="underline">
-                    {!loading && filteredProposals?.length && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>}
+                    {!loading && filteredProposals && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>}
                     {error && <div className="text-center">Something wrong.</div>}
                 </div>
                 <div className="flex flex-row flex-wrap mx-4 px-20 justify-center">
@@ -245,29 +223,29 @@ function VotesPieChart({data}: {[choice: string]: number}) {
     );
 }
 
-function FollowedSpaces({address}) {
-    let { data } = useFollowedSpaces(address);
-    if(address === "") {
-        data = {};
-    }
-
-    const router = useRouter();
-    const handleChanges = (e) => {
-        const newSpace = e.target.value;
-        if (newSpace != "none") {
-            router.push(`/snapshot/${e.target.value}`);
+function SpaceNavigator({router}) {
+    const navigateToNewSpace = (e: { keyCode: number; }) => {
+        if(e.keyCode == 13) {
+            router.push(`/snapshot/${(document.getElementById("space-input") as HTMLInputElement).value}`)
         }
     }
 
     return (
-        <select id="followed-spaces" className="rounded-xl p-2" onChange={handleChanges}>
-            <option key="none" value="none">- Followed Space -</option>
-            {data && Object.entries(data).map(entry => (
-                <option key={entry[0]} value={entry[0]}>
-                    {entry[0]}{entry[1] > 0 && ` (${entry[1]})`}
-                </option>
-            ))}
-        </select>
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          Or Space
+        </label>
+        <div className="mt-1">
+          <input
+            type="text"
+            name="email"
+            id="space-input"
+            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+            placeholder="jbdao.eth"
+            onKeyDown={navigateToNewSpace}
+          />
+        </div>
+      </div>
     )
 }
 
