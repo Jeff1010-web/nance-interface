@@ -1,4 +1,4 @@
-import { useQuery } from 'graphql-hooks'
+import { APIError, useQuery } from 'graphql-hooks'
 
 const PROPOSALS_QUERY = `
 query Proposals($first: Int, $space: String, $state: String, $keyword: String) {
@@ -15,6 +15,7 @@ query Proposals($first: Int, $space: String, $state: String, $keyword: String) {
   ) {
     id,
     title,
+    state,
     start,
     end,
     choices,
@@ -72,7 +73,34 @@ query VotedProposals($first: Int, $space: String, $voter: String, $proposalIds: 
 }
 `
 
-export function useProposalsExtendedOf(space: string, active: boolean, keyword: string, address: string, first: number) {
+export interface ProposalDataExtended {
+  id: string
+  title: string
+  start: string
+  state: string
+  end: number
+  choices: string[]
+  votes: number
+  quorum: number
+  scores_total: number
+  body: string
+  voteByChoice: { [key: string]: number }
+}
+
+interface VotesData {
+  [id: string]: {
+    choice: string
+    score: number
+    created: number
+  }
+}
+
+export function useProposalsExtendedOf(space: string, active: boolean, keyword: string, address: string, first: number): {
+  loading: boolean,
+  error: APIError<object>,
+  data: {proposalsData: ProposalDataExtended[], votedData: VotesData}
+} {
+
   console.info("📗 useProposalsExtendedOf ->", {space,active,keyword,address,first});
   // Load proposals
   const {

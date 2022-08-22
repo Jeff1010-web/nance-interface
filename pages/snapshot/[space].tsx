@@ -2,26 +2,16 @@ import { createContext, useState, useContext, useEffect, MouseEventHandler } fro
 import { useRouter } from 'next/router'
 import { useProposalsExtendedOf } from "../../hooks/ProposalsExtendedOf";
 import { useAccount } from 'wagmi'
-import ReactMarkdown from 'react-markdown'
-import { fromUnixTime, formatDistanceToNow, isPast } from 'date-fns'
-import { ResponsiveContainer, PieChart, Pie, Tooltip as TooltipInChart, Cell, Legend } from 'recharts';
 import snapshot from '@snapshot-labs/snapshot.js';
 import { Web3Provider } from '@ethersproject/providers';
 import { Button, Modal, Tooltip } from 'flowbite-react';
 import useVotingPower from "../../hooks/VotingPower";
 import SiteNav from "../../components/SiteNav";
 import SpaceProposalNavigator from '../../components/SpaceProposalNavigator';
+import ProposalCards from '../../components/ProposalCards';
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
-
-function genOnEnter(elementId: string) {
-    return (e: { keyCode: number; }) => {
-        if(e.keyCode == 13) {
-            document.getElementById(elementId).click();
-        }
-    }
-}
 
 const hub = 'https://hub.snapshot.org'; // or https://testnet.snapshot.org for testnet
 const client = new snapshot.Client712(hub);
@@ -45,6 +35,7 @@ export default function SnapshotSpace() {
     const [limit, setLimit] = useState(10);
     const [web3, setWeb3] = useState(undefined);
     const connectedAddress = isConnected ? address : "";
+
     // load data
     const { loading, data, error } = useProposalsExtendedOf(
         space as string, filterByActive, 
@@ -90,10 +81,7 @@ export default function SnapshotSpace() {
             <SiteNav pageTitle={`${space} Proposals`} currentIndex={5} />
             <SpaceProposalNavigator spaceId={space as string} address={address} options={filterOptions} />
             <div className="flex my-6 flex-col gap-y-3">
-                <div id="space-navigate" className="flex justify-center gap-x-2">
-                    <SpaceNavigator router={router} />
-                </div>
-                <div id="proposal-search" className="flex justify-center gap-x-3">
+                {/* <div id="proposal-search" className="flex justify-center gap-x-3">
                     <input type="text" className="rounded-xl p-2" id="proposal-keyword" placeholder="Input keyword in titles" onKeyDown={genOnEnter("load-btn")} />
                     <select id="proposal-limit" className="rounded-xl">
                         <option value="10">10</option>
@@ -103,149 +91,21 @@ export default function SnapshotSpace() {
                         <option value="150">150</option>
                     </select>
                     <button id="load-btn" onClick={updateKeywordAndLimit} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Search within {space}</button>
-                </div>
+                </div> */}
                 <div className="underline">
-                    {!loading && filteredProposals && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>}
+                    {/* {!loading && filteredProposals && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>} */}
                     {error && <div className="text-center">Something wrong.</div>}
                 </div>
-                <div className="flex flex-row flex-wrap mx-4 px-20 justify-center">
+                <div className="flex flex-row flex-wrap mx-4 px-4 lg:px-20 justify-center">
                     <Web3Context.Provider value={web3}>
                         {loading && <div className="text-center">Loading proposals...</div>}
                         {!loading && !error && (
-                            filteredProposals.map(proposal => <ProposalCard key={proposal.id} spaceId={space} proposal={proposal} voted={votedData[proposal.id]} address={connectedAddress} />)
+                            <ProposalCards spaceId={space as string} proposals={filteredProposals} />
                         )}
                     </Web3Context.Provider>
                 </div>
             </div>
         </>
-    )
-}
-
-function ProposalCard({spaceId, proposal, voted, address}) {
-    return (
-        <div className="border-2 rounded-xl m-3 p-3 hover:border-slate-800 transition-colors max-w-3xl">
-            <h3 className="text-xl font-semibold">{proposal.title}</h3>
-            <br/>
-            <div id={`proposal-analytic-${proposal.id}`} className="flex gap-x-2 h-48">
-                <div className="w-1/3 flex flex-col grow gap-y-2">
-                    {voted && (
-                        <span>Voted: 
-                            <span className="text-orange-400">
-                                &nbsp;{voted.choice} {formatNumber(voted.score)}
-                            </span>
-                        </span>
-                    )}
-                    <span>End: 
-                        <span className="text-orange-400">
-                            &nbsp;{formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true })}
-                        </span>
-                    </span>
-                    <span>Votes: {proposal.votes}</span>
-                    <span>
-                        Quorum:
-                        <span className={(proposal.scores_total<proposal.quorum) ? "text-orange-400" : undefined}> {formatNumber(proposal.scores_total)} </span>
-                        / {formatNumber(proposal.quorum)}
-                    </span>
-                    <div className="flex flex-row gap-x-2">
-                        <VotingModal address={address} spaceId={spaceId} proposalId={proposal.id} proposalTitle={proposal.title} choices={proposal.choices} expired={isPast(fromUnixTime(proposal.end))} />
-                        <a className="px-4 py-2 font-semibold text-center text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm" href={`https://snapshot.org/#/${spaceId}/proposal/${proposal.id}`} target="_blank" rel="noreferrer">Snapshot</a>
-                    </div>
-                </div>
-
-                <div className="w-2/3 truncate">
-                    <VotesPieChart data={proposal.voteByChoice} />
-                </div>
-            </div>
-            <div id={`proposal-${proposal.id}-content`} className="h-40 overflow-hidden hover:overflow-scroll border-t-2 mt-2">
-                <br />
-                <ReactMarkdown>{proposal.body}</ReactMarkdown>
-            </div>
-        </div>
-    )
-}
-
-const COLORS = ['#ABC9FF', '#FF8B8B', '#FFDEDE', '#FFBB28', '#FF8042'];
-
-const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-    if (percent < 0.08) {
-        return null;
-    }
-
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    return (
-    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-        {`${(percent * 100).toFixed(0)}%`}
-    </text>
-    );
-}
-const renderLegend = (props) => {
-    const { payload } = props;
-  
-    return (
-      <ul>
-        {
-          payload.map((entry, index) => (
-            <li key={`item-${index}`} className="px-2 truncate">
-                <Tooltip
-                    content={entry.value}
-                    trigger="hover"
-                >
-                    <svg width="14" height="14" viewBox="0 0 32 32" version="1.1" className="inline-block mr-1">
-                        <path stroke="none" fill={COLORS[index % COLORS.length]} d="M0,4h32v24h-32z" className="recharts-legend-icon"></path>
-                    </svg>
-                    <span style={{color: COLORS[index % COLORS.length]}}>{entry.value}</span>
-                </Tooltip>
-            </li>
-          ))
-        }
-      </ul>
-    );
-}
-
-function VotesPieChart({data}: {[choice: string]: number}) {
-    const entries = Object.entries(data);
-    return (
-        <ResponsiveContainer>
-            <PieChart>
-                <Pie data={entries.map(entry => { return { "name": entry[0], "value": entry[1] }; })} dataKey="value" cx="30%" cy={80} outerRadius={80} nameKey="name" fill="#8884d8" label={renderCustomizedLabel} labelLine={false}>
-                    {entries.map(entry => { return { "name": entry[0], "value": entry[1] }; }).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                </Pie>
-                <TooltipInChart formatter={(value, name, props) => formatNumber(value)} />
-                <Legend width={150} wrapperStyle={{ top: 10, right: 10, backgroundColor: '#f5f5f5', border: '1px solid #d5d5d5', borderRadius: 3, lineHeight: '40px' }} content={renderLegend} />
-            </PieChart>
-        </ResponsiveContainer>
-    );
-}
-
-function SpaceNavigator({router}) {
-    const navigateToNewSpace = (e: { keyCode: number; }) => {
-        if(e.keyCode == 13) {
-            router.push(`/snapshot/${(document.getElementById("space-input") as HTMLInputElement).value}`)
-        }
-    }
-
-    return (
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          Or Space
-        </label>
-        <div className="mt-1">
-          <input
-            type="text"
-            name="email"
-            id="space-input"
-            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-            placeholder="jbdao.eth"
-            onKeyDown={navigateToNewSpace}
-          />
-        </div>
-      </div>
     )
 }
 
