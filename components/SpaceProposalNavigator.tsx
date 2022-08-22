@@ -21,6 +21,14 @@ export default function SpaceProposalNavigator({spaceId, address, options}: {spa
   const { data: followedSpaces } = useFollowedSpaces(address);
   const [open, setOpen] = useState(false);
 
+  const jumpOptions = address ? followedSpaces : 
+    [
+        {id: 'jbdao.eth', status: false},
+        {id: 'tomoondao.eth', status: false},
+        {id: 'panda-dao.eth', status: false},
+    ];
+  const activeFilters = options.filter(option => option.value);
+
   const filterHandlerWith = (setFunc) => {
     return (e: { target: { id: string; }; }) => {
         const newStatus = (document.getElementById(e.target.id) as HTMLInputElement).checked;
@@ -34,8 +42,6 @@ export default function SpaceProposalNavigator({spaceId, address, options}: {spa
       options,
     }
   ]
-
-  const activeFilters = options.filter(option => option.value);
 
   return (
     <div className="bg-white">
@@ -165,10 +171,13 @@ export default function SpaceProposalNavigator({spaceId, address, options}: {spa
               >
                 <Menu.Items className="origin-top-left absolute left-0 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                   <div className="py-1">
-                    {followedSpaces.map((space) => (
+                    {jumpOptions.map((space) => (
                       <Menu.Item key={space.id}>
                         {({ active }) => (
-                            <div className="flex items-center pl-3">
+                            <div className={classNames(
+                                active ? 'bg-gray-100' : '',
+                                'flex items-center pl-3'
+                            )}>
                                 <span
                                     className={classNames(
                                     space.status ? 'bg-green-400' : 'bg-gray-200',
@@ -180,8 +189,7 @@ export default function SpaceProposalNavigator({spaceId, address, options}: {spa
                                     href={`/snapshot/${space.id}`}
                                     className={classNames(
                                         space.status ? 'font-medium text-gray-900' : 'text-gray-500',
-                                    active ? 'bg-gray-100' : '',
-                                    'block px-4 py-2 text-sm'
+                                        'block px-4 py-2 text-sm'
                                     )}
                                 >
                                     {space.id}
