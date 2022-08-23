@@ -100,7 +100,7 @@ export default function SnapshotSpace() {
                     <Web3Context.Provider value={web3}>
                         {loading && <div className="text-center">Loading proposals...</div>}
                         {!loading && !error && (
-                            <ProposalCards spaceId={space as string} proposals={filteredProposals} />
+                            <ProposalCards spaceId={space as string} proposals={filteredProposals} votedData={votedData} />
                         )}
                     </Web3Context.Provider>
                 </div>

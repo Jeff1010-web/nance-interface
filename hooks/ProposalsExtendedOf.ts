@@ -87,7 +87,7 @@ export interface ProposalDataExtended {
   voteByChoice: { [key: string]: number }
 }
 
-interface VotesData {
+export interface VotesData {
   [id: string]: {
     choice: string
     score: number
