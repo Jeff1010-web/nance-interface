@@ -2,7 +2,6 @@ import { createContext, useState, useContext, useEffect, MouseEventHandler } fro
 import { useRouter } from 'next/router'
 import { useProposalsExtendedOf } from "../../hooks/ProposalsExtendedOf";
 import { useAccount } from 'wagmi'
-import snapshot from '@snapshot-labs/snapshot.js';
 import { Web3Provider } from '@ethersproject/providers';
 import { Button, Modal, Tooltip } from 'flowbite-react';
 import useVotingPower from "../../hooks/VotingPower";
@@ -10,12 +9,7 @@ import SiteNav from "../../components/SiteNav";
 import SpaceProposalNavigator from '../../components/SpaceProposalNavigator';
 import ProposalCards from '../../components/ProposalCards';
 
-const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
-const formatNumber = (num) => formatter.format(num);
-
-const hub = 'https://hub.snapshot.org'; // or https://testnet.snapshot.org for testnet
-const client = new snapshot.Client712(hub);
-const Web3Context = createContext(undefined);
+export const Web3Context = createContext(undefined);
 
 export default function SnapshotSpace() {
     // router
@@ -100,106 +94,11 @@ export default function SnapshotSpace() {
                     <Web3Context.Provider value={web3}>
                         {loading && <div className="text-center">Loading proposals...</div>}
                         {!loading && !error && (
-                            <ProposalCards spaceId={space as string} proposals={filteredProposals} votedData={votedData} />
+                            <ProposalCards address={address} spaceId={space as string} proposals={filteredProposals} votedData={votedData} />
                         )}
                     </Web3Context.Provider>
                 </div>
             </div>
-        </>
-    )
-}
-
-interface VotingProps {
-    expired?: boolean;
-    address: string;
-    spaceId: string;
-    proposalId: string;
-    proposalTitle: string;
-    choices: string[];
-}
-
-function VotingModal({address, spaceId, proposalId, proposalTitle, choices, expired}: VotingProps) {
-    const web3 = useContext(Web3Context);
-    const [show, setShow] = useState(false);
-    const { data: vp, loading } = useVotingPower(address, spaceId, proposalId);
-
-    const vote = async () => {
-        const choice = (document.getElementById("choice-selector") as HTMLInputElement).value;
-        try {
-            const receipt = await client.vote(web3, address, {
-                space: spaceId,
-                proposal: proposalId,
-                type: 'single-choice',
-                choice: parseInt(choice),
-                app: 'juicetool'
-            });
-            console.info("📗 VotingModal ->", {spaceId, proposalId, choice, proposalTitle}, receipt);
-            setShow(false);
-        } catch (e) {
-            console.error("🔴 VotingModal ->", e);
-        }
-    }
-
-    const renderDisabledButton = (reason) => {
-        return (
-            <Tooltip
-                content={reason}
-                trigger="hover"
-            >
-                <button id="load-btn" disabled className="px-4 py-2 font-semibold text-sm bg-gray-200 rounded-xl shadow-sm">Vote</button>
-            </Tooltip>
-        )
-    }
-
-    if (loading) {
-        return renderDisabledButton("Loading...");
-    }
-    
-    if (expired) {
-        return renderDisabledButton("Proposal has expired");
-    }
-
-    if (!web3) {
-        return renderDisabledButton("MetaMask not found");
-    }
-
-    if (address === '') {
-        return renderDisabledButton("Wallet not connected");
-    }
-
-    return (
-        <>
-            <button id="load-btn" onClick={() => setShow(true)} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Vote</button>
-            <Modal
-                show={show}
-                onClose={() => setShow(false)}
-            >
-                <Modal.Header>
-                    Voting | {proposalTitle}
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="space-y-6">
-                        <p>Your voting power: {formatNumber(vp)}</p>
-                        Choice:&nbsp;
-                        <select id="choice-selector" className="rounded-xl">
-                            {choices.map((choice, index) => (
-                                <option key={index+1} value={index+1}>{choice}</option>
-                            ))}
-                        </select>
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={vote}>
-                        Vote
-                    </Button>
-                    <Button
-                        color="gray"
-                        onClick={() => setShow(false)}
-                    >
-                        Cancel
-                    </Button>
-                </Modal.Footer>
-            </Modal>
         </>
     )
 }

@@ -962,6 +962,11 @@
   dependencies:
     "tslib" "^2.4.0"
 
+"@tailwindcss/aspect-ratio@^0.4.0":
+  "integrity" "sha512-WJu0I4PpqNPuutpaA9zDUq2JXR+lorZ7PbLcKNLmb6GL9/HLfC7w3CRsMhJF4BbYd/lkY6CfXOvkYpuGnZfkpQ=="
+  "resolved" "https://registry.npmjs.org/@tailwindcss/aspect-ratio/-/aspect-ratio-0.4.0.tgz"
+  "version" "0.4.0"
+
 "@tailwindcss/line-clamp@^0.4.0":
   "integrity" "sha512-HQZo6gfx1D0+DU3nWlNLD5iA6Ef4JAXh0LeD8lOGrJwEDBwwJNKQza6WoXhhY1uQrxOuU8ROxV7CqiQV4CoiLw=="
   "resolved" "https://registry.npmjs.org/@tailwindcss/line-clamp/-/line-clamp-0.4.0.tgz"

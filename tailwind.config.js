@@ -8,8 +8,12 @@ module.exports = {
   theme: {
     extend: {},
   },
+  corePlugins: {
+    aspectRatio: false,
+  },
   plugins: [
     require("flowbite/plugin"),
-    require('@tailwindcss/line-clamp')
+    require('@tailwindcss/line-clamp'),
+    require('@tailwindcss/aspect-ratio')
   ],
 }

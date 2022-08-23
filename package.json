@@ -30,6 +30,7 @@
     "wagmi": "^0.5.9"
   },
   "devDependencies": {
+    "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/line-clamp": "^0.4.0",
     "@types/node": "^18.6.2",
     "@types/react": "^18.0.15",

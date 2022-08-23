@@ -2,6 +2,8 @@ import { ExternalLinkIcon, ArchiveIcon } from '@heroicons/react/solid'
 import { ProposalDataExtended, VotesData } from '../hooks/ProposalsExtendedOf'
 import { fromUnixTime, formatDistanceToNow, isPast } from 'date-fns'
 import { Tooltip } from 'flowbite-react';
+import VotingModal from './VotingModal';
+import { useState } from 'react';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -24,7 +26,8 @@ const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
   </Tooltip>
 )
 
-export default function ProposalCards({spaceId, proposals, votedData}: {spaceId: string, proposals: ProposalDataExtended[], votedData: VotesData}) {
+export default function ProposalCards({address, spaceId, proposals, votedData}: {address: string, spaceId: string, proposals: ProposalDataExtended[], votedData: VotesData}) {
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   return (
     <ul role="list" className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -79,8 +82,9 @@ export default function ProposalCards({spaceId, proposals, votedData}: {spaceId:
                 </a>
               </div>
               <div className="-ml-px w-0 flex-1 flex">
-                <a
-                  href='#'
+                <button
+                  disabled={proposal.state !== 'active'}
+                  onClick={()=>setModalIsOpen(true)}
                   className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
                 >
                   <ArchiveIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
@@ -92,10 +96,11 @@ export default function ProposalCards({spaceId, proposals, votedData}: {spaceId:
                     <span className="ml-3">Vote</span>
                   )
                   }
-                </a>
+                </button>
               </div>
             </div>
           </div>
+          <VotingModal modalIsOpen={modalIsOpen} setModalIsOpen={setModalIsOpen} address={address} spaceId={spaceId} proposal={proposal} />
         </li>
       ))}
     </ul>

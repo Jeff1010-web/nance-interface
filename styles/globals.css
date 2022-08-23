@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  overflow: auto !important;
+}
+
 html,
 body {
   padding: 0;
