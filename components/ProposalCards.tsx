@@ -75,6 +75,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
               <div className="w-0 flex-1 flex">
                 <a
                   href={`https://snapshot.org/#/${spaceId}/proposal/${proposal.id}`}
+                  target="_blank" rel="noreferrer"
                   className="relative -mr-px w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-bl-lg hover:text-gray-500"
                 >
                   <ExternalLinkIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />

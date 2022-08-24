@@ -43,6 +43,12 @@ export default function SpaceProposalNavigator({spaceId, address, options}: {spa
     }
   ]
 
+  const stats = [
+    { name: 'Total Subscribers', stat: '71,897' },
+    { name: 'Avg. Open Rate', stat: '58.16%' },
+    { name: 'Avg. Click Rate', stat: '24.57%' },
+  ]
+
   return (
     <div className="bg-white">
       {/* Mobile filter dialog */}
@@ -135,10 +141,28 @@ export default function SpaceProposalNavigator({spaceId, address, options}: {spa
       </Transition.Root>
 
       <div className="max-w-7xl mx-auto py-6 lg:py-16 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">{spaceInfo?.name || '<SpaceName>'}</h1>
+        <img
+          className="inline-block h-14 w-14 rounded-full"
+          src={`https://cdn.stamp.fyi/space/${spaceId}?s=160`}
+          alt=""
+        />
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900">{spaceInfo?.name || spaceId}</h1>
         <p className="mt-4 max-w-xl text-sm text-gray-700">
-          {spaceInfo?.about || '<SpaceAbout>'}
+          {spaceInfo?.about || ''}
         </p>
+
+        <div>
+          <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+              <dt className="text-sm font-medium text-gray-500 truncate">Follwers</dt>
+              <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{spaceInfo?.followersCount}</dd>
+            </div>
+            <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+              <dt className="text-sm font-medium text-gray-500 truncate">Proposals</dt>
+              <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{spaceInfo?.proposalsCount}</dd>
+            </div>
+          </dl>
+        </div>
       </div>
 
       {/* Filters */}
