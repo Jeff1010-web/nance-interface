@@ -2,7 +2,7 @@ import { Dispatch, Fragment, SetStateAction, useState } from 'react'
 import { Dialog, Disclosure, Menu, Popover, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
 import { ChevronDownIcon } from '@heroicons/react/solid'
-import useSpaceInfo from '../hooks/SpaceInfo'
+import useSpaceInfo, { SpaceInfo } from '../hooks/SpaceInfo'
 import useFollowedSpaces from '../hooks/FollowedSpaces'
 
 function classNames(...classes) {
@@ -16,8 +16,7 @@ interface FilterOption {
     setter: Dispatch<SetStateAction<boolean>>
 }
 
-export default function SpaceProposalNavigator({spaceId, address, options}: {spaceId: string, address: string, options: FilterOption[]}) {
-  const { loading, data: spaceInfo } = useSpaceInfo(spaceId);
+export default function SpaceProposalNavigator({spaceId, spaceInfo, address, options}: {spaceId: string, spaceInfo: SpaceInfo, address: string, options: FilterOption[]}) {
   const { data: followedSpaces } = useFollowedSpaces(address);
   const [open, setOpen] = useState(false);
 
@@ -41,12 +40,6 @@ export default function SpaceProposalNavigator({spaceId, address, options}: {spa
       name: 'Status',
       options,
     }
-  ]
-
-  const stats = [
-    { name: 'Total Subscribers', stat: '71,897' },
-    { name: 'Avg. Open Rate', stat: '58.16%' },
-    { name: 'Avg. Click Rate', stat: '24.57%' },
   ]
 
   return (

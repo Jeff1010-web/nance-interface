@@ -12,7 +12,7 @@ query SpaceInfo($spaceId: String) {
 }
 `
 
-interface SpaceInfo {
+export interface SpaceInfo {
     name: string,
     about: string,
     avatar: string,

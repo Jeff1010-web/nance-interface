@@ -1,27 +1,28 @@
-import { createContext, useState, useContext, useEffect, MouseEventHandler } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router'
 import { useProposalsExtendedOf } from "../../hooks/ProposalsExtendedOf";
 import { useAccount } from 'wagmi'
 import { Web3Provider } from '@ethersproject/providers';
-import { Button, Modal, Tooltip } from 'flowbite-react';
-import useVotingPower from "../../hooks/VotingPower";
 import SiteNav from "../../components/SiteNav";
 import SpaceProposalNavigator from '../../components/SpaceProposalNavigator';
 import ProposalCards from '../../components/ProposalCards';
+import useSpaceInfo from '../../hooks/SpaceInfo';
 
 export const Web3Context = createContext(undefined);
 
 export default function SnapshotSpace() {
     // router
     const router = useRouter();
-    const { space } = router.query;    
+    const { space } = router.query;
     // handler
     const updateKeywordAndLimit = () => {
         setKeyword((document.getElementById("proposal-keyword") as HTMLInputElement).value);
         setLimit(parseInt((document.getElementById("proposal-limit") as HTMLInputElement).value));
     }
-    // state
+    // external hook
     const { address, isConnected } = useAccount();
+    const { data: spaceInfo } = useSpaceInfo(space as string);
+    // state
     const [filterByActive, setFilterByActive] = useState(false);
     const [filterByNotVoted, setFilterByNotVoted] = useState(false);
     const [filterByUnderQuorum, setFilterByUnderQuorum] = useState(false);
@@ -72,8 +73,8 @@ export default function SnapshotSpace() {
 
     return (
         <>
-            <SiteNav pageTitle={`${space} Proposals`} currentIndex={5} />
-            <SpaceProposalNavigator spaceId={space as string} address={address} options={filterOptions} />
+            <SiteNav pageTitle={`${spaceInfo?.name || space} Proposals`} currentIndex={5} description="Snapshot voting with filter, search bar and quick overview on single page." image="/images/unsplash_voting.jpeg" />
+            <SpaceProposalNavigator spaceId={space as string} spaceInfo={spaceInfo} address={address} options={filterOptions} />
             <div className="flex my-6 flex-col gap-y-3">
                 {/* <div id="proposal-search" className="flex justify-center gap-x-3">
                     <input type="text" className="rounded-xl p-2" id="proposal-keyword" placeholder="Input keyword in titles" onKeyDown={genOnEnter("load-btn")} />

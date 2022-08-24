@@ -1,22 +1,23 @@
-/* This example requires Tailwind CSS v2.0+ */
-import { Fragment } from 'react'
-import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
+import { Disclosure } from '@headlessui/react'
+import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import Head from 'next/head'
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-
-const user = {
-    name: 'Tom Cook',
-    email: 'tom@example.com',
-    imageUrl:
-        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-}
+import { useRouter } from 'next/router';
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function SiteNav({ pageTitle, currentIndex }) {
+interface SiteNavProps {
+    pageTitle: string,
+    currentIndex: number,
+    description?: string,
+    image?: string
+}
+
+export default function SiteNav({ pageTitle, currentIndex, description, image }: SiteNavProps) {
+    const router = useRouter();
+    
     const navigation = [
         { name: 'Home', href: '/', current: false },
         { name: 'Progress', href: '/progress', current: false },
@@ -28,13 +29,33 @@ export default function SiteNav({ pageTitle, currentIndex }) {
     ]
     navigation[currentIndex].current = true;
 
+    const meta = {
+        title: `${pageTitle} | JuiceTool`,
+        description: description || "A bunch of homebrew tools",
+        url: `https://juicetool.xyz${router.asPath}`,
+        image: image || "/images/unsplash_application.jpeg",
+    }
+
     return (
         <>
             <Head>
-                <title>{`${pageTitle} | JuiceTool`}</title>
+                <title>{meta.title}</title>
+                <meta name="description" content={meta.description} />
                 <meta name="viewport" content="width=device-width" />
-                <meta name="description" content="A bunch of homebrew tools" />
                 <link rel="icon" href="/favicon.ico" />
+                {/* OpenGraph Meta Tags */}
+                <meta property="og:url" content={meta.url} />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content={meta.title} />
+                <meta property="og:description" content={meta.description} />
+                <meta property="og:image" content={meta.image} />
+
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta property="twitter:domain" content="juicetool.xyz" />
+                <meta property="twitter:url" content={meta.url} />
+                <meta name="twitter:title" content={meta.title} />
+                <meta name="twitter:description" content={meta.description} />
+                <meta name="twitter:image" content={meta.image} />        
             </Head>
             <header className="min-h-full w-full">
                 <Disclosure as="nav" className="bg-white border-b border-gray-200">
@@ -46,13 +67,13 @@ export default function SiteNav({ pageTitle, currentIndex }) {
                                         <div className="flex-shrink-0 flex items-center">
                                             <img
                                                 className="block lg:hidden h-8 w-auto"
-                                                src="https://tailwindui.com/img/logos/workflow-mark.svg?color=indigo&shade=600"
-                                                alt="Workflow"
+                                                src="/favicon.ico"
+                                                alt="Juicetool logo"
                                             />
                                             <img
                                                 className="hidden lg:block h-8 w-auto"
-                                                src="https://tailwindui.com/img/logos/workflow-mark.svg?color=indigo&shade=600"
-                                                alt="Workflow"
+                                                src="/favicon.ico"
+                                                alt="Juicetool logo"
                                             />
                                         </div>
                                         <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
