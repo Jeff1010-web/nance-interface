@@ -3,7 +3,7 @@ import { useQuery } from 'graphql-hooks'
 const SPACES_QUERY = `
 query Spaces($address: String) {
     follows(
-        first: 10,
+        first: 25,
         where: {
             follower: $address
         }
@@ -20,7 +20,7 @@ query Spaces($address: String) {
 const ACTIVE_PROPOSALS_QUERY = `
 query Proposals($spaceIds: [String]) {
     proposals(
-      first: 10
+      first: 250
       skip: 0
       where: {
         space_in: $spaceIds,
@@ -71,6 +71,16 @@ export default function useFollowedSpaces(address: string): {data: FollowedSpace
         return acc;
     }, spaceMap);
     const ret = activeProposalCounts ? Object.entries(activeProposalCounts).map(([id, entry]) => ({id, name: entry.name, activeProposals: entry.activeProposals})) : [];
+    ret.sort((a, b) => {
+        if (a.activeProposals > b.activeProposals) {
+            return -1;
+          }
+          if (a.activeProposals < b.activeProposals) {
+            return 1;
+          }
+          // a must be equal to b
+          return 0;
+    })
     console.info("📗 useFollowedSpaces ->", {address, spaceMap}, {spacesData, proposalsData, ret});
 
     return { loading: spacesLoading || proposalsLoading, data: ret };
