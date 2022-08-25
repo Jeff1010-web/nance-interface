@@ -45,7 +45,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
                 {/* Proposal status */}
                 <div className='min-w-fit'>
                   {proposal.state === 'active' && labelWithTooltip('Active', 'Ends ' + formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true }), 'text-green-800 bg-green-100')}
-                  {proposal.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-gray-800 bg-gray-100')}
+                  {proposal.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
                   {proposal.state === 'closed' && labelWithTooltip('Closed', formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true }), 'text-gray-800 bg-gray-100')}
                 </div>
                 
@@ -70,7 +70,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
                   >
                     <dt className="text-sm font-medium text-gray-500 truncate">{choice}</dt>
                   </Tooltip>
-                  <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(proposal.voteByChoice[choice]*100/proposal.scores_total).toFixed()}%</dd>
+                  <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{proposal.scores_total > 0 ? (proposal.voteByChoice[choice]*100/proposal.scores_total).toFixed() : 0}%</dd>
                 </div>
               ))}
             </dl>
@@ -94,9 +94,12 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
                   className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
                 >
                   <ArchiveIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                  <Tooltip trigger="hover" content={proposal.state !== 'active' ? "Proposal is not active" : !address ? "You haven't connected wallet" : "Proposal is active and you can vote on it"}>
-                    <span className="ml-3">{votedData[proposal.id] ? "Revote" : "Vote"}</span>
-                  </Tooltip>
+                  {(proposal.state !== 'active' || !address) && (
+                    <Tooltip trigger="hover" content={proposal.state !== 'active' ? "Proposal is not active" : !address ? "You haven't connected wallet" : "Proposal is active and you can vote on it"}>
+                      <span className="ml-3">{votedData[proposal.id] ? "Revote" : "Vote"}</span>
+                    </Tooltip>
+                  )}
+                  <span className="ml-3">{votedData[proposal.id] ? "Revote" : "Vote"}</span>
                 </button>
               </div>
             </div>

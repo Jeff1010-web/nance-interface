@@ -4,8 +4,8 @@ import { Web3Context } from "../pages/snapshot/[space]"
 import snapshot from '@snapshot-labs/snapshot.js'
 import { Dialog, RadioGroup, Transition } from '@headlessui/react'
 import { ProposalDataExtended } from "../hooks/ProposalsExtendedOf"
-import { ShieldCheckIcon, XIcon } from '@heroicons/react/outline'
-import { CheckIcon, QuestionMarkCircleIcon, StarIcon } from '@heroicons/react/solid'
+import { XIcon } from '@heroicons/react/outline'
+import { CheckIcon, ExclamationIcon } from '@heroicons/react/solid'
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -23,17 +23,9 @@ interface VotingProps {
     shouldOpen?: boolean
 }
 
-const product = {
-  name: 'Everyday Ruck Snack',
-  price: '$220',
-  rating: 3.9,
-  href: '#',
-  imageSrc: 'https://tailwindui.com/img/ecommerce-images/product-quick-preview-03-detail.jpg',
-  imageAlt: 'Interior of light green canvas bag with padded laptop sleeve and internal organization pouch.',
-  sizes: [
-    { name: '18L', description: 'Perfect for a reasonable amount of snacks.' },
-    { name: '20L', description: 'Enough room for a serious amount of snacks.' },
-  ],
+interface VotingError {
+  error: string
+  error_description: string
 }
 
 function classNames(...classes) {
@@ -42,28 +34,49 @@ function classNames(...classes) {
 
 export default function VotingModal({modalIsOpen, closeModal, address, spaceId, proposal}: VotingProps) {
   const [selectedOption, setSelectedOption] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<VotingError>(undefined);
   const web3 = useContext(Web3Context);
-  const { data: vp, loading } = useVotingPower(address, spaceId, proposal.id);
+  const { data: vp } = useVotingPower(address, spaceId, proposal.id);
+
+  // shorthand functions
+  const beforeSubmitVote = () => {
+    setSubmitting(true);
+    setError(undefined);
+  }
+  const closeModalAndReset = () => {
+    setSubmitting(false);
+    setError(undefined);
+    closeModal();
+  }
+  const errorWithSubmit = (e) => {
+    setSubmitting(false);
+    if (modalIsOpen) {
+      setError(e);
+    }
+  }
 
   const vote = async () => {
     try {
-        const receipt = await client.vote(web3, address, {
-            space: spaceId,
-            proposal: proposal.id,
-            type: 'single-choice',
-            choice: selectedOption,
-            app: 'juicetool'
-        });
-        console.info("📗 VotingModal ->", {spaceId, proposal, selectedOption}, receipt);
-        closeModal();
+      beforeSubmitVote();
+      const receipt = await client.vote(web3, address, {
+          space: spaceId,
+          proposal: proposal.id,
+          type: 'single-choice',
+          choice: selectedOption,
+          app: 'juicetool'
+      });
+      console.info("📗 VotingModal ->", {spaceId, proposal, selectedOption}, receipt);
+      closeModalAndReset();
     } catch (e) {
-        console.error("🔴 VotingModal ->", e);
+      errorWithSubmit(e);
+      console.error("🔴 VotingModal ->", e);
     }
 }
 
   return (
     <Transition.Root show={modalIsOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog as="div" className="relative z-10" open={modalIsOpen} onClose={closeModalAndReset}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -92,7 +105,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                   <button
                     type="button"
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8"
-                    onClick={closeModal}
+                    onClick={closeModalAndReset}
                   >
                     <span className="sr-only">Close</span>
                     <XIcon className="h-6 w-6" aria-hidden="true" />
@@ -131,10 +144,17 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                           </div>
                         </div>
 
-                        <div className="mt-6 flex items-center">
-                          <CheckIcon className="flex-shrink-0 w-5 h-5 text-green-500" aria-hidden="true" />
-                          <p className="ml-2 font-medium text-gray-500">Your voting power: {formatNumber(vp)}</p>
-                        </div>
+                        {vp > 0 ? (
+                          <div className="mt-6 flex items-center">
+                            <CheckIcon className="flex-shrink-0 w-5 h-5 text-green-500" aria-hidden="true" />
+                            <p className="ml-2 font-medium text-gray-500">Your voting power: {formatNumber(vp)}</p>
+                          </div>
+                        ) : (
+                          <div className="mt-6 flex items-center">
+                            <ExclamationIcon className="flex-shrink-0 w-5 h-5 text-yellow-500" aria-hidden="true" />
+                            <p className="ml-2 font-medium text-gray-500">You have no voting power</p>
+                          </div>
+                        )}
                       </section>
 
                       <section aria-labelledby="options-heading" className="mt-6">
@@ -194,14 +214,30 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                               />
                             </a>
                           </div> */}
+                          {error && (
+                            <div className="mt-6 flex items-center">
+                              <ExclamationIcon className="flex-shrink-0 w-5 h-5 text-red-500" aria-hidden="true" />
+                              <p className="ml-2 font-medium text-gray-500">Error: {error.error_description}</p>
+                            </div>
+                          )}
                           <div className="mt-6">
-                            <button
-                              type="button"
-                              onClick={vote}
-                              className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
-                            >
-                              Submit vote
+                            {vp > 0 ? (
+                              <button
+                                type="button"
+                                onClick={vote}
+                                className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+                                >
+                                {submitting ? "Submitting..." : "Submit vote"}
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={closeModalAndReset}
+                                className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+                              >
+                              Close
                             </button>
+                            )}
                           </div>
                           {/* <div className="mt-6 text-center">
                             <a href="#" className="group inline-flex text-base font-medium">
