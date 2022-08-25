@@ -94,12 +94,11 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
                   className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
                 >
                   <ArchiveIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                  {(proposal.state !== 'active' || !address) && (
+                  {(proposal.state !== 'active' || !address) ? (
                     <Tooltip trigger="hover" content={proposal.state !== 'active' ? "Proposal is not active" : !address ? "You haven't connected wallet" : "Proposal is active and you can vote on it"}>
                       <span className="ml-3">{votedData[proposal.id] ? "Revote" : "Vote"}</span>
                     </Tooltip>
-                  )}
-                  <span className="ml-3">{votedData[proposal.id] ? "Revote" : "Vote"}</span>
+                  ) : (<span className="ml-3">{votedData[proposal.id] ? "Revote" : "Vote"}</span>)}
                 </button>
               </div>
             </div>
