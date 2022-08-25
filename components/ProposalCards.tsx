@@ -37,6 +37,11 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
             <div className="flex-1 overflow-hidden">
               <div className="flex items-center space-x-3 break-words">
                 <h3 className="text-gray-900 text-xl font-medium">{proposal.title}</h3>
+                {/* Voted status */}
+                <div className='min-w-fit'>
+                  {votedData[proposal.id] && labelWithTooltip('Voted', `You voted ${votedData[proposal.id].choice} with ${formatNumber(votedData[proposal.id].score)} (${(votedData[proposal.id].score*100/proposal.scores_total).toFixed()}% of total votes)`, 'text-blue-800 bg-blue-100')}
+                </div>
+
                 {/* Proposal status */}
                 <div className='min-w-fit'>
                   {proposal.state === 'active' && labelWithTooltip('Active', 'Ends ' + formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true }), 'text-green-800 bg-green-100')}
@@ -47,7 +52,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
                 {/* Under quorum status */}
                 {proposal.quorum != 0 && proposal.scores_total < proposal.quorum && (
                   <div className='min-w-fit'>
-                  {labelWithTooltip('Under quorum', `${formatNumber(proposal.scores_total)} (${(proposal.scores_total*100/proposal.quorum).toFixed()}% of quorum)`, 'text-red-800 bg-red-100')}
+                  {labelWithTooltip('Under quorum', `${formatNumber(proposal.scores_total)} (${(proposal.scores_total*100/proposal.quorum).toFixed()}% of quorum)`, 'text-purple-800 bg-purple-100')}
                   </div>
                 )}
               </div>
@@ -84,19 +89,14 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
               </div>
               <div className="-ml-px w-0 flex-1 flex">
                 <button
-                  disabled={proposal.state !== 'active'}
+                  disabled={proposal.state !== 'active' || !address}
                   onClick={()=>setModalIsOpen(true)}
                   className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
                 >
                   <ArchiveIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                  {votedData[proposal.id] ? (
-                    <Tooltip trigger="hover" content={`You voted ${votedData[proposal.id].choice} with ${formatNumber(votedData[proposal.id].score)} (${(votedData[proposal.id].score*100/proposal.scores_total).toFixed()}% of total votes)`}>
-                      <span className="ml-3">Revote</span>
-                    </Tooltip>
-                  ) : (
-                    <span className="ml-3">Vote</span>
-                  )
-                  }
+                  <Tooltip trigger="hover" content={proposal.state !== 'active' ? "Proposal is not active" : !address ? "You haven't connected wallet" : "Proposal is active and you can vote on it"}>
+                    <span className="ml-3">{votedData[proposal.id] ? "Revote" : "Vote"}</span>
+                  </Tooltip>
                 </button>
               </div>
             </div>
