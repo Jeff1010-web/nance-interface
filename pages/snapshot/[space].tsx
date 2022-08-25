@@ -7,6 +7,7 @@ import SiteNav from "../../components/SiteNav";
 import SpaceProposalNavigator from '../../components/SpaceProposalNavigator';
 import ProposalCards from '../../components/ProposalCards';
 import useSpaceInfo from '../../hooks/SpaceInfo';
+import {useQueryParam, BooleanParam, withDefault} from 'next-query-params';
 
 export const Web3Context = createContext(undefined);
 
@@ -23,9 +24,9 @@ export default function SnapshotSpace() {
     const { address, isConnected } = useAccount();
     const { data: spaceInfo } = useSpaceInfo(space as string);
     // state
-    const [filterByActive, setFilterByActive] = useState(false);
-    const [filterByNotVoted, setFilterByNotVoted] = useState(false);
-    const [filterByUnderQuorum, setFilterByUnderQuorum] = useState(false);
+    const [filterByActive, setFilterByActive] = useQueryParam('active', withDefault(BooleanParam, false));
+    const [filterByNotVoted, setFilterByNotVoted] = useQueryParam('notVoted', withDefault(BooleanParam, false));
+    const [filterByUnderQuorum, setFilterByUnderQuorum] = useQueryParam('underQuorum', withDefault(BooleanParam, false));
     const [keyword, setKeyword] = useState('');
     const [limit, setLimit] = useState(10);
     const [web3, setWeb3] = useState(undefined);

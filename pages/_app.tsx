@@ -13,6 +13,8 @@ import {
 } from 'wagmi'
 import { publicProvider } from 'wagmi/providers/public'
 
+import {NextQueryParamProvider} from 'next-query-params';
+
 const graphqlClient = new GraphQLClient({
   url: 'https://hub.snapshot.org/graphql'
 })
@@ -39,7 +41,9 @@ function MyApp({ Component, pageProps }) {
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains}>
         <ClientContext.Provider value={graphqlClient}>
-          <Component {...pageProps} />
+          <NextQueryParamProvider>
+            <Component {...pageProps} />
+          </NextQueryParamProvider>
         </ClientContext.Provider>
       </RainbowKitProvider>
     </WagmiConfig>
