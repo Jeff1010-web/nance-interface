@@ -16,7 +16,7 @@ const client = new snapshot.Client712(hub);
 
 interface VotingProps {
     modalIsOpen: boolean
-    setModalIsOpen: (isOpen: boolean) => void
+    closeModal: () => void
     address: string
     spaceId: string
     proposal: ProposalDataExtended
@@ -40,7 +40,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function VotingModal({modalIsOpen, setModalIsOpen, address, spaceId, proposal}: VotingProps) {
+export default function VotingModal({modalIsOpen, closeModal, address, spaceId, proposal}: VotingProps) {
   const [selectedOption, setSelectedOption] = useState(1);
   const web3 = useContext(Web3Context);
   const { data: vp, loading } = useVotingPower(address, spaceId, proposal.id);
@@ -55,7 +55,7 @@ export default function VotingModal({modalIsOpen, setModalIsOpen, address, space
             app: 'juicetool'
         });
         console.info("📗 VotingModal ->", {spaceId, proposal, selectedOption}, receipt);
-        setModalIsOpen(false);
+        closeModal();
     } catch (e) {
         console.error("🔴 VotingModal ->", e);
     }
@@ -63,7 +63,7 @@ export default function VotingModal({modalIsOpen, setModalIsOpen, address, space
 
   return (
     <Transition.Root show={modalIsOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={setModalIsOpen}>
+      <Dialog as="div" className="relative z-10" onClose={closeModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -92,7 +92,7 @@ export default function VotingModal({modalIsOpen, setModalIsOpen, address, space
                   <button
                     type="button"
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8"
-                    onClick={() => setModalIsOpen(false)}
+                    onClick={closeModal}
                   >
                     <span className="sr-only">Close</span>
                     <XIcon className="h-6 w-6" aria-hidden="true" />

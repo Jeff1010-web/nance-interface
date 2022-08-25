@@ -27,7 +27,7 @@ const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
 )
 
 export default function ProposalCards({address, spaceId, proposals, votedData}: {address: string, spaceId: string, proposals: ProposalDataExtended[], votedData: VotesData}) {
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [votingProposalId, setVotingProposalId] = useState('');
 
   return (
     <ul role="list" className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -90,7 +90,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
               <div className="-ml-px w-0 flex-1 flex">
                 <button
                   disabled={proposal.state !== 'active' || !address}
-                  onClick={()=>setModalIsOpen(true)}
+                  onClick={()=>setVotingProposalId(proposal.id)}
                   className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
                 >
                   <ArchiveIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
@@ -101,7 +101,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
               </div>
             </div>
           </div>
-          <VotingModal modalIsOpen={modalIsOpen} setModalIsOpen={setModalIsOpen} address={address} spaceId={spaceId} proposal={proposal} />
+          <VotingModal modalIsOpen={votingProposalId === proposal.id} closeModal={() => setVotingProposalId('')} address={address} spaceId={spaceId} proposal={proposal} />
         </li>
       ))}
     </ul>
