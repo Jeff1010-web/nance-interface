@@ -74,7 +74,7 @@ export default function SnapshotSpace() {
 
     return (
         <>
-            <SiteNav pageTitle={`${spaceInfo?.name || space} Proposals`} currentIndex={5} description="Snapshot voting with filter, search bar and quick overview on single page." image="/images/unsplash_voting.jpeg" />
+            <SiteNav pageTitle={`${spaceInfo?.name || (space as string) || ''} Proposals`} currentIndex={5} description="Snapshot voting with filter, search bar and quick overview on single page." image="/images/unsplash_voting.jpeg" />
             <SpaceProposalNavigator spaceId={space as string} spaceInfo={spaceInfo} address={address} options={filterOptions} />
             <div className="flex my-6 flex-col gap-y-3">
                 {/* <div id="proposal-search" className="flex justify-center gap-x-3">
