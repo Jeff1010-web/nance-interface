@@ -2,7 +2,7 @@ import { Dispatch, Fragment, SetStateAction, useState } from 'react'
 import { Dialog, Disclosure, Menu, Popover, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
 import { ChevronDownIcon } from '@heroicons/react/solid'
-import useSpaceInfo, { SpaceInfo } from '../hooks/SpaceInfo'
+import { SpaceInfo } from '../hooks/SpaceInfo'
 import useFollowedSpaces from '../hooks/FollowedSpaces'
 
 function classNames(...classes) {
@@ -17,15 +17,10 @@ interface FilterOption {
 }
 
 export default function SpaceProposalNavigator({spaceId, spaceInfo, address, options}: {spaceId: string, spaceInfo: SpaceInfo, address: string, options: FilterOption[]}) {
-  const { data: followedSpaces } = useFollowedSpaces(address);
   const [open, setOpen] = useState(false);
 
-  const jumpOptions = address ? followedSpaces : 
-    [
-        {id: 'jbdao.eth', status: false},
-        {id: 'tomoondao.eth', status: false},
-        {id: 'panda-dao.eth', status: false},
-    ];
+  const { data: followedSpaces } = useFollowedSpaces(address);
+  const tabs = address ? followedSpaces : [];
   const activeFilters = options.filter(option => option.value);
 
   const filterHandlerWith = (setFunc) => {
@@ -134,8 +129,40 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
       </Transition.Root>
 
       <div className="max-w-7xl mx-auto py-6 lg:py-16 px-4 sm:px-6 lg:px-8">
+        <div className="hidden sm:block">
+          <div>
+            <nav className="-mb-px flex space-x-8 overflow-auto" aria-label="Tabs">
+              {tabs.map((tab) => (
+                <a
+                  key={tab.name}
+                  href={`/snapshot/${tab.id}`}
+                  className={classNames(
+                    tab.id == spaceId
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200',
+                    'whitespace-nowrap flex py-4 px-1 border-b-2 font-medium text-sm'
+                  )}
+                  aria-current={tab.id == spaceId ? 'page' : undefined}
+                >
+                  {tab.name}
+                  {tab.activeProposals ? (
+                    <span
+                      className={classNames(
+                        tab.id == spaceId ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-900',
+                        'hidden ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block'
+                      )}
+                    >
+                      {tab.activeProposals}
+                    </span>
+                  ) : null}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </div>
+
         <img
-          className="inline-block h-14 w-14 rounded-full"
+          className="mt-6 inline-block h-14 w-14 rounded-full"
           src={`https://cdn.stamp.fyi/space/${spaceId}?s=160`}
           alt=""
         />
@@ -145,7 +172,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
         </p>
 
         <div>
-          <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <dl className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3">
             <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
               <dt className="text-sm font-medium text-gray-500 truncate">Follwers</dt>
               <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{spaceInfo?.followersCount}</dd>
@@ -166,7 +193,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
 
         <div className="relative z-10 bg-white border-b border-gray-200 pb-4">
           <div className="max-w-7xl mx-auto px-4 flex items-center justify-between sm:px-6 lg:px-8">
-            <Menu as="div" className="relative inline-block text-left">
+            <Menu as="div" className="relative inline-block text-left sm:hidden">
               <div>
                 <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
                   Jump to space
@@ -188,8 +215,8 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
               >
                 <Menu.Items className="origin-top-left absolute left-0 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                   <div className="py-1">
-                    {jumpOptions.map((space) => (
-                      <Menu.Item key={space.id}>
+                    {tabs.map((tab) => (
+                      <Menu.Item key={tab.id}>
                         {({ active }) => (
                             <div className={classNames(
                                 active ? 'bg-gray-100' : '',
@@ -197,19 +224,19 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
                             )}>
                                 <span
                                     className={classNames(
-                                    space.status ? 'bg-green-400' : 'bg-gray-200',
+                                    tab.activeProposals>0 ? 'bg-green-400' : 'bg-gray-200',
                                     'flex-shrink-0 inline-block h-2 w-2 rounded-full'
                                     )}
                                     aria-hidden="true"
                                 />
                                 <a
-                                    href={`/snapshot/${space.id}`}
+                                    href={`/snapshot/${tab.id}`}
                                     className={classNames(
-                                        space.status ? 'font-medium text-gray-900' : 'text-gray-500',
+                                      tab.activeProposals>0 ? 'font-medium text-gray-900' : 'text-gray-500',
                                         'block px-4 py-2 text-sm'
                                     )}
                                 >
-                                    {space.id}
+                                    {tab.name}
                                 </a>
                             </div>
                         )}

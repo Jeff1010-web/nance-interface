@@ -10,6 +10,7 @@ query Spaces($address: String) {
     ) {
         space {
             id
+            name
         }
         created
     }
@@ -36,9 +37,10 @@ query Proposals($spaceIds: [String]) {
   }
 `
 
-interface FollowedSpacesData {
+export interface FollowedSpacesData {
     id: string,
-    status: boolean
+    name: string,
+    activeProposals: number
 }
 
 export default function useFollowedSpaces(address: string): {data: FollowedSpacesData[], loading: boolean} {
@@ -48,8 +50,11 @@ export default function useFollowedSpaces(address: string): {data: FollowedSpace
             address: address
         }
     });
-    const spaceMap = spacesData?.follows.reduce((acc, follow) => {
-        acc[follow.space.id] = 0;
+    const spaceMap: { [id: string]: {name: string, activeProposals: number} } = spacesData?.follows.reduce((acc, follow) => {
+        acc[follow.space.id] = {
+            name: follow.space.name,
+            activeProposals: 0
+        };
         return acc;
     }, {}) || {};
     // Load related active proposals
@@ -58,15 +63,15 @@ export default function useFollowedSpaces(address: string): {data: FollowedSpace
             spaceIds: Object.keys(spaceMap)
         }
     });
-    console.info("📗 useFollowedSpaces ->", {address, spaceMap}, {spacesData, proposalsData});
 
     // Calculate count of active proposals in each space
     // { space: 3 }
-    const activeProposalCounts = proposalsData?.proposals.reduce((acc, proposal) => {
-        acc[proposal.space.id]++;
+    const activeProposalCounts: { [id: string]: {name: string, activeProposals: number} } = proposalsData?.proposals.reduce((acc, proposal) => {
+        acc[proposal.space.id] && acc[proposal.space.id].activeProposals++;
         return acc;
     }, spaceMap);
-    const ret = activeProposalCounts ? Object.entries(activeProposalCounts).map(([id, count]) => ({id, status: count > 0})) : [];
+    const ret = activeProposalCounts ? Object.entries(activeProposalCounts).map(([id, entry]) => ({id, name: entry.name, activeProposals: entry.activeProposals})) : [];
+    console.info("📗 useFollowedSpaces ->", {address, spaceMap}, {spacesData, proposalsData, ret});
 
     return { loading: spacesLoading || proposalsLoading, data: ret };
 }
