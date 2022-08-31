@@ -22,11 +22,6 @@ interface VotingProps {
     proposal: ProposalDataExtended
 }
 
-interface VotingError {
-  error: string
-  error_description: string
-}
-
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
@@ -35,7 +30,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
   const [selectedOption, setSelectedOption] = useState(1);
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<VotingError>(undefined);
+  const [error, setError] = useState(undefined);
   const web3 = useContext(Web3Context);
   const { data: vp } = useVotingPower(address, spaceId, proposal.id);
 
