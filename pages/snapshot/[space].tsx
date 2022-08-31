@@ -7,7 +7,7 @@ import SiteNav from "../../components/SiteNav";
 import SpaceProposalNavigator from '../../components/SpaceProposalNavigator';
 import ProposalCards from '../../components/ProposalCards';
 import useSpaceInfo from '../../hooks/SpaceInfo';
-import {useQueryParam, BooleanParam, withDefault} from 'next-query-params';
+import {useQueryParam, BooleanParam, StringParam, NumberParam, withDefault} from 'next-query-params';
 
 export const Web3Context = createContext(undefined);
 
@@ -15,11 +15,6 @@ export default function SnapshotSpace() {
     // router
     const router = useRouter();
     const { space } = router.query;
-    // handler
-    const updateKeywordAndLimit = () => {
-        setKeyword((document.getElementById("proposal-keyword") as HTMLInputElement).value);
-        setLimit(parseInt((document.getElementById("proposal-limit") as HTMLInputElement).value));
-    }
     // external hook
     const { address, isConnected } = useAccount();
     const { data: spaceInfo } = useSpaceInfo(space as string);
@@ -27,8 +22,8 @@ export default function SnapshotSpace() {
     const [filterByActive, setFilterByActive] = useQueryParam('active', withDefault(BooleanParam, false));
     const [filterByNotVoted, setFilterByNotVoted] = useQueryParam('notVoted', withDefault(BooleanParam, false));
     const [filterByUnderQuorum, setFilterByUnderQuorum] = useQueryParam('underQuorum', withDefault(BooleanParam, false));
-    const [keyword, setKeyword] = useState('');
-    const [limit, setLimit] = useState(10);
+    const [keyword, setKeyword] = useQueryParam('keyword', withDefault(StringParam, ''));
+    const [limit, setLimit] = useQueryParam('limit', withDefault(NumberParam, 10));
     const [web3, setWeb3] = useState(undefined);
     const connectedAddress = isConnected ? address : "";
 
@@ -52,14 +47,6 @@ export default function SnapshotSpace() {
         return true;
     });
 
-    function genOnEnter(elementId: string) {
-        return (e: { keyCode: number; }) => {
-            if(e.keyCode == 13) {
-                document.getElementById(elementId).click();
-            }
-        }
-    }
-
     const filterOptions = [
         {id: "active", name: "Active", value: filterByActive, setter: setFilterByActive},
         {id: "not-voted", name: "Haven't voted", value: filterByNotVoted, setter: setFilterByNotVoted},
@@ -75,19 +62,8 @@ export default function SnapshotSpace() {
     return (
         <>
             <SiteNav pageTitle={`${spaceInfo?.name || (space as string) || ''} Proposals`} currentIndex={5} description="Snapshot voting with filter, search bar and quick overview on single page." image="/images/unsplash_voting.jpeg" />
-            <SpaceProposalNavigator spaceId={space as string} spaceInfo={spaceInfo} address={address} options={filterOptions} />
+            <SpaceProposalNavigator spaceId={space as string} spaceInfo={spaceInfo} address={address} options={filterOptions} keyword={keyword} setKeyword={setKeyword} limit={limit} setLimit={setLimit} />
             <div className="flex my-6 flex-col gap-y-3">
-                {/* <div id="proposal-search" className="flex justify-center gap-x-3">
-                    <input type="text" className="rounded-xl p-2" id="proposal-keyword" placeholder="Input keyword in titles" onKeyDown={genOnEnter("load-btn")} />
-                    <select id="proposal-limit" className="rounded-xl">
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="150">150</option>
-                    </select>
-                    <button id="load-btn" onClick={updateKeywordAndLimit} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Search within {space}</button>
-                </div> */}
                 <div className="underline">
                     {/* {!loading && filteredProposals && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>} */}
                     {error && <div className="text-center">Something wrong.</div>}

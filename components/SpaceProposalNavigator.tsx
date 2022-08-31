@@ -1,7 +1,7 @@
 import { Dispatch, Fragment, SetStateAction, useState } from 'react'
 import { Dialog, Disclosure, Menu, Popover, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
-import { ChevronDownIcon } from '@heroicons/react/solid'
+import { ChevronDownIcon, DocumentSearchIcon } from '@heroicons/react/solid'
 import { SpaceInfo } from '../hooks/SpaceInfo'
 import useFollowedSpaces from '../hooks/FollowedSpaces'
 
@@ -16,19 +16,13 @@ interface FilterOption {
     setter: Dispatch<SetStateAction<boolean>>
 }
 
-export default function SpaceProposalNavigator({spaceId, spaceInfo, address, options}: {spaceId: string, spaceInfo: SpaceInfo, address: string, options: FilterOption[]}) {
+export default function SpaceProposalNavigator({spaceId, spaceInfo, address, options, keyword, setKeyword, limit, setLimit}: {spaceId: string, spaceInfo: SpaceInfo, address: string, options: FilterOption[], keyword: string, setKeyword: Dispatch<SetStateAction<string>>, limit: number, setLimit: Dispatch<SetStateAction<number>>}) {
   const [open, setOpen] = useState(false);
 
   const { data: followedSpaces } = useFollowedSpaces(address);
   const tabs = address ? followedSpaces : [];
   const activeFilters = options.filter(option => option.value);
 
-  const filterHandlerWith = (setFunc) => {
-    return (e: { target: { id: string; }; }) => {
-        const newStatus = (document.getElementById(e.target.id) as HTMLInputElement).checked;
-        setFunc(newStatus);
-    }
- }
   const filters = [
     {
       id: 'status',
@@ -105,7 +99,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
                                     type="checkbox"
                                     className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
                                     checked={option.value}
-                                    onChange={filterHandlerWith(option.setter)}
+                                    onChange={(e) => option.setter(e.target.checked)}
                                   />
                                   <label
                                     htmlFor={`filter-mobile-${section.id}-${optionIdx}`}
@@ -129,6 +123,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
       </Transition.Root>
 
       <div className="max-w-7xl mx-auto py-6 lg:py-16 px-4 sm:px-6 lg:px-8">
+        {/* Followed Space Tabs */}
         <div className="hidden sm:block">
           <div>
             <nav className="-mb-px flex space-x-8 overflow-auto" aria-label="Tabs">
@@ -161,6 +156,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
           </div>
         </div>
 
+        {/* Space Info */}
         <img
           className="mt-6 inline-block h-14 w-14 rounded-full"
           src={`https://cdn.stamp.fyi/space/${spaceId}?s=160`}
@@ -171,6 +167,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
           {spaceInfo?.about || ''}
         </p>
 
+        {/* Space Stats */}
         <div>
           <dl className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3">
             <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
@@ -182,6 +179,47 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
               <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{spaceInfo?.proposalsCount}</dd>
             </div>
           </dl>
+        </div>
+
+        {/* Search bar and limit */}
+        <div>
+          <label htmlFor="email" className="mt-5 block text-sm font-medium text-gray-700">
+            Search proposals
+          </label>
+          <div className="mt-1 flex rounded-md shadow-sm">
+            <div className="relative flex flex-grow items-stretch focus-within:z-10">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <DocumentSearchIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+              </div>
+              <input
+                type="text"
+                name="proposal-title"
+                id="proposal-title"
+                className="block w-full rounded-none rounded-l-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                placeholder="John Smith"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="limit" className="sr-only">
+                Limit
+              </label>
+              <select
+                id="limit"
+                name="limit"
+                className="relative w-full rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700 hover:bg-gray-100 bg-gray-50"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={150}>150</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -213,7 +251,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
               >
-                <Menu.Items className="origin-top-left absolute left-0 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <Menu.Items className="origin-top-left absolute left-0 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none overflow-auto">
                   <div className="py-1">
                     {tabs.map((tab) => (
                       <Menu.Item key={tab.id}>
@@ -293,7 +331,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
                                   type="checkbox"
                                   className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
                                   checked={option.value}
-                                  onChange={filterHandlerWith(option.setter)}
+                                  onChange={(e) => option.setter(e.target.checked)}
                                 />
                                 <label
                                   htmlFor={`filter-${section.id}-${optionIdx}`}
