@@ -30,7 +30,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
   const [votingProposalId, setVotingProposalId] = useState('');
 
   return (
-    <ul role="list" className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <ul role="list" className="grid grid-cols-1 gap-6 max-w-7xl">
       {proposals.map((proposal) => (
         <li key={proposal.id} className="col-span-1 bg-white rounded-lg shadow divide-y divide-gray-200">
           <div className="w-full flex items-center justify-between p-6 space-x-6">
@@ -56,7 +56,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
                   </div>
                 )}
               </div>
-              <p className="mt-1 text-gray-500 text-sm break-words line-clamp-5">{proposal.body}</p>
+              <p className="mt-1 text-gray-500 text-sm break-words line-clamp-5 lg:line-clamp-3">{proposal.body}</p>
             </div>
           </div>
           <div className="w-full">
