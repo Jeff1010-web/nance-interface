@@ -20,7 +20,6 @@ interface VotingProps {
     address: string
     spaceId: string
     proposal: ProposalDataExtended
-    shouldOpen?: boolean
 }
 
 interface VotingError {
@@ -34,6 +33,7 @@ function classNames(...classes) {
 
 export default function VotingModal({modalIsOpen, closeModal, address, spaceId, proposal}: VotingProps) {
   const [selectedOption, setSelectedOption] = useState(1);
+  const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<VotingError>(undefined);
   const web3 = useContext(Web3Context);
@@ -59,11 +59,13 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
   const vote = async () => {
     try {
       beforeSubmitVote();
+      console.log("reason", reason);
       const receipt = await client.vote(web3, address, {
           space: spaceId,
           proposal: proposal.id,
           type: 'single-choice',
           choice: selectedOption,
+          reason: reason,
           app: 'juicetool'
       });
       console.info("📗 VotingModal ->", {spaceId, proposal, selectedOption}, receipt);
@@ -205,19 +207,28 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                               </div>
                             </RadioGroup>
                           </div>
-                          {/* <div className="mt-4 flex">
-                            <a href="#" className="group flex text-sm text-gray-500 hover:text-gray-700">
-                              <span>What size should I buy?</span>
-                              <QuestionMarkCircleIcon
-                                className="flex-shrink-0 ml-2 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                aria-hidden="true"
+                          <div className="mt-2">
+                            <label htmlFor="comment" className="block text-sm font-medium text-gray-700">
+                              Reason
+                            </label>
+                            <div className="mt-1">
+                              <textarea
+                                rows={3}
+                                maxLength={140}
+                                name="reason"
+                                id="reason"
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
                               />
-                            </a>
-                          </div> */}
+                            </div>
+                          </div>
+
+                          {/* Vote button and error info */}
                           {error && (
                             <div className="mt-6 flex items-center">
                               <ExclamationIcon className="flex-shrink-0 w-5 h-5 text-red-500" aria-hidden="true" />
-                              <p className="ml-2 font-medium text-gray-500">Error: {error.error_description}</p>
+                              <p className="ml-2 font-medium text-gray-500">{error.error_description || error.message}</p>
                             </div>
                           )}
                           <div className="mt-6">

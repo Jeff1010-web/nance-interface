@@ -39,7 +39,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
                 <h3 className="text-gray-900 text-xl font-medium">{proposal.title}</h3>
                 {/* Voted status */}
                 <div className='min-w-fit'>
-                  {votedData[proposal.id] && labelWithTooltip('Voted', `You voted ${votedData[proposal.id].choice} with ${formatNumber(votedData[proposal.id].score)} (${(votedData[proposal.id].score*100/proposal.scores_total).toFixed()}% of total votes)`, 'text-blue-800 bg-blue-100')}
+                  {votedData[proposal.id] && labelWithTooltip('Voted', `You voted ${votedData[proposal.id].choice} with ${formatNumber(votedData[proposal.id].score)} (${(votedData[proposal.id].score*100/proposal.scores_total).toFixed()}% of total votes) [Reason: ${votedData[proposal.id].reason}]`, 'text-blue-800 bg-blue-100')}
                 </div>
 
                 {/* Proposal status */}

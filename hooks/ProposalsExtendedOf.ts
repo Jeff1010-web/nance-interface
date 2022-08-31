@@ -67,6 +67,7 @@ query VotedProposals($first: Int, $space: String, $voter: String, $proposalIds: 
       choices
     },
     choice
+    reason
     vp
     created
   }
@@ -87,12 +88,15 @@ export interface ProposalDataExtended {
   voteByChoice: { [key: string]: number }
 }
 
+export interface VoteData {
+  choice: string
+  score: number
+  created: number
+  reason: string
+}
+
 export interface VotesData {
-  [id: string]: {
-    choice: string
-    score: number
-    created: number
-  }
+  [id: string]: VoteData
 }
 
 export function useProposalsExtendedOf(space: string, active: boolean, keyword: string, address: string, first: number): {
@@ -149,7 +153,8 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
       votedData[vote.proposal.id] = {
         choice: vote.proposal.choices[vote.choice-1],
         score: vote.vp,
-        created: vote.created
+        created: vote.created,
+        reason: vote.reason
       }
     });
   }
