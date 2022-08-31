@@ -210,7 +210,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
                 name="limit"
                 className="relative w-full rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700 hover:bg-gray-100 bg-gray-50"
                 value={limit}
-                onChange={(e) => setLimit(e.target.value)}
+                onChange={(e) => setLimit(parseInt(e.target.value))}
               >
                 <option value={10}>10</option>
                 <option value={20}>20</option>
