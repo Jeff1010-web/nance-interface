@@ -33,13 +33,15 @@ query Proposals($id: String) {
     id,
     title,
     state,
+    created,
     start,
     end,
     choices,
     votes,
     quorum,
     scores_total,
-    body
+    body,
+    author
   }
 }
 `
@@ -76,6 +78,7 @@ query VotesBySingleProposalId($first: Int, $id: String) {
     orderBy: "created",
     orderDirection: desc
   ) {
+    id
     voter
     vp
     choice
@@ -112,7 +115,7 @@ query VotedProposals($first: Int, $space: String, $voter: String, $proposalIds: 
 export interface ProposalDataExtended {
   id: string
   title: string
-  start: string
+  start: number
   state: string
   end: number
   choices: string[]
@@ -121,6 +124,8 @@ export interface ProposalDataExtended {
   scores_total: number
   body: string
   voteByChoice: { [key: string]: number }
+  author?: string
+  created?: number
 }
 
 export interface VoteData {
@@ -128,7 +133,8 @@ export interface VoteData {
   score: number
   created: number
   reason: string
-  voter?: string;
+  voter?: string
+  id?: string
 }
 
 export interface VotesData {
@@ -222,7 +228,7 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
 export function useProposalExtendedOf(proposalId: string, address: string): {
   loading: boolean,
   error: APIError<object>,
-  data: {proposalData: ProposalDataExtended, votedData: VoteData}
+  data: {proposalData: ProposalDataExtended, votedData: VoteData, votesData: VoteData[]}
 } {
 
   console.info("📗 useProposalExtendedOf ->", {proposalId, address});
@@ -247,6 +253,17 @@ export function useProposalExtendedOf(proposalId: string, address: string): {
       id: proposalId
     }
   });
+
+  const votesData = voteData?.votes.map(vote => {
+    return {
+      choice: proposalData?.proposal.choices[vote.choice-1],
+      score: vote.vp,
+      created: vote.created,
+      reason: vote.reason,
+      voter: vote.voter,
+      id: vote.id
+    }
+  })
 
   // Find voted proposals
   let votedData: VoteData;
@@ -275,7 +292,8 @@ export function useProposalExtendedOf(proposalId: string, address: string): {
         voteByChoice,
         ...proposalData?.proposal
       }, 
-      votedData
+      votedData,
+      votesData
     }, 
     loading: proposalLoading || voteLoading, 
     error: proposalError || voteError 
