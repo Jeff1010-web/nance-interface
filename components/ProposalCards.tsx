@@ -4,6 +4,7 @@ import { fromUnixTime, formatDistanceToNow, isPast } from 'date-fns'
 import { Tooltip } from 'flowbite-react';
 import VotingModal from './VotingModal';
 import { useState } from 'react';
+import Link from 'next/link';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -78,14 +79,15 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
           <div>
             <div className="-mt-px flex divide-x divide-gray-200">
               <div className="w-0 flex-1 flex">
-                <a
-                  href={`https://snapshot.org/#/${spaceId}/proposal/${proposal.id}`}
-                  target="_blank" rel="noreferrer"
-                  className="relative -mr-px w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-bl-lg hover:text-gray-500"
-                >
-                  <ExternalLinkIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                  <span className="ml-3">Snapshot</span>
-                </a>
+                <Link href={`/snapshot/${spaceId}/proposal/${proposal.id}`}>
+        
+                  <a
+                    className="relative -mr-px w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-bl-lg hover:text-gray-500"
+                  >
+                    <ExternalLinkIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
+                    <span className="ml-3">See more</span>
+                  </a>
+                </Link>
               </div>
               <div className="-ml-px w-0 flex-1 flex">
                 <button

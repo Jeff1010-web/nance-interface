@@ -27,6 +27,23 @@ query Proposals($first: Int, $space: String, $state: String, $keyword: String) {
 }
 `
 
+const PROPOSAL_QUERY = `
+query Proposals($id: String) {
+  proposal(id: $id) {
+    id,
+    title,
+    state,
+    start,
+    end,
+    choices,
+    votes,
+    quorum,
+    scores_total,
+    body
+  }
+}
+`
+
 const VOTES_BY_PROPOSALID_QUERY = `
 query VotesByProposalId($first: Int, $space: String, $proposalIds: [String]) {
   votes (
@@ -49,6 +66,24 @@ query VotesByProposalId($first: Int, $space: String, $proposalIds: [String]) {
 }
 `
 
+const VOTES_BY_SINGLE_PROPOSALID_QUERY = `
+query VotesBySingleProposalId($first: Int, $id: String) {
+  votes (
+    first: $first
+    where: {
+      proposal: $id
+    }
+    orderBy: "created",
+    orderDirection: desc
+  ) {
+    voter
+    vp
+    choice
+    reason
+    created
+  }
+}
+`
 
 const VOTED_PROPOSALS_QUERY = `
 query VotedProposals($first: Int, $space: String, $voter: String, $proposalIds: [String]) {
@@ -93,6 +128,7 @@ export interface VoteData {
   score: number
   created: number
   reason: string
+  voter?: string;
 }
 
 export interface VotesData {
@@ -181,4 +217,67 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
   })
 
   return { data: {proposalsData, votedData}, loading, error: proposalError || voteError || votedError };
+}
+
+export function useProposalExtendedOf(proposalId: string, address: string): {
+  loading: boolean,
+  error: APIError<object>,
+  data: {proposalData: ProposalDataExtended, votedData: VoteData}
+} {
+
+  console.info("📗 useProposalExtendedOf ->", {proposalId, address});
+  // Load proposals
+  const {
+    loading: proposalLoading,
+    data: proposalData,
+    error: proposalError
+  } = useQuery(PROPOSAL_QUERY, {
+    variables: {
+      id: proposalId
+    }
+  });
+  // Load related votes
+  const {
+    loading: voteLoading,
+    data: voteData,
+    error: voteError
+  } = useQuery(VOTES_BY_SINGLE_PROPOSALID_QUERY, {
+    variables: {
+      first: proposalData?.proposal.votes,
+      id: proposalId
+    }
+  });
+
+  // Find voted proposals
+  let votedData: VoteData;
+  if (address) {
+    const t = voteData?.votes.find((vote) => vote.voter == address)
+    if (t) {
+      votedData = {
+        choice: proposalData?.proposal.choices[t.choice-1],
+        score: t.vp,
+        created: t.created,
+        reason: t.reason
+      }
+    }
+  }
+  // Calculate voteByChoices
+  // { [proposalId]: { [choice]: score } }
+  const voteByChoice: { [choice: string]: number } = {};
+  proposalData?.proposal.choices.forEach((c: string) => voteByChoice[c] = 0)
+  voteData?.votes.forEach((vote) => {
+    voteByChoice[proposalData?.proposal.choices[vote.choice-1]] += vote.vp;
+  });
+
+  return { 
+    data: {
+      proposalData: {
+        voteByChoice,
+        ...proposalData?.proposal
+      }, 
+      votedData
+    }, 
+    loading: proposalLoading || voteLoading, 
+    error: proposalError || voteError 
+  };
 }
