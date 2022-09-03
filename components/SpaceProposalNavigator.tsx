@@ -196,7 +196,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
                 name="proposal-title"
                 id="proposal-title"
                 className="block w-full rounded-none rounded-l-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                placeholder="John Smith"
+                placeholder="grant, swap and payout etc."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
               />

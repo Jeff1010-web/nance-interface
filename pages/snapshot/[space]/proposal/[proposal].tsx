@@ -42,7 +42,6 @@ export default function SnapshotProposal() {
     const { data: spaceInfo } = useSpaceInfo(space as string);
     // load data
     const { loading, data, error } = useProposalExtendedOf(proposal as string, address);
-    console.log('here here', { data, error, loading })
     // state
     const [modalIsOpen, setModalIsOpen] = useState(false);
 
