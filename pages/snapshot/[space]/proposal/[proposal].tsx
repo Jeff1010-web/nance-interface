@@ -63,8 +63,14 @@ export default function SnapshotProposal() {
                             </a>
                         </Link>
                         <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100"
-                            onClick={() => setModalIsOpen(true)}>
-                            Vote
+                            onClick={() => setModalIsOpen(true)}
+                            disabled={data?.proposalData?.state !== 'active' || !address}>
+
+                            {(data?.proposalData?.state !== 'active' || !address) ? (
+                                <Tooltip trigger="hover" content={data?.proposalData?.state !== 'active' ? "Proposal is not active" : !address ? "You haven't connected wallet" : "Proposal is active and you can vote on it"}>
+                                <span>{data?.votedData ? "Revote" : "Vote"}</span>
+                                </Tooltip>
+                            ) : (<span>{data?.votedData ? "Revote" : "Vote"}</span>)}
                         </button>
                         {data?.proposalData?.choices && (
                             <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId={space as string} proposal={data?.proposalData} />
