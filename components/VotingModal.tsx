@@ -1,11 +1,12 @@
-import { useContext, useState, Fragment } from "react"
+import { useState, Fragment } from "react"
 import useVotingPower from "../hooks/VotingPower"
-import { Web3Context } from "../pages/snapshot/[space]"
 import snapshot from '@snapshot-labs/snapshot.js'
 import { Dialog, RadioGroup, Transition } from '@headlessui/react'
 import { ProposalDataExtended } from "../hooks/ProposalsExtendedOf"
 import { XIcon } from '@heroicons/react/outline'
 import { CheckIcon, ExclamationIcon } from '@heroicons/react/solid'
+import { useSigner } from "wagmi"
+import { Wallet } from "@ethersproject/wallet"
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -31,8 +32,8 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(undefined);
-  const web3 = useContext(Web3Context);
-  const { data: vp } = useVotingPower(address, spaceId, proposal.id);
+  const { data: signer, isError, isLoading } = useSigner();
+  const { data: vp } = useVotingPower(address, spaceId, proposal?.id || '');
 
   // shorthand functions
   const beforeSubmitVote = () => {
@@ -55,7 +56,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
     try {
       beforeSubmitVote();
       console.log("reason", reason);
-      const receipt = await client.vote(web3, address, {
+      const receipt = await client.vote(signer as Wallet, address, {
           space: spaceId,
           proposal: proposal.id,
           type: 'single-choice',
@@ -69,7 +70,71 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
       errorWithSubmit(e);
       console.error("🔴 VotingModal ->", e);
     }
-}
+  }
+
+  if(proposal === undefined) {
+    return <div>Proposal not selected</div>
+  }
+
+  const renderVoteButton = () => {
+    if(address=='') {
+      return (
+        <button
+          type="button"
+          onClick={closeModalAndReset}
+          className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+        >
+          Wallet not connected
+        </button>
+      )
+    }
+
+    if(isLoading) {
+      return (
+        <button
+          type="button"
+          onClick={closeModalAndReset}
+          className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+        >
+          Loading wallet
+        </button>
+      )
+    }
+
+    if(isError) {
+      return (
+        <button
+          type="button"
+          onClick={closeModalAndReset}
+          className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+        >
+          Can't load the wallet
+        </button>
+      )
+    }
+
+    if(vp>0) {
+      return (
+        <button
+          type="button"
+          onClick={vote}
+          className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+          >
+          {submitting ? "Submitting..." : "Submit vote"}
+        </button>
+      )
+    }
+
+    return (
+      <button
+        type="button"
+        onClick={closeModalAndReset}
+        className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+      >
+      Close
+      </button>
+    )
+  }
 
   return (
     <Transition.Root show={modalIsOpen} as={Fragment}>
@@ -227,23 +292,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                             </div>
                           )}
                           <div className="mt-6">
-                            {vp > 0 ? (
-                              <button
-                                type="button"
-                                onClick={vote}
-                                className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
-                                >
-                                {submitting ? "Submitting..." : "Submit vote"}
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={closeModalAndReset}
-                                className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
-                              >
-                              Close
-                            </button>
-                            )}
+                            {renderVoteButton()}
                           </div>
                           {/* <div className="mt-6 text-center">
                             <a href="#" className="group inline-flex text-base font-medium">

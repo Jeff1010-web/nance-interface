@@ -1,8 +1,7 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext } from 'react';
 import { useRouter } from 'next/router'
 import { useProposalsExtendedOf } from "../../hooks/ProposalsExtendedOf";
 import { useAccount } from 'wagmi'
-import { Web3Provider } from '@ethersproject/providers';
 import SiteNav from "../../components/SiteNav";
 import SpaceProposalNavigator from '../../components/SpaceProposalNavigator';
 import ProposalCards from '../../components/ProposalCards';
@@ -24,7 +23,6 @@ export default function SnapshotSpace() {
     const [filterByUnderQuorum, setFilterByUnderQuorum] = useQueryParam('underQuorum', withDefault(BooleanParam, false));
     const [keyword, setKeyword] = useQueryParam('keyword', withDefault(StringParam, ''));
     const [limit, setLimit] = useQueryParam('limit', withDefault(NumberParam, 10));
-    const [web3, setWeb3] = useState(undefined);
     const connectedAddress = isConnected ? address : "";
 
     // load data
@@ -53,12 +51,6 @@ export default function SnapshotSpace() {
         {id: "under-quorum", name: "Under quorum", value: filterByUnderQuorum, setter: setFilterByUnderQuorum}
     ]
 
-    useEffect(() => {
-        if (window.ethereum) {
-            setWeb3(new Web3Provider(window.ethereum));
-        }
-    }, []);
-
     return (
         <>
             <SiteNav pageTitle={`${spaceInfo?.name || (space as string) || ''} Proposals`} currentIndex={5} description="Snapshot voting with filter, search bar and quick overview on single page." image="/images/unsplash_voting.jpeg" />
@@ -69,12 +61,10 @@ export default function SnapshotSpace() {
                     {error && <div className="text-center">Something wrong.</div>}
                 </div>
                 <div className="flex flex-row flex-wrap mx-4 px-4 lg:px-20 justify-center">
-                    <Web3Context.Provider value={web3}>
-                        {loading && <div className="text-center">Loading proposals...</div>}
-                        {!loading && !error && (
-                            <ProposalCards address={address} spaceId={space as string} proposals={filteredProposals} votedData={votedData} />
-                        )}
-                    </Web3Context.Provider>
+                    {loading && <div className="text-center">Loading proposals...</div>}
+                    {!loading && !error && (
+                        <ProposalCards address={address} spaceId={space as string} proposals={filteredProposals} votedData={votedData} />
+                    )}
                 </div>
             </div>
         </>

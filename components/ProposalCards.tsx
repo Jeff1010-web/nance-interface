@@ -28,9 +28,10 @@ const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
 )
 
 export default function ProposalCards({address, spaceId, proposals, votedData}: {address: string, spaceId: string, proposals: ProposalDataExtended[], votedData: VotesData}) {
-  const [votingProposalId, setVotingProposalId] = useState('');
+  const [votingProposal, setVotingProposal] = useState(undefined);
 
   return (
+    <>
     <ul role="list" className="grid grid-cols-1 gap-6 max-w-7xl">
       {proposals.map((proposal) => (
         <li key={proposal.id} className="col-span-1 bg-white rounded-lg shadow divide-y divide-gray-200">
@@ -92,7 +93,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
               <div className="-ml-px w-0 flex-1 flex">
                 <button
                   disabled={proposal.state !== 'active' || !address}
-                  onClick={()=>setVotingProposalId(proposal.id)}
+                  onClick={() => setVotingProposal(proposal)}
                   className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
                 >
                   <ArchiveIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
@@ -105,9 +106,10 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
               </div>
             </div>
           </div>
-          <VotingModal modalIsOpen={votingProposalId === proposal.id} closeModal={() => setVotingProposalId('')} address={address} spaceId={spaceId} proposal={proposal} />
         </li>
       ))}
     </ul>
+    <VotingModal modalIsOpen={votingProposal !== undefined} closeModal={() => setVotingProposal(undefined)} address={address} spaceId={spaceId} proposal={votingProposal} />
+    </>
   )
 }

@@ -7,18 +7,10 @@ import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { Tooltip } from 'flowbite-react';
 
-import {
-    CheckIcon,
-    ThumbUpIcon,
-    QuestionMarkCircleIcon,
-    UserIcon,
-  } from '@heroicons/react/solid'
 import FormattedAddress from "../../../../components/FormattedAddress";
 import { formatDistanceToNow, fromUnixTime, format } from "date-fns";
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
+import { useState } from "react";
+import VotingModal from "../../../../components/VotingModal";
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -33,6 +25,8 @@ export default function SnapshotProposal() {
     // load data
     const { loading, data, error } = useProposalExtendedOf(proposal as string, address);
     console.log('here here', { data, error, loading })
+    // state
+    const [modalIsOpen, setModalIsOpen] = useState(false);
 
     return (
         <>
@@ -65,14 +59,16 @@ export default function SnapshotProposal() {
                     <div className="justify-stretch mt-6 flex flex-col-reverse space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-y-0 sm:space-x-3 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
                         <Link href={`/snapshot/${space}`}>
                             <a className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
-                                Back to space
+                                Back
                             </a>
                         </Link>
-                        <Link href='#vote'>
-                            <a className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
-                                Go to vote
-                            </a>
-                        </Link>
+                        <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+                            onClick={() => setModalIsOpen(true)}>
+                            Vote
+                        </button>
+                        {data?.proposalData?.choices && (
+                            <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId={space as string} proposal={data?.proposalData} />
+                        )}
                     </div>
                 </div>
 
@@ -147,51 +143,6 @@ export default function SnapshotProposal() {
                             </ul>
                             </div>
                         </div>
-                        <div className="bg-gray-50 px-4 py-6 sm:px-6">
-                            <div className="flex space-x-3">
-                            <div className="flex-shrink-0">
-                                <img className="h-10 w-10 rounded-full" src={`https://cdn.stamp.fyi/avatar/${address}?s=160`} alt="" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <form action="#">
-                                <div>
-                                    <label htmlFor="comment" className="sr-only">
-                                    About
-                                    </label>
-                                    <textarea
-                                    id="reason"
-                                    name="reason"
-                                    maxLength={140}
-                                    rows={3}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                    placeholder="Add a note"
-                                    defaultValue={''}
-                                    />
-                                </div>
-                                <div className="mt-3 flex items-center justify-between">
-                                    <a
-                                        href="#"
-                                        id="vote"
-                                        className="group inline-flex items-start space-x-2 text-sm text-gray-500 hover:text-gray-900"
-                                    >
-                                        <QuestionMarkCircleIcon
-                                            className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
-                                            aria-hidden="true"
-                                        />
-                                        <span>140 characters max</span>
-                                    </a>
-                                    <button
-                                    type="submit"
-                                    disabled
-                                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                    >
-                                    Vote
-                                    </button>
-                                </div>
-                                </form>
-                            </div>
-                            </div>
-                        </div>
                         </div>
                     </section>
                     </div>
@@ -226,13 +177,6 @@ export default function SnapshotProposal() {
                                     </div>
                                 ))}
                             </dl>
-                        </div>
-                        <div className="justify-stretch mt-6 flex flex-col">
-                            <Link href='#vote'>
-                                <a className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
-                                    Go to vote
-                                </a>
-                            </Link>
                         </div>
                     </div>
                     </section>
