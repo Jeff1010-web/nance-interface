@@ -12,8 +12,26 @@ import { formatDistanceToNow, fromUnixTime, format } from "date-fns";
 import { useState } from "react";
 import VotingModal from "../../../../components/VotingModal";
 
+function classNames(...classes) {
+    return classes.filter(Boolean).join(' ')
+}
+
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
+
+const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
+    <Tooltip
+      content={tooltip}
+      trigger="hover"
+    >
+      <span className={classNames(
+                        colors,
+                        "flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full"
+                    )}>
+        {label}
+      </span>
+    </Tooltip>
+)
 
 export default function SnapshotProposal() {
     // router
@@ -83,14 +101,20 @@ export default function SnapshotProposal() {
                     {/* Description list*/}
                     <section aria-labelledby="applicant-information-title">
                         <div className="bg-white shadow sm:rounded-lg">
-                        <div className="px-4 py-5 sm:px-6">
+                        <div className="px-4 py-5 sm:px-6 flex space-x-3">
                             <h2 id="applicant-information-title" className="text-lg font-medium leading-6 text-gray-900">
-                                Proposal body
+                                Proposal
                             </h2>
-                            <p className="mt-1 max-w-2xl text-sm text-gray-500">Proposal details.</p>
+                            {/* Proposal status */}
+                            <div className='min-w-fit'>
+                            {data?.proposalData.state === 'active' && labelWithTooltip('Active', 'Ends ' + formatDistanceToNow(fromUnixTime(data?.proposalData.end), { addSuffix: true }), 'text-green-800 bg-green-100')}
+                            {data?.proposalData.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
+                            {data?.proposalData.state === 'closed' && labelWithTooltip('Closed', formatDistanceToNow(fromUnixTime(data?.proposalData.end), { addSuffix: true }), 'text-gray-800 bg-gray-100')}
+                            </div>
+                            {/* <p className="mt-1 max-w-2xl text-sm text-gray-500">Proposal details.</p> */}
                         </div>
                         <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
-                            <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500">
+                            <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
                                 <ReactMarkdown>{data?.proposalData.body}</ReactMarkdown>
                             </article>
                         </div>
@@ -104,8 +128,8 @@ export default function SnapshotProposal() {
                         </div>
                     </section>
 
-                    {/* Comments*/}
-                    <section aria-labelledby="notes-title">
+                    {/* Votes */}
+                    <section aria-labelledby="votes-title" className={data?.proposalData?.state == 'pending' && 'hidden'}>
                         <div className="bg-white shadow sm:overflow-hidden sm:rounded-lg">
                         <div className="divide-y divide-gray-200">
                             <div className="px-4 py-5 sm:px-6">
@@ -117,43 +141,46 @@ export default function SnapshotProposal() {
                             </h2>
                             </div>
                             <div className="px-4 py-6 sm:px-6">
-                            <ul role="list" className="space-y-8">
-                                {data?.votesData?.map((vote: VoteData) => (
-                                <li key={vote.id}>
-                                    <div className="flex space-x-3">
-                                    <div className="flex-shrink-0">
-                                        <img
-                                        className="h-10 w-10 rounded-full"
-                                        src={`https://cdn.stamp.fyi/avatar/${vote.voter}?s=160`}
-                                        alt=""
-                                        />
-                                    </div>
-                                    <div>
-                                        <div className="text-sm">
-                                            <FormattedAddress address={vote.voter} style="font-medium text-gray-900" />&nbsp;{vote.choice}&nbsp;{formatNumber(vote.score)}
+                                <ul role="list" className="space-y-8">
+                                    {data?.votesData?.map((vote: VoteData) => (
+                                    <li key={vote.id}>
+                                        <div className="flex space-x-3">
+                                            <div className="flex-shrink-0">
+                                                <img className="h-10 w-10 rounded-full"
+                                                    src={`https://cdn.stamp.fyi/avatar/${vote.voter}?s=160`}
+                                                    alt={`avatar of ${vote.voter}`}
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="text-sm">
+                                                    <FormattedAddress address={vote.voter} style="font-medium text-gray-900" />
+                                                    &nbsp;<span className="italic">{vote.choice}</span>
+                                                    &nbsp;<span className="underline">{formatNumber(vote.score)}</span>
+                                                </div>
+                                                <div className="mt-1 text-sm text-gray-700">
+                                                <p>{vote.reason}</p>
+                                                </div>
+                                                <div className="mt-2 space-x-2 text-sm">
+                                                    <span className="font-medium text-gray-500">
+                                                        {formatDistanceToNow(fromUnixTime(vote.created), { addSuffix: true })}
+                                                    </span>{' '}
+                                                    {/* <span className="font-medium text-gray-500">&middot;</span>{' '}
+                                                    <button type="button" className="font-medium text-gray-900">
+                                                        IPFS
+                                                    </button> */}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="mt-1 text-sm text-gray-700">
-                                        <p>{vote.reason}</p>
-                                        </div>
-                                        <div className="mt-2 space-x-2 text-sm">
-                                        <span className="font-medium text-gray-500">{formatDistanceToNow(fromUnixTime(vote.created), { addSuffix: true })}</span>{' '}
-                                        {/* <span className="font-medium text-gray-500">&middot;</span>{' '}
-                                        <button type="button" className="font-medium text-gray-900">
-                                            IPFS
-                                        </button> */}
-                                        </div>
-                                    </div>
-                                    </div>
-                                </li>
-                                ))}
-                            </ul>
+                                    </li>
+                                    ))}
+                                </ul>
                             </div>
                         </div>
                         </div>
                     </section>
                     </div>
 
-                    <section aria-labelledby="timeline-title" className="lg:col-span-1 lg:col-start-3">
+                    <section aria-labelledby="stats-title" className="lg:col-span-1 lg:col-start-3">
                     <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6">
                         <h2 id="timeline-title" className="text-lg font-medium text-gray-900">
                         Stats
@@ -171,7 +198,7 @@ export default function SnapshotProposal() {
                                     </Tooltip>
                                 </div>
                                 {/* Vote choice data */}
-                                {data?.proposalData?.choices?.map((choice) => (
+                                {data?.proposalData.scores_total > 0 && data?.proposalData?.choices?.filter((choice) => data?.proposalData.voteByChoice[choice]>0).map((choice) => (
                                     <div key={`${data?.proposalData.id}-${choice}`} className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
                                         <Tooltip
                                             content={choice}
@@ -179,7 +206,12 @@ export default function SnapshotProposal() {
                                         >
                                             <dt className="text-sm font-medium text-gray-500 truncate">{choice}</dt>
                                         </Tooltip>
-                                        <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{data?.proposalData.scores_total > 0 ? (data?.proposalData.voteByChoice[choice]*100/data?.proposalData.scores_total).toFixed() : 0}%</dd>
+                                        <Tooltip
+                                            content={formatNumber(data?.proposalData.voteByChoice[choice])}
+                                            trigger="hover"
+                                        >
+                                            <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(data?.proposalData.voteByChoice[choice]*100/data?.proposalData.scores_total).toFixed(2)}%</dd>
+                                        </Tooltip>
                                     </div>
                                 ))}
                             </dl>

@@ -73,7 +73,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
   }
 
   if(proposal === undefined) {
-    return <div>Proposal not selected</div>
+    return <div className="hidden">Proposal not selected</div>
   }
 
   const renderVoteButton = () => {

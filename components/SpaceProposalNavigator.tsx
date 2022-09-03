@@ -124,7 +124,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
 
       <div className="max-w-7xl mx-auto py-6 lg:py-16 px-4 sm:px-6 lg:px-8">
         {/* Followed Space Tabs */}
-        <div className="hidden sm:block">
+        <div>
           <div>
             <nav className="-mb-px flex space-x-8 overflow-auto" aria-label="Tabs">
               {tabs.map((tab) => (
@@ -231,7 +231,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
 
         <div className="relative z-10 bg-white border-b border-gray-200 pb-4">
           <div className="max-w-7xl mx-auto px-4 flex items-center justify-between sm:px-6 lg:px-8">
-            <Menu as="div" className="relative inline-block text-left sm:hidden">
+            {/* <Menu as="div" className="relative inline-block text-left sm:hidden">
               <div>
                 <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
                   Jump to space
@@ -283,14 +283,14 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
                   </div>
                 </Menu.Items>
               </Transition>
-            </Menu>
+            </Menu> */}
 
             <button
               type="button"
               className="inline-block text-sm font-medium text-gray-700 hover:text-gray-900 sm:hidden"
               onClick={() => setOpen(true)}
             >
-              Filters
+              Select Filters
             </button>
 
             <div className="hidden sm:block">
