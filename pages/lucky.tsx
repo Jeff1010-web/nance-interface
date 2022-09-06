@@ -43,7 +43,7 @@ export default function Lucky() {
             <p className="text-center text-lg font-semibold text-gray-600">
                 Random Juicebox Project
             </p>
-            <ul role="list" className="mt-6 grid grid-cols-1 gap-6 max-w-7xl">
+            <ul role="list" className="mt-6 grid grid-cols-1 gap-6">
                 <li className="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white text-center shadow">
                     <div className="flex flex-1 flex-col p-8">
                         <img className="mx-auto h-32 w-32 flex-shrink-0 rounded-full" src={metadata?.logoUri || '/images/juiceboxdao_logo.gif'} alt="project logo" />
