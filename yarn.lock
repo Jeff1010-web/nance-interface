@@ -1064,6 +1064,11 @@
   resolved "https://registry.npmjs.org/@jbx-protocol/contracts-v1/-/contracts-v1-2.0.0.tgz"
   integrity sha512-70BvKKor6iM8eBTa4klH7iOA5+/oa0J5gMpazK5nECrn8U0xeKTB19v+jXmTu+26JYruZHzCKZVdV5aH+c8qnA==
 
+"@jbx-protocol/contracts-v2@^8.0.2":
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/@jbx-protocol/contracts-v2/-/contracts-v2-8.0.2.tgz#6afe6e02df28ce6f24161feeef92c2a830ccc041"
+  integrity sha512-QSL5gcFPupl5t8coORnQz4kOlsYYxuuq8lzdvwAN37v6PnoyzQ2To4bsJUI0PqAHfcsIu/jBsXK7lq+KGMvEXQ==
+
 "@jridgewell/gen-mapping@^0.3.2":
   version "0.3.2"
   resolved "https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.2.tgz"
@@ -4085,6 +4090,18 @@ jsonify@~0.0.0:
   dependencies:
     array-includes "^3.1.5"
     object.assign "^4.1.2"
+
+juice-hooks@^3.2.5-alpha:
+  version "3.2.5-alpha"
+  resolved "https://registry.yarnpkg.com/juice-hooks/-/juice-hooks-3.2.5-alpha.tgz#43a63453de554bfbeb4e68298235a52274a308df"
+  integrity sha512-vTlKH5x+JQ7vUPzYlZW0lGRtxn2Ux0BkZRS2En5p0Pje0ndTumj9tgjVtykdFvHRp2yw20uwNqU1SAgU4BaNEg==
+  dependencies:
+    juice-sdk "2.1.0-alpha"
+
+juice-sdk@2.1.0-alpha:
+  version "2.1.0-alpha"
+  resolved "https://registry.yarnpkg.com/juice-sdk/-/juice-sdk-2.1.0-alpha.tgz#bd2bf97f4c4c1b6ce3043acf94ce811c33fec686"
+  integrity sha512-KmYmYmMxLR6NEN4v8KnL22ghcc6dl9pndU00UmutY3NhkdIvrBx8gcVngfPaBa5wWTYThpzmK3iUjotZoh6pVA==
 
 keccak@^3.0.0, keccak@^3.0.1:
   version "3.0.2"
