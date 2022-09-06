@@ -7,6 +7,7 @@ import { XIcon } from '@heroicons/react/outline'
 import { CheckIcon, ExclamationIcon } from '@heroicons/react/solid'
 import { useSigner } from "wagmi"
 import { Wallet } from "@ethersproject/wallet"
+import Notification from "./Notification"
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -32,6 +33,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(undefined);
+  const [notificationShow, setNotificationShow] = useState(false);
   const { data: signer, isError, isLoading } = useSigner();
   const { data: vp } = useVotingPower(address, spaceId, proposal?.id || '');
 
@@ -40,9 +42,12 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
     setSubmitting(true);
     setError(undefined);
   }
-  const closeModalAndReset = () => {
+  const reset = () => {
     setSubmitting(false);
     setError(undefined);
+  }
+  const closeModalAndReset = () => {
+    reset();
     closeModal();
   }
   const errorWithSubmit = (e) => {
@@ -65,7 +70,8 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
           app: 'juicetool'
       });
       console.info("📗 VotingModal ->", {spaceId, proposal, selectedOption}, receipt);
-      closeModalAndReset();
+      reset();
+      setNotificationShow(true);
     } catch (e) {
       errorWithSubmit(e);
       console.error("🔴 VotingModal ->", e);
@@ -184,6 +190,10 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                         </a>
                       </p>
                     </div> */}
+                    <Notification title="Vote result" description="Success!" show={notificationShow} close={() => setNotificationShow(false)} checked={true} />
+                    {error && 
+                      <Notification title="Vote result" description={error.error_description || error.message} show={true} close={() => setError(undefined)} checked={false} />
+                    }
                     <div className="sm:col-span-12 lg:col-span-12">
                       <h2 className="text-2xl font-bold text-gray-900 sm:pr-12">{proposal.title}</h2>
 
@@ -285,12 +295,6 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                           </div>
 
                           {/* Vote button and error info */}
-                          {error && (
-                            <div className="mt-6 flex items-center">
-                              <ExclamationIcon className="flex-shrink-0 w-5 h-5 text-red-500" aria-hidden="true" />
-                              <p className="ml-2 font-medium text-gray-500">{error.error_description || error.message}</p>
-                            </div>
-                          )}
                           <div className="mt-6">
                             {renderVoteButton()}
                           </div>
