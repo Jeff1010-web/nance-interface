@@ -1,59 +1,96 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { CreditCardIcon, ExternalLinkIcon } from '@heroicons/react/solid'
+import { CreditCardIcon, ExternalLinkIcon, ArrowUpIcon } from '@heroicons/react/solid'
 import Link from 'next/link'
 import SiteNav from '../components/SiteNav'
-import { useJBProjects, useJBETHPaymentTerminal } from 'juice-hooks'
+import { useJBProjects } from 'juice-hooks'
 import { useEffect, useState } from 'react'
 import { consolidateMetadata } from '../libs/projectMetadata'
 import FormattedAddress from '../components/FormattedAddress'
 import seedrandom from 'seedrandom';
+import { BigNumber } from 'ethers'
+import { formatDistanceToNow, fromUnixTime } from 'date-fns'
 
-const SUBGRAPH_URL =
-  "https://api.thegraph.com/subgraphs/id/QmRoxhw8zQzsVpVj8Mf4hs5bYwTxTxyvZEpHPLZ6shVsXy";
-
+const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/id/QmX4XXkA1XA1Fb8gQHd4TNvkRDQGPWZ2m7oANQG3W9iRq8";
+const projectQuery = `query project($id: ID!) {
+    project(id: $id) {
+        metadataUri
+        owner
+        handle
+        totalPaid
+        totalRedeemed
+        trendingPaymentsCount
+        trendingVolume
+        currentBalance
+        createdAt
+    }
+  }
+`;
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
+function formatEtherValue(val: string) {
+    // 1e16
+    const unit = BigNumber.from("10000000000000000");
+    return 'Ξ' + (BigNumber.from(val).div(unit).toNumber()/100).toFixed(2);
+}
+
+interface ProjectInfo {
+    metadataUri: string
+    owner: string
+    handle: string
+    totalPaid: string
+    totalRedeemed: string
+    trendingPaymentsCount: number
+    trendingVolume: string
+    currentBalance: string
+    createdAt: number
+}
+
 export default function Lucky() {
     // state
+    const [totalProject, setTotalProject] = useState(219);
     const [isRandom, setRandom] = useState(false);
     const [projectId, setProjectId] = useState(1);
-    const [owner, setOwner] = useState(undefined);
     const [metadata, setMetadata] = useState(undefined);
+    const [projectInfo, setProjectInfo] = useState<ProjectInfo>(undefined)
     // external call
     const projects = useJBProjects();
-    //const ethTerminal = useJBETHPaymentTerminal();
+    // load total project count
+    useEffect(() => {
+        projects.count().then(cnt => setTotalProject(cnt.toNumber()));
+    }, []);
     useEffect(() => {
         getNewRandomProject();
-    }, [isRandom]);
+    }, [isRandom, totalProject]);
 
     const getNewRandomProject = () => {
+        setProjectInfo(undefined);
         setMetadata(undefined);
-        projects.count().then(cnt => {
-            let random: number;
-            if(isRandom) {
-                random = Math.floor(Math.random() * cnt.toNumber())+1;
-            } else {
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                const rng = seedrandom(today.toString());
-                random = Math.floor(rng() * cnt.toNumber())+1;
-            }
-            console.info('📗 Lucky.project >', {isRandom, total: cnt, random});
-            setProjectId(random);
-            // load owner
-            projects.ownerOf(random).then(addr => setOwner(addr));
-            // load metadata
-            projects.metadataContentOf(random, '0')
-                .then(cid => {
-                    console.info('📗 Lucky.metadata >', {url: `https://jbx.mypinata.cloud/ipfs/${cid}`});
-                    fetch(`https://jbx.mypinata.cloud/ipfs/${cid}`)
-                        .then((res) => res.json())
-                        .then((metadata) => setMetadata(consolidateMetadata(metadata)))
-                });    
-        });
+        let randomProjectId: number;
+        if(isRandom) {
+            randomProjectId = Math.floor(Math.random() * totalProject)+1;
+        } else {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const rng = seedrandom(today.toString());
+            randomProjectId = Math.floor(rng() * totalProject)+1;
+        }
+        console.info('📗 Lucky.random >', {isRandom, total: totalProject, randomProjectId});
+        setProjectId(randomProjectId);
+        // load infos
+        fetch(SUBGRAPH_URL, {
+            method: "POST",
+            body: JSON.stringify({ query: projectQuery, variables: { id: `2-${randomProjectId}` } }),
+        }).then((response) => response.json())
+            .then((res) => {
+                console.info('📗 Lucky.subgraph >', {res});
+                setProjectInfo(res.data.project)
+                fetch(`https://jbx.mypinata.cloud/ipfs/${res.data.project.metadataUri}`)
+                    .then((res) => res.json())
+                    .then((metadata) => setMetadata(consolidateMetadata(metadata)))
+            })
     }
 
   return (
@@ -109,19 +146,20 @@ export default function Lucky() {
                                 }
                                 <a href={`https://juicebox.money/v2/p/${projectId}`} target="_blank" rel="noopener noreferrer">
                                     <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
-                                        v2: {projectId}
+                                        v2: {projectInfo?.handle ? '@'+projectInfo?.handle : projectId}
                                     </span>
                                 </a>
                             </dd>
                             <dt className="sr-only">Description</dt>
-                            <dd className="text-sm text-gray-500 break-words line-clamp-5 lg:line-clamp-3">{metadata?.description || 'Loading metadata...'}</dd>
-                            <dd className="text-sm text-gray-500">Owned by {owner ? <FormattedAddress address={owner} /> : 'Loading owner...'}</dd>
-                            {/* <dt className="sr-only">Stats</dt>
-                            <dd className="mt-3">
-                                <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
-                                    Beta
-                                </span>
-                            </dd> */}
+                            <dd className="text-sm text-gray-700 break-words line-clamp-5 lg:line-clamp-3">{metadata?.description || 'Loading metadata...'}</dd>
+                            {projectInfo?.createdAt && <dd className="mt-2 text-sm text-gray-500">Created {formatDistanceToNow(fromUnixTime(projectInfo?.createdAt), { addSuffix: true })}</dd>}
+                            <dd className="text-sm text-gray-500">Owned by {projectInfo?.owner ? <FormattedAddress address={projectInfo.owner} /> : 'loading...'}</dd>
+                            <dt className="sr-only">Stats</dt>
+                            <dl className="mt-5 grid grid-cols-1 divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow md:grid-cols-3 md:divide-y-0 md:divide-x">
+                            <StatCard data={{name: "Volume", stat: formatEtherValue(projectInfo?.totalPaid ?? '0'), change: projectInfo?.totalPaid !== '0' ? (BigNumber.from(projectInfo?.trendingVolume ?? 0).mul(100).div(projectInfo?.totalPaid ?? 1).toNumber()).toFixed(2) + '%' : '0%'}} />
+                            <StatCard data={{name: "Recent Payments", stat: ''+(projectInfo?.trendingPaymentsCount??0)}} />
+                            <StatCard data={{name: "Balance", stat: formatEtherValue(projectInfo?.currentBalance ?? '0')}} />
+                        </dl>
                         </dl>
                     </div>
                     <div>
@@ -137,8 +175,7 @@ export default function Lucky() {
                             </Link>
                         </div>
                         <div className="-ml-px flex w-0 flex-1">
-                            <a
-                                href="#"
+                            <a href={`https://juicebox.money/v2/p/${projectId}`} target="_blank" rel="noopener noreferrer"
                                 className="relative inline-flex w-0 flex-1 items-center justify-center rounded-br-lg border border-transparent py-4 text-sm font-medium text-gray-700 hover:text-gray-500"
                             >
                                 <CreditCardIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -154,3 +191,36 @@ export default function Lucky() {
   )
 }
 
+const stats = [
+    { name: 'Total Subscribers', stat: '71,897', previousStat: '70,946', change: '12%', changeType: 'increase' },
+    { name: 'Avg. Open Rate', stat: '58.16%', previousStat: '56.14%', change: '2.02%', changeType: 'increase' },
+    { name: 'Avg. Click Rate', stat: '24.57%', previousStat: '28.62%', change: '4.05%', changeType: 'decrease' },
+  ]
+
+function StatCard({data}: {data: {name: string, stat: string, change?: string}}) {
+    return (
+        <div className="px-4 py-5 sm:p-6">
+            <dt className="text-base text-left font-normal text-gray-900">{data.name}</dt>
+            <dd className="mt-1 flex items-baseline justify-between md:block lg:flex">
+                <div className="flex items-baseline text-2xl font-semibold text-indigo-600">
+                    {data.stat}
+                    {/* <span className="ml-2 text-sm font-medium text-gray-500">from {data.previousStat}</span> */}
+                </div>
+
+                {data.change && (
+                    <div
+                    className='bg-green-100 text-green-800 inline-flex items-baseline px-2.5 py-0.5 rounded-full text-sm font-medium md:mt-2 lg:mt-0'
+                    >
+                        <ArrowUpIcon
+                            className="-ml-1 mr-0.5 h-5 w-5 flex-shrink-0 self-center text-green-500"
+                            aria-hidden="true"
+                        />
+
+                        <span className="sr-only"> {'Increased'} by </span>
+                        {data.change}
+                    </div>
+                )}
+            </dd>
+        </div>
+    )
+}
