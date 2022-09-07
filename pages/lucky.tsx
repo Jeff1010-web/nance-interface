@@ -9,7 +9,6 @@ import FormattedAddress from '../components/FormattedAddress'
 import seedrandom from 'seedrandom';
 import { BigNumber } from 'ethers'
 import { formatDistanceToNow, fromUnixTime } from 'date-fns'
-import {useQueryParam, NumberParam, withDefault} from 'next-query-params';
 
 const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/id/QmX4XXkA1XA1Fb8gQHd4TNvkRDQGPWZ2m7oANQG3W9iRq8";
 const projectQuery = `query project($id: ID!) {
@@ -50,10 +49,13 @@ interface ProjectInfo {
 }
 
 export default function Lucky() {
+    // constant
+    const v1ProjectCount = 249 + 394; 
     // state
-    const [totalProject, setTotalProject] = useState(219);
+    const [v2ProjectCount, setV2ProjectCount] = useState(219);
     const [isRandom, setRandom] = useState(false);
-    const [projectId, setProjectId] = useQueryParam('id', withDefault(NumberParam, 1));
+    const [projectId, setProjectId] = useState(1);
+    const [projectVersion, setProjectVersion] = useState(1);
     const [metadata, setMetadata] = useState(undefined);
     const [projectInfo, setProjectInfo] = useState<ProjectInfo>(undefined)
     // external call
@@ -61,27 +63,40 @@ export default function Lucky() {
     // load total project count
     useEffect(() => {
         projects.count().then(cnt => {
-            setTotalProject(cnt.toNumber());
+            setV2ProjectCount(cnt.toNumber());
             getNewRandomProject();
         });
     }, [isRandom]);
 
+    const genRandomProject = (randomNumber) => {
+        const total = v1ProjectCount + v2ProjectCount;
+        const index = Math.floor(randomNumber * total)+1;
+        if(index <= v1ProjectCount) {
+            return [1, index]
+        } else {
+            return [2, (index - v1ProjectCount)]
+        }
+    }
+
     const getNewRandomProject = () => {
         let randomProjectId: number;
+        let randomProjectVersion: number;
         if(isRandom) {
-            randomProjectId = Math.floor(Math.random() * totalProject)+1;
+            [randomProjectVersion, randomProjectId] = genRandomProject(Math.random());
         } else {
             const today = new Date();
             today.setHours(0,0,0,0);
             const rng = seedrandom(today.toString());
-            randomProjectId = Math.floor(rng() * totalProject)+1;
+            [randomProjectVersion, randomProjectId] = genRandomProject(rng());
         }
-        console.info('📗 Lucky.random >', {isRandom, total: totalProject, randomProjectId});
+        console.info('📗 Lucky.random >', {isRandom, v1ProjectCount, v2ProjectCount, randomProjectId, randomProjectVersion});
+
         setProjectId(randomProjectId);
+        setProjectVersion(randomProjectVersion);
         // load infos
         fetch(SUBGRAPH_URL, {
             method: "POST",
-            body: JSON.stringify({ query: projectQuery, variables: { id: `2-${randomProjectId}` } }),
+            body: JSON.stringify({ query: projectQuery, variables: { id: `${randomProjectVersion}-${randomProjectId}` } }),
         }).then((response) => response.json())
             .then((res) => {
                 console.info('📗 Lucky.subgraph >', {res});
@@ -90,6 +105,11 @@ export default function Lucky() {
                     .then((res) => res.json())
                     .then((metadata) => setMetadata(consolidateMetadata(metadata)))
             })
+            .catch(e => {
+                console.error('📗 Lucky.subgraph >', {e})
+            })
+
+        // cleanup
         return () => {
             setProjectInfo(undefined);
             setMetadata(undefined);
@@ -98,10 +118,10 @@ export default function Lucky() {
 
   return (
     <>
-        <SiteNav pageTitle="Feeling lucky | JuiceTool" currentIndex={0} description="Feeling lucky, display one juicebox project randomly." image="/images/juiceboxdao_logo.gif" />
+        <SiteNav pageTitle="Feeling lucky | JuiceTool" currentIndex={0} description="Feeling lucky, display one juicebox project randomly." image="/images/lucky_demo.png" />
         <div className="flex flex-col flex-wrap mx-4 px-4 lg:px-20 justify-center mt-6">
             <p className="text-center text-lg font-semibold text-gray-600">
-                Random Juicebox Project
+                Random Juicebox Project (1 of {v1ProjectCount + v2ProjectCount} projects)
             </p>
             <span className="isolate inline-flex rounded-md flex-row justify-center mt-3">
                 <button
@@ -158,9 +178,10 @@ export default function Lucky() {
                                         </span>
                                     </a>
                                 }
-                                <a href={`https://juicebox.money/v2/p/${projectId}`} target="_blank" rel="noopener noreferrer">
+                                <a href={projectVersion == 1 ? `https://juicebox.money/p/${projectInfo?.handle || 'juicebox'}` : `https://juicebox.money/v2/p/${projectId}`} target="_blank" rel="noopener noreferrer">
                                     <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
-                                        v2: {projectInfo?.handle ? '@'+projectInfo?.handle : projectId}
+                                        {projectVersion == 1 && 'v1: @' + projectInfo?.handle}
+                                        {projectVersion == 2 && 'v2: ' + (projectInfo?.handle ? ('@'+projectInfo?.handle) : projectId)}
                                     </span>
                                 </a>
                             </dd>
@@ -179,7 +200,7 @@ export default function Lucky() {
                     <div>
                         <div className="-mt-px flex divide-x divide-gray-200">
                         <div className="flex w-0 flex-1">
-                            <Link href={`https://juicebox.money/v2/p/${projectId}`}>
+                            <Link href={projectVersion == 1 ? `https://juicebox.money/p/${projectInfo?.handle || 'juicebox'}` : `https://juicebox.money/v2/p/${projectId}`}>
                                 <a target="_blank" rel="noopener noreferrer"
                                     className="relative -mr-px w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-bl-lg hover:text-gray-500"
                                 >
@@ -189,7 +210,7 @@ export default function Lucky() {
                             </Link>
                         </div>
                         <div className="-ml-px flex w-0 flex-1">
-                            <a href={`https://juicebox.money/v2/p/${projectId}`} target="_blank" rel="noopener noreferrer"
+                            <a href={projectVersion == 1 ? `https://juicebox.money/p/${projectInfo?.handle || 'juicebox'}` : `https://juicebox.money/v2/p/${projectId}`} target="_blank" rel="noopener noreferrer"
                                 className="relative inline-flex w-0 flex-1 items-center justify-center rounded-br-lg border border-transparent py-4 text-sm font-medium text-gray-700 hover:text-gray-500"
                             >
                                 <CreditCardIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
