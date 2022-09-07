@@ -9,6 +9,7 @@ import FormattedAddress from '../components/FormattedAddress'
 import seedrandom from 'seedrandom';
 import { BigNumber } from 'ethers'
 import { formatDistanceToNow, fromUnixTime } from 'date-fns'
+import {useQueryParam, NumberParam, withDefault} from 'next-query-params';
 
 const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/id/QmX4XXkA1XA1Fb8gQHd4TNvkRDQGPWZ2m7oANQG3W9iRq8";
 const projectQuery = `query project($id: ID!) {
@@ -52,22 +53,20 @@ export default function Lucky() {
     // state
     const [totalProject, setTotalProject] = useState(219);
     const [isRandom, setRandom] = useState(false);
-    const [projectId, setProjectId] = useState(1);
+    const [projectId, setProjectId] = useQueryParam('id', withDefault(NumberParam, 1));
     const [metadata, setMetadata] = useState(undefined);
     const [projectInfo, setProjectInfo] = useState<ProjectInfo>(undefined)
     // external call
     const projects = useJBProjects();
     // load total project count
     useEffect(() => {
-        projects.count().then(cnt => setTotalProject(cnt.toNumber()));
-    }, []);
-    useEffect(() => {
-        getNewRandomProject();
-    }, [isRandom, totalProject]);
+        projects.count().then(cnt => {
+            setTotalProject(cnt.toNumber());
+            getNewRandomProject();
+        });
+    }, [isRandom]);
 
     const getNewRandomProject = () => {
-        setProjectInfo(undefined);
-        setMetadata(undefined);
         let randomProjectId: number;
         if(isRandom) {
             randomProjectId = Math.floor(Math.random() * totalProject)+1;
@@ -91,6 +90,10 @@ export default function Lucky() {
                     .then((res) => res.json())
                     .then((metadata) => setMetadata(consolidateMetadata(metadata)))
             })
+        return () => {
+            setProjectInfo(undefined);
+            setMetadata(undefined);
+        }
     }
 
   return (
@@ -102,7 +105,9 @@ export default function Lucky() {
             </p>
             <span className="isolate inline-flex rounded-md flex-row justify-center mt-3">
                 <button
-                    onClick={() => setRandom(false)}
+                    onClick={() => {
+                        setRandom(false);
+                    }}
                     type="button"
                     className={classNames(
                         "relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-70 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500",
@@ -113,20 +118,29 @@ export default function Lucky() {
                 </button>
                 <button
                     onClick={() => {
-                        setRandom(true);
-                        getNewRandomProject();
+                        if(isRandom) {
+                            getNewRandomProject();
+                        } else {
+                            setRandom(true);
+                        }
                     }}
                     type="button"
                     className="relative -ml-px inline-flex items-center rounded-r-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white hover:bg-gray-50"
                 >
-                    Roll a dice
+                    Roll dice
                 </button>
+                {/* <button
+                    type="button"
+                    className="relative -ml-px inline-flex items-center rounded-r-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white hover:bg-gray-50"
+                >
+                    Share
+                </button> */}
             </span>
             <ul role="list" className="mt-6 grid grid-cols-1 gap-6">
                 <li className="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white text-center shadow">
                     <div className="flex flex-1 flex-col p-8">
                         <img className="mx-auto h-32 w-32 flex-shrink-0 rounded-full" src={metadata?.logoUri || '/images/juiceboxdao_logo.gif'} alt="project logo" />
-                        <h3 className="mt-6 text-sm font-medium text-gray-900">{metadata?.name || `Untitled Project (${projectId})`}</h3>
+                        <h3 className="mt-6 text-lg font-medium text-gray-900">{metadata?.name || `Untitled Project (${projectId})`}</h3>
                         <dl className="mt-1 flex flex-grow flex-col justify-between">
                             <dt className="sr-only">Social links</dt>
                             <dd className="mb-1 space-x-1">
@@ -151,8 +165,8 @@ export default function Lucky() {
                                 </a>
                             </dd>
                             <dt className="sr-only">Description</dt>
-                            <dd className="text-sm text-gray-700 break-words line-clamp-5 lg:line-clamp-3">{metadata?.description || 'Loading metadata...'}</dd>
-                            {projectInfo?.createdAt && <dd className="mt-2 text-sm text-gray-500">Created {formatDistanceToNow(fromUnixTime(projectInfo?.createdAt), { addSuffix: true })}</dd>}
+                            <dd className="text-base text-gray-700 break-words line-clamp-5 lg:line-clamp-3">{metadata?.description || 'Loading metadata...'}</dd>
+                            {projectInfo?.createdAt && <dd className="mt-1 text-sm text-gray-500">Created {formatDistanceToNow(fromUnixTime(projectInfo?.createdAt), { addSuffix: true })}</dd>}
                             <dd className="text-sm text-gray-500">Owned by {projectInfo?.owner ? <FormattedAddress address={projectInfo.owner} /> : 'loading...'}</dd>
                             <dt className="sr-only">Stats</dt>
                             <dl className="mt-5 grid grid-cols-1 divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow md:grid-cols-3 md:divide-y-0 md:divide-x">
