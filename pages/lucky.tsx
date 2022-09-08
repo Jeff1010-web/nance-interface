@@ -58,6 +58,7 @@ export default function Lucky() {
     const [projectVersion, setProjectVersion] = useState(1);
     const [metadata, setMetadata] = useState(undefined);
     const [projectInfo, setProjectInfo] = useState<ProjectInfo>(undefined)
+    const [isLoading, setLoading] = useState<boolean>(false);
     // external call
     const projects = useJBProjects();
     // load total project count
@@ -93,6 +94,7 @@ export default function Lucky() {
 
         setProjectId(randomProjectId);
         setProjectVersion(randomProjectVersion);
+        setLoading(true);
         // load infos
         fetch(SUBGRAPH_URL, {
             method: "POST",
@@ -101,12 +103,16 @@ export default function Lucky() {
             .then((res) => {
                 console.info('📗 Lucky.subgraph >', {res});
                 setProjectInfo(res.data.project)
-                fetch(`https://jbx.mypinata.cloud/ipfs/${res.data.project.metadataUri}`)
+                return fetch(`https://jbx.mypinata.cloud/ipfs/${res.data.project.metadataUri}`)
                     .then((res) => res.json())
-                    .then((metadata) => setMetadata(consolidateMetadata(metadata)))
+                    .then((metadata) => {
+                        setMetadata(consolidateMetadata(metadata));
+                        setLoading(false);
+                    })
             })
             .catch(e => {
-                console.error('📗 Lucky.subgraph >', {e})
+                console.error('📗 Lucky.subgraph >', {e});
+                setLoading(false);
             })
 
         // cleanup
@@ -118,7 +124,7 @@ export default function Lucky() {
 
   return (
     <>
-        <SiteNav pageTitle="Feeling lucky | JuiceTool" currentIndex={0} description="Feeling lucky, display one juicebox project randomly." image="/images/lucky_demo.png" />
+        <SiteNav pageTitle="Feeling lucky" currentIndex={0} description="Feeling lucky, display one juicebox project randomly." image="/images/lucky_demo.png" />
         <div className="flex flex-col flex-wrap mx-4 px-4 lg:px-20 justify-center mt-6">
             <p className="text-center text-lg font-semibold text-gray-600">
                 Random Juicebox Project (1 of {v1ProjectCount + v2ProjectCount} projects)
@@ -128,6 +134,7 @@ export default function Lucky() {
                     onClick={() => {
                         setRandom(false);
                     }}
+                    disabled={isLoading}
                     type="button"
                     className={classNames(
                         "relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-70 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500",
@@ -144,10 +151,11 @@ export default function Lucky() {
                             setRandom(true);
                         }
                     }}
+                    disabled={isLoading}
                     type="button"
                     className="relative -ml-px inline-flex items-center rounded-r-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white hover:bg-gray-50"
                 >
-                    Roll dice
+                    {isLoading ? "loading..." : "Roll dice"}
                 </button>
                 {/* <button
                     type="button"
