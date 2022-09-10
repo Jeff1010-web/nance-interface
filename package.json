@@ -26,6 +26,7 @@
     "next-query-params": "^3.0.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.34.2",
     "react-markdown": "^8.0.3",
     "react-vertical-timeline-component": "^3.5.2",
     "recharts": "^2.1.12",

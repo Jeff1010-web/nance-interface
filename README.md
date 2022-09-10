@@ -19,3 +19,4 @@ yarn install && yarn build && yarn export
 * [tailwindui](https://tailwindui.com/)
 * [snapshot.js](https://github.com/snapshot-labs/snapshot.js)
 * [flowbite, components on top of Tailwind CSS](https://github.com/themesberg/flowbite-react)
+* [react-hook-form](https://github.com/react-hook-form/react-hook-form)
