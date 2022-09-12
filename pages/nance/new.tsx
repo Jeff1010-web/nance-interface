@@ -150,7 +150,8 @@ function Form() {
             </div>
             <div className="mt-5 space-y-6 md:col-span-2 md:mt-0">
               {metadata.type === 'Payout' && <PayoutMetadataForm />}
-              {metadata.type === 'ParameterUpdate' && <FundingCycleReconfigurationForm />}
+              {metadata.type === 'ReservedToken' && <ReservedTokenMetadataForm />}
+              {metadata.type === 'ParameterUpdate' && <ParameterUpdateForm />}
             </div>
           </div>
         </div>
@@ -277,24 +278,25 @@ function Form() {
   )
 }
 
-function FundingCycleReconfigurationForm() {
-  const { register, setValue, watch, formState: { errors } } = useFormContext();
+function ParameterUpdateForm() {
+  const { register } = useFormContext();
   const fields = {
-    "reconfiguration.discount": "Discount Rate",
-    "reconfiguration.reserved": "Reserved Rate",
-    "reconfiguration.redemption": "Redemption Rate",
+    "parameter.discount": "Discount Rate",
+    "parameter.reserved": "Reserved Rate",
+    "parameter.redemption": "Redemption Rate",
   }
 
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-2">
-        <label htmlFor="reconfiguration.duration" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="parameter.duration" className="block text-sm font-medium text-gray-700">
           Duration
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
           <input
             type="number"
-            {...register("reconfiguration.duration", { required: true, valueAsNumber: true })}
+            placeholder="7"
+            {...register("parameter.duration", { required: true, valueAsNumber: true, shouldUnregister: true })}
             className="block w-full flex-1 rounded-none rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
           <span className="inline-flex items-center rounded-r-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
             days
@@ -313,14 +315,68 @@ function FundingCycleReconfigurationForm() {
               min={0.01}
               max={100}
               step={0.01}
-              {...register(values[0], { required: true, valueAsNumber: true })}
+              placeholder="50"
+              {...register(values[0], { required: true, valueAsNumber: true, shouldUnregister: true })}
               className="block w-full flex-1 rounded-none rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-            <span className="inline-flex items-center rounded-r-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
+            <span className="inline-flex items-center rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
               %
             </span>
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+function ReservedTokenMetadataForm() {
+  const metadata = useContext(ProposalMetadataContext);
+  const { register, setValue } = useFormContext();
+  const [inputEns, setInputEns] = useState<string>('')
+
+  return (
+    <div className="grid grid-cols-4 gap-6">
+      <div className="col-span-4 sm:col-span-2">
+        <label htmlFor="receiver-value" className="block text-sm font-medium text-gray-700">
+          Receiver Address
+        </label>
+        <div className="mt-1 flex rounded-md shadow-sm">
+          <input
+            type="text"
+            onChange={(e) => {
+              setValue("reserved.address", e.target.value);
+              setInputEns(e.target.value);
+            }}
+            className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            placeholder="jbdao.eth / 0x0000000000000000000000000000000000000000"
+          />
+          <input
+            type="text"
+            {...register("reserved.address", { required: true, shouldUnregister: true })}
+            className="hidden w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+        <ResolvedEns ens={inputEns} hook={(address) => setValue("reserve.address", address)} />
+      </div>
+
+      <div className="col-span-4 sm:col-span-2">
+        <label htmlFor="reserved.percentage" className="block text-sm font-medium text-gray-700">
+          Percentage
+        </label>
+        <div className="mt-1 flex rounded-md shadow-sm">
+          <input
+            type="number"
+            min={0.01}
+            max={100}
+            step={0.01}
+            {...register("reserved.percentage", { required: true, valueAsNumber: true, shouldUnregister: true })}
+            className="block w-full flex-1 rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            placeholder="50"
+          />
+          <span className="inline-flex items-center rounded-none rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
+            %
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
@@ -397,7 +453,7 @@ function PayoutMetadataForm() {
         )
       }
       <div className="col-span-4 sm:col-span-2">
-        <label htmlFor="receiver-value" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="payout.address" className="block text-sm font-medium text-gray-700">
           {watch("payout.type") === "project" ? "Token Beneficiary" : "Receiver Address"}
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
