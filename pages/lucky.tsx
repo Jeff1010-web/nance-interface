@@ -4,27 +4,12 @@ import Link from 'next/link'
 import SiteNav from '../components/SiteNav'
 import { useJBProjects } from 'juice-hooks'
 import { useEffect, useState } from 'react'
-import { consolidateMetadata } from '../libs/projectMetadata'
+import fetchMetadata, { consolidateMetadata } from '../libs/projectMetadata'
 import FormattedAddress from '../components/FormattedAddress'
 import seedrandom from 'seedrandom';
 import { BigNumber } from 'ethers'
 import { formatDistanceToNow, fromUnixTime } from 'date-fns'
-
-const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/id/QmX4XXkA1XA1Fb8gQHd4TNvkRDQGPWZ2m7oANQG3W9iRq8";
-const projectQuery = `query project($id: ID!) {
-    project(id: $id) {
-        metadataUri
-        owner
-        handle
-        totalPaid
-        totalRedeemed
-        trendingPaymentsCount
-        trendingVolume
-        currentBalance
-        createdAt
-    }
-  }
-`;
+import fetchProjectInfo, { ProjectInfo } from '../hooks/Project'
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -36,18 +21,6 @@ function formatEtherValue(val: string) {
     return 'Ξ' + (BigNumber.from(val).div(unit).toNumber()/100).toFixed(2);
 }
 
-interface ProjectInfo {
-    metadataUri: string
-    owner: string
-    handle: string
-    totalPaid: string
-    totalRedeemed: string
-    trendingPaymentsCount: number
-    trendingVolume: string
-    currentBalance: string
-    createdAt: number
-}
-
 export default function Lucky() {
     // constant
     const v1ProjectCount = 249 + 394; 
@@ -57,7 +30,7 @@ export default function Lucky() {
     const [projectId, setProjectId] = useState(1);
     const [projectVersion, setProjectVersion] = useState(1);
     const [metadata, setMetadata] = useState(undefined);
-    const [projectInfo, setProjectInfo] = useState<ProjectInfo>(undefined)
+    const [projectInfo, setProjectInfo] = useState<ProjectInfo>(undefined);
     const [isLoading, setLoading] = useState<boolean>(false);
     // external call
     const projects = useJBProjects();
@@ -96,15 +69,11 @@ export default function Lucky() {
         setProjectVersion(randomProjectVersion);
         setLoading(true);
         // load infos
-        fetch(SUBGRAPH_URL, {
-            method: "POST",
-            body: JSON.stringify({ query: projectQuery, variables: { id: `${randomProjectVersion}-${randomProjectId}` } }),
-        }).then((response) => response.json())
+        fetchProjectInfo(randomProjectVersion, randomProjectId)
             .then((res) => {
                 console.info('📗 Lucky.subgraph >', {res});
                 setProjectInfo(res.data.project)
-                return fetch(`https://jbx.mypinata.cloud/ipfs/${res.data.project.metadataUri}`)
-                    .then((res) => res.json())
+                return fetchMetadata(res.data.project.metadataUri)
                     .then((metadata) => {
                         setMetadata(consolidateMetadata(metadata));
                         setLoading(false);

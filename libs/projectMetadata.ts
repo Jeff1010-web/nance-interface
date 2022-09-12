@@ -58,3 +58,8 @@ export const consolidateMetadata = (
     version: 4,
   }
 }
+
+export default async function fetchMetadata(uri: string) {
+  const res = await fetch(`https://jbx.mypinata.cloud/ipfs/${uri}`)
+  return await res.json()
+}
