@@ -44,16 +44,18 @@ export default function NanceNewProposal() {
           New Proposal
         </p>
         <ResolvedProject version={version} projectId={project} style="text-center" />
-          <ProposalTypeTabs current={proposalType} />
-          <ProposalMetadataContext.Provider value={{type: proposalType, version, project}}>
-            <Form />
-          </ProposalMetadataContext.Provider>
+        <ProposalMetadataContext.Provider value={{type: proposalType, version, project}}>
+          <ProposalTypeTabs />
+          <Form />
+        </ProposalMetadataContext.Provider>
       </div>
     </>
   )
 }
 
-function ProposalTypeTabs({current}: {current: ProposalType}) {
+function ProposalTypeTabs() {
+  const metadata = useContext(ProposalMetadataContext);
+  const current = metadata.type;
 
   return (
     <div className="my-6">
@@ -79,7 +81,7 @@ function ProposalTypeTabs({current}: {current: ProposalType}) {
               key={tab}
               href={{
                 pathname: '/nance/new',
-                query: { type: tab },
+                query: { type: tab, version: metadata.version, project: metadata.project },
               }}
             >
               <a
