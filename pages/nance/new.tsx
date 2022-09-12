@@ -11,7 +11,6 @@ import { useRouter } from "next/router";
 // FIXME Hydration failed
 // TODO Form error state, tailwindcss require:xxx
 // TODO fully implement different form for all ProposalType
-// TODO Update Nav
 
 type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
 const ProposalTypes = ["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"];
@@ -54,6 +53,7 @@ export default function NanceNewProposal() {
 }
 
 function ProposalTypeTabs() {
+  const router = useRouter();
   const metadata = useContext(ProposalMetadataContext);
   const current = metadata.type;
 
@@ -68,6 +68,17 @@ function ProposalTypeTabs() {
           name="tabs"
           className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
           defaultValue={ProposalTypes[0]}
+          onChange={(e) => {
+            const type = e.target.value;
+            router.push({
+              pathname: router.pathname,
+              query: {
+                type,
+                version: metadata.version,
+                project: metadata.project
+              }
+            })
+          }}
         >
           {ProposalTypes.map((tab) => (
             <option key={tab}>{tab}</option>
