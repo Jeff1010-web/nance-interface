@@ -4,7 +4,7 @@ import SiteNav from '../components/SiteNav'
 export default function Home() {
   return (
     <>
-      <SiteNav pageTitle={`Home`} currentIndex={0} />
+      <SiteNav pageTitle={`Home`} />
       <div className="px-8">
         <div className="py-16 flex-1 flex flex-col items-center">
           <h1 className="text-7xl font-medium">
@@ -31,6 +31,12 @@ export default function Home() {
               <span>
                 <span className='underline'>Juicebox Reconfiguration Helper</span>
                 , import/export hex data, preview with basic interface.
+              </span>
+            </Link>
+            <Link href="/safe/0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e">
+              <span>
+                <span className='underline'>Safe UI</span>
+                , another way to see Safe Txns.
               </span>
             </Link>
           </div>

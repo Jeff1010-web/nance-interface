@@ -4,30 +4,21 @@ import Head from 'next/head'
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/router';
 
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
-
 interface SiteNavProps {
     pageTitle: string,
-    currentIndex: number,
     description?: string,
     image?: string
 }
 
-export default function SiteNav({ pageTitle, currentIndex, description, image }: SiteNavProps) {
+export default function SiteNav({ pageTitle, description, image }: SiteNavProps) {
     const router = useRouter();
     
     const navigation = [
-        { name: 'Home', href: '/', current: false },
-        { name: 'Progress', href: '/progress', current: false },
-        { name: 'Metric', href: '/metric', current: false },
-        { name: 'Funding', href: '/funding', current: false },
-        { name: 'Timeline', href: '/history', current: false },
-        { name: 'Snapshot', href: '/snapshot/jbdao.eth', current: false },
-        { name: 'Juicebox', href: '/juicebox', current: false },
+        { name: 'Home', href: '/' },
+        { name: 'Nance', href: '/nance/new?type=Payout&version=2&project=1' },
+        { name: 'Snapshot Plus', href: '/snapshot/jbdao.eth' },
+        { name: 'Random Project', href: '/lucky' },
     ]
-    navigation[currentIndex].current = true;
 
     const meta = {
         title: `${pageTitle} | JuiceTool`,
@@ -81,13 +72,7 @@ export default function SiteNav({ pageTitle, currentIndex, description, image }:
                                                 <a
                                                     key={item.name}
                                                     href={item.href}
-                                                    className={classNames(
-                                                        item.current
-                                                            ? 'border-indigo-500 text-gray-900'
-                                                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                                                        'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium'
-                                                    )}
-                                                    aria-current={item.current ? 'page' : undefined}
+                                                    className='border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium'
                                                 >
                                                     {item.name}
                                                 </a>
@@ -112,25 +97,19 @@ export default function SiteNav({ pageTitle, currentIndex, description, image }:
                             </div>
 
                             <Disclosure.Panel className="sm:hidden">
-                                <div className="pt-2 pb-3 space-y-1">
+                                <div className="py-2 space-y-1">
                                     {navigation.map((item) => (
                                         <Disclosure.Button
                                             key={item.name}
                                             as="a"
                                             href={item.href}
-                                            className={classNames(
-                                                item.current
-                                                    ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                                                    : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800',
-                                                'block pl-3 pr-4 py-2 border-l-4 text-base font-medium'
-                                            )}
-                                            aria-current={item.current ? 'page' : undefined}
+                                            className='border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium'
                                         >
                                             {item.name}
                                         </Disclosure.Button>
                                     ))}
                                 </div>
-                                <div className="pt-4 pb-3 border-t border-gray-200">
+                                <div className="py-2 mx-2 border-t border-gray-200">
                                     <ConnectButton />
                                 </div>
                             </Disclosure.Panel>

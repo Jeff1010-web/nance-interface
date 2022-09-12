@@ -61,7 +61,7 @@ export default function SafeUI() {
 
   return (
     <>
-      <SiteNav pageTitle={`Safe transactions | JuiceTool`} currentIndex={6} description="Safe transactions" image="/images/unsplash_voting.jpeg" />
+      <SiteNav pageTitle={`Safe transactions | JuiceTool`} description="Safe transactions" image="/images/unsplash_voting.jpeg" />
       <div className="overflow-hidden bg-white shadow sm:rounded-md">
         <ul role="list" className="divide-y divide-gray-200">
           {isLoading && <p>Loading...</p>}

@@ -3,7 +3,7 @@ import SiteNav from "../../components/SiteNav"
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import ResolvedEns from "../../components/ResolvedEns";
 import ResolvedProject from "../../components/ResolvedProject";
-import { useQueryParam, withDefault, StringParam, createEnumParam, NumberParam } from "next-query-params";
+import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-query-params";
 import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/router";
@@ -38,7 +38,7 @@ export default function NanceNewProposal() {
 
   return (
     <>
-      <SiteNav pageTitle="Nance" currentIndex={0} description="nance." image="/images/lucky_demo.png" />
+      <SiteNav pageTitle="Nance" description="nance." image="/images/lucky_demo.png" />
       <div className="m-4 lg:m-6 flex flex-col max-w-7xl justify-center">
         <p className="text-center text-xl font-bold text-gray-600">
           New Proposal

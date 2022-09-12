@@ -66,7 +66,7 @@ export default function Juicebox() {
     
     return (
         <>
-            <SiteNav pageTitle="Juicebox Reconfiguration Helper" currentIndex={6} />
+            <SiteNav pageTitle="Juicebox Reconfiguration Helper" />
             <div id="project-status" className="flex justify-center py-2">
                 Current:&nbsp;<FormattedProject projectId={projectId} />
                 {previewArgs && <span className="text-amber-300">(Preview Mode)</span>}

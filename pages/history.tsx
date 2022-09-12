@@ -5,7 +5,7 @@ import SiteNav from '../components/SiteNav';
 export default function History() {
   return (
     <>
-      <SiteNav pageTitle="Moment & Milestones" currentIndex={4} />
+      <SiteNav pageTitle="Moment & Milestones" />
       <div className="py-12">
         <VerticalTimeline>
           <TimelineItem

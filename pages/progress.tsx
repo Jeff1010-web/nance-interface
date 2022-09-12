@@ -4,7 +4,7 @@ import SiteNav from '../components/SiteNav';
 export default function Progress() {
     return (
         <>
-            <SiteNav pageTitle="Progress" currentIndex={1} />
+            <SiteNav pageTitle="Progress" />
             <div className="relative sm:py-12 border-b">
                 <div className="relative max-w-7xl mx-auto">
                     <div className="xs:mt-6 sm:mt-0 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">

@@ -3,7 +3,7 @@ import SiteNav from "../components/SiteNav"
 export default function Funding() {
     return (
         <>
-            <SiteNav pageTitle="Funded Projects" currentIndex={3} />
+            <SiteNav pageTitle="Funded Projects" />
             <div className="relative sm:py-12">
                 <div className="relative max-w-7xl mx-auto">
                     <div className="xs:mt-6 sm:mt-0 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">

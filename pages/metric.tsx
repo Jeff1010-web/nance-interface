@@ -11,7 +11,7 @@ import SiteNav from '../components/SiteNav';
 export default function Metric() {
   return (
     <>
-      <SiteNav pageTitle="JuiceboxDAO Health Metrics" currentIndex={2} />
+      <SiteNav pageTitle="JuiceboxDAO Health Metrics" />
       <div className="px-8">
         <div className="min-h-screen py-12 flex-1 flex flex-col items-center">
           <div className="flex items-center justify-center flex-wrap max-w-fit text-inherit">

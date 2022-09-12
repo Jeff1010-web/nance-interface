@@ -93,7 +93,7 @@ export default function Lucky() {
 
   return (
     <>
-        <SiteNav pageTitle="Feeling lucky" currentIndex={0} description="Feeling lucky, display one juicebox project randomly." image="/images/lucky_demo.png" />
+        <SiteNav pageTitle="Feeling lucky" description="Feeling lucky, display one juicebox project randomly." image="/images/lucky_demo.png" />
         <div className="flex flex-col flex-wrap mx-4 px-4 lg:px-20 justify-center mt-6">
             <p className="text-center text-lg font-semibold text-gray-600">
                 Random Juicebox Project (1 of {v1ProjectCount + v2ProjectCount} projects)
@@ -202,12 +202,6 @@ export default function Lucky() {
     </>
   )
 }
-
-const stats = [
-    { name: 'Total Subscribers', stat: '71,897', previousStat: '70,946', change: '12%', changeType: 'increase' },
-    { name: 'Avg. Open Rate', stat: '58.16%', previousStat: '56.14%', change: '2.02%', changeType: 'increase' },
-    { name: 'Avg. Click Rate', stat: '24.57%', previousStat: '28.62%', change: '4.05%', changeType: 'decrease' },
-  ]
 
 function StatCard({data}: {data: {name: string, stat: string, change?: string}}) {
     return (
