@@ -7,6 +7,7 @@ import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-q
 import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/router";
+import ReactMarkdown from "react-markdown";
 
 // FIXME Hydration failed
 // TODO Form error state, tailwindcss require:xxx
@@ -128,13 +129,27 @@ export enum FormFieldNames {
 function Form() {
   const metadata = useContext(ProposalMetadataContext);
   const methods = useForm();
-  const { register, handleSubmit, watch, formState: { errors } } = methods;
+  const { register, handleSubmit, watch, getValues, formState: { errors } } = methods;
   const onSubmit = (data) => {
     data = {
       ...data,
       ...metadata
     }
     console.info("📗 Nance.new.Form.submit ->", data);
+  }
+  const getPreviewContent = (proposalContent) => {
+    const data: any = {
+      ...getValues(),
+      ...metadata
+    }
+    delete data.proposal;
+    const final = `${proposalContent || "No content yet."}
+    
+    *Generated from JuiceTool*
+    
+    ${JSON.stringify(data)}`;
+    console.log({final});
+    return final;
   }
 
   return (
@@ -255,6 +270,23 @@ function Form() {
                   </div>
                 </div>
               </fieldset>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
+          <div className="md:grid md:grid-cols-3 md:gap-6">
+            <div className="md:col-span-1">
+              <h3 className="text-lg font-medium leading-6 text-gray-900">Preview</h3>
+              <p className="mt-1 text-sm text-gray-500">Preview of final proposal content.</p>
+            </div>
+            <div className="mt-5 md:col-span-2 md:mt-0">
+              <div>
+                <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
+                  <ReactMarkdown>{getPreviewContent(watch("proposal.body"))}</ReactMarkdown>
+                </article>
+                {/* <p className="mt-2 text-sm text-gray-500">Brief description for your profile. URLs are hyperlinked.</p> */}
+              </div>
             </div>
           </div>
         </div>
