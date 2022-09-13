@@ -15,7 +15,7 @@ export default function SiteNav({ pageTitle, description, image }: SiteNavProps)
     
     const navigation = [
         { name: 'Home', href: '/' },
-        { name: 'Nance', href: '/nance/new?type=Payout&version=2&project=1' },
+        { name: 'Nance', href: '/nance/current' },
         { name: 'Snapshot Plus', href: '/snapshot/jbdao.eth' },
         { name: 'Random Project', href: '/lucky' },
     ]
