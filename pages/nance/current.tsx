@@ -22,7 +22,7 @@ export default function NanceCurrentProposals({ proposals }: {proposals: Proposa
 
   return (
     <>
-      <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/lucky_demo.png" />
+      <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" />
       <div className="m-4 lg:m-6 flex flex-col justify-center">
         <p className="text-center text-xl font-bold text-gray-600">
           Current Proposals {proposals?.[0]?.governanceCycle && `of GC${proposals[0].governanceCycle}`}

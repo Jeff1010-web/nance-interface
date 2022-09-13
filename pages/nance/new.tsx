@@ -38,7 +38,7 @@ export default function NanceNewProposal() {
 
   return (
     <>
-      <SiteNav pageTitle="New Proposal on Nance" description="Create new proposal on Nance." image="/images/lucky_demo.png" />
+      <SiteNav pageTitle="New Proposal on Nance" description="Create new proposal on Nance." image="/images/opengraph/nance_current_demo.png" />
       <div className="m-4 lg:m-6 flex flex-col justify-center">
         <p className="text-center text-xl font-bold text-gray-600">
           New Proposal
