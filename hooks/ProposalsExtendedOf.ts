@@ -69,9 +69,10 @@ query VotesByProposalId($first: Int, $space: String, $proposalIds: [String]) {
 `
 
 const VOTES_BY_SINGLE_PROPOSALID_QUERY = `
-query VotesBySingleProposalId($first: Int, $id: String) {
+query VotesBySingleProposalId($skip: Int, $id: String) {
   votes (
-    first: $first
+    first: 10
+    skip: $skip
     where: {
       proposal: $id
     }
@@ -90,11 +91,10 @@ query VotesBySingleProposalId($first: Int, $id: String) {
 `
 
 const VOTED_PROPOSALS_QUERY = `
-query VotedProposals($first: Int, $space: String, $voter: String, $proposalIds: [String]) {
+query VotedProposals($first: Int, $voter: String, $proposalIds: [String]) {
   votes (
     first: $first
     where: {
-      space: $space,
       voter: $voter,
       proposal_in: $proposalIds
     }
@@ -124,7 +124,7 @@ export interface ProposalDataExtended {
   quorum: number
   scores_total: number
   body: string
-  voteByChoice: { [key: string]: number }
+  voteByChoice?: { [key: string]: number }
   author?: string
   created?: number
 }
@@ -182,7 +182,6 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
     error: votedError
   } = useQuery(VOTED_PROPOSALS_QUERY, {
     variables: {
-      space: space,
       voter: address,
       proposalIds: proposalData?.proposals.map(proposal => proposal.id),
       first: proposalData?.proposals.length || 0
@@ -227,13 +226,13 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
   return { data: {proposalsData, votedData}, loading, error: proposalError || voteError || votedError };
 }
 
-export function useProposalExtendedOf(proposalId: string, address: string): {
+export function useProposalExtendedOf(proposalId: string, address: string, skip: number = 0): {
   loading: boolean,
   error: APIError<object>,
   data: {proposalData: ProposalDataExtended, votedData: VoteData, votesData: VoteData[]}
 } {
 
-  console.info("📗 useProposalExtendedOf ->", {proposalId, address});
+  console.info("📗 useProposalExtendedOf ->", {proposalId, address, skip});
   // Load proposals
   const {
     loading: proposalLoading,
@@ -251,8 +250,20 @@ export function useProposalExtendedOf(proposalId: string, address: string): {
     error: voteError
   } = useQuery(VOTES_BY_SINGLE_PROPOSALID_QUERY, {
     variables: {
-      first: proposalData?.proposal.votes,
+      skip: skip,
       id: proposalId
+    }
+  });
+  // Load voted proposals
+  const {
+    loading: votedLoading,
+    data: votedRawData,
+    error: votedError
+  } = useQuery(VOTED_PROPOSALS_QUERY, {
+    variables: {
+      voter: address,
+      proposalIds: [proposalId],
+      first: 1
     }
   });
 
@@ -269,9 +280,10 @@ export function useProposalExtendedOf(proposalId: string, address: string): {
   })
 
   // Find voted proposals
+  // FIXME use separate graph ql to get voted data
   let votedData: VoteData;
   if (address) {
-    const t = voteData?.votes.find((vote) => vote.voter == address)
+    const t = votedRawData?.votes[0];
     if (t) {
       votedData = {
         choice: proposalData?.proposal.choices[t.choice-1],
