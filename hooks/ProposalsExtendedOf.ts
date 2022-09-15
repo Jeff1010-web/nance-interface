@@ -79,6 +79,7 @@ query VotesBySingleProposalId($first: Int, $id: String) {
     orderDirection: desc
   ) {
     id
+    app
     voter
     vp
     choice
@@ -135,6 +136,7 @@ export interface VoteData {
   reason: string
   voter?: string
   id?: string
+  app?: string
 }
 
 export interface VotesData {
@@ -261,7 +263,8 @@ export function useProposalExtendedOf(proposalId: string, address: string): {
       created: vote.created,
       reason: vote.reason,
       voter: vote.voter,
-      id: vote.id
+      id: vote.id,
+      app: vote.app || "snapshot"
     }
   })
 

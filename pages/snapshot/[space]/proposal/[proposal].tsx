@@ -119,7 +119,7 @@ export default function SnapshotProposal() {
                         </div>
                         <div>
                             <Link href={`https://snapshot.org/#/${space}/proposal/${proposal}`}>
-                                <a className="block bg-gray-50 px-4 py-4 text-center text-sm font-medium text-gray-500 hover:text-gray-700 sm:rounded-b-lg">
+                                <a target="_blank" rel="noopener noreferrer" className="block bg-gray-50 px-4 py-4 text-center text-sm font-medium text-gray-500 hover:text-gray-700 sm:rounded-b-lg">
                                     Read on Snapshot
                                 </a>
                             </Link>
@@ -163,10 +163,18 @@ export default function SnapshotProposal() {
                                                     <span className="font-medium text-gray-500">
                                                         {formatDistanceToNow(fromUnixTime(vote.created), { addSuffix: true })}
                                                     </span>{' '}
-                                                    {/* <span className="font-medium text-gray-500">&middot;</span>{' '}
-                                                    <button type="button" className="font-medium text-gray-900">
+                                                    {vote.app && vote.app!="snapshot" && (
+                                                        <>
+                                                            <span className="font-medium text-gray-500">&middot;</span>{' '}
+                                                            <span className="font-medium text-gray-500">
+                                                                {vote.app}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                    
+                                                    {/* <a href={`https://snapshot.mypinata.cloud/ipfs/${vote.id}`} target="_blank" rel="noopener noreferrer" className="font-medium text-gray-900">
                                                         IPFS
-                                                    </button> */}
+                                                    </a> */}
                                                 </div>
                                             </div>
                                         </div>
