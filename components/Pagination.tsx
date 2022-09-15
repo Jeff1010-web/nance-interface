@@ -1,14 +1,35 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/solid'
 
+function range(start, end) {
+  return Array(end - start + 1).fill(1).map((_, idx) => start + idx)
+}
+
 export default function Pagination({ page, setPage, total }) {
     const limit = 10;
     const itemStart = (page - 1) * limit + 1;
     const itemEnd = Math.min(page * limit, total);
     const pages = Math.ceil(total / limit);
 
-    let pageArr = [];
-    if(page>1) pageArr.push(page-1);
-    pageArr.push(page);
+    const firstPages = Math.max(1, page - 3);
+    const lastPages = Math.min(page + 3, pages);
+
+    const renderedPages = range(firstPages, lastPages).map((p) => {
+      if(p === page) {
+        return (
+          <input key={p} type="number" aria-current="page" max={pages} min={1} step={1} value={page} onChange={e => setPage(e.target.value)} name="page-input" id="page-input" className="relative z-10 inline-flex items-center border border-indigo-500 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 focus:z-20" />
+        )
+      } else {
+        return (
+          <button
+            key={p}
+            onClick={() => setPage(p)}
+            className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-20"
+          >
+            {p}
+          </button>
+        )
+      } 
+    })
 
   return (
     <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
@@ -46,27 +67,7 @@ export default function Pagination({ page, setPage, total }) {
               <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
             </button>
             {/* Current: "z-10 bg-indigo-50 border-indigo-500 text-indigo-600", Default: "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" */}
-            {/* Left one page */}
-            {page>1 && (
-                <button
-                    onClick={() => setPage(Math.min(page-1, pages))}
-                    className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-20"
-                >
-                    {Math.min(page-1, pages)}
-                </button>
-            )}
-            {/* Current page */}
-            <input type="number" aria-current="page" max={pages} min={1} step={1} value={page} onChange={e => setPage(e.target.value)} name="page-input" id="page-input" className="relative z-10 inline-flex items-center border border-indigo-500 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 focus:z-20" />
-            {/* Right one page */}
-            {pages>page && (
-                <button
-                    onClick={() => setPage(page + 1)}
-                    className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-20"
-                >
-                    {page+1}
-                </button>
-            )}
-
+            {renderedPages}
             <button
               disabled={page === pages}
               onClick={() => setPage(page + 1)}
