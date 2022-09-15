@@ -69,14 +69,14 @@ query VotesByProposalId($first: Int, $space: String, $proposalIds: [String]) {
 `
 
 const VOTES_BY_SINGLE_PROPOSALID_QUERY = `
-query VotesBySingleProposalId($skip: Int, $id: String) {
+query VotesBySingleProposalId($skip: Int, $id: String, $orderBy: String) {
   votes (
     first: 10
     skip: $skip
     where: {
       proposal: $id
     }
-    orderBy: "created",
+    orderBy: $orderBy,
     orderDirection: desc
   ) {
     id
@@ -226,7 +226,7 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
   return { data: {proposalsData, votedData}, loading, error: proposalError || voteError || votedError };
 }
 
-export function useProposalExtendedOf(proposalId: string, address: string, skip: number = 0): {
+export function useProposalExtendedOf(proposalId: string, address: string, skip: number = 0, orderBy: string = "created"): {
   loading: boolean,
   error: APIError<object>,
   data: {proposalData: ProposalDataExtended, votedData: VoteData, votesData: VoteData[]}
@@ -251,7 +251,8 @@ export function useProposalExtendedOf(proposalId: string, address: string, skip:
   } = useQuery(VOTES_BY_SINGLE_PROPOSALID_QUERY, {
     variables: {
       skip: skip,
-      id: proposalId
+      id: proposalId,
+      orderBy: orderBy
     }
   });
   // Load voted proposals

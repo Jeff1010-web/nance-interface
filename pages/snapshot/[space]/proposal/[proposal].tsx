@@ -10,7 +10,7 @@ import FormattedAddress from "../../../../components/FormattedAddress";
 import { formatDistanceToNow, fromUnixTime, format } from "date-fns";
 import { useState } from "react";
 import VotingModal from "../../../../components/VotingModal";
-import { useQueryParam, withDefault, NumberParam } from "next-query-params";
+import { useQueryParam, withDefault, NumberParam, StringParam } from "next-query-params";
 import Pagination from "../../../../components/Pagination";
 
 function classNames(...classes) {
@@ -34,18 +34,31 @@ const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
     </Tooltip>
 )
 
+const getColorOfPencentage = (percentage: number) => {
+    if(percentage>33) {
+        return 'text-red-600';
+    } else if(percentage>20) {
+        return 'text-orange-600';
+    } else if(percentage>11) {
+        return 'text-amber-600';
+    } else {
+        return '';
+    }
+}
+
 export default function SnapshotProposal() {
     // router
     const router = useRouter();
     const { space, proposal } = router.query;
     // state
     const [modalIsOpen, setModalIsOpen] = useState(false);
-    const [page, setPage] = useQueryParam('votePage', withDefault(NumberParam, 1));
+    const [page, setPage] = useQueryParam('page', withDefault(NumberParam, 1));
+    const [sortBy, setSortBy] = useQueryParam('sortBy', withDefault(StringParam, "created"));
     // external hook
     const { address, isConnected } = useAccount();
     const { data: spaceInfo } = useSpaceInfo(space as string);
     // load data
-    const { loading, data, error } = useProposalExtendedOf(proposal as string, address, Math.max((page-1)*10, 0));
+    const { loading, data, error } = useProposalExtendedOf(proposal as string, address, Math.max((page-1)*10, 0), sortBy);
 
     return (
         <>
@@ -133,13 +146,31 @@ export default function SnapshotProposal() {
                         <section aria-labelledby="votes-title" className={data?.proposalData?.state == 'pending' && 'hidden'}>
                             <div className="bg-white shadow sm:overflow-hidden sm:rounded-lg">
                             <div className="divide-y divide-gray-200">
-                                <div className="px-4 py-5 sm:px-6">
-                                <h2 id="notes-title" className="text-lg font-medium text-gray-900">
-                                    Votes
-                                    <span className='bg-indigo-100 text-indigo-600 hidden ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block'>
-                                        {data?.proposalData?.votes}
-                                    </span>
-                                </h2>
+                                <div className="px-4 py-5 sm:px-6 flex flex-row justify-between">
+                                    <h2 id="notes-title" className="text-lg font-medium text-gray-900">
+                                        Votes
+                                        <span className='bg-indigo-100 text-indigo-600 hidden ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block'>
+                                            {data?.proposalData?.votes}
+                                        </span>
+                                    </h2>
+                                    <div className="mt-1 flex rounded-md shadow-sm">
+                                        <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
+                                            Sort
+                                        </span>
+                                        <select
+                                            id="sortBy"
+                                            name="sortBy"
+                                            className="block w-full rounded-none rounded-r-md border-gray-300 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                                            value={sortBy}
+                                            onChange={(e) => {
+                                                setPage(1, 'push');
+                                                setSortBy(e.target.value, 'push');
+                                            }}
+                                        >
+                                            <option value="created">Created Time</option>
+                                            <option value="vp">Voting Power</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className="px-4 py-6 sm:px-6">
                                     <ul role="list" className="space-y-8">
@@ -152,17 +183,24 @@ export default function SnapshotProposal() {
                                                         alt={`avatar of ${vote.voter}`}
                                                     />
                                                 </div>
-                                                <div>
+                                                <div className="space-y-1">
                                                     <div className="text-sm">
                                                         <FormattedAddress address={vote.voter} style="font-medium text-gray-900" />
-                                                        &nbsp;<span className="italic">{vote.choice}</span>
-                                                        &nbsp;<span className="underline">{formatNumber(vote.score)}</span>
                                                     </div>
-                                                    <div className="mt-1 text-sm text-gray-700">
-                                                    <p>{vote.reason}</p>
+                                                    <div className="text-sm">
+                                                        <span className="font-semibold">{vote.choice}</span>
+                                                        <span className={classNames(
+                                                            getColorOfPencentage(vote.score*100/data?.proposalData?.scores_total),
+                                                            'underline'
+                                                        )}>
+                                                            {` ${formatNumber(vote.score)} (${(vote.score*100/data?.proposalData?.scores_total).toFixed()}%)`}
+                                                        </span>
                                                     </div>
-                                                    <div className="mt-2 space-x-2 text-sm">
-                                                        <span className="font-medium text-gray-500">
+                                                    <div className="text-sm text-gray-800">
+                                                        {vote.reason && <p>{vote.reason}</p>}
+                                                    </div>
+                                                    <div className="space-x-2 text-sm">
+                                                        <span className="text-gray-500">
                                                             {formatDistanceToNow(fromUnixTime(vote.created), { addSuffix: true })}
                                                         </span>{' '}
                                                         {vote.app && vote.app!="snapshot" && (
