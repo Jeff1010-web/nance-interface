@@ -4,21 +4,24 @@ import SiteNav from "../../components/SiteNav"
 import { Proposal } from "../../models/NanceTypes"
 import { UsersIcon, CalendarIcon, DocumentTextIcon, ChatIcon } from '@heroicons/react/solid'
 import { format } from "date-fns"
+import { useEffect, useState } from "react"
 
-export async function getStaticProps() {
-    const res = await fetch("https://nance-api.up.railway.app/notion/juicebox/query/vote")
-    const proposals: Proposal[] = await res.json()
-  
-    // By returning { props: { posts } }, the Blog component
-    // will receive `posts` as a prop at build time
-    return {
-      props: {
-        proposals,
-      },
-    }
-  }
+export default function NanceCurrentProposals() {
+    const [proposals, setProposals] = useState<Proposal[]>(undefined)
+    const [isLoading, setLoading] = useState(false)
 
-export default function NanceCurrentProposals({ proposals }: {proposals: Proposal[]}) {
+    useEffect(() => {
+        setLoading(true)
+        fetch('https://nance-api.up.railway.app/notion/juicebox/query/vote')
+          .then((res) => res.json())
+          .then((data) => {
+            setProposals(data)
+            setLoading(false)
+          })
+    }, [])
+
+    if (isLoading) return <p>Loading...</p>
+    if (!proposals) return <p>No data</p>
 
   return (
     <>
