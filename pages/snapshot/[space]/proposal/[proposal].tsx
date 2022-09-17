@@ -54,11 +54,12 @@ export default function SnapshotProposal() {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [page, setPage] = useQueryParam('page', withDefault(NumberParam, 1));
     const [sortBy, setSortBy] = useQueryParam('sortBy', withDefault(StringParam, "created"));
+    const [votes, setVotes] = useState<VoteData[]>([]);
     // external hook
     const { address, isConnected } = useAccount();
     const { data: spaceInfo } = useSpaceInfo(space as string);
     // load data
-    const { loading, data, error } = useProposalExtendedOf(proposal as string, address, Math.max((page-1)*10, 0), sortBy);
+    const { loading, data, error } = useProposalExtendedOf(proposal as string, address);
 
     return (
         <>
@@ -174,51 +175,54 @@ export default function SnapshotProposal() {
                                 </div>
                                 <div className="px-4 py-6 sm:px-6">
                                     <ul role="list" className="space-y-8">
-                                        {data?.votesData?.map((vote: VoteData) => (
-                                        <li key={vote.id}>
-                                            <div className="flex space-x-3">
-                                                <div className="flex-shrink-0">
-                                                    <img className="h-10 w-10 rounded-full"
-                                                        src={`https://cdn.stamp.fyi/avatar/${vote.voter}?s=160`}
-                                                        alt={`avatar of ${vote.voter}`}
-                                                    />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <div className="text-sm">
-                                                        <FormattedAddress address={vote.voter} style="font-medium text-gray-900" />
-                                                    </div>
-                                                    <div className="text-sm">
-                                                        <span className="font-semibold">{vote.choice}</span>
-                                                        <span className={classNames(
-                                                            getColorOfPencentage(vote.score*100/data?.proposalData?.scores_total),
-                                                            'underline'
-                                                        )}>
-                                                            {` ${formatNumber(vote.score)} (${(vote.score*100/data?.proposalData?.scores_total).toFixed()}%)`}
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-sm text-gray-800">
-                                                        {vote.reason && <p>{vote.reason}</p>}
-                                                    </div>
-                                                    <div className="space-x-2 text-sm">
-                                                        <span className="text-gray-500">
-                                                            {formatDistanceToNow(fromUnixTime(vote.created), { addSuffix: true })}
-                                                        </span>{' '}
-                                                        {vote.app && vote.app!="snapshot" && (
-                                                            <>
-                                                                <span className="font-medium text-gray-500">&middot;</span>{' '}
-                                                                <span className="font-medium text-gray-500">
-                                                                    {vote.app}
+                                        {data?.votesData
+                                            ?.sort((a, b) => sortBy === 'created' ? b.created - a.created : b.score - a.score)
+                                            .slice(Math.max((page-1)*10, 0), Math.max((page-1)*10, 0)+10)
+                                            .map((vote: VoteData) => (
+                                                <li key={vote.id}>
+                                                    <div className="flex space-x-3">
+                                                        <div className="flex-shrink-0">
+                                                            <img className="h-10 w-10 rounded-full"
+                                                                src={`https://cdn.stamp.fyi/avatar/${vote.voter}?s=160`}
+                                                                alt={`avatar of ${vote.voter}`}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <div className="text-sm">
+                                                                <FormattedAddress address={vote.voter} style="font-medium text-gray-900" />
+                                                            </div>
+                                                            <div className="text-sm">
+                                                                <span className="font-semibold">{vote.choice}</span>
+                                                                <span className={classNames(
+                                                                    getColorOfPencentage(vote.score*100/data?.proposalData?.scores_total),
+                                                                    'underline'
+                                                                )}>
+                                                                    {` ${formatNumber(vote.score)} (${(vote.score*100/data?.proposalData?.scores_total).toFixed()}%)`}
                                                                 </span>
-                                                            </>
-                                                        )}
-                                                        
-                                                        {/* <a href={`https://snapshot.mypinata.cloud/ipfs/${vote.id}`} target="_blank" rel="noopener noreferrer" className="font-medium text-gray-900">
-                                                            IPFS
-                                                        </a> */}
+                                                            </div>
+                                                            <div className="text-sm text-gray-800">
+                                                                {vote.reason && <p>{vote.reason}</p>}
+                                                            </div>
+                                                            <div className="space-x-2 text-sm">
+                                                                <span className="text-gray-500">
+                                                                    {formatDistanceToNow(fromUnixTime(vote.created), { addSuffix: true })}
+                                                                </span>{' '}
+                                                                {vote.app && vote.app!="snapshot" && (
+                                                                    <>
+                                                                        <span className="font-medium text-gray-500">&middot;</span>{' '}
+                                                                        <span className="font-medium text-gray-500">
+                                                                            {vote.app}
+                                                                        </span>
+                                                                    </>
+                                                                )}
+                                                                
+                                                                {/* <a href={`https://snapshot.mypinata.cloud/ipfs/${vote.id}`} target="_blank" rel="noopener noreferrer" className="font-medium text-gray-900">
+                                                                    IPFS
+                                                                </a> */}
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </li>
+                                                </li>
                                         ))}
                                     </ul>
                                     <Pagination page={page} setPage={setPage} total={data?.proposalData?.votes || 0} />
