@@ -19,6 +19,7 @@ query Proposals($first: Int, $space: String, $state: String, $keyword: String) {
     start,
     end,
     choices,
+    scores,
     votes,
     quorum,
     scores_total,
@@ -37,6 +38,7 @@ query Proposals($id: String) {
     start,
     end,
     choices,
+    scores
     votes,
     quorum,
     scores_total,
@@ -69,13 +71,14 @@ query VotesByProposalId($first: Int, $space: String, $proposalIds: [String]) {
 `
 
 const VOTES_BY_SINGLE_PROPOSALID_QUERY = `
-query VotesBySingleProposalId($first: Int, $id: String) {
+query VotesBySingleProposalId($id: String, $skip: Int, $orderBy: String) {
   votes (
-    first: $first
+    first: 10
+    skip: $skip
     where: {
       proposal: $id
     }
-    orderBy: "created",
+    orderBy: $orderBy,
     orderDirection: desc
   ) {
     id
@@ -119,11 +122,11 @@ export interface ProposalDataExtended {
   state: string
   end: number
   choices: string[]
+  scores: number[]
   votes: number
   quorum: number
   scores_total: number
   body: string
-  voteByChoice?: { [key: string]: number }
   author?: string
   created?: number
 }
@@ -162,18 +165,6 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
       first: first
     }
   });
-  // Load related votes
-  const {
-    loading: voteLoading,
-    data: voteData,
-    error: voteError
-  } = useQuery(VOTES_BY_PROPOSALID_QUERY, {
-    variables: {
-      first: proposalData?.proposals.map(proposal => proposal.votes).reduce((a, b) => a + b, 0),
-      space: space,
-      proposalIds: proposalData?.proposals.map(proposal => proposal.id)
-    }
-  });
   // Load voted proposals
   const {
     loading: votedLoading,
@@ -187,7 +178,7 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
     }
   });
 
-  const loading = proposalLoading || voteLoading || votedLoading;
+  const loading = proposalLoading || votedLoading;
   // Find voted proposals
   let votedData = {};
   if (address) {
@@ -200,38 +191,23 @@ export function useProposalsExtendedOf(space: string, active: boolean, keyword: 
       }
     });
   }
-  // Calculate voteByChoices
-  // { [proposalId]: { [choice]: score } }
-  const votes = voteData?.votes.reduce((acc, vote) => {
-    if(!acc[vote.proposal.id]) {
-      acc[vote.proposal.id] = {};
-      vote.proposal.choices.forEach(choice => {
-        acc[vote.proposal.id][choice] = 0;
-      });
-    }
-
-    // 1-index, 1 means affirmative
-    acc[vote.proposal.id][vote.proposal.choices[vote.choice-1]] += vote.vp;
-    return acc
-  }, {});
 
   const proposalsData = proposalData?.proposals.map((proposal) => {  
     return {
-      voteByChoice: votes?.[proposal.id] || [],
       ...proposal
     }
   })
 
-  return { data: {proposalsData, votedData}, loading, error: proposalError || voteError || votedError };
+  return { data: {proposalsData, votedData}, loading, error: proposalError || votedError };
 }
 
-export function useProposalExtendedOf(proposalId: string, address: string): {
+export function useProposalExtendedOf(proposalId: string, address: string, skip: number, orderBy: 'created' | 'vp' = 'created'): {
   loading: boolean,
   error: APIError<object>,
   data: {proposalData: ProposalDataExtended, votedData: VoteData, votesData: VoteData[]}
 } {
 
-  console.info("📗 useProposalExtendedOf ->", {proposalId, address});
+  console.info("📗 useProposalExtendedOf ->", {proposalId, address, skip, orderBy});
   // Load proposals
   const {
     loading: proposalLoading,
@@ -249,7 +225,8 @@ export function useProposalExtendedOf(proposalId: string, address: string): {
     error: voteError
   } = useQuery(VOTES_BY_SINGLE_PROPOSALID_QUERY, {
     variables: {
-      first: proposalData?.proposal.votes,
+      skip: skip,
+      orderBy: orderBy,
       id: proposalId
     }
   });
@@ -292,20 +269,12 @@ export function useProposalExtendedOf(proposalId: string, address: string): {
       }
     }
   }
-  // Calculate voteByChoices
-  // { [proposalId]: { [choice]: score } }
-  const voteByChoice: { [choice: string]: number } = {};
-  proposalData?.proposal.choices.forEach((c: string) => voteByChoice[c] = 0)
-  voteData?.votes.forEach((vote) => {
-    voteByChoice[proposalData?.proposal.choices[vote.choice-1]] += vote.vp;
-  });
 
   return { 
     data: {
       proposalData: {
-        voteByChoice,
         ...proposalData?.proposal
-      }, 
+      },
       votedData,
       votesData
     }, 

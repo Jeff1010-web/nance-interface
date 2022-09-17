@@ -67,19 +67,19 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
           <div className="w-full">
             <dl className="m-2 grid grid-cols-1 gap-5 sm:grid-cols-3">
               {/* Vote choice data */}
-              {proposal.choices.filter((choice) => proposal.voteByChoice[choice]>0).map((choice) => (
-                <div key={`${proposal.id}-${choice}`} className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+              {proposal.scores.filter((score) => score>0).map((score, index) => (
+                <div key={`${proposal.id}-${index}`} className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
                   <Tooltip
-                    content={choice}
+                    content={proposal.choices[index]}
                     trigger="hover"
                   >
-                    <dt className="text-sm font-medium text-gray-500 truncate">{choice}</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">{proposal.choices[index]}</dt>
                   </Tooltip>
                   <Tooltip
-                      content={formatNumber(proposal.voteByChoice[choice])}
+                      content={formatNumber(score)}
                       trigger="hover"
                   >
-                    <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(proposal.voteByChoice[choice]*100/proposal.scores_total).toFixed(2)}%</dd>
+                    <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(score*100/proposal.scores_total).toFixed(2)}%</dd>
                   </Tooltip>
                 </div>
               ))}
