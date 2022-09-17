@@ -37,26 +37,28 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
         <li key={proposal.id} className="col-span-1 bg-white rounded-lg shadow divide-y divide-gray-200">
           <div className="w-full flex items-center justify-between p-6 space-x-6">
             <div className="flex-1 overflow-hidden">
-              <div className="flex items-center space-x-3 break-words">
+              <div className="flex items-center break-words justify-between">
                 <h3 className="text-gray-900 text-xl font-medium">{proposal.title}</h3>
-                {/* Voted status */}
-                <div className='min-w-fit'>
-                  {votedData[proposal.id] && labelWithTooltip('Voted', `You voted ${votedData[proposal.id].choice} with ${formatNumber(votedData[proposal.id].score)} (${(votedData[proposal.id].score*100/proposal.scores_total).toFixed()}% of total votes) [Reason: ${votedData[proposal.id].reason}]`, 'text-blue-800 bg-blue-100')}
-                </div>
-
-                {/* Proposal status */}
-                <div className='min-w-fit'>
-                  {proposal.state === 'active' && labelWithTooltip('Active', 'Ends ' + formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true }), 'text-green-800 bg-green-100')}
-                  {proposal.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
-                  {proposal.state === 'closed' && labelWithTooltip('Closed', formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true }), 'text-gray-800 bg-gray-100')}
-                </div>
-                
-                {/* Under quorum status */}
-                {proposal.quorum != 0 && proposal.scores_total < proposal.quorum && (
+                <div className="flex items-center space-x-2 break-words">
+                  {/* Voted status */}
                   <div className='min-w-fit'>
-                  {labelWithTooltip('Under quorum', `${formatNumber(proposal.scores_total)} (${(proposal.scores_total*100/proposal.quorum).toFixed()}% of quorum)`, 'text-purple-800 bg-purple-100')}
+                    {votedData[proposal.id] && labelWithTooltip('Voted', `You voted ${votedData[proposal.id].choice} with ${formatNumber(votedData[proposal.id].score)} (${(votedData[proposal.id].score*100/proposal.scores_total).toFixed()}% of total votes) [Reason: ${votedData[proposal.id].reason}]`, 'text-blue-800 bg-blue-100')}
                   </div>
-                )}
+
+                  {/* Proposal status */}
+                  <div className='min-w-fit'>
+                    {proposal.state === 'active' && labelWithTooltip('Active', 'Ends ' + formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true }), 'text-green-800 bg-green-100')}
+                    {proposal.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
+                    {proposal.state === 'closed' && labelWithTooltip('Closed', formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true }), 'text-gray-800 bg-gray-100')}
+                  </div>
+                  
+                  {/* Under quorum status */}
+                  {proposal.quorum != 0 && proposal.scores_total < proposal.quorum && (
+                    <div className='min-w-fit'>
+                    {labelWithTooltip('Under quorum', `${formatNumber(proposal.scores_total)} (${(proposal.scores_total*100/proposal.quorum).toFixed()}% of quorum)`, 'text-purple-800 bg-purple-100')}
+                    </div>
+                  )}
+                </div>
               </div>
               <p className="mt-1 text-gray-500 text-sm break-words line-clamp-5 lg:line-clamp-3">{proposal.body}</p>
             </div>

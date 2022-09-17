@@ -235,18 +235,21 @@ export default function SnapshotProposal() {
                     <section aria-labelledby="stats-title" className="lg:col-span-1 lg:col-start-3">
                         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6">
                             <h2 id="timeline-title" className="text-lg font-medium text-gray-900">
-                            Stats
+                                Results
                             </h2>
 
                             <div className="mt-6 flow-root">
                                 <dl className="m-2 grid grid-cols-2 gap-5">
                                     <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
-                                        <dt className="text-sm font-medium text-gray-500 truncate">Scores</dt>
+                                        <dt className="text-sm font-medium text-gray-500 truncate">Quorum</dt>
                                         <Tooltip
                                             content={data?.proposalData.quorum>0 && `(${(data?.proposalData.scores_total*100/data?.proposalData.quorum).toFixed()}% of quorum)`}
                                             trigger="hover"
                                         >
-                                            <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{formatNumber(data?.proposalData.scores_total)}</dd>
+                                            <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">
+                                                {formatNumber(data?.proposalData.scores_total)}
+                                            </dd>
+                                            <span className="text-sm font-medium text-gray-500">{data?.proposalData.quorum>0 && `/ ${formatNumber(data?.proposalData.quorum)}`}</span>
                                         </Tooltip>
                                     </div>
                                     {/* Vote choice data */}
@@ -259,10 +262,14 @@ export default function SnapshotProposal() {
                                                 <dt className="text-sm font-medium text-gray-500 truncate">{choice}</dt>
                                             </Tooltip>
                                             <Tooltip
-                                                content={formatNumber(data?.proposalData.voteByChoice[choice])}
+                                                content={`${(data?.proposalData.voteByChoice[choice]*100/data?.proposalData.scores_total).toFixed(2)}%`}
                                                 trigger="hover"
                                             >
-                                                <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(data?.proposalData.voteByChoice[choice]*100/data?.proposalData.scores_total).toFixed(2)}%</dd>
+                                                {/* <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(data?.proposalData.voteByChoice[choice]*100/data?.proposalData.scores_total).toFixed(2)}%</dd> */}
+                                                <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">
+                                                    {formatNumber(data?.proposalData.voteByChoice[choice])}
+                                                </dd>
+                                                <span className="text-sm font-medium text-gray-500">{(data?.proposalData.voteByChoice[choice]*100/data?.proposalData.scores_total).toFixed(0)}%</span>
                                             </Tooltip>
                                         </div>
                                     ))}
