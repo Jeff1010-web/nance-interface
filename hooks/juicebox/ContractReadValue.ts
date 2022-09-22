@@ -116,7 +116,7 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
 
     // args and contracts may initially be not defined, so we want to keep
     // calling until they are
-  }, [args])
+  }, [args, functionName, contract?.address])
   //}, [args, functionName, contract])
 
   return { refetchValue: fetchValue, value, loading }
