@@ -17,8 +17,8 @@ export interface Proposal {
   proposalId: string;
   author?: string;
   discussionThreadURL: string;
-  ipfsURL: string;
-  voteURL: string;
+  ipfsURL?: string;
+  voteURL?: string;
   voteResults?: VoteResults;
 }
 
