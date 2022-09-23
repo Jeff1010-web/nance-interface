@@ -22,6 +22,7 @@
     "flowbite-react": "^0.1.5",
     "graphql-hooks": "^5.11.4",
     "juice-hooks": "^3.2.5-alpha",
+    "lodash.unionby": "^4.8.0",
     "next": "12.2.2",
     "next-query-params": "^3.0.0",
     "react": "18.2.0",
