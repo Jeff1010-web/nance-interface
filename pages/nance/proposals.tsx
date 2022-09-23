@@ -9,6 +9,11 @@ import { useRouter } from "next/router"
 
 const NANCE_API_URL = "https://nance-api.up.railway.app/notion/juicebox/query"
 
+function getLastSlash(url) {
+    const split = url.split('/');
+    return split[split.length - 1].trim();
+}
+
 export default function NanceProposals() {
     const router = useRouter();
     const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
@@ -61,65 +66,63 @@ export default function NanceProposals() {
             <ul role="list" className="divide-y divide-gray-200">
                 {proposals?.map((proposal) => (
                     <li key={proposal.hash}>
-                        <Link href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${proposal.voteURL.slice(42)}` : '#'} className="block hover:bg-gray-50">
-                            <div className="px-4 py-4 sm:px-6">
-                                <div className="flex items-center justify-between">
-                                <p className="truncate text-sm font-medium text-indigo-600 hover:underline">{`${(proposal.proposalId !== '') ? proposal.proposalId : '#TBD'} - ${proposal.title}`}</p>
-                                <div className="ml-2 flex flex-shrink-0">
-                                    {proposal.status === 'Discussion' && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            Discussion
-                                        </span>
-                                    )}
-                                    {proposal.status === 'Approved' && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Approved
-                                        </span>
-                                    )}
-                                    {proposal.status === 'Cancelled' && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                            Cancelled
-                                        </span>
-                                    )}
-                                    {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled') && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                            {proposal.status}
-                                        </span>
-                                    )}
-                                </div>
-                                </div>
-                                <div className="mt-2 sm:flex sm:justify-between">
-                                <div className="sm:flex">
-                                    <p className="flex items-center text-sm text-gray-500">
-                                        <UsersIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                                        {proposal.category}
-                                    </p>
-                                    <Link href={proposal.url ?? '#'}>      
-                                        <a target="_blank" rel="noopener noreferrer"
-                                            className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6"
-                                        >
-                                            <DocumentTextIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                                            Notion
-                                        </a>
-                                    </Link>
-                                    <Link href={proposal.discussionThreadURL ?? '#'}>      
-                                        <a target="_blank" rel="noopener noreferrer"
-                                            className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6"
-                                        >
-                                            <ChatIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                                            Discord
-                                        </a>
-                                    </Link>
-                                </div>
-                                <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                                    <CalendarIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                                    <p>
-                                        Created on <time dateTime={proposal.date}>{proposal.date ? format(new Date(proposal.date), 'MMMM d, yyyy') : "Unknown"}</time>
-                                    </p>
-                                </div>
-                                </div>
+                        <div className="px-4 py-4 sm:px-6">
+                            <div className="flex items-center justify-between">
+                            <a href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : '#'} className="truncate text-sm font-medium text-indigo-600 hover:underline">{`${(proposal.proposalId !== '') ? proposal.proposalId : '#TBD'} - ${proposal.title}`}</a>
+                            <div className="ml-2 flex flex-shrink-0">
+                                {proposal.status === 'Discussion' && (
+                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        Discussion
+                                    </span>
+                                )}
+                                {proposal.status === 'Approved' && (
+                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Approved
+                                    </span>
+                                )}
+                                {proposal.status === 'Cancelled' && (
+                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Cancelled
+                                    </span>
+                                )}
+                                {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled') && (
+                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                        {proposal.status}
+                                    </span>
+                                )}
                             </div>
-                        </Link>
+                            </div>
+                            <div className="mt-2 sm:flex sm:justify-between">
+                            <div className="sm:flex">
+                                <p className="flex items-center text-sm text-gray-500">
+                                    <UsersIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
+                                    {proposal.category}
+                                </p>
+                                <Link href={proposal.url ?? '#'}>      
+                                    <a target="_blank" rel="noopener noreferrer"
+                                        className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6"
+                                    >
+                                        <DocumentTextIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
+                                        Notion
+                                    </a>
+                                </Link>
+                                <Link href={proposal.discussionThreadURL ?? '#'}>      
+                                    <a target="_blank" rel="noopener noreferrer"
+                                        className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6"
+                                    >
+                                        <ChatIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
+                                        Discord
+                                    </a>
+                                </Link>
+                            </div>
+                            <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                                <CalendarIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
+                                <p>
+                                    Created on <time dateTime={proposal.date}>{proposal.date ? format(new Date(proposal.date), 'MMMM d, yyyy') : "Unknown"}</time>
+                                </p>
+                            </div>
+                            </div>
+                        </div>
                     </li>
                 ))}
             </ul>
