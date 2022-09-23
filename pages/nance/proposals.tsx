@@ -9,7 +9,7 @@ import { useRouter } from "next/router"
 
 const NANCE_API_URL = "https://nance-api.up.railway.app/notion/juicebox/query"
 
-export default function NanceCurrentProposals() {
+export default function NanceProposals() {
     const router = useRouter();
     const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
     const [proposals, setProposals] = useState<Proposal[]>(undefined);
