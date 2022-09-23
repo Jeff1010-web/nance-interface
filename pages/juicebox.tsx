@@ -34,7 +34,7 @@ function Compare({arr}: {arr: FundingCycleConfigProps[]}) {
     //{name: 'Contributor rate', getFunc: (fc) => parseInt(utils.formatEther(fc.fundingCycle.weight))/2},
     {name: 'Token minting', getFunc: (fc) => [fc.metadata.ticketPrintingIsAllowed, fc.metadata.ticketPrintingIsAllowed ? "Enabled" : "Disabled"]},
     {name: 'Payments', getFunc: (fc) => [fc.metadata.payIsPaused, fc.metadata.payIsPaused ? "Disabled" : "Enabled"]},
-    {name: 'Reconfiguration strategy', getFunc: (fc) => [fc.fundingCycle.ballot, <FormattedAddress address={fc.fundingCycle.ballot} />]},
+    {name: 'Reconfiguration strategy', getFunc: (fc) => [fc.fundingCycle.ballot, <FormattedAddress key={fc.fundingCycle.ballot} address={fc.fundingCycle.ballot} />]},
   ]
 
   // 'projectId-beneficiary-allocator': mod
