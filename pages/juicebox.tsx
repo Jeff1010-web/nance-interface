@@ -13,6 +13,7 @@ import { useCurrentPayoutMods, useCurrentTicketMods } from '../hooks/juicebox/Cu
 import { FundingCycleV1Args, parseV1Metadata, PayoutModV1, TicketModV1, V1FundingCycleMetadata } from '../models/JuiceboxTypes'
 import { CheckIcon, MinusIcon } from '@heroicons/react/solid'
 import unionBy from 'lodash.unionby'
+import { NumberParam, useQueryParam, withDefault } from 'next-query-params';
 
 const jsonEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -169,7 +170,7 @@ function Compare({arr}: {arr: FundingCycleConfigProps[]}) {
                             (i>0 && jsonEq(payoutMaps[0].get(keyOfPayout(mod)), map.get(keyOfPayout(mod)))) ? (
                               <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
                             ) : (
-                              <span>{map.get(`${mod.beneficiary}-${mod.projectId}-${mod.allocator}`).percent/100 + "%"} ({utils.formatEther(amountSubFee(arr[i].fundingCycle.target, arr[i].fundingCycle.fee).mul(mod.percent).div(10000))})</span>
+                              <span>{map.get(`${mod.beneficiary}-${mod.projectId}-${mod.allocator}`).percent/100 + "%"} ({parseInt(utils.formatEther(amountSubFee(arr[i].fundingCycle.target, arr[i].fundingCycle.fee).mul(mod.percent).div(10000)))})</span>
                             )
                           ) : (
                             <MinusIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -303,18 +304,13 @@ function orderByPercent(a: { percent: number; }, b: { percent: number; }) {
 export default function Juicebox() {
     // router
     const router = useRouter();
-    const { project: projectParam } = router.query;
-    let projectId = parseInt(projectParam as string);
-    // default space
-    if (!projectId) {
-        projectId = 1;
-    }
+    const [project, setProject] = useQueryParam<number>('project', withDefault(NumberParam, 1));
     // state
     const [previewArgs, setPreviewArgs] = useState(undefined);
     const [configs, setConfigs] = useState([]);
 
     // load current fc
-    const { value: fc, loading: fcIsLoading } = useCurrentFundingCycle({projectId});
+    const { value: fc, loading: fcIsLoading } = useCurrentFundingCycle({projectId: project});
     const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentPayoutMods(fc?.projectId, fc?.configured);
     const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentTicketMods(fc?.projectId, fc?.configured);
     const metadata = parseV1Metadata(fc?.metadata);
@@ -363,7 +359,7 @@ export default function Juicebox() {
     }
     const loadProject = () => {
         setPreviewArgs(undefined);
-        router.push('/juicebox?project=' + (document.getElementById("project-input") as HTMLInputElement).value, undefined, { shallow: true })
+        setProject(parseInt((document.getElementById("project-input") as HTMLInputElement).value));
     }
     
     return (
@@ -371,7 +367,7 @@ export default function Juicebox() {
           <SiteNav pageTitle="Juicebox Reconfiguration Helper" />
           <div className="bg-white">
             <div id="project-status" className="flex justify-center py-2">
-                Current:&nbsp;<FormattedProject projectId={projectId} />
+                Current:&nbsp;<FormattedProject projectId={project} />
                 {previewArgs && <span className="text-amber-300">(Compare Mode)</span>}
             </div>
             <div id="project-selector" className="flex justify-center gap-x-3 pt-2">
