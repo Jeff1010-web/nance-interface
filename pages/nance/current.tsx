@@ -4,30 +4,34 @@ import { Proposal } from "../../models/NanceTypes"
 import { UsersIcon, CalendarIcon, DocumentTextIcon, ChatIcon } from '@heroicons/react/solid'
 import { format } from "date-fns"
 import { useEffect, useState } from "react"
-import { useQueryParam, withDefault, NumberParam } from "next-query-params"
+import { useQueryParam, NumberParam } from "next-query-params"
+import { useRouter } from "next/router"
 
 const NANCE_API_URL = "https://nance-api.up.railway.app/notion/juicebox/query"
 
 export default function NanceCurrentProposals() {
-    const [cycle, setCycle] = useQueryParam<number>('cycle', withDefault(NumberParam, undefined));
-    const [proposals, setProposals] = useState<Proposal[]>(undefined)
-    const [isLoading, setLoading] = useState(false)
+    const router = useRouter();
+    const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
+    const [proposals, setProposals] = useState<Proposal[]>(undefined);
+    const [isLoading, setLoading] = useState(false);
 
-    useEffect(() => {
+    const currentCycle = cycle || proposals?.[0]?.governanceCycle || 0;
+    const loadProposals = (cycleNumber) => {
+        if(!router.isReady) return;
         setProposals(undefined)
         setLoading(true)
-        fetch(NANCE_API_URL + (cycle ? `?cycle=${cycle}` : ''))
-          .then((res) => res.json())
-          .then((data) => {
-            setProposals(data);
-            setLoading(false);
-            (cycle === undefined || cycle === NaN) && data?.[0]?.governanceCycle && setCycle(data[0].governanceCycle);
-          })
-          .catch((err) => {
-            console.error('fetch error', err);
-            setLoading(false);
-          })
-    }, [cycle])
+        fetch(NANCE_API_URL + (cycleNumber ? `?cycle=${cycleNumber}` : ''))
+            .then((res) => res.json())
+            .then((data) => {
+                setProposals(data);
+                setLoading(false);
+            })
+            .catch((err) => {
+                console.error('fetch error', err);
+                setLoading(false);
+            })
+    };
+    useEffect(() => loadProposals(cycle), [router.isReady, cycle]);
 
   return (
     <>
@@ -79,7 +83,7 @@ export default function NanceCurrentProposals() {
                                     )}
                                     {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled') && (
                                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                            Cancelled
+                                            {proposal.status}
                                         </span>
                                     )}
                                 </div>
@@ -90,7 +94,7 @@ export default function NanceCurrentProposals() {
                                         <UsersIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
                                         {proposal.category}
                                     </p>
-                                    <Link href={proposal.url}>      
+                                    <Link href={proposal.url ?? '#'}>      
                                         <a target="_blank" rel="noopener noreferrer"
                                             className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6"
                                         >
@@ -98,7 +102,7 @@ export default function NanceCurrentProposals() {
                                             Notion
                                         </a>
                                     </Link>
-                                    <Link href={proposal.discussionThreadURL}>      
+                                    <Link href={proposal.discussionThreadURL ?? '#'}>      
                                         <a target="_blank" rel="noopener noreferrer"
                                             className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6"
                                         >
@@ -110,7 +114,7 @@ export default function NanceCurrentProposals() {
                                 <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
                                     <CalendarIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
                                     <p>
-                                        Created on <time dateTime={proposal.date}>{format(new Date(proposal.date), 'MMMM d, yyyy')}</time>
+                                        Created on <time dateTime={proposal.date}>{proposal.date ? format(new Date(proposal.date), 'MMMM d, yyyy') : "Unknown"}</time>
                                     </p>
                                 </div>
                                 </div>
@@ -124,14 +128,14 @@ export default function NanceCurrentProposals() {
         <div className="mt-6">
             <div className="flex flex-1 justify-end">
                 <button
-                    disabled={cycle === 1}
-                    onClick={() => setCycle(cycle - 1)}
+                    disabled={currentCycle === 1}
+                    onClick={() => setCycle(currentCycle - 1)}
                     className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
                     Previous
                 </button>
                 <button
-                    onClick={() => setCycle(cycle + 1)}
+                    onClick={() => setCycle(currentCycle + 1)}
                     className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
                     Next
