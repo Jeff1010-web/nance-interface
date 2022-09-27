@@ -6,7 +6,16 @@ import { format } from "date-fns"
 import { useEffect, useState } from "react"
 import { useQueryParam, NumberParam } from "next-query-params"
 import { useRouter } from "next/router"
-import { NANCE_API_URL, SPACES } from "./common"
+
+export const NANCE_API_URL = (process.env.NODE_ENV !== 'development')
+  ? "https://api.nance.app"
+  : "http://localhost:3000";
+
+export const SPACES =
+  {
+    '0': 'dev',
+    '1': 'juicebox'
+  };
 
 function getLastSlash(url) {
     const split = url.split('/');

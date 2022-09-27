@@ -8,7 +8,7 @@ import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/router";
 import ReactMarkdown from "react-markdown";
-import { NANCE_API_URL, SPACES } from "./common";
+import { NANCE_API_URL, SPACES } from "./proposals";
 
 // FIXME Hydration failed
 // TODO Form error state, tailwindcss require:xxx
