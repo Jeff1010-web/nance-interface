@@ -6,8 +6,7 @@ import { format } from "date-fns"
 import { useEffect, useState } from "react"
 import { useQueryParam, NumberParam } from "next-query-params"
 import { useRouter } from "next/router"
-
-const NANCE_API_URL = "https://nance-api.up.railway.app/notion/juicebox/query"
+import { NANCE_API_URL, SPACES } from "./common"
 
 function getLastSlash(url) {
     const split = url.split('/');
@@ -25,7 +24,7 @@ export default function NanceProposals() {
         if(!router.isReady) return;
         setProposals(undefined)
         setLoading(true)
-        fetch(NANCE_API_URL + (cycleNumber ? `?cycle=${cycleNumber}` : ''))
+        fetch(`${NANCE_API_URL}/${SPACES['1']}/query/${(cycleNumber ? `?cycle=${cycleNumber}` : '')}`)
             .then((res) => res.json())
             .then((data) => {
                 setProposals(data);
