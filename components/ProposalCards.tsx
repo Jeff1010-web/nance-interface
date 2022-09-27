@@ -1,4 +1,4 @@
-import { ExternalLinkIcon, ArchiveIcon } from '@heroicons/react/solid'
+import { DocumentTextIcon, ArchiveIcon } from '@heroicons/react/solid'
 import { ProposalDataExtended, VotesData } from '../hooks/ProposalsExtendedOf'
 import { fromUnixTime, formatDistanceToNow, isPast } from 'date-fns'
 import { Tooltip } from 'flowbite-react';
@@ -37,7 +37,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
         <li key={proposal.id} className="col-span-1 bg-white rounded-lg shadow divide-y divide-gray-200">
           <div className="w-full flex items-center justify-between p-6 space-x-6">
             <div className="flex-1 overflow-hidden">
-              <div className="flex items-center break-words justify-between">
+              <div className="flex break-words justify-between flex-col md:flex-row">
                 <h3 className="text-gray-900 text-xl font-medium">{proposal.title}</h3>
                 <div className="flex items-center space-x-2 break-words">
                   {/* Voted status */}
@@ -90,12 +90,11 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
             <div className="-mt-px flex divide-x divide-gray-200">
               <div className="w-0 flex-1 flex">
                 <Link href={`/snapshot/${spaceId}/proposal/${proposal.id}`}>
-        
                   <a
                     className="relative -mr-px w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-bl-lg hover:text-gray-500"
                   >
-                    <ExternalLinkIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                    <span className="ml-3">See more</span>
+                    <DocumentTextIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
+                    <span className="ml-3">More</span>
                   </a>
                 </Link>
               </div>
