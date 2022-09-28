@@ -18,7 +18,8 @@ function classNames(...classes) {
 }
 
 const ProposalMetadataContext = React.createContext({
-  type: "Payout",
+  proposalType: "Payout",
+  setProposalType: undefined,
   version: 2,
   project: 1
 });
@@ -41,7 +42,7 @@ export default function NanceNewProposal() {
           New Proposal
         </p>
         <ResolvedProject version={version} projectId={project} style="text-center" />
-        <ProposalMetadataContext.Provider value={{type: proposalType, version, project}}>
+        <ProposalMetadataContext.Provider value={{proposalType, setProposalType, version, project}}>
           <ProposalTypeTabs />
           <Form />
         </ProposalMetadataContext.Provider>
@@ -51,10 +52,8 @@ export default function NanceNewProposal() {
 }
 
 function ProposalTypeTabs() {
-  const router = useRouter();
-  const { space } = router.query;
   const metadata = useContext(ProposalMetadataContext);
-  const current = metadata.type;
+  const current = metadata.proposalType;
 
   return (
     <div className="my-6">
@@ -67,17 +66,7 @@ function ProposalTypeTabs() {
           name="tabs"
           className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
           defaultValue={ProposalTypes[0]}
-          onChange={(e) => {
-            const type = e.target.value;
-            router.push({
-              pathname: router.pathname,
-              query: {
-                type,
-                version: metadata.version,
-                project: metadata.project
-              }
-            })
-          }}
+          onChange={(e) => metadata.setProposalType(e.target.value)}
         >
           {ProposalTypes.map((tab) => (
             <option key={tab}>{tab}</option>
@@ -87,30 +76,24 @@ function ProposalTypeTabs() {
       <div className="hidden sm:block">
         <nav className="isolate flex divide-x divide-gray-200 rounded-lg shadow" aria-label="Tabs">
           {ProposalTypes.map((tab, _) => (
-            <Link
+            <a
+              className={classNames(
+                tab == current ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
+                'first:rounded-l-lg last:rounded-r-lg group relative min-w-0 flex-1 overflow-hidden bg-white py-4 px-4 text-sm font-medium text-center hover:bg-gray-50 focus:z-10'
+              )}
+              aria-current={tab == current ? 'page' : undefined}
+              onClick={() => metadata.setProposalType(tab)}
               key={tab}
-              href={{
-                pathname: `/nance/${space as string}/new`,
-                query: { type: tab, version: metadata.version, project: metadata.project },
-              }}
             >
-              <a
+              <span>{tab}</span>
+              <span
+                aria-hidden="true"
                 className={classNames(
-                  tab == current ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
-                  'first:rounded-l-lg last:rounded-r-lg group relative min-w-0 flex-1 overflow-hidden bg-white py-4 px-4 text-sm font-medium text-center hover:bg-gray-50 focus:z-10'
+                  tab == current ? 'bg-indigo-500' : 'bg-transparent',
+                  'absolute inset-x-0 bottom-0 h-0.5'
                 )}
-                aria-current={tab == current ? 'page' : undefined}
-              >
-                <span>{tab}</span>
-                <span
-                  aria-hidden="true"
-                  className={classNames(
-                    tab == current ? 'bg-indigo-500' : 'bg-transparent',
-                    'absolute inset-x-0 bottom-0 h-0.5'
-                  )}
-                />
-              </a>
-            </Link>
+              />
+            </a>
           ))}
         </nav>
       </div>
@@ -178,9 +161,9 @@ ${JSON.stringify(data)}
               </p>
             </div>
             <div className="mt-5 space-y-6 md:col-span-2 md:mt-0">
-              {metadata.type === 'Payout' && <PayoutMetadataForm />}
-              {metadata.type === 'ReservedToken' && <ReservedTokenMetadataForm />}
-              {metadata.type === 'ParameterUpdate' && <ParameterUpdateForm />}
+              {metadata.proposalType === 'Payout' && <PayoutMetadataForm />}
+              {metadata.proposalType === 'ReservedToken' && <ReservedTokenMetadataForm />}
+              {metadata.proposalType === 'ParameterUpdate' && <ParameterUpdateForm />}
             </div>
           </div>
         </div>
