@@ -7,9 +7,10 @@ import { useEffect, useState } from "react"
 import { useQueryParam, NumberParam } from "next-query-params"
 import { useRouter } from "next/router"
 
-export const NANCE_API_URL = (process.env.NODE_ENV !== 'development')
-  ? "https://api.nance.app"
-  : "http://localhost:3000";
+export const NANCE_API_URL =
+    (process.env.VERCEL_ENV === 'preview') ? "https://nance-ts-dev.up.railway.app"
+    : (process.env.NODE_ENV === 'development') ? "http://localhost:3000"
+    : "https://api.nance.app";
 
 export const SPACES =
   {
