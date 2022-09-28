@@ -6,24 +6,8 @@ import { format } from "date-fns"
 import { useEffect, useState } from "react"
 import { useQueryParam, NumberParam } from "next-query-params"
 import { useRouter } from "next/router"
-
-export const NANCE_API_URL =
-    (process.env.VERCEL_ENV === 'preview') ? "https://nance-ts-dev.up.railway.app"
-    : (process.env.NODE_ENV === 'development') ? "http://localhost:3000"
-    : "https://api.nance.app";
-
-console.log(process.env.VERCEL_URL);
-
-export const SPACES =
-  {
-    '0': 'dev',
-    '1': 'juicebox'
-  };
-
-function getLastSlash(url) {
-    const split = url.split('/');
-    return split[split.length - 1].trim();
-}
+import { NANCE_SPACES } from "../../constants/Nance"
+import { getLastSlash, urlOfQuery } from "../../libs/nance"
 
 export default function NanceProposals() {
     const router = useRouter();
@@ -36,7 +20,7 @@ export default function NanceProposals() {
         if(!router.isReady) return;
         setProposals(undefined)
         setLoading(true)
-        fetch(`${NANCE_API_URL}/${SPACES['1']}/query/${(cycleNumber ? `?cycle=${cycleNumber}` : '')}`)
+        fetch(urlOfQuery(NANCE_SPACES.JUICEBOX, cycleNumber))
             .then((res) => res.json())
             .then((data) => {
                 setProposals(data);

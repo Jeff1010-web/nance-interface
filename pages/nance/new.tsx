@@ -8,7 +8,8 @@ import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/router";
 import ReactMarkdown from "react-markdown";
-import { NANCE_API_URL, SPACES } from "./proposals";
+import { NANCE_SPACES } from "../../constants/Nance"
+import { urlOfUpload } from "../../libs/nance";
 
 // FIXME Hydration failed
 // TODO Form error state, tailwindcss require:xxx
@@ -137,7 +138,7 @@ function Form() {
       ...metadata
     }
     console.info("📗 Nance.new.Form.submit ->", data);
-    fetch(`${NANCE_API_URL}/${SPACES[metadata.project]}/upload/`, {
+    fetch(urlOfUpload(NANCE_SPACES.DEV), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
