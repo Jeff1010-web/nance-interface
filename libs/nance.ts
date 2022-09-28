@@ -12,3 +12,7 @@ export function urlOfUpload(space: string) {
 export function urlOfQuery(space: string, cycle: number | undefined) {
     return `${NANCE_API_URL}/${space}/query/${(cycle ? `?cycle=${cycle}` : '')}`;
 }
+
+export function urlOfContent(space: string, hash: string) {
+    return `${NANCE_API_URL}/${space}/markdown?hash=${hash}`;
+}

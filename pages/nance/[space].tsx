@@ -6,11 +6,11 @@ import { format } from "date-fns"
 import { useEffect, useState } from "react"
 import { useQueryParam, NumberParam } from "next-query-params"
 import { useRouter } from "next/router"
-import { NANCE_SPACES } from "../../constants/Nance"
 import { getLastSlash, urlOfQuery } from "../../libs/nance"
 
 export default function NanceProposals() {
     const router = useRouter();
+    const { space } = router.query;
     const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
     const [proposals, setProposals] = useState<Proposal[]>(undefined);
     const [isLoading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export default function NanceProposals() {
         if(!router.isReady) return;
         setProposals(undefined)
         setLoading(true)
-        fetch(urlOfQuery(NANCE_SPACES.JUICEBOX, cycleNumber))
+        fetch(urlOfQuery(space as string, cycleNumber))
             .then((res) => res.json())
             .then((data) => {
                 setProposals(data);
@@ -38,13 +38,13 @@ export default function NanceProposals() {
       <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" />
       <div className="m-4 lg:m-6 flex flex-col justify-center lg:px-20 max-w-7xl">
         <p className="text-center text-xl font-bold text-gray-600">
-          {proposals?.[0]?.governanceCycle && `GC${proposals[0].governanceCycle} `} Proposals of JuiceboxDAO
+          {proposals?.[0]?.governanceCycle && `GC${proposals[0].governanceCycle} `} Proposals of {space}
         </p>
 
         <div className="flex justify-end mt-6">
             <Link
                 href={{
-                    pathname: '/nance/new',
+                    pathname: `/nance/${space as string}/new`,
                     query: { type: 'Payout', version: 1, project: 1 },
                 }}
             >
@@ -63,7 +63,7 @@ export default function NanceProposals() {
                     <li key={proposal.hash}>
                         <div className="px-4 py-4 sm:px-6">
                             <div className="flex items-center justify-between">
-                            <a href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : '#'} className="truncate text-sm font-medium text-indigo-600 hover:underline">{`${(proposal.proposalId !== '') ? proposal.proposalId : '#TBD'} - ${proposal.title}`}</a>
+                            <a href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : `/nance/${space as string}/proposal/${proposal.hash}`} className="truncate text-sm font-medium text-indigo-600 hover:underline">{`${(proposal.proposalId !== '') ? proposal.proposalId : '#TBD'} - ${proposal.title}`}</a>
                             <div className="ml-2 flex flex-shrink-0">
                                 {proposal.status === 'Discussion' && (
                                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">

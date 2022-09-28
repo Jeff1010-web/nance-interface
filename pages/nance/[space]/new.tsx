@@ -1,19 +1,14 @@
 import { useContext, useState } from "react"
-import SiteNav from "../../components/SiteNav"
+import SiteNav from "../../../components/SiteNav"
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
-import ResolvedEns from "../../components/ResolvedEns";
-import ResolvedProject from "../../components/ResolvedProject";
+import ResolvedEns from "../../../components/ResolvedEns";
+import ResolvedProject from "../../../components/ResolvedProject";
 import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-query-params";
 import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/router";
 import ReactMarkdown from "react-markdown";
-import { NANCE_SPACES } from "../../constants/Nance"
-import { urlOfUpload } from "../../libs/nance";
-
-// FIXME Hydration failed
-// TODO Form error state, tailwindcss require:xxx
-// TODO fully implement different form for all ProposalType
+import { urlOfUpload } from "../../../libs/nance";
 
 type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
 const ProposalTypes = ["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"];
@@ -57,6 +52,7 @@ export default function NanceNewProposal() {
 
 function ProposalTypeTabs() {
   const router = useRouter();
+  const { space } = router.query;
   const metadata = useContext(ProposalMetadataContext);
   const current = metadata.type;
 
@@ -94,7 +90,7 @@ function ProposalTypeTabs() {
             <Link
               key={tab}
               href={{
-                pathname: '/nance/new',
+                pathname: `/nance/${space as string}/new`,
                 query: { type: tab, version: metadata.version, project: metadata.project },
               }}
             >
@@ -129,6 +125,9 @@ export enum FormFieldNames {
 }
 
 function Form() {
+  const router = useRouter();
+  const { space } = router.query;
+
   const metadata = useContext(ProposalMetadataContext);
   const methods = useForm();
   const { register, handleSubmit, watch, getValues, formState: { errors } } = methods;
@@ -138,7 +137,7 @@ function Form() {
       ...metadata
     }
     console.info("📗 Nance.new.Form.submit ->", data);
-    fetch(urlOfUpload(NANCE_SPACES.DEV), {
+    fetch(urlOfUpload(space as string), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

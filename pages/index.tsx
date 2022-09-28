@@ -4,7 +4,7 @@ import SiteNav from "../components/SiteNav"
 const posts: PostCard[] = [
     {
         title: 'Automate your governance system',
-        href: '/nance/proposals',
+        href: '/nance/juicebox',
         category: { name: 'Governance', href: '#' },
         description:
             'Nance is a tool for automating your governance system. It can integrate with Notion, Discord, Snapshot and Juicebox to create a seamless experience for your community. Check repo on https://github.com/jigglyjams/nance-ts.',
