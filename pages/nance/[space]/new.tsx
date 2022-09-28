@@ -1,14 +1,14 @@
-import { useContext, useState } from "react"
-import SiteNav from "../../../components/SiteNav"
+import { useContext, useState } from "react";
+import SiteNav from "../../../components/SiteNav";
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import ResolvedEns from "../../../components/ResolvedEns";
 import ResolvedProject from "../../../components/ResolvedProject";
 import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-query-params";
-import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/router";
 import ReactMarkdown from "react-markdown";
 import { urlOfUpload } from "../../../libs/nance";
+import Notification from "../../../components/Notification";
 
 type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
 const ProposalTypes = ["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"];
@@ -108,16 +108,28 @@ export enum FormFieldNames {
 }
 
 function Form() {
+  // query and context
   const router = useRouter();
   const { space } = router.query;
-
   const metadata = useContext(ProposalMetadataContext);
+
+  // state
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(undefined);
+  const [notificationShow, setNotificationShow] = useState(false);
+
+  // form
   const methods = useForm();
   const { register, handleSubmit, watch, getValues, formState: { errors } } = methods;
   const onSubmit = (data) => {
+    setError(undefined);
+    setNotificationShow(false);
+    setSubmitting(true);
     data = {
       ...data,
-      ...metadata
+      type: metadata.proposalType,
+      version: metadata.version,
+      project: metadata.project
     }
     console.info("📗 Nance.new.Form.submit ->", data);
     fetch(urlOfUpload(space as string), {
@@ -126,12 +138,25 @@ function Form() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
+    }).then((response) => response.json())
+    .then((response) => {
+      setSubmitting(false);
+      if(response?.status == "ok") {
+        setNotificationShow(true);
+      } else {
+        setError(response?.data?.name);
+      }
+    }).catch((error) => {
+      setSubmitting(false);
+      setError(error);
     });
   }
   const getPreviewContent = (title, content) => {
     const data: any = {
       ...getValues(),
-      ...metadata
+      type: metadata.proposalType,
+      version: metadata.version,
+      project: metadata.project
     }
     delete data.proposal;
     const final = `# ${title || "Untitled Proposal"}
@@ -145,12 +170,16 @@ ${content || "No content yet."}
 \`\`\`json
 ${JSON.stringify(data)}
 \`\`\``;
-    console.log({final});
+
     return final;
   }
 
   return (
     <FormProvider {...methods} >
+      <Notification title="New proposal result" description="Success!" show={notificationShow} close={() => setNotificationShow(false)} checked={true} />
+      {error && 
+        <Notification title="New proposal result" description={error.error_description || error.message || error} show={true} close={() => setError(undefined)} checked={false} />
+      }
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
           <div className="md:grid md:grid-cols-3 md:gap-6">
@@ -297,9 +326,10 @@ ${JSON.stringify(data)}
           </button>
           <button
             type="submit"
+            disabled={submitting}
             className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
-            Save
+            {submitting ? "Submitting" : "Submit"}
           </button>
         </div>
       </form>
