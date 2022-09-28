@@ -12,6 +12,8 @@ export const NANCE_API_URL =
     : (process.env.NODE_ENV === 'development') ? "http://localhost:3000"
     : "https://api.nance.app";
 
+console.log(process.env.VERCEL_URL);
+
 export const SPACES =
   {
     '0': 'dev',
