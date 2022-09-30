@@ -1,11 +1,19 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment } from 'react'
+import { Fragment, useEffect } from 'react'
 import { Transition } from '@headlessui/react'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/outline'
 import { XIcon } from '@heroicons/react/outline'
 
 export default function Notification({title, description, show, close, checked}:
     {title: string, description: string, show: boolean, close: () => void, checked: boolean}) {
+
+  // close notification after 5 seconds
+  useEffect(() => {
+    if(show) {
+      const timeout = setTimeout(close, 5000)
+      return () => clearTimeout(timeout)
+    }
+  }, [title, description, show, close, checked])
 
   return (
     <>
