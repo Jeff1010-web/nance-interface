@@ -13,6 +13,7 @@ export default function NanceProposals() {
     const { space } = router.query;
     const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
     const [proposals, setProposals] = useState<Proposal[]>(undefined);
+    const [spaceMetadata, setSpaceMetadata] = useState({ name: '', currentCycle: '' });
     const [isLoading, setLoading] = useState(false);
 
     const currentCycle = cycle || proposals?.[0]?.governanceCycle || 0;
@@ -23,8 +24,13 @@ export default function NanceProposals() {
         fetch(urlOfQuery(space as string, cycleNumber))
             .then((res) => res.json())
             .then((data) => {
-                setProposals(data);
-                setLoading(false);
+                if (!data.error) {
+                    setProposals(data.proposals);
+                    setSpaceMetadata(data.space);
+                    setLoading(false);
+                } else {
+                    setSpaceMetadata({ name: 'NOT FOUND!', currentCycle: '' })
+                }
             })
             .catch((err) => {
                 console.error('fetch error', err);
@@ -38,7 +44,7 @@ export default function NanceProposals() {
       <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" />
       <div className="m-4 lg:m-6 flex flex-col justify-center lg:px-20 max-w-7xl">
         <p className="text-center text-xl font-bold text-gray-600">
-          {proposals?.[0]?.governanceCycle && `GC${proposals[0].governanceCycle} `} Proposals of {space}
+          {`GC${spaceMetadata.currentCycle} `} Proposals of {spaceMetadata.name}
         </p>
 
         <div className="flex justify-end mt-6">
