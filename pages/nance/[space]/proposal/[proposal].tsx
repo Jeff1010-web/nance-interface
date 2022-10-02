@@ -8,7 +8,7 @@ export default function SnapshotProposal() {
     // router
     const router = useRouter();
     const { space, proposal } = router.query;
-    const { data, loading, error } = useProposalMarkdown({ space: space as string, hash: proposal as string }, router.isReady);
+    const { data, isLoading, error } = useProposalMarkdown({ space: space as string, hash: proposal as string }, router.isReady);
 
     return (
         <>
@@ -72,7 +72,7 @@ export default function SnapshotProposal() {
                                     </div>
                                     <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
                                         <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
-                                            {loading && 'Loading...'}
+                                            {isLoading && 'Loading...'}
                                             {error && 'Error.'}
                                             {data && <ReactMarkdown>{data}</ReactMarkdown>}
                                         </article>

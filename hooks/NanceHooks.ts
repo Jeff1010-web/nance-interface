@@ -1,4 +1,5 @@
 import useSWR, { Fetcher } from 'swr'
+import useSWRMutation from 'swr/mutation'
 import { NANCE_API_URL } from "../constants/Nance"
 import { Proposal } from '../models/NanceTypes';
 
@@ -22,31 +23,74 @@ interface ProposalMarkdownRequest extends BaseRequest {
 }
 //type ProposalMarkdownResponse = string
 
+type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
+export interface ProposalUploadBaseRequest extends BaseRequest {
+    type: ProposalType;
+    version: number;
+    project: number;
+    proposal: {
+        title: string;
+        body: string;
+    }
+    notification: {
+        expiry: boolean;
+        execution: boolean;
+        progress: boolean;
+    }
+}
+export interface ProposalUploadResponse {
+    status: "ok" | "error";
+    data: string;
+}
+interface PayoutProposalUploadRequest extends ProposalUploadBaseRequest {
+    type: "Payout";
+    payout: {
+        type: "Address" | "Project";
+        duration: number;
+        amount: number;
+        project: number;
+        address: string;
+    }
+}
+
 function jsonFetcher<DataType>(): Fetcher<DataType, string> {
     return (url) => fetch(url).then(r => r.json())
 }
-function textFetcher(): Fetcher<string, string> {
-    return (url) => fetch(url).then(r => r.text())
-}
-
 export function useSpaceQuery(args: SpaceQueryRequest, shouldFetch: boolean = true) {
-    const { data, error } = useSWR(
+    return useSWR(
         shouldFetch ? `${NANCE_API_URL}/${args.space}/query/${(args.cycle ? `?cycle=${args.cycle}` : '')}` : null,
         jsonFetcher<SpaceQueryResponse>(),
     );
-    return {
-        data, error,
-        loading: !error && !data,
-    };
 }
 
+function textFetcher(): Fetcher<string, string> {
+    return (url) => fetch(url).then(r => r.text())
+}
 export function useProposalMarkdown(args: ProposalMarkdownRequest, shouldFetch: boolean = true) {
-    const { data, error } = useSWR(
+    return useSWR(
         shouldFetch ? `${NANCE_API_URL}/${args.space}/markdown?hash=${args.hash}` : null,
         textFetcher(),
     );
-    return {
-        data, error,
-        loading: !error && !data,
-    };
+}
+
+async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadBaseRequest }) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(arg)
+    })
+    const json: ProposalUploadResponse = await res.json()
+    if (json.status === 'error') {
+        throw new Error('An error occurred while fetching the data.', { cause: json.data })
+    }
+
+    return json
+}
+export function useProposalUpload(space: string, shouldFetch: boolean = true) {
+    return useSWRMutation(
+        `${NANCE_API_URL}/${space}/upload`,
+        uploader,
+    );
 }

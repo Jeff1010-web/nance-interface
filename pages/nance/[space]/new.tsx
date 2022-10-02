@@ -7,8 +7,9 @@ import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-q
 import React from "react";
 import { useRouter } from "next/router";
 import ReactMarkdown from "react-markdown";
-import { urlOfUpload } from "../../../libs/nance";
 import Notification from "../../../components/Notification";
+import { useProposalUpload, ProposalUploadBaseRequest } from "../../../hooks/NanceHooks";
+import Link from "next/link";
 
 type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
 const ProposalTypes = ["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"];
@@ -101,12 +102,6 @@ function ProposalTypeTabs() {
   )
 }
 
-export enum FormFieldNames {
-  ProposalType = "proposal.type",
-  ProposalProjectVersion = "proposal.projectVersion",
-  ProposalProjectId = "proposal.projectId"
-}
-
 function Form() {
   // query and context
   const router = useRouter();
@@ -114,43 +109,23 @@ function Form() {
   const metadata = useContext(ProposalMetadataContext);
 
   // state
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(undefined);
-  const [notificationShow, setNotificationShow] = useState(false);
+  const { isMutating, error, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
 
   // form
   const methods = useForm();
   const { register, handleSubmit, watch, getValues, formState: { errors } } = methods;
-  const onSubmit = (data) => {
-    setError(undefined);
-    setNotificationShow(false);
-    setSubmitting(true);
-    data = {
-      ...data,
+  const onSubmit = (formData) => {
+    reset();
+    const data: ProposalUploadBaseRequest = {
+      ...formData,
       type: metadata.proposalType,
       version: metadata.version,
       project: metadata.project
     }
     console.info("📗 Nance.new.Form.submit ->", data);
-    fetch(urlOfUpload(space as string), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    }).then((response) => response.json())
-    .then((response) => {
-      setSubmitting(false);
-      if(response?.status == "ok") {
-        setNotificationShow(true);
-      } else {
-        setError(response?.data?.name);
-      }
-    }).catch((error) => {
-      setSubmitting(false);
-      setError(error);
-    });
+    trigger(data);
   }
+
   const getPreviewContent = (title, content) => {
     const data: any = {
       ...getValues(),
@@ -176,9 +151,9 @@ ${JSON.stringify(data)}
 
   return (
     <FormProvider {...methods} >
-      <Notification title="New proposal result" description="Success!" show={notificationShow} close={() => setNotificationShow(false)} checked={true} />
+      <Notification title="Success" description={`Created proposal ${data?.data}`} show={data !== undefined} close={reset} checked={true} />
       {error && 
-        <Notification title="New proposal result" description={error.error_description || error.message || error} show={true} close={() => setError(undefined)} checked={false} />
+        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={reset} checked={false} />
       }
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
@@ -318,18 +293,19 @@ ${JSON.stringify(data)}
         </div>
 
         <div className="flex justify-end">
-          <button
-            type="button"
-            className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            Cancel
-          </button>
+          <Link href={`/nance/${space as string}`}>
+            <a
+              className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              Cancel
+            </a>
+          </Link>
           <button
             type="submit"
-            disabled={submitting}
+            disabled={isMutating}
             className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
-            {submitting ? "Submitting" : "Submit"}
+            {isMutating ? "Submitting" : "Submit"}
           </button>
         </div>
       </form>

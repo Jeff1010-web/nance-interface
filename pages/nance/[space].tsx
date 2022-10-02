@@ -11,7 +11,7 @@ export default function NanceProposals() {
     const router = useRouter();
     const { space } = router.query;
     const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
-    const { data, loading, error } = useSpaceQuery({ space: space as string, cycle: cycle }, router.isReady);
+    const { data, isLoading, error } = useSpaceQuery({ space: space as string, cycle: cycle }, router.isReady);
     const currentCycle = cycle || data?.space.currentCycle;
 
   return (
@@ -19,7 +19,7 @@ export default function NanceProposals() {
       <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" />
       <div className="m-4 lg:m-6 flex flex-col justify-center lg:px-20 max-w-7xl">
         <p className="text-center text-xl font-bold text-gray-600">
-            {loading ? `Loading space ${space}...` : error 
+            {isLoading ? `Loading space ${space}...` : error 
                 ? `Error loading space ${space}` 
                 : `GC${data?.space.currentCycle} Proposals of ${data?.space.name}` }
         </p>
@@ -40,7 +40,7 @@ export default function NanceProposals() {
         </div>
 
         <div className="mt-6 overflow-hidden bg-white shadow sm:rounded-md">
-            {loading && <p>loading...</p>}
+            {isLoading && <p>loading...</p>}
             <ul role="list" className="divide-y divide-gray-200">
                 {data?.proposals?.map((proposal) => (
                     <li key={proposal.hash}>
