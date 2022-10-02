@@ -168,7 +168,7 @@ export default function SnapshotProposal() {
                                                 setSortBy(e.target.value as "created" | "vp", 'push');
                                             }}
                                         >
-                                            <option value="created">Created Time</option>
+                                            <option value="created">Voted Time</option>
                                             <option value="vp">Voting Power</option>
                                         </select>
                                     </div>
