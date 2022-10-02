@@ -24,7 +24,7 @@ interface ProposalMarkdownRequest extends BaseRequest {
 //type ProposalMarkdownResponse = string
 
 type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
-export interface ProposalUploadBaseRequest extends BaseRequest {
+export interface ProposalUploadBaseRequest {
     type: ProposalType;
     version: number;
     project: number;
@@ -38,9 +38,12 @@ export interface ProposalUploadBaseRequest extends BaseRequest {
         progress: boolean;
     }
 }
-export interface ProposalUploadResponse {
-    status: "ok" | "error";
+export type ProposalUploadResponse = {
+    status: "ok";
     data: string;
+} | {
+    status: "error";
+    data: any;
 }
 interface PayoutProposalUploadRequest extends ProposalUploadBaseRequest {
     type: "Payout";
@@ -90,7 +93,7 @@ async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadBa
 }
 export function useProposalUpload(space: string, shouldFetch: boolean = true) {
     return useSWRMutation(
-        `${NANCE_API_URL}/${space}/upload`,
+        shouldFetch ? `${NANCE_API_URL}/${space}/upload` : null,
         uploader,
     );
 }

@@ -112,7 +112,7 @@ function Form() {
   const { isMutating, error, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
 
   // form
-  const methods = useForm();
+  const methods = useForm<ProposalUploadBaseRequest>();
   const { register, handleSubmit, watch, getValues, formState: { errors } } = methods;
   const onSubmit = (formData) => {
     reset();
