@@ -2,22 +2,13 @@ import { useRouter } from "next/router";
 import SiteNav from "../../../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
-import { GetServerSidePropsContext } from "next";
-import { urlOfContent } from "../../../../libs/nance";
+import { useProposalMarkdown } from "../../../../hooks/NanceHooks";
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-    // Fetch data from external API
-    const res = await fetch(urlOfContent(context.params.space as string, context.params.proposal as string));
-    const content = await res.text()
-  
-    // Pass data to the page via props
-    return { props: { content } }
-}
-
-export default function SnapshotProposal({ content }) {
+export default function SnapshotProposal() {
     // router
     const router = useRouter();
     const { space, proposal } = router.query;
+    const { data, loading, error } = useProposalMarkdown({ space: space as string, hash: proposal as string }, router.isReady);
 
     return (
         <>
@@ -81,7 +72,9 @@ export default function SnapshotProposal({ content }) {
                                     </div>
                                     <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
                                         <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
-                                            <ReactMarkdown>{content}</ReactMarkdown>
+                                            {loading && 'Loading...'}
+                                            {error && 'Error.'}
+                                            {data && <ReactMarkdown>{data}</ReactMarkdown>}
                                         </article>
                                     </div>
                                 </div>

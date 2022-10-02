@@ -1,50 +1,27 @@
 import Link from "next/link"
 import SiteNav from "../../components/SiteNav"
-import { Proposal } from "../../models/NanceTypes"
 import { UsersIcon, CalendarIcon, DocumentTextIcon, ChatIcon } from '@heroicons/react/solid'
 import { format } from "date-fns"
-import { useEffect, useState } from "react"
 import { useQueryParam, NumberParam } from "next-query-params"
 import { useRouter } from "next/router"
-import { getLastSlash, urlOfQuery } from "../../libs/nance"
+import { getLastSlash } from "../../libs/nance"
+import { useSpaceQuery } from "../../hooks/NanceHooks"
 
 export default function NanceProposals() {
     const router = useRouter();
     const { space } = router.query;
     const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
-    const [proposals, setProposals] = useState<Proposal[]>(undefined);
-    const [spaceMetadata, setSpaceMetadata] = useState({ name: '', currentCycle: '' });
-    const [isLoading, setLoading] = useState(false);
-
-    const currentCycle = cycle || proposals?.[0]?.governanceCycle || 0;
-    const loadProposals = (cycleNumber) => {
-        if(!router.isReady) return;
-        setProposals(undefined)
-        setLoading(true)
-        fetch(urlOfQuery(space as string, cycleNumber))
-            .then((res) => res.json())
-            .then((data) => {
-                if (!data.error) {
-                    setProposals(data.proposals);
-                    setSpaceMetadata(data.space);
-                    setLoading(false);
-                } else {
-                    setSpaceMetadata({ name: 'NOT FOUND!', currentCycle: '' })
-                }
-            })
-            .catch((err) => {
-                console.error('fetch error', err);
-                setLoading(false);
-            })
-    };
-    useEffect(() => loadProposals(cycle), [router.isReady, cycle]);
+    const { data, loading, error } = useSpaceQuery({ space: space as string, cycle: cycle }, router.isReady);
+    const currentCycle = cycle || data?.space.currentCycle;
 
   return (
     <>
       <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" />
       <div className="m-4 lg:m-6 flex flex-col justify-center lg:px-20 max-w-7xl">
         <p className="text-center text-xl font-bold text-gray-600">
-          {`GC${spaceMetadata.currentCycle} `} Proposals of {spaceMetadata.name}
+            {loading ? `Loading space ${space}...` : error 
+                ? `Error loading space ${space}` 
+                : `GC${data?.space.currentCycle} Proposals of ${data?.space.name}` }
         </p>
 
         <div className="flex justify-end mt-6">
@@ -63,35 +40,40 @@ export default function NanceProposals() {
         </div>
 
         <div className="mt-6 overflow-hidden bg-white shadow sm:rounded-md">
-            {isLoading && <p>loading...</p>}
+            {loading && <p>loading...</p>}
             <ul role="list" className="divide-y divide-gray-200">
-                {proposals?.map((proposal) => (
+                {data?.proposals?.map((proposal) => (
                     <li key={proposal.hash}>
                         <div className="px-4 py-4 sm:px-6">
                             <div className="flex items-center justify-between">
-                            <a href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : `/nance/${space as string}/proposal/${proposal.hash}`} className="truncate text-sm font-medium text-indigo-600 hover:underline">{`${(proposal.proposalId !== '') ? proposal.proposalId : '#TBD'} - ${proposal.title}`}</a>
-                            <div className="ml-2 flex flex-shrink-0">
-                                {proposal.status === 'Discussion' && (
-                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        Discussion
-                                    </span>
-                                )}
-                                {proposal.status === 'Approved' && (
-                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Approved
-                                    </span>
-                                )}
-                                {proposal.status === 'Cancelled' && (
-                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Cancelled
-                                    </span>
-                                )}
-                                {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled') && (
-                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                        {proposal.status}
-                                    </span>
-                                )}
-                            </div>
+                                <Link href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : `/nance/${space as string}/proposal/${proposal.hash}`}>
+                                    <a className="truncate text-sm font-medium text-indigo-600 hover:underline">
+                                        {`${(proposal.proposalId !== '') ? proposal.proposalId : '#TBD'} - ${proposal.title}`}
+                                    </a>
+                                </Link>
+                            
+                                <div className="ml-2 flex flex-shrink-0">
+                                    {proposal.status === 'Discussion' && (
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            Discussion
+                                        </span>
+                                    )}
+                                    {proposal.status === 'Approved' && (
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Approved
+                                        </span>
+                                    )}
+                                    {proposal.status === 'Cancelled' && (
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            Cancelled
+                                        </span>
+                                    )}
+                                    {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled') && (
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                            {proposal.status}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                             <div className="mt-2 sm:flex sm:justify-between">
                             <div className="sm:flex">
