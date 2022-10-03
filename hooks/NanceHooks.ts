@@ -56,13 +56,21 @@ interface PayoutProposalUploadRequest extends ProposalUploadBaseRequest {
     }
 }
 
-function jsonFetcher<DataType>(): Fetcher<DataType, string> {
-    return (url) => fetch(url).then(r => r.json())
+function jsonFetcher(): Fetcher<SpaceQueryResponse, string> {
+    return async (url) => {
+        const res = await fetch(url)
+        const json = await res.json()
+        if (json?.status === 'error') {
+            throw new Error('An error occurred while fetching the data.', { cause: json.error })
+        }
+
+        return json
+    }
 }
 export function useSpaceQuery(args: SpaceQueryRequest, shouldFetch: boolean = true) {
     return useSWR(
         shouldFetch ? `${NANCE_API_URL}/${args.space}/query/${(args.cycle ? `?cycle=${args.cycle}` : '')}` : null,
-        jsonFetcher<SpaceQueryResponse>(),
+        jsonFetcher(),
     );
 }
 
