@@ -22,7 +22,7 @@ export default function SnapshotSpace() {
     const [filterByNotVoted, setFilterByNotVoted] = useQueryParam('notVoted', withDefault(BooleanParam, false));
     const [filterByUnderQuorum, setFilterByUnderQuorum] = useQueryParam('underQuorum', withDefault(BooleanParam, false));
     const [keyword, setKeyword] = useQueryParam('keyword', withDefault(StringParam, ''));
-    const [limit, setLimit] = useQueryParam('limit', withDefault(NumberParam, 10));
+    const [limit, setLimit] = useQueryParam('limit', withDefault(NumberParam, 5));
     const connectedAddress = isConnected ? address : "";
 
     // load data

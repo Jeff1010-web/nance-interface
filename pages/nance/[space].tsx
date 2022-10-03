@@ -77,13 +77,15 @@ export default function NanceProposals() {
                             </div>
                             <div className="mt-2 sm:flex sm:justify-between">
                             <div className="sm:flex">
-                                <p className="flex items-center text-sm text-gray-500">
-                                    <UsersIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                                    {proposal.category}
-                                </p>
+                                {proposal.type && (
+                                    <p className="flex items-center text-sm text-gray-500">
+                                        <UsersIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
+                                        {proposal.type}
+                                    </p>
+                                )}
                                 <Link href={proposal.url ?? '#'}>      
                                     <a target="_blank" rel="noopener noreferrer"
-                                        className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6"
+                                        className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6 sm:first:ml-0"
                                     >
                                         <DocumentTextIcon className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
                                         Notion

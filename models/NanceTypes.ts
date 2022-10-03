@@ -12,7 +12,7 @@ export interface Proposal {
   governanceCycle?: number;
   date?: string,
   translationURL?: string | undefined;
-  category?: string | undefined;
+  type?: string | undefined;
   status: string;
   proposalId: string;
   author?: string;
