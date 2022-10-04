@@ -6,11 +6,12 @@ import SiteNav from '../components/SiteNav';
 import { TransactionDescription } from 'ethers/lib/utils';
 
 import TerminalV1 from '@jbx-protocol/contracts-v1/deployments/mainnet/TerminalV1.json';
-import JBController from '@jbx-protocol/contracts-v2/deployments/mainnet/JBController.json';
-import JBETHPaymentTerminal from '@jbx-protocol/contracts-v2/deployments/mainnet/JBETHPaymentTerminal.json';
+import JBControllerV2 from '@jbx-protocol/contracts-v2/deployments/mainnet/JBController.json';
+import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController.json';
 
 const TerminalV1ABI = JSON.stringify(TerminalV1.abi)
-const JBControllerABI = JSON.stringify(JBController.abi)
+const JBControllerV2ABI = JSON.stringify(JBControllerV2.abi)
+const JBControllerV3ABI = JSON.stringify(JBControllerV3.abi)
 
 export default function DiffPage() {
     const [splitView, setSplitView] = useState(true)
@@ -27,21 +28,26 @@ export default function DiffPage() {
             <SiteNav pageTitle="Transaction Diff Viewer" />
 
             <div className="bg-white">
-                <div className="flex flex-col justify-center p-6">
-                    <label htmlFor="contract-select" className="text-sm font-medium text-gray-700">
-                        Copy ABI from preloaded contracts
-                    </label>
+                <div className="flex justify-around p-6">
                     <select
-                        id="contract-select"
-                        name="contract-select"
-                        className="mt-1 rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                        onChange={(e) => {
-                            setAbiLeft(e.target.value)
-                            setAbiRight(e.target.value)
-                        }}
+                        id="contract-select-left"
+                        name="contract-select-left"
+                        className="w-1/3 mt-1 rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                        onChange={(e) => setAbiLeft(e.target.value)}
                     >
                         <option value={TerminalV1ABI}>TerminalV1</option>
-                        <option value={JBControllerABI}>JBController</option>
+                        <option value={JBControllerV2ABI}>JBControllerV2</option>
+                        <option value={JBControllerV3ABI}>JBControllerV3</option>
+                    </select>
+                    <select
+                        id="contract-select-right"
+                        name="contract-select-right"
+                        className="w-1/3 mt-1 rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                        onChange={(e) => setAbiRight(e.target.value)}
+                    >
+                        <option value={TerminalV1ABI}>TerminalV1</option>
+                        <option value={JBControllerV2ABI}>JBControllerV2</option>
+                        <option value={JBControllerV3ABI}>JBControllerV3</option>
                     </select>
                 </div>
 
