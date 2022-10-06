@@ -91,8 +91,8 @@ export default function DiffPage() {
                 </div>
 
                 <ReactDiffViewer 
-                    oldValue={flatten(parsedLeft.data?.args ?? '')} 
-                    newValue={flatten(parsedRight.data?.args ?? '')} 
+                    oldValue={flatten(removeAbundantKeys(parsedLeft.data?.args ?? ''))}
+                    newValue={flatten(removeAbundantKeys(parsedRight.data?.args ?? ''))}
                     splitView={splitView} 
                     compareMethod={DiffMethod.WORDS} 
                     leftTitle={splitView ? 'Left' : 'Unified Mode'}
@@ -112,11 +112,41 @@ function parse(abi: string, rawData: string) {
     } catch (e) {
         message = e.message;
     }
+    console.info('Diff.parse', {abi, rawData, data, message})
     return { data, message };
 }
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
+}
+
+function range(start, end) {
+    return Array(end - start + 1).fill(1).map((_, idx) => start + idx)
+}
+
+function removeAbundantKeys(obj) {
+    if(typeof obj === 'object' && obj.length !== undefined) {
+        // Array
+        if (Object.keys(obj).length === 2*obj.length) {
+            // have named keys, let's remove abundant index keys
+            // [3, 4, [1, top: 1], [1, 2], first: 3, second: 4, third: {1, top: 1}, fourth: [1,2]] 
+            // =>
+            // {first: 3, second: 4, third: {top: 1}, fourth: [1,2]]}
+            const indexKeys = range(0, obj.length-1).map((i) => i.toString())
+            const newObj = {}
+            for (const key of Object.keys(obj)) {
+                if(!indexKeys.includes(key)) {
+                    newObj[key] = removeAbundantKeys(obj[key])
+                }
+            }
+            return newObj
+        } else {
+            return obj.map(removeAbundantKeys)
+        }
+
+    } else {
+        return obj
+    }
 }
 
 function flatten(obj: any, level = 0) {
