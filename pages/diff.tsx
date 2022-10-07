@@ -1,32 +1,35 @@
-import { BigNumber, utils } from 'ethers'
 import { useState } from 'react';
 import { Switch } from '@headlessui/react'
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer';
 import SiteNav from '../components/SiteNav';
-import { TransactionDescription } from 'ethers/lib/utils';
 
 import TerminalV1 from '@jbx-protocol/contracts-v1/deployments/mainnet/TerminalV1.json';
 import JBControllerV2 from '@jbx-protocol/contracts-v2/deployments/mainnet/JBController.json';
 import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController.json';
+import formatArgs from '../libs/TransactionArgFormatter';
+import renderArgEntry from '../components/TransactionArgEntry';
 
 const TerminalV1ABI = JSON.stringify(TerminalV1.abi)
 const JBControllerV2ABI = JSON.stringify(JBControllerV2.abi)
 const JBControllerV3ABI = JSON.stringify(JBControllerV3.abi)
 
 export default function DiffPage() {
+    // const tabs = ['Raw', 'Formatted']
+    // const [currentTab, setCurrentTab] = useState('Raw')
+
     const [splitView, setSplitView] = useState(true)
     const [abiLeft, setAbiLeft] = useState<string>(TerminalV1ABI)
     const [abiRight, setAbiRight] = useState<string>(TerminalV1ABI)
     const [rawDataLeft, setRawDataLeft] = useState<string>('')
     const [rawDataRight, setRawDataRight] = useState<string>('')
 
-    const parsedLeft = parse(abiLeft, rawDataLeft)
-    const parsedRight = parse(abiRight, rawDataRight)
+    const { data: leftStr, message: leftMessage } = formatArgs(abiLeft, rawDataLeft)
+    const { data: rightStr, message: rightMessage } = formatArgs(abiRight, rawDataRight)
 
     return (
         <>
             <SiteNav pageTitle="Transaction Diff Viewer" />
-
+            {/* <Tabs tabs={tabs} currentTab={currentTab} setCurrentTab={setCurrentTab} /> */}
             <div className="bg-white">
                 <div className="flex justify-around p-6">
                     <select
@@ -52,8 +55,8 @@ export default function DiffPage() {
                 </div>
 
                 <div id="message-info" className="flex justify-around gap-x-3">
-                    <p className='w-1/3 overflow-y-auto'>{(abiLeft && rawDataLeft) && parsedLeft.message}</p>
-                    <p className='w-1/3 overflow-y-auto'>{(abiRight && rawDataRight) && parsedRight.message}</p>
+                    <p className='w-1/3 overflow-y-auto'>{(abiLeft && rawDataLeft) && leftMessage}</p>
+                    <p className='w-1/3 overflow-y-auto'>{(abiRight && rawDataRight) && rightMessage}</p>
                 </div>
 
                 <div id="abi-input" className="flex justify-around gap-x-3 py-6">
@@ -89,91 +92,72 @@ export default function DiffPage() {
                         </Switch.Label>
                     </Switch.Group>
                 </div>
+            </div>
 
+            <div className="m-3">
                 <ReactDiffViewer 
-                    oldValue={flatten(removeAbundantKeys(parsedLeft.data?.args ?? ''))}
-                    newValue={flatten(removeAbundantKeys(parsedRight.data?.args ?? ''))}
+                    oldValue={leftStr}
+                    newValue={rightStr}
                     splitView={splitView} 
-                    compareMethod={DiffMethod.WORDS} 
+                    compareMethod={DiffMethod.LINES} 
                     leftTitle={splitView ? 'Left' : 'Unified Mode'}
-                    rightTitle="Right" />
+                    rightTitle="Right"
+                    renderContent={(s) => renderArgEntry(s)} />
             </div>
         </>
     )
 }
-
-function parse(abi: string, rawData: string) {
-    let data: TransactionDescription
-    let message = ''
-    try {
-        const iface = new utils.Interface(abi);
-        data = iface.parseTransaction({ data: rawData });
-        message = data.signature
-    } catch (e) {
-        message = e.message;
-    }
-    console.info('Diff.parse', {abi, rawData, data, message})
-    return { data, message };
+  
+function Tabs({ tabs, currentTab, setCurrentTab }: { tabs: string[], currentTab: string, setCurrentTab: (tab: string) => void }) {
+    return (
+        <div className="m-6">
+            <div className="sm:hidden">
+                <label htmlFor="tabs" className="sr-only">
+                    Select a tab
+                </label>
+                {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
+                <select
+                    id="tabs"
+                    name="tabs"
+                    className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    value={currentTab}
+                    onChange={(e) => setCurrentTab(e.target.value)}
+                >
+                    {tabs.map((tab) => (
+                        <option key={tab}>{tab}</option>
+                    ))}
+                </select>
+            </div>
+            <div className="hidden sm:block">
+                <nav className="isolate flex divide-x divide-gray-200 rounded-lg shadow" aria-label="Tabs">
+                    {tabs.map((tab, tabIdx) => (
+                        <button
+                            key={tab}
+                            onClick={() => setCurrentTab(tab)}
+                            className={classNames(
+                                (tab === currentTab) ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
+                                tabIdx === 0 ? 'rounded-l-lg' : '',
+                                tabIdx === tabs.length - 1 ? 'rounded-r-lg' : '',
+                                'group relative min-w-0 flex-1 overflow-hidden bg-white py-4 px-4 text-sm font-medium text-center hover:bg-gray-50 focus:z-10'
+                            )}
+                            aria-current={(tab === currentTab) ? 'page' : undefined}
+                        >
+                            <span>{tab}</span>
+                            <span
+                                aria-hidden="true"
+                                className={classNames(
+                                    (tab === currentTab) ? 'bg-indigo-500' : 'bg-transparent',
+                                    'absolute inset-x-0 bottom-0 h-0.5'
+                                )}
+                            />
+                        </button>
+                    ))}
+                </nav>
+            </div>
+        </div>
+    )
 }
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
-
-function range(start, end) {
-    return Array(end - start + 1).fill(1).map((_, idx) => start + idx)
-}
-
-function removeAbundantKeys(obj) {
-    if(typeof obj === 'object' && obj.length !== undefined) {
-        // Array
-        if (Object.keys(obj).length === 2*obj.length) {
-            // have named keys, let's remove abundant index keys
-            // [3, 4, [1, top: 1], [1, 2], first: 3, second: 4, third: {1, top: 1}, fourth: [1,2]] 
-            // =>
-            // {first: 3, second: 4, third: {top: 1}, fourth: [1,2]]}
-            const indexKeys = range(0, obj.length-1).map((i) => i.toString())
-            const newObj = {}
-            for (const key of Object.keys(obj)) {
-                if(!indexKeys.includes(key)) {
-                    newObj[key] = removeAbundantKeys(obj[key])
-                }
-            }
-            return newObj
-        } else {
-            return obj.map(removeAbundantKeys)
-        }
-
-    } else {
-        return obj
-    }
-}
-
-function flatten(obj: any, level = 0) {
-    // { a: 1, b: { c: 2, d: 3 } }
-    // =>
-    // a: 1
-    // b:
-    // > c: 2
-    // > d: 3
-    return Object.keys(obj).reduce((acc, key) => {
-      // BigNumber
-      if (BigNumber.isBigNumber(obj[key])) {
-        return acc += ` ${'.'.repeat(level)} ${key}: ${utils.formatUnits(obj[key], 0)}\n`
-      }
-  
-      // array, continue to flatten
-      if (typeof obj[key] === 'object' && obj[key] !== null && obj[key].length !== undefined) {
-        return acc += ` ${'.'.repeat(level)} ${key}: [\n${flatten(obj[key], level+1)}]\n`
-      }
-  
-      // other object, continue to flatten
-      if (typeof obj[key] === 'object' && obj[key] !== null) {
-        return acc += ` ${'.'.repeat(level)} ${key}: {\n${flatten(obj[key], level+1)}}\n`
-      }
-  
-      // plain value, just stringify it
-      return acc += ` ${'.'.repeat(level)} ${key}: ${JSON.stringify(obj[key])}\n`
-    }, '');
-  }
-  
