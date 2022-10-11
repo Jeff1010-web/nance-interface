@@ -14,8 +14,17 @@ query VotingPowerQuery($voter: String!, $space: String!, $proposal: String) {
 }
 `
 
+export interface SnapshotVotingPower {
+    vp: number;
+    vp_by_strategy: number[];
+    vp_state: string;
+}
+
 export default function useVotingPower(voter: string, space: string, proposal: string): {data: number, loading: boolean} {
-    const { loading, data, error } = useQuery(QUERY, {
+    console.debug("🔧 useVotingPower.args ->", {voter, space, proposal});
+
+    const { loading, data, error } = useQuery<{ vp: SnapshotVotingPower}>(QUERY, {
+        skip: !voter || !space || !proposal,
         variables: {
             voter: voter,
             space: space,
@@ -24,10 +33,11 @@ export default function useVotingPower(voter: string, space: string, proposal: s
     });
 
     if (error) {
-        console.error("🔴 useVotingPower ->", {voter, space, proposal}, {error});
+        console.warn("🚨 useVotingPower.error ->", {voter, space, proposal}, {error});
         return {data: 0, loading: false};
     }
 
     const vp = data?.vp?.vp;
+    console.debug("🔧 useVotingPower.return ->", {data, loading});
     return { data: vp, loading };
 }

@@ -1,19 +1,14 @@
 import { useState, Fragment } from "react"
-import useVotingPower from "../hooks/VotingPower"
-import snapshot from '@snapshot-labs/snapshot.js'
+import useVotingPower from "../hooks/snapshot/VotingPower"
 import { Dialog, RadioGroup, Transition } from '@headlessui/react'
-import { ProposalDataExtended } from "../hooks/ProposalsExtendedOf"
+import { SnapshotProposal } from "../hooks/snapshot/Proposals"
 import { XIcon } from '@heroicons/react/outline'
 import { CheckIcon, ExclamationIcon } from '@heroicons/react/solid'
-import { useSigner } from "wagmi"
-import { Wallet } from "@ethersproject/wallet"
 import Notification from "./Notification"
+import useVote from "../hooks/snapshot/Vote"
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
-
-const hub = 'https://hub.snapshot.org'; // or https://testnet.snapshot.org for testnet
-const client = new snapshot.Client712(hub);
 
 
 interface VotingProps {
@@ -21,7 +16,7 @@ interface VotingProps {
     closeModal: () => void
     address: string
     spaceId: string
-    proposal: ProposalDataExtended
+    proposal: SnapshotProposal
 }
 
 function classNames(...classes) {
@@ -29,53 +24,22 @@ function classNames(...classes) {
 }
 
 export default function VotingModal({modalIsOpen, closeModal, address, spaceId, proposal}: VotingProps) {
+  // state
   const [selectedOption, setSelectedOption] = useState(1);
   const [reason, setReason] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(undefined);
-  const [notificationShow, setNotificationShow] = useState(false);
-  const { data: signer, isError, isLoading } = useSigner();
+  const [notificationEnabled, setNotificationEnabled] = useState(false);
+  // external
   const { data: vp } = useVotingPower(address, spaceId, proposal?.id || '');
+  const { trigger, value, loading, error } = useVote(spaceId, proposal?.id, proposal?.type, selectedOption, reason);
 
   // shorthand functions
-  const beforeSubmitVote = () => {
-    setSubmitting(true);
-    setError(undefined);
+  const submitVote = () => {
+    setNotificationEnabled(true);
+    trigger();
   }
-  const reset = () => {
-    setSubmitting(false);
-    setError(undefined);
-  }
-  const closeModalAndReset = () => {
-    reset();
+  const close = () => {
+    setNotificationEnabled(false);
     closeModal();
-  }
-  const errorWithSubmit = (e) => {
-    setSubmitting(false);
-    if (modalIsOpen) {
-      setError(e);
-    }
-  }
-
-  const vote = async () => {
-    try {
-      beforeSubmitVote();
-      console.log("reason", reason);
-      const receipt = await client.vote(signer as Wallet, address, {
-          space: spaceId,
-          proposal: proposal.id,
-          type: 'single-choice',
-          choice: selectedOption,
-          reason: reason,
-          app: 'juicetool'
-      });
-      console.info("📗 VotingModal ->", {spaceId, proposal, selectedOption}, receipt);
-      reset();
-      setNotificationShow(true);
-    } catch (e) {
-      errorWithSubmit(e);
-      console.error("🔴 VotingModal ->", e);
-    }
   }
 
   if(proposal === undefined) {
@@ -83,68 +47,34 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
   }
 
   const renderVoteButton = () => {
+    let canVote = false;
+    let label = "Close";
+
     if(address=='') {
-      return (
-        <button
-          type="button"
-          onClick={closeModalAndReset}
-          className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
-        >
-          Wallet not connected
-        </button>
-      )
-    }
-
-    if(isLoading) {
-      return (
-        <button
-          type="button"
-          onClick={closeModalAndReset}
-          className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
-        >
-          Loading wallet
-        </button>
-      )
-    }
-
-    if(isError) {
-      return (
-        <button
-          type="button"
-          onClick={closeModalAndReset}
-          className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
-        >
-          Can&#39;t load the wallet
-        </button>
-      )
-    }
-
-    if(vp>0) {
-      return (
-        <button
-          type="button"
-          onClick={vote}
-          className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
-          >
-          {submitting ? "Submitting..." : "Submit vote"}
-        </button>
-      )
+      label = "Wallet not connected";
+    } else if(loading) {
+      label = "Loading...";
+    } else if(vp > 0) {
+      label = "Submit vote";
+      canVote = true;
+    } else {
+      label = "Close";
     }
 
     return (
       <button
         type="button"
-        onClick={closeModalAndReset}
+        onClick={canVote ? submitVote : close}
         className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
       >
-      Close
+        {label}
       </button>
     )
   }
 
   return (
     <Transition.Root show={modalIsOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" open={modalIsOpen} onClose={closeModalAndReset}>
+      <Dialog as="div" className="relative z-10" open={modalIsOpen} onClose={close}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -173,26 +103,18 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                   <button
                     type="button"
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8"
-                    onClick={closeModalAndReset}
+                    onClick={close}
                   >
                     <span className="sr-only">Close</span>
                     <XIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
 
                   <div className="w-full grid grid-cols-1 gap-y-8 gap-x-6 items-start sm:grid-cols-12 lg:gap-x-8">
-                    {/* <div className="sm:col-span-4 lg:col-span-5">
-                      <div className="aspect-w-1 aspect-h-1 rounded-lg bg-gray-100 overflow-hidden">
-                        <img src={product.imageSrc} alt={product.imageAlt} className="object-center object-cover" />
-                      </div>
-                      <p className="absolute top-4 left-4 text-center sm:static sm:mt-6">
-                        <a href={product.href} className="font-medium text-indigo-600 hover:text-indigo-500">
-                          View full details
-                        </a>
-                      </p>
-                    </div> */}
-                    <Notification title="Vote result" description="Success!" show={notificationShow} close={() => setNotificationShow(false)} checked={true} />
+                    {value && 
+                      <Notification title="Vote result" description="Success!" show={notificationEnabled} close={() => setNotificationEnabled(false)} checked={true} />
+                    }
                     {error && 
-                      <Notification title="Vote result" description={error.error_description || error.message} show={true} close={() => setError(undefined)} checked={false} />
+                      <Notification title="Vote result" description={error.error_description || error.message} show={notificationEnabled} close={() => setNotificationEnabled(false)} checked={false} />
                     }
                     <div className="sm:col-span-12 lg:col-span-12">
                       <h2 className="text-2xl font-bold text-gray-900 sm:pr-12">{proposal.title}</h2>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import fetchProjectInfo, { ProjectInfo } from "../hooks/Project";
+import fetchProjectInfo, { ProjectInfo } from "../hooks/juicebox/Project";
 
 
 export interface Props {

@@ -2,8 +2,8 @@ import { Dispatch, Fragment, SetStateAction, useState } from 'react'
 import { Dialog, Disclosure, Menu, Popover, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
 import { ChevronDownIcon, DocumentSearchIcon } from '@heroicons/react/solid'
-import { SpaceInfo } from '../hooks/SpaceInfo'
-import useFollowedSpaces from '../hooks/FollowedSpaces'
+import { SpaceInfo } from '../hooks/snapshot/SpaceInfo'
+import useFollowedSpaces from '../hooks/snapshot/FollowedSpaces'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')

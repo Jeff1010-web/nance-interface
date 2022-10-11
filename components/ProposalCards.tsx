@@ -1,5 +1,5 @@
 import { DocumentTextIcon, ArchiveIcon } from '@heroicons/react/solid'
-import { ProposalDataExtended, VotesData } from '../hooks/ProposalsExtendedOf'
+import { SnapshotProposal, SnapshotVote, SnapshotVotedData } from '../hooks/snapshot/Proposals'
 import { fromUnixTime, formatDistanceToNow, isPast } from 'date-fns'
 import { Tooltip } from 'flowbite-react';
 import VotingModal from './VotingModal';
@@ -27,7 +27,7 @@ const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
   </Tooltip>
 )
 
-export default function ProposalCards({address, spaceId, proposals, votedData}: {address: string, spaceId: string, proposals: ProposalDataExtended[], votedData: VotesData}) {
+export default function ProposalCards({address, spaceId, proposals, votedData}: {address: string, spaceId: string, proposals: SnapshotProposal[], votedData: {[key: string]: SnapshotVotedData}}) {
   const [votingProposal, setVotingProposal] = useState(undefined);
 
   return (
@@ -42,7 +42,7 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
                 <div className="flex items-center space-x-2 break-words">
                   {/* Voted status */}
                   <div className='min-w-fit'>
-                    {votedData[proposal.id] && labelWithTooltip('Voted', `You voted ${votedData[proposal.id].choice} with ${formatNumber(votedData[proposal.id].score)} (${(votedData[proposal.id].score*100/proposal.scores_total).toFixed()}% of total votes) [Reason: ${votedData[proposal.id].reason}]`, 'text-blue-800 bg-blue-100')}
+                    {votedData[proposal.id] && labelWithTooltip('Voted', `You voted ${votedData[proposal.id].choice} with ${formatNumber(votedData[proposal.id].vp)} (${(votedData[proposal.id].vp*100/proposal.scores_total).toFixed()}% of total votes) [Reason: ${votedData[proposal.id].reason}]`, 'text-blue-800 bg-blue-100')}
                   </div>
 
                   {/* Proposal status */}

@@ -1,11 +1,11 @@
 import { createContext } from 'react';
 import { useRouter } from 'next/router'
-import { useProposalsExtendedOf } from "../../hooks/ProposalsExtendedOf";
+import { useProposalsWithFilter } from "../../hooks/snapshot/Proposals";
 import { useAccount } from 'wagmi'
 import SiteNav from "../../components/SiteNav";
 import SpaceProposalNavigator from '../../components/SpaceProposalNavigator';
 import ProposalCards from '../../components/ProposalCards';
-import useSpaceInfo from '../../hooks/SpaceInfo';
+import useSpaceInfo from '../../hooks/snapshot/SpaceInfo';
 import {useQueryParam, BooleanParam, StringParam, NumberParam, withDefault} from 'next-query-params';
 
 export const Web3Context = createContext(undefined);
@@ -26,12 +26,11 @@ export default function SnapshotSpace() {
     const connectedAddress = isConnected ? address : "";
 
     // load data
-    const { loading, data, error } = useProposalsExtendedOf(
+    const { loading, data, error } = useProposalsWithFilter(
         space as string, filterByActive, 
         keyword, connectedAddress,
         limit);
     const { proposalsData, votedData } = data;
-    console.info("📗 SnapshotSpace.useProposalsExtendedOf.data ->", data);
     // process data
     const votedIds = votedData ? Object.keys(votedData) : [];
     const underQuorumIds = proposalsData ? proposalsData.filter(proposal => proposal.scores_total < proposal.quorum).map(proposal => proposal.id) : [];
