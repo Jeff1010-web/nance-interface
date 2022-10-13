@@ -23,20 +23,26 @@ export function mapChoiceIndex (type: string, choices: string[], choice: any) {
   }
 
 export function formatChoices(type: string, choice: any): string {
-    if (!choice) return '';
+  console.debug("🔧 formatChoices.args", {type, choice});
+  let ret: string;
 
-    if(type == 'approval') {
-        const arr = choice as string[];
-        return arr.join(', ');
-    } else if (type == 'ranked-choice') {
-        const arr = choice as string[];
-        return arr.map((v, i) => `(${i+1}th) ${v}`).join(', ');
-    } else if (type == 'quadratic' || type == 'weighted') {
-        const obj = choice as { [key: string]: number };
-        const totalUnits = Object.values(obj).reduce((a, b) => a + b, 0);
-        return Object.entries(obj).map(([key, value]) => `${Math.round(value/totalUnits*100)}% for ${key}`).join(', ');
-    } else {
-        const str = choice as string;
-        return str;
-    }
+  if (!choice || !type) return '';
+
+  if(type == 'approval') {
+      const arr = choice as string[];
+      ret = arr.join(', ');
+  } else if (type == 'ranked-choice') {
+      const arr = choice as string[];
+      ret = arr.map((v, i) => `(${i+1}th) ${v}`).join(', ');
+  } else if (type == 'quadratic' || type == 'weighted') {
+      const obj = choice as { [key: string]: number };
+      const totalUnits = Object.values(obj).reduce((a, b) => a + b, 0);
+      ret = Object.entries(obj).map(([key, value]) => `${Math.round(value/totalUnits*100)}% for ${key}`).join(', ');
+  } else {
+      const str = choice as string;
+      ret = str;
+  }
+
+  console.debug("🔧 formatChoices.return", {ret});
+  return ret;
 }

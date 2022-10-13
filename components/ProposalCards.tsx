@@ -1,6 +1,6 @@
 import { DocumentTextIcon, ArchiveIcon } from '@heroicons/react/solid'
-import { SnapshotProposal, SnapshotVote, SnapshotVotedData } from '../hooks/snapshot/Proposals'
-import { fromUnixTime, formatDistanceToNow, isPast } from 'date-fns'
+import { SnapshotProposal, SnapshotVotedData } from '../hooks/snapshot/Proposals'
+import { fromUnixTime, formatDistanceToNow } from 'date-fns'
 import { Tooltip } from 'flowbite-react';
 import VotingModal from './VotingModal';
 import { useState } from 'react';
@@ -65,9 +65,16 @@ export default function ProposalCards({address, spaceId, proposals, votedData}: 
           </div>
           {proposal.scores_total > 0 && (
           <div className="w-full">
+            <p className="p-3 text-gray-500">Top 3 choices</p>
             <dl className="m-2 grid grid-cols-1 gap-5 sm:grid-cols-3">
               {/* Vote choice data */}
-              {proposal.scores.filter((score) => score>0).map((score, index) => (
+              {proposal.scores
+                .filter((score) => score>0)
+                .map((score, index) => {return { score, index }})
+                // sort by score desc
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3)
+                .map(({score, index}) => (
                 <div key={`${proposal.id}-${index}`} className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
                   <Tooltip
                     content={proposal.choices[index]}

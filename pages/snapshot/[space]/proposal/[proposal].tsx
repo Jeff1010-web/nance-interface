@@ -185,7 +185,7 @@ export default function SnapshotProposal() {
                                                             alt={`avatar of ${vote.voter}`}
                                                         />
                                                     </div>
-                                                    <div className="space-y-1">
+                                                    <div className="space-y-1 overflow-hidden">
                                                         <div className="text-sm">
                                                             <FormattedAddress address={vote.voter} style="font-medium text-gray-900" />
                                                         </div>
@@ -196,9 +196,9 @@ export default function SnapshotProposal() {
                                                             )}>
                                                                 {` ${formatNumber(vote.vp)} (${(vote.vp*100/data?.proposalData?.scores_total).toFixed()}%)`}
                                                             </div>
-                                                            <div className="overflow-hidden hover:overflow-x-auto w-3/4">
-                                                                {formatChoices(data?.proposalData.type, vote.choice)}
-                                                            </div>                                
+                                                            <div className="w-full overflow-hidden">
+                                                                <p className="truncate">{formatChoices(data?.proposalData.type, vote.choice)}</p>
+                                                            </div>
                                                         </div>
                                                         <div className="text-sm text-gray-800 font-semibold">
                                                             {vote.reason && <p>{vote.reason}</p>}
