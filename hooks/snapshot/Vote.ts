@@ -7,7 +7,15 @@ import { useAccount, useSigner } from "wagmi"
 const hub = 'https://hub.snapshot.org'; // or https://testnet.snapshot.org for testnet
 const client = new snapshot.Client712(hub);
 
-export default function useVote(space: string, proposal: string, type: string, choice: any, reason: string = "") {
+export default function useVote(
+    space: string, 
+    proposal: string, 
+    type: string, 
+    choice: string | number | number[] | {
+        [key: string]: number;
+    }, 
+    reason: string = ""
+){
     // state
     const [value, setValue] = useState<unknown>()
     const [loading, setLoading] = useState<boolean>(false)

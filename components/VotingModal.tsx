@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react"
+import { useState, Fragment, useEffect } from "react"
 import useVotingPower from "../hooks/snapshot/VotingPower"
 import { Dialog, RadioGroup, Transition } from '@headlessui/react'
 import { SnapshotProposal } from "../hooks/snapshot/Proposals"
@@ -6,6 +6,7 @@ import { XIcon } from '@heroicons/react/outline'
 import { CheckIcon, ExclamationIcon } from '@heroicons/react/solid'
 import Notification from "./Notification"
 import useVote from "../hooks/snapshot/Vote"
+import { useForm } from "react-hook-form"
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -23,14 +24,16 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
+const SUPPORTED_VOTING_TYPES = ['single-choice', 'basic', 'weighted']
+
 export default function VotingModal({modalIsOpen, closeModal, address, spaceId, proposal}: VotingProps) {
   // state
-  const [selectedOption, setSelectedOption] = useState(1);
+  const [choice, setChoice] = useState(undefined);
   const [reason, setReason] = useState('');
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   // external
-  const { data: vp } = useVotingPower(address, spaceId, proposal?.id || '');
-  const { trigger, value, loading, error } = useVote(spaceId, proposal?.id, proposal?.type, selectedOption, reason);
+  const { data: vp, loading: vpLoading } = useVotingPower(address, spaceId, proposal?.id || '');
+  const { trigger, value, loading, error } = useVote(spaceId, proposal?.id, proposal?.type, choice, reason);
 
   // shorthand functions
   const submitVote = () => {
@@ -54,6 +57,8 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
       label = "Wallet not connected";
     } else if(loading) {
       label = "Loading...";
+    } else if(!SUPPORTED_VOTING_TYPES.includes(proposal.type)) {
+      label = "Not supported"
     } else if(vp > 0) {
       label = "Submit vote";
       canVote = true;
@@ -146,7 +151,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                         ) : (
                           <div className="mt-6 flex items-center">
                             <ExclamationIcon className="flex-shrink-0 w-5 h-5 text-yellow-500" aria-hidden="true" />
-                            <p className="ml-2 font-medium text-gray-500">You have no voting power</p>
+                            <p className="ml-2 font-medium text-gray-500">{vpLoading ? "Loading..." : "You have no voting power"}</p>
                           </div>
                         )}
                       </section>
@@ -159,45 +164,12 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                         <form>
                           <div className="sm:flex sm:justify-between">
                             {/* Option selector */}
-                            <RadioGroup value={selectedOption} onChange={setSelectedOption}>
-                              <RadioGroup.Label className="block text-sm font-medium text-gray-700">
-                                Options
-                              </RadioGroup.Label>
-                              <div className="mt-1 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                {proposal.choices.map((choice, index) => (
-                                  <RadioGroup.Option
-                                    as="div"
-                                    key={choice}
-                                    value={index+1}
-                                    className={({ active }) =>
-                                      classNames(
-                                        active ? 'ring-2 ring-indigo-500' : '',
-                                        'relative block border border-gray-300 rounded-lg p-4 cursor-pointer focus:outline-none'
-                                      )
-                                    }
-                                  >
-                                    {({ active, checked }) => (
-                                      <>
-                                        <RadioGroup.Label as="p" className="text-base font-medium text-gray-900">
-                                          {choice}
-                                        </RadioGroup.Label>
-                                        {/* <RadioGroup.Description as="p" className="mt-1 text-sm text-gray-500">
-                                          {size.description}
-                                        </RadioGroup.Description> */}
-                                        <div
-                                          className={classNames(
-                                            active ? 'border' : 'border-2',
-                                            checked ? 'border-indigo-500' : 'border-transparent',
-                                            'absolute -inset-px rounded-lg pointer-events-none'
-                                          )}
-                                          aria-hidden="true"
-                                        />
-                                      </>
-                                    )}
-                                  </RadioGroup.Option>
-                                ))}
-                              </div>
-                            </RadioGroup>
+                            {(proposal.type == 'single-choice' || proposal.type =="basic") && (
+                              <BasicChoiceSelector value={choice} setValue={setChoice} choices={proposal.choices} />
+                            )}
+                            {proposal.type == 'weighted' && (
+                              <WeightedChoiceSelector value={choice} setValue={setChoice} choices={proposal.choices} />
+                            )}
                           </div>
                           <div className="mt-2">
                             <label htmlFor="comment" className="block text-sm font-medium text-gray-700">
@@ -240,5 +212,93 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
         </div>
       </Dialog>
     </Transition.Root>
+  )
+}
+
+interface SelectorProps {
+  value: any
+  setValue: (value: any) => void
+  choices: string[]
+}
+
+function BasicChoiceSelector({value, setValue, choices}: SelectorProps) {
+  return (
+    <RadioGroup value={value} onChange={setValue}>
+      <RadioGroup.Label className="block text-sm font-medium text-gray-700">
+        Options
+      </RadioGroup.Label>
+      <div className="mt-1 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {choices.map((choice, index) => (
+          <RadioGroup.Option
+            as="div"
+            key={choice}
+            value={index+1}
+            className={({ active }) =>
+              classNames(
+                active ? 'ring-2 ring-indigo-500' : '',
+                'relative block border border-gray-300 rounded-lg p-4 cursor-pointer focus:outline-none'
+              )
+            }
+          >
+            {({ active, checked }) => (
+              <>
+                <RadioGroup.Label as="p" className="text-base font-medium text-gray-900">
+                  {choice}
+                </RadioGroup.Label>
+                {/* <RadioGroup.Description as="p" className="mt-1 text-sm text-gray-500">
+                  {size.description}
+                </RadioGroup.Description> */}
+                <div
+                  className={classNames(
+                    active ? 'border' : 'border-2',
+                    checked ? 'border-indigo-500' : 'border-transparent',
+                    'absolute -inset-px rounded-lg pointer-events-none'
+                  )}
+                  aria-hidden="true"
+                />
+              </>
+            )}
+          </RadioGroup.Option>
+        ))}
+      </div>
+    </RadioGroup>
+  )
+}
+
+function WeightedChoiceSelector({value, setValue, choices}: Omit<SelectorProps, 'value'> & { value: {[key: string]: number}}) {
+  const { register, getValues, watch } = useForm();
+
+  useEffect(() => {
+    // sync form state
+    const subscription = watch((_) => {
+      const values = getValues();
+      const newValue = {};
+      // remove empty values
+      for (const key in values) {
+        if (!isNaN(values[key])) {
+          newValue[key] = values[key];
+        }
+      }
+      setValue(newValue);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  console.debug('🔧WeightedChoiceSelector', {choice: value, formValues: getValues()});
+  const totalUnits = Object.values(value ?? {}).reduce((a, b) => a + b, 0);
+
+  return (
+    <div className="mt-1 grid grid-cols-1 gap-4">
+      {choices.map((choice, index) => (
+        <div key={choice} className="flex gap-2 rounded-lg border-1 p-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+          <label className="w-3/5">{choice}</label>
+          <input className="w-1/5 rounded-lg" type="number" step={1} {...register((index+1).toString(), {shouldUnregister: true, valueAsNumber: true})} />
+          <span className="italic w-1/5">
+            {isNaN(getValues((index+1).toString())) ? "0%" : `${Math.round(getValues((index+1).toString())/totalUnits*100)}%`}
+          </span>
+        </div>
+      ))}
+    </div>
   )
 }
