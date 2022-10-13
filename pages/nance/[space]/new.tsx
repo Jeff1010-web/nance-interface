@@ -8,7 +8,8 @@ import React from "react";
 import { useRouter } from "next/router";
 import ReactMarkdown from "react-markdown";
 import Notification from "../../../components/Notification";
-import { useProposalUpload, ProposalUploadBaseRequest } from "../../../hooks/NanceHooks";
+import { useProposalUpload } from "../../../hooks/NanceHooks";
+import { ProposalUploadRequest } from "../../../models/NanceTypes";
 import Link from "next/link";
 
 type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
@@ -112,11 +113,11 @@ function Form() {
   const { isMutating, error, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
 
   // form
-  const methods = useForm<ProposalUploadBaseRequest>();
+  const methods = useForm<ProposalUploadRequest>();
   const { register, handleSubmit, watch, getValues, formState: { errors } } = methods;
   const onSubmit = (formData) => {
     reset();
-    const data: ProposalUploadBaseRequest = {
+    const data: ProposalUploadRequest = {
       ...formData,
       type: metadata.proposalType,
       version: metadata.version,
