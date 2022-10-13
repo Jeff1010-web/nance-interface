@@ -275,8 +275,9 @@ function WeightedChoiceSelector({value, setValue, choices}: Omit<SelectorProps, 
       const newValue = {};
       // remove empty values
       for (const key in values) {
-        if (!isNaN(values[key])) {
-          newValue[key] = values[key];
+        const val = values[key]
+        if (!isNaN(val) && val > 0) {
+          newValue[key] = val;
         }
       }
       setValue(newValue);
@@ -293,9 +294,11 @@ function WeightedChoiceSelector({value, setValue, choices}: Omit<SelectorProps, 
       {choices.map((choice, index) => (
         <div key={choice} className="flex gap-2 rounded-lg border-1 p-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
           <label className="w-3/5">{choice}</label>
-          <input className="w-1/5 rounded-lg" type="number" step={1} {...register((index+1).toString(), {shouldUnregister: true, valueAsNumber: true})} />
+          <input className="w-1/5 rounded-lg" type="number" placeholder="0" min={0} step={1} {...register((index+1).toString(), {shouldUnregister: true, valueAsNumber: true})} />
           <span className="italic w-1/5">
-            {isNaN(getValues((index+1).toString())) ? "0%" : `${Math.round(getValues((index+1).toString())/totalUnits*100)}%`}
+            {(isNaN(getValues((index+1).toString())) || totalUnits==0) ?
+              "0%" :
+              `${Math.round(getValues((index+1).toString())/totalUnits*100)}%`}
           </span>
         </div>
       ))}
