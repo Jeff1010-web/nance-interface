@@ -6,7 +6,6 @@ import VotingModal from './VotingModal';
 import { useContext, useState } from 'react';
 import Link from 'next/link';
 import { SpaceContext } from '../pages/snapshot/[space]';
-import Pagination, { PaginationProps } from './Pagination';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -29,7 +28,7 @@ const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
   </Tooltip>
 )
 
-export default function ProposalCards({proposals, paginationProp}: {proposals: SnapshotProposal[], paginationProp: PaginationProps}) {
+export default function ProposalCards({proposals}: {proposals: SnapshotProposal[]}) {
   const [votingProposal, setVotingProposal] = useState(undefined);
   const {address, space: spaceId} = useContext(SpaceContext);
 
@@ -37,11 +36,9 @@ export default function ProposalCards({proposals, paginationProp}: {proposals: S
     <>
       <ul role="list" className="grid grid-cols-1 gap-6 max-w-7xl">
         {proposals.map((proposal) => (
-          <ProposalCardItem proposal={proposal} setVotingProposal={setVotingProposal} />
+          <ProposalCardItem key={proposal.id} proposal={proposal} setVotingProposal={setVotingProposal} />
         ))}
       </ul>
-
-      <Pagination {...paginationProp} />
 
       <VotingModal 
         modalIsOpen={votingProposal !== undefined} 
@@ -66,7 +63,7 @@ function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotPr
   const topScores = scores.slice(0, 3);
 
   return (
-    <li key={proposal.id} className="col-span-1 bg-white rounded-lg shadow divide-y divide-gray-200">
+    <li className="col-span-1 bg-white rounded-lg shadow divide-y divide-gray-200">
       <div className="w-full flex items-center justify-between p-6 space-x-6">
         <div className="flex-1 overflow-hidden">
           <div className="flex break-words justify-between flex-col md:flex-row">
