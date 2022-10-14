@@ -22,7 +22,7 @@ export default function Pagination({ page, setPage, total, limit }: PaginationPr
     const renderedPages = range(firstPages, lastPages).map((p) => {
       if(p === page) {
         return (
-          <input key={p} type="number" aria-current="page" max={pages} min={1} step={1} value={page} onChange={e => setPage(e.target.value)} name="page-input" id="page-input" className="relative z-10 inline-flex items-center border border-indigo-500 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 focus:z-20" />
+          <input key={p} type="number" aria-current="page" max={pages} min={1} step={1} value={page} onChange={e => setPage(e.target.value as unknown as number)} name="page-input" id="page-input" className="relative z-10 inline-flex items-center border border-indigo-500 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 focus:z-20" />
         )
       } else {
         return (
@@ -38,7 +38,7 @@ export default function Pagination({ page, setPage, total, limit }: PaginationPr
     })
 
   return (
-    <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+    <div className="w-full rounded-lg mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
       <div className="flex flex-1 justify-between sm:hidden">
         <button
             disabled={page === 1}
