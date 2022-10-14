@@ -26,6 +26,7 @@ export default function SnapshotSpace() {
     const { address, isConnected } = useAccount();
     const { data: spaceInfo } = useSpaceInfo(space as string);
     // state
+    const [page, setPage] = useQueryParam('page', withDefault(NumberParam, 1));
     const [filterByActive, setFilterByActive] = useQueryParam('active', withDefault(BooleanParam, false));
     const [filterByNotVoted, setFilterByNotVoted] = useQueryParam('notVoted', withDefault(BooleanParam, false));
     const [filterByUnderQuorum, setFilterByUnderQuorum] = useQueryParam('underQuorum', withDefault(BooleanParam, false));
@@ -37,7 +38,7 @@ export default function SnapshotSpace() {
     const { loading, data, error } = useProposalsWithFilter(
         space as string, filterByActive, 
         keyword, connectedAddress,
-        limit);
+        limit, Math.max((page-1)*limit, 0));
     const { proposalsData, votedData } = data;
     // process data
     const votedIds = votedData ? Object.keys(votedData) : [];
@@ -51,6 +52,7 @@ export default function SnapshotSpace() {
         }
         return true;
     });
+    const total = spaceInfo?.proposalsCount || 0;
 
     const filterOptions = [
         {id: "active", name: "Active", value: filterByActive, setter: setFilterByActive},
@@ -78,11 +80,16 @@ export default function SnapshotSpace() {
                     <div className="flex flex-row flex-wrap mx-4 px-4 lg:px-20 justify-center">
                         {loading && <div className="text-center">Loading proposals...</div>}
                         {!loading && !error && filteredProposals.length > 0 && (
-                            <ProposalCards proposals={filteredProposals} />
+                            <ProposalCards proposals={filteredProposals} paginationProp={{page, setPage, limit, total}} />
                         )}
                         {!loading && !error && filteredProposals.length == 0 && (
                             <div className="text-center flex flex-col space-y-4">
                                 <span>No eligible proposals found.</span>
+                                <button type="button" 
+                                    className="items-center rounded border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-medium text-black shadow-sm"
+                                    onClick={() => router.back()}>
+                                    Back to previous page
+                                </button>
                                 <button type="button" 
                                     className="items-center rounded border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-medium text-black shadow-sm"
                                     onClick={() => {

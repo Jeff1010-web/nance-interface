@@ -6,6 +6,7 @@ import VotingModal from './VotingModal';
 import { useContext, useState } from 'react';
 import Link from 'next/link';
 import { SpaceContext } from '../pages/snapshot/[space]';
+import Pagination, { PaginationProps } from './Pagination';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -28,24 +29,26 @@ const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
   </Tooltip>
 )
 
-export default function ProposalCards({proposals}: {proposals: SnapshotProposal[]}) {
+export default function ProposalCards({proposals, paginationProp}: {proposals: SnapshotProposal[], paginationProp: PaginationProps}) {
   const [votingProposal, setVotingProposal] = useState(undefined);
   const {address, space: spaceId} = useContext(SpaceContext);
 
   return (
     <>
-    <ul role="list" className="grid grid-cols-1 gap-6 max-w-7xl">
-      {proposals.map((proposal) => (
-        <ProposalCardItem proposal={proposal} setVotingProposal={setVotingProposal} />
-      ))}
-    </ul>
+      <ul role="list" className="grid grid-cols-1 gap-6 max-w-7xl">
+        {proposals.map((proposal) => (
+          <ProposalCardItem proposal={proposal} setVotingProposal={setVotingProposal} />
+        ))}
+      </ul>
 
-    <VotingModal 
-      modalIsOpen={votingProposal !== undefined} 
-      closeModal={() => setVotingProposal(undefined)} 
-      address={address} 
-      spaceId={spaceId} 
-      proposal={votingProposal} />
+      <Pagination {...paginationProp} />
+
+      <VotingModal 
+        modalIsOpen={votingProposal !== undefined} 
+        closeModal={() => setVotingProposal(undefined)} 
+        address={address} 
+        spaceId={spaceId} 
+        proposal={votingProposal} />
     </>
   )
 }

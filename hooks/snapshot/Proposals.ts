@@ -2,10 +2,10 @@ import { APIError, useQuery } from 'graphql-hooks'
 import { mapChoiceIndex } from '../../libs/snapshotUtil'
 
 const PROPOSALS_QUERY = `
-query Proposals($first: Int, $space: String, $state: String, $keyword: String) {
+query Proposals($first: Int, $skip: Int, $space: String, $state: String, $keyword: String) {
   proposals(
     first: $first
-    skip: 0
+    skip: $skip
     where: {
       space: $space,
       state: $state,
@@ -179,12 +179,13 @@ export function useProposalsByID(proposalIds: string[], address: string) {
   }, address);
 }
 
-export function useProposalsWithFilter(space: string, active: boolean, keyword: string, address: string, first: number) {
+export function useProposalsWithFilter(space: string, active: boolean, keyword: string, address: string, first: number, skip: number) {
   return useProposalsWithCustomQuery(PROPOSALS_QUERY, {
     space: space,
     state: active ? "active" : "",
     keyword: keyword,
-    first: first
+    first: first,
+    skip: skip
   }, address);
 }
 

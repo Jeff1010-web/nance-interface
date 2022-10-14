@@ -4,8 +4,14 @@ function range(start, end) {
   return Array(end - start + 1).fill(1).map((_, idx) => start + idx)
 }
 
-export default function Pagination({ page, setPage, total }) {
-    const limit = 10;
+export interface PaginationProps {
+  page: number;
+  setPage: (page: number) => void;
+  total: number;
+  limit: number;
+}
+
+export default function Pagination({ page, setPage, total, limit }: PaginationProps) {
     const itemStart = (page - 1) * limit + 1;
     const itemEnd = Math.min(page * limit, total);
     const pages = Math.ceil(total / limit);

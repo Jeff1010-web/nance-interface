@@ -225,7 +225,7 @@ export default function SnapshotProposal() {
                                             </li>
                                         ))}
                                     </ul>
-                                    <Pagination page={page} setPage={setPage} total={data?.proposalData?.votes || 0} />
+                                    <Pagination page={page} setPage={setPage} total={data?.proposalData?.votes || 0} limit={10} />
                                 </div>
                             </div>
                             </div>
