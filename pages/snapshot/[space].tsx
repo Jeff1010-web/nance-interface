@@ -30,7 +30,7 @@ export default function SnapshotSpace() {
     const [filterByNotVoted, setFilterByNotVoted] = useQueryParam('notVoted', withDefault(BooleanParam, false));
     const [filterByUnderQuorum, setFilterByUnderQuorum] = useQueryParam('underQuorum', withDefault(BooleanParam, false));
     const [keyword, setKeyword] = useQueryParam('keyword', withDefault(StringParam, ''));
-    const [limit, setLimit] = useQueryParam('limit', withDefault(NumberParam, 5));
+    const [limit, setLimit] = useQueryParam('limit', withDefault(NumberParam, 10));
     const connectedAddress = isConnected ? address : "";
 
     // load data
@@ -77,8 +77,28 @@ export default function SnapshotSpace() {
                     </div>
                     <div className="flex flex-row flex-wrap mx-4 px-4 lg:px-20 justify-center">
                         {loading && <div className="text-center">Loading proposals...</div>}
-                        {!loading && !error && (
+                        {!loading && !error && filteredProposals.length > 0 && (
                             <ProposalCards proposals={filteredProposals} />
+                        )}
+                        {!loading && !error && filteredProposals.length == 0 && (
+                            <div className="text-center flex flex-col space-y-4">
+                                <span>No eligible proposals found.</span>
+                                <button type="button" 
+                                    className="items-center rounded border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-medium text-black shadow-sm"
+                                    onClick={() => {
+                                        setFilterByActive(false, 'push');
+                                        setFilterByNotVoted(false, 'push');
+                                        setFilterByUnderQuorum(false, 'push');
+                                        setKeyword("", 'push');
+                                    }}>
+                                    Reset all filters
+                                </button>
+                                <button type="button" 
+                                    className="items-center rounded border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-medium text-black shadow-sm"
+                                    onClick={() => setLimit(limit*2)}>
+                                    Double the limit of proposals {`(Current: ${limit})`}
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>

@@ -21,7 +21,7 @@ const posts: PostCard[] = [
     },
     {
         title: 'Snapshot voting with search, filter and more stats',
-        href: '/snapshot/jbdao.eth',
+        href: '/snapshot/jbdao.eth?active=1',
         category: { name: 'Governance', href: '#' },
         description:
             'Have you ever wanted to search for proposals? Or filter by status? Or see more stats? Now you can use Snapshot Plus.',

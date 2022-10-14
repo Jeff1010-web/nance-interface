@@ -17,7 +17,7 @@ export default function SiteNav({ pageTitle, description, image }: SiteNavProps)
         { name: 'Home', href: '/' },
         { name: 'Nance', href: '/nance/juicebox' },
         { name: 'Funding', href: '/funding' },
-        { name: 'Snapshot Plus', href: '/snapshot/jbdao.eth' },
+        { name: 'Snapshot Plus', href: '/snapshot/jbdao.eth?active=1' },
         { name: 'Random Project', href: '/lucky' },
         { name: 'Transaction Diff', href: '/diff' },
         { name: 'Old Homepage', href: '/old' },

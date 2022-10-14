@@ -234,59 +234,6 @@ export default function SpaceProposalNavigator({spaceInfo, options, keyword, set
 
         <div className="relative z-10 bg-white border-b border-gray-200 pb-4">
           <div className="max-w-7xl mx-auto px-4 flex items-center justify-end sm:px-6 lg:px-8">
-            {/* <Menu as="div" className="relative inline-block text-left sm:hidden">
-              <div>
-                <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                  Jump to space
-                  <ChevronDownIcon
-                    className="flex-shrink-0 -mr-1 ml-1 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                    aria-hidden="true"
-                  />
-                </Menu.Button>
-              </div>
-
-              <Transition
-                as={Fragment}
-                enter="transition ease-out duration-100"
-                enterFrom="transform opacity-0 scale-95"
-                enterTo="transform opacity-100 scale-100"
-                leave="transition ease-in duration-75"
-                leaveFrom="transform opacity-100 scale-100"
-                leaveTo="transform opacity-0 scale-95"
-              >
-                <Menu.Items className="origin-top-left absolute left-0 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none overflow-auto">
-                  <div className="py-1">
-                    {tabs.map((tab) => (
-                      <Menu.Item key={tab.id}>
-                        {({ active }) => (
-                            <div className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'flex items-center pl-3'
-                            )}>
-                                <span
-                                    className={classNames(
-                                    tab.activeProposals>0 ? 'bg-green-400' : 'bg-gray-200',
-                                    'flex-shrink-0 inline-block h-2 w-2 rounded-full'
-                                    )}
-                                    aria-hidden="true"
-                                />
-                                <a
-                                    href={`/snapshot/${tab.id}`}
-                                    className={classNames(
-                                      tab.activeProposals>0 ? 'font-medium text-gray-900' : 'text-gray-500',
-                                        'block px-4 py-2 text-sm'
-                                    )}
-                                >
-                                    {tab.name}
-                                </a>
-                            </div>
-                        )}
-                      </Menu.Item>
-                    ))}
-                  </div>
-                </Menu.Items>
-              </Transition>
-            </Menu> */}
 
             <button
               type="button"
