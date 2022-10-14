@@ -233,7 +233,7 @@ export default function SpaceProposalNavigator({spaceInfo, options, keyword, set
         </h2>
 
         <div className="relative z-10 bg-white border-b border-gray-200 pb-4">
-          <div className="max-w-7xl mx-auto px-4 flex items-center justify-between sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 flex items-center justify-end sm:px-6 lg:px-8">
             {/* <Menu as="div" className="relative inline-block text-left sm:hidden">
               <div>
                 <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
@@ -359,7 +359,7 @@ export default function SpaceProposalNavigator({spaceInfo, options, keyword, set
         <div className="bg-gray-100">
           <div className="max-w-7xl mx-auto py-3 px-4 sm:flex sm:items-center sm:px-6 lg:px-8">
             <h3 className="text-sm font-medium text-gray-500">
-              Filters
+              Enabled Filters
               <span className="sr-only">, active</span>
             </h3>
 
