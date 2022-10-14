@@ -32,6 +32,35 @@ query Proposals($first: Int, $space: String, $state: String, $keyword: String) {
 }
 `
 
+const PROPOSALS_BY_ID_QUERY = `
+query ProposalsByID($first: Int, $proposalIds: [String]) {
+  proposals(
+    first: $first
+    skip: 0
+    where: {
+      id_in: $proposalIds
+    }
+    orderBy: "created",
+    orderDirection: desc
+  ) {
+    id,
+    author,
+    title,
+    body,
+    type,
+    state,
+    created,
+    start,
+    end,
+    choices,
+    scores,
+    votes,
+    quorum,
+    scores_total
+  }
+}
+`
+
 const SINGLE_PROPOSAL_QUERY = `
 query Proposals($id: String) {
   proposal(id: $id) {
@@ -143,7 +172,23 @@ export type SnapshotVotedData = Omit<SnapshotVote & {
   }
 }, 'voter'>;
 
-export function useProposalsWithFilter(space: string, active: boolean, keyword: string, address: string, first: number): {
+export function useProposalsByID(proposalIds: string[], address: string) {
+  return useProposalsWithCustomQuery(PROPOSALS_BY_ID_QUERY, {
+    first: proposalIds.length,
+    proposalIds
+  }, address);
+}
+
+export function useProposalsWithFilter(space: string, active: boolean, keyword: string, address: string, first: number) {
+  return useProposalsWithCustomQuery(PROPOSALS_QUERY, {
+    space: space,
+    state: active ? "active" : "",
+    keyword: keyword,
+    first: first
+  }, address);
+}
+
+export function useProposalsWithCustomQuery(query: string, variables: object, address: string): {
   loading: boolean,
   error: APIError<object>,
   data: {
@@ -152,21 +197,14 @@ export function useProposalsWithFilter(space: string, active: boolean, keyword: 
   }
 } {
 
-  console.debug("🔧 useProposalsWithFilter.args ->", {space,active,keyword,address,first});
+  console.debug("🔧 useProposalsWithCustomQuery.args ->", {query, variables});
 
   // Load proposals
   const {
     loading: proposalsLoading,
     data: proposalsData,
     error: proposalsError
-  } = useQuery<{ proposals: SnapshotProposal[] }>(PROPOSALS_QUERY, {
-    variables: {
-      space: space,
-      state: active ? "active" : "",
-      keyword: keyword,
-      first: first
-    }
-  });
+  } = useQuery<{ proposals: SnapshotProposal[] }>(query, { variables });
   // Load voted proposals
   const {
     loading: votedLoading,
@@ -199,7 +237,7 @@ export function useProposalsWithFilter(space: string, active: boolean, keyword: 
     loading: proposalsLoading || votedLoading, 
     error: proposalsError || votedError 
   };
-  console.debug("🔧 useProposalsWithFilter.return ->", {ret});
+  console.debug("🔧 useProposalsWithCustomQuery.return ->", {ret});
   return ret;
 }
 
