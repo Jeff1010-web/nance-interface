@@ -39,6 +39,7 @@ export default function ProposalCards({proposals}: {proposals: SnapshotProposal[
         <ProposalCardItem proposal={proposal} setVotingProposal={setVotingProposal} />
       ))}
     </ul>
+
     <VotingModal 
       modalIsOpen={votingProposal !== undefined} 
       closeModal={() => setVotingProposal(undefined)} 
@@ -49,8 +50,17 @@ export default function ProposalCards({proposals}: {proposals: SnapshotProposal[
   )
 }
 
-function ProposalCardItem({ proposal, setVotingProposal }) {
+function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotProposal, setVotingProposal: (proposal: SnapshotProposal) => void}) {
   const {votedData, space: spaceId, address} = useContext(SpaceContext);
+
+  const scores = 
+    proposal.scores
+      .filter((score) => score>0)
+      .map((score, index) => {return { score, index }})
+      // sort by score desc
+      .sort((a, b) => b.score - a.score)
+  const moreThanThreeScores = scores.length > 3;
+  const topScores = scores.slice(0, 3);
 
   return (
     <li key={proposal.id} className="col-span-1 bg-white rounded-lg shadow divide-y divide-gray-200">
@@ -84,16 +94,10 @@ function ProposalCardItem({ proposal, setVotingProposal }) {
       </div>
       {proposal.scores_total > 0 && (
       <div className="w-full">
-        <p className="p-3 text-gray-500">Top 3 choices</p>
+        {moreThanThreeScores && (<p className="p-3 text-gray-500">Top 3 choices</p>)}
         <dl className="m-2 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {/* Vote choice data */}
-          {proposal.scores
-            .filter((score) => score>0)
-            .map((score, index) => {return { score, index }})
-            // sort by score desc
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 3)
-            .map(({score, index}) => (
+          {topScores.map(({score, index}) => (
             <div key={`${proposal.id}-${index}`} className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
               <Tooltip
                 content={proposal.choices[index]}
