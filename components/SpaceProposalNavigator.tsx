@@ -19,6 +19,7 @@ interface FilterOption {
 
 export default function SpaceProposalNavigator({spaceInfo, options, keyword, setKeyword, limit, setLimit}: {spaceInfo: SpaceInfo, options: FilterOption[], keyword: string, setKeyword: Dispatch<SetStateAction<string>>, limit: number, setLimit: Dispatch<SetStateAction<number>>}) {
   const [open, setOpen] = useState(false);
+  const [keywordInput, setKeywordInput] = useState("");
   const context = useContext(SpaceContext);
 
   const { data: followedSpaces } = useFollowedSpaces(context.address);
@@ -199,8 +200,13 @@ export default function SpaceProposalNavigator({spaceInfo, options, keyword, set
                 id="proposal-title"
                 className="block w-full rounded-none rounded-l-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 placeholder="grant, swap and payout etc."
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
+                value={keywordInput}
+                onChange={(e) => setKeywordInput(e.target.value)}
+                onKeyUp={(e) => {
+                  if(e.key == "Enter") {
+                    setKeyword(keywordInput)
+                  }
+                }}
               />
             </div>
             <div>
