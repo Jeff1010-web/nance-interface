@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import { useRouter } from 'next/router'
-import { useProposalsWithFilter } from "../../hooks/snapshot/Proposals";
+import { SnapshotVotedData, useProposalsWithFilter } from "../../hooks/snapshot/Proposals";
 import { useAccount } from 'wagmi'
 import SiteNav from "../../components/SiteNav";
 import SpaceProposalNavigator from '../../components/SpaceProposalNavigator';
@@ -8,7 +8,15 @@ import ProposalCards from '../../components/ProposalCards';
 import useSpaceInfo from '../../hooks/snapshot/SpaceInfo';
 import {useQueryParam, BooleanParam, StringParam, NumberParam, withDefault} from 'next-query-params';
 
-export const Web3Context = createContext(undefined);
+export interface SpaceContextData {
+    address: string;
+    space: string;
+    votedData: {
+        [id: string]: SnapshotVotedData;
+    }
+}
+
+export const SpaceContext = createContext<SpaceContextData>(undefined);
 
 export default function SnapshotSpace() {
     // router
@@ -52,20 +60,29 @@ export default function SnapshotSpace() {
 
     return (
         <>
-            <SiteNav pageTitle={`${spaceInfo?.name || (space as string) || ''} Proposals`} description="Snapshot voting with filter, search bar and quick overview on single page." image="/images/unsplash_voting.jpeg" />
-            <SpaceProposalNavigator spaceId={space as string} spaceInfo={spaceInfo} address={address} options={filterOptions} keyword={keyword} setKeyword={setKeyword} limit={limit} setLimit={setLimit} />
-            <div className="flex my-6 flex-col gap-y-3">
-                <div className="underline">
-                    {/* {!loading && filteredProposals && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>} */}
-                    {error && <div className="text-center">Something wrong.</div>}
+            <SiteNav 
+                pageTitle={`${spaceInfo?.name || (space as string) || ''} Proposals`} 
+                description="Snapshot voting with filter, search bar and quick overview on single page." 
+                image="/images/unsplash_voting.jpeg" />
+
+            <SpaceContext.Provider 
+                value={{address: connectedAddress, space: space as string, votedData}}>
+
+                <SpaceProposalNavigator spaceInfo={spaceInfo}  options={filterOptions} keyword={keyword} setKeyword={setKeyword} limit={limit} setLimit={setLimit} />
+
+                <div className="flex my-6 flex-col gap-y-3">
+                    <div className="underline">
+                        {/* {!loading && filteredProposals && <div className="text-center">Loaded {filteredProposals.length} proposals.</div>} */}
+                        {error && <div className="text-center">Something wrong.</div>}
+                    </div>
+                    <div className="flex flex-row flex-wrap mx-4 px-4 lg:px-20 justify-center">
+                        {loading && <div className="text-center">Loading proposals...</div>}
+                        {!loading && !error && (
+                            <ProposalCards proposals={filteredProposals} />
+                        )}
+                    </div>
                 </div>
-                <div className="flex flex-row flex-wrap mx-4 px-4 lg:px-20 justify-center">
-                    {loading && <div className="text-center">Loading proposals...</div>}
-                    {!loading && !error && (
-                        <ProposalCards address={address} spaceId={space as string} proposals={filteredProposals} votedData={votedData} />
-                    )}
-                </div>
-            </div>
+            </SpaceContext.Provider>
         </>
     )
 }

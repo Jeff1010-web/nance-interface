@@ -1,9 +1,10 @@
-import { Dispatch, Fragment, SetStateAction, useState } from 'react'
+import { Dispatch, Fragment, SetStateAction, useContext, useState } from 'react'
 import { Dialog, Disclosure, Menu, Popover, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
 import { ChevronDownIcon, DocumentSearchIcon } from '@heroicons/react/solid'
 import { SpaceInfo } from '../hooks/snapshot/SpaceInfo'
 import useFollowedSpaces from '../hooks/snapshot/FollowedSpaces'
+import { SpaceContext } from '../pages/snapshot/[space]'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -16,11 +17,12 @@ interface FilterOption {
     setter: Dispatch<SetStateAction<boolean>>
 }
 
-export default function SpaceProposalNavigator({spaceId, spaceInfo, address, options, keyword, setKeyword, limit, setLimit}: {spaceId: string, spaceInfo: SpaceInfo, address: string, options: FilterOption[], keyword: string, setKeyword: Dispatch<SetStateAction<string>>, limit: number, setLimit: Dispatch<SetStateAction<number>>}) {
+export default function SpaceProposalNavigator({spaceInfo, options, keyword, setKeyword, limit, setLimit}: {spaceInfo: SpaceInfo, options: FilterOption[], keyword: string, setKeyword: Dispatch<SetStateAction<string>>, limit: number, setLimit: Dispatch<SetStateAction<number>>}) {
   const [open, setOpen] = useState(false);
+  const context = useContext(SpaceContext);
 
-  const { data: followedSpaces } = useFollowedSpaces(address);
-  const tabs = address ? followedSpaces : [];
+  const { data: followedSpaces } = useFollowedSpaces(context.address);
+  const tabs = context.address ? followedSpaces : [];
   const activeFilters = options.filter(option => option.value);
 
   const filters = [
@@ -132,18 +134,18 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
                   key={tab.name}
                   href={`/snapshot/${tab.id}`}
                   className={classNames(
-                    tab.id == spaceId
+                    tab.id == context.space
                       ? 'border-indigo-500 text-indigo-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200',
                     'whitespace-nowrap flex py-4 px-1 border-b-2 font-medium text-sm'
                   )}
-                  aria-current={tab.id == spaceId ? 'page' : undefined}
+                  aria-current={tab.id == context.space ? 'page' : undefined}
                 >
                   {tab.name}
                   {tab.activeProposals ? (
                     <span
                       className={classNames(
-                        tab.id == spaceId ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-900',
+                        tab.id == context.space ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-900',
                         'hidden ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block'
                       )}
                     >
@@ -159,10 +161,10 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
         {/* Space Info */}
         <img
           className="mt-6 inline-block h-14 w-14 rounded-full"
-          src={`https://cdn.stamp.fyi/space/${spaceId}?s=160`}
+          src={`https://cdn.stamp.fyi/space/${context.space}?s=160`}
           alt=""
         />
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900">{spaceInfo?.name || spaceId}</h1>
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900">{spaceInfo?.name || context.space}</h1>
         <p className="mt-4 max-w-xl text-sm text-gray-700">
           {spaceInfo?.about || ''}
         </p>
