@@ -18,7 +18,7 @@ function jsonFetcher(): Fetcher<APIResponse<any>, string> {
         const res = await fetch(url)
         const json = await res.json()
         if (json?.success === 'false') {
-            throw new Error('An error occurred while fetching the data.', { cause: json.error })
+            throw new Error('An error occurred while fetching the data.')
         }
 
         return json
@@ -68,7 +68,7 @@ async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRe
     })
     const json: ProposalUploadResponse = await res.json()
     if (json.success === false) {
-        throw new Error('An error occurred while fetching the data.', { cause: json.error })
+        throw new Error('An error occurred while fetching the data.')
     }
 
     return json
