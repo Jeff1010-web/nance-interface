@@ -200,7 +200,7 @@ export default function SpaceProposalNavigator({spaceInfo, options, keyword, set
                 id="proposal-title"
                 className="block w-full rounded-none rounded-l-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 placeholder="grant, swap and payout etc."
-                value={keywordInput}
+                value={keywordInput || keyword}
                 onChange={(e) => setKeywordInput(e.target.value)}
                 onKeyUp={(e) => {
                   if(e.key == "Enter") {
