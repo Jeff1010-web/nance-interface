@@ -37,7 +37,7 @@ export interface ProposalRequest extends BaseRequest {
   hash: string;
 }
 
-export interface ProposalUploadRequest extends BaseRequest {
+export interface ProposalUploadRequest {
   proposal: Proposal;
 }
 

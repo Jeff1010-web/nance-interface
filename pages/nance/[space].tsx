@@ -11,9 +11,9 @@ export default function NanceProposals() {
     const router = useRouter();
     const { space } = router.query;
     const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
-    const { data: { data: spaceInfo }, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
-    const { data: { data: proposals }, isLoading: proposalsLoading, error: proposalError }  = useProposalsQuery({ space: space as string, cycle }, router.isReady);
-    const currentCycle = cycle || spaceInfo.currentCycle;
+    const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
+    const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposalsQuery({ space: space as string, cycle }, router.isReady);
+    const currentCycle = cycle || infoData?.data?.currentCycle;
 
   return (
     <>
@@ -43,7 +43,7 @@ export default function NanceProposals() {
         <div className="mt-6 overflow-hidden bg-white shadow sm:rounded-md">
             { (infoLoading || proposalsLoading) && <p>loading...</p>}
             <ul role="list" className="divide-y divide-gray-200">
-                {proposals?.map((proposal) => (
+                {proposalData?.data?.map((proposal) => (
                     <li key={proposal.hash}>
                         <div className="px-4 py-4 sm:px-6">
                             <div className="flex items-center justify-between">
@@ -118,13 +118,13 @@ export default function NanceProposals() {
             <div className="flex flex-1 justify-end">
                 <button
                     disabled={cycle === 1}
-                    onClick={() => setCycle((cycle || spaceInfo?.currentCycle) - 1)}
+                    onClick={() => setCycle(currentCycle - 1)}
                     className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
                     Previous
                 </button>
                 <button
-                    onClick={() => setCycle(cycle || spaceInfo?.currentCycle + 1)}
+                    onClick={() => setCycle(currentCycle + 1)}
                     className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
                     Next
