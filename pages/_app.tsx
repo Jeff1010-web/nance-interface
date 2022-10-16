@@ -16,6 +16,7 @@ import { publicProvider } from 'wagmi/providers/public'
 import {NextQueryParamProvider} from 'next-query-params';
 
 import {JuiceProvider} from 'juice-hooks'
+import { Flowbite } from 'flowbite-react';
 
 const graphqlClient = new GraphQLClient({
   url: 'https://hub.snapshot.org/graphql'
@@ -38,6 +39,14 @@ const wagmiClient = createClient({
   provider
 })
 
+const theme = {
+  theme: {
+    tooltip: {
+      target: ''
+    }
+  }
+}
+
 function MyApp({ Component, pageProps }) {
   return (
     <WagmiConfig client={wagmiClient}>
@@ -50,7 +59,9 @@ function MyApp({ Component, pageProps }) {
         <ClientContext.Provider value={graphqlClient}>
           <NextQueryParamProvider>
             <JuiceProvider provider={wagmiClient.provider}>
-              <Component {...pageProps} />
+              <Flowbite theme={theme}>
+                <Component {...pageProps} />
+              </Flowbite>
             </JuiceProvider>
           </NextQueryParamProvider>
         </ClientContext.Provider>

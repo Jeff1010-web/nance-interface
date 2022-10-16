@@ -1,9 +1,10 @@
-import { Dispatch, Fragment, SetStateAction, useState } from 'react'
+import { Dispatch, Fragment, SetStateAction, useContext, useState } from 'react'
 import { Dialog, Disclosure, Menu, Popover, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
 import { ChevronDownIcon, DocumentSearchIcon } from '@heroicons/react/solid'
-import { SpaceInfo } from '../hooks/SpaceInfo'
-import useFollowedSpaces from '../hooks/FollowedSpaces'
+import { SpaceInfo } from '../hooks/snapshot/SpaceInfo'
+import useFollowedSpaces from '../hooks/snapshot/FollowedSpaces'
+import { SpaceContext } from '../pages/snapshot/[space]'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -16,11 +17,13 @@ interface FilterOption {
     setter: Dispatch<SetStateAction<boolean>>
 }
 
-export default function SpaceProposalNavigator({spaceId, spaceInfo, address, options, keyword, setKeyword, limit, setLimit}: {spaceId: string, spaceInfo: SpaceInfo, address: string, options: FilterOption[], keyword: string, setKeyword: Dispatch<SetStateAction<string>>, limit: number, setLimit: Dispatch<SetStateAction<number>>}) {
+export default function SpaceProposalNavigator({spaceInfo, options, keyword, setKeyword, limit, setLimit}: {spaceInfo: SpaceInfo, options: FilterOption[], keyword: string, setKeyword: Dispatch<SetStateAction<string>>, limit: number, setLimit: Dispatch<SetStateAction<number>>}) {
   const [open, setOpen] = useState(false);
+  const [keywordInput, setKeywordInput] = useState("");
+  const context = useContext(SpaceContext);
 
-  const { data: followedSpaces } = useFollowedSpaces(address);
-  const tabs = address ? followedSpaces : [];
+  const { data: followedSpaces } = useFollowedSpaces(context.address);
+  const tabs = context.address ? followedSpaces : [];
   const activeFilters = options.filter(option => option.value);
 
   const filters = [
@@ -132,18 +135,18 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
                   key={tab.name}
                   href={`/snapshot/${tab.id}`}
                   className={classNames(
-                    tab.id == spaceId
+                    tab.id == context.space
                       ? 'border-indigo-500 text-indigo-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200',
                     'whitespace-nowrap flex py-4 px-1 border-b-2 font-medium text-sm'
                   )}
-                  aria-current={tab.id == spaceId ? 'page' : undefined}
+                  aria-current={tab.id == context.space ? 'page' : undefined}
                 >
                   {tab.name}
                   {tab.activeProposals ? (
                     <span
                       className={classNames(
-                        tab.id == spaceId ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-900',
+                        tab.id == context.space ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-900',
                         'hidden ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block'
                       )}
                     >
@@ -159,10 +162,10 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
         {/* Space Info */}
         <img
           className="mt-6 inline-block h-14 w-14 rounded-full"
-          src={`https://cdn.stamp.fyi/space/${spaceId}?s=160`}
+          src={`https://cdn.stamp.fyi/space/${context.space}?s=160`}
           alt=""
         />
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900">{spaceInfo?.name || spaceId}</h1>
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900">{spaceInfo?.name || context.space}</h1>
         <p className="mt-4 max-w-xl text-sm text-gray-700">
           {spaceInfo?.about || ''}
         </p>
@@ -197,8 +200,13 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
                 id="proposal-title"
                 className="block w-full rounded-none rounded-l-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 placeholder="grant, swap and payout etc."
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
+                value={keywordInput}
+                onChange={(e) => setKeywordInput(e.target.value)}
+                onKeyUp={(e) => {
+                  if(e.key == "Enter") {
+                    setKeyword(keywordInput)
+                  }
+                }}
               />
             </div>
             <div>
@@ -231,60 +239,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
         </h2>
 
         <div className="relative z-10 bg-white border-b border-gray-200 pb-4">
-          <div className="max-w-7xl mx-auto px-4 flex items-center justify-between sm:px-6 lg:px-8">
-            {/* <Menu as="div" className="relative inline-block text-left sm:hidden">
-              <div>
-                <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                  Jump to space
-                  <ChevronDownIcon
-                    className="flex-shrink-0 -mr-1 ml-1 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                    aria-hidden="true"
-                  />
-                </Menu.Button>
-              </div>
-
-              <Transition
-                as={Fragment}
-                enter="transition ease-out duration-100"
-                enterFrom="transform opacity-0 scale-95"
-                enterTo="transform opacity-100 scale-100"
-                leave="transition ease-in duration-75"
-                leaveFrom="transform opacity-100 scale-100"
-                leaveTo="transform opacity-0 scale-95"
-              >
-                <Menu.Items className="origin-top-left absolute left-0 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none overflow-auto">
-                  <div className="py-1">
-                    {tabs.map((tab) => (
-                      <Menu.Item key={tab.id}>
-                        {({ active }) => (
-                            <div className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'flex items-center pl-3'
-                            )}>
-                                <span
-                                    className={classNames(
-                                    tab.activeProposals>0 ? 'bg-green-400' : 'bg-gray-200',
-                                    'flex-shrink-0 inline-block h-2 w-2 rounded-full'
-                                    )}
-                                    aria-hidden="true"
-                                />
-                                <a
-                                    href={`/snapshot/${tab.id}`}
-                                    className={classNames(
-                                      tab.activeProposals>0 ? 'font-medium text-gray-900' : 'text-gray-500',
-                                        'block px-4 py-2 text-sm'
-                                    )}
-                                >
-                                    {tab.name}
-                                </a>
-                            </div>
-                        )}
-                      </Menu.Item>
-                    ))}
-                  </div>
-                </Menu.Items>
-              </Transition>
-            </Menu> */}
+          <div className="max-w-7xl mx-auto px-4 flex items-center justify-end sm:px-6 lg:px-8">
 
             <button
               type="button"
@@ -357,7 +312,7 @@ export default function SpaceProposalNavigator({spaceId, spaceInfo, address, opt
         <div className="bg-gray-100">
           <div className="max-w-7xl mx-auto py-3 px-4 sm:flex sm:items-center sm:px-6 lg:px-8">
             <h3 className="text-sm font-medium text-gray-500">
-              Filters
+              Enabled Filters
               <span className="sr-only">, active</span>
             </h3>
 

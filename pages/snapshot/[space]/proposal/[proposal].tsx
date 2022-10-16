@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
-import { useProposalExtendedOf, VoteData } from "../../../../hooks/ProposalsExtendedOf";
+import { useProposalExtendedOf } from "../../../../hooks/snapshot/Proposals";
 import { useAccount } from 'wagmi'
 import SiteNav from "../../../../components/SiteNav";
-import useSpaceInfo from "../../../../hooks/SpaceInfo";
+import useSpaceInfo from "../../../../hooks/snapshot/SpaceInfo";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { Tooltip } from 'flowbite-react';
@@ -12,6 +12,7 @@ import { useState } from "react";
 import VotingModal from "../../../../components/VotingModal";
 import { useQueryParam, withDefault, NumberParam, createEnumParam } from "next-query-params";
 import Pagination from "../../../../components/Pagination";
+import { formatChoices } from "../../../../libs/snapshotUtil";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -54,12 +55,11 @@ export default function SnapshotProposal() {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [page, setPage] = useQueryParam('page', withDefault(NumberParam, 1));
     const [sortBy, setSortBy] = useQueryParam('sortBy', withDefault(createEnumParam(["created", "vp"]), "created"));
-    const [votes, setVotes] = useState<VoteData[]>([]);
     // external hook
     const { address, isConnected } = useAccount();
     const { data: spaceInfo } = useSpaceInfo(space as string);
     // load data
-    const { loading, data, error } = useProposalExtendedOf(proposal as string, address, Math.max((page-1)*10, 0), sortBy);
+    const { loading, data, error } = useProposalExtendedOf(proposal as string, address, Math.max((page-1)*10, 0), sortBy as "created" | "vp");
 
     return (
         <>
@@ -113,7 +113,7 @@ export default function SnapshotProposal() {
 
                 <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
                     <div className="space-y-6 lg:col-span-2 lg:col-start-1">
-                        {/* Description list*/}
+                        {/* Content */}
                         <section aria-labelledby="applicant-information-title">
                             <div className="bg-white shadow sm:rounded-lg">
                             <div className="px-4 py-5 sm:px-6 flex space-x-3">
@@ -144,7 +144,7 @@ export default function SnapshotProposal() {
                         </section>
 
                         {/* Votes */}
-                        <section aria-labelledby="votes-title" className={data?.proposalData?.state == 'pending' && 'hidden'}>
+                        <section aria-labelledby="votes-title" className={data?.proposalData?.state == 'pending' ? 'hidden' : undefined}>
                             <div className="bg-white shadow sm:overflow-hidden sm:rounded-lg">
                             <div className="divide-y divide-gray-200">
                                 <div className="px-4 py-5 sm:px-6 flex flex-row justify-between">
@@ -173,10 +173,10 @@ export default function SnapshotProposal() {
                                         </select>
                                     </div>
                                 </div>
-                                <div className="px-4 py-6 sm:px-6">
+                                <div className="px-4 py-6 sm:px-6 truncate">
                                     <ul role="list" className="space-y-8">
                                         {loading && "loading..."}
-                                        {data?.votesData?.map((vote: VoteData) => (
+                                        {data?.votesData?.map((vote) => (
                                             <li key={vote.id}>
                                                 <div className="flex space-x-3">
                                                     <div className="flex-shrink-0">
@@ -185,20 +185,22 @@ export default function SnapshotProposal() {
                                                             alt={`avatar of ${vote.voter}`}
                                                         />
                                                     </div>
-                                                    <div className="space-y-1">
+                                                    <div className="space-y-1 overflow-hidden">
                                                         <div className="text-sm">
                                                             <FormattedAddress address={vote.voter} style="font-medium text-gray-900" />
                                                         </div>
                                                         <div className="text-sm">
-                                                            <span className="font-semibold">{vote.choice}</span>
-                                                            <span className={classNames(
-                                                                getColorOfPencentage(vote.score*100/data?.proposalData?.scores_total),
-                                                                'underline'
+                                                            <div className={classNames(
+                                                                getColorOfPencentage(vote.vp*100/data?.proposalData?.scores_total),
+                                                                'underline w-1/3'
                                                             )}>
-                                                                {` ${formatNumber(vote.score)} (${(vote.score*100/data?.proposalData?.scores_total).toFixed()}%)`}
-                                                            </span>
+                                                                {` ${formatNumber(vote.vp)} (${(vote.vp*100/data?.proposalData?.scores_total).toFixed()}%)`}
+                                                            </div>
+                                                            <div className="w-full overflow-hidden">
+                                                                <p className="truncate">{formatChoices(data?.proposalData.type, vote.choice)}</p>
+                                                            </div>
                                                         </div>
-                                                        <div className="text-sm text-gray-800">
+                                                        <div className="text-sm text-gray-800 font-semibold">
                                                             {vote.reason && <p>{vote.reason}</p>}
                                                         </div>
                                                         <div className="space-x-2 text-sm">
@@ -223,7 +225,7 @@ export default function SnapshotProposal() {
                                             </li>
                                         ))}
                                     </ul>
-                                    <Pagination page={page} setPage={setPage} total={data?.proposalData?.votes || 0} />
+                                    <Pagination page={page} setPage={setPage} total={data?.proposalData?.votes || 0} limit={10} />
                                 </div>
                             </div>
                             </div>
@@ -251,7 +253,14 @@ export default function SnapshotProposal() {
                                         </Tooltip>
                                     </div>
                                     {/* Vote choice data */}
-                                    {data?.proposalData.scores_total > 0 && data?.proposalData?.scores?.filter((score) => score>0).map((score, index) => (
+                                    {data?.proposalData.scores_total > 0 && 
+                                        data?.proposalData?.scores
+                                            ?.filter((score) => score>0)
+                                            .map((score, index) => {return { score, index }})
+                                            // sort by score desc
+                                            .sort((a, b) => b.score - a.score)
+                                            .map(({ score, index }) => (
+
                                         <div key={index} className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
                                             <Tooltip
                                                 content={data?.proposalData?.choices[index]}

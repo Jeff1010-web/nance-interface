@@ -9,7 +9,7 @@ import FormattedAddress from '../components/FormattedAddress'
 import seedrandom from 'seedrandom';
 import { BigNumber } from 'ethers'
 import { formatDistanceToNow, fromUnixTime } from 'date-fns'
-import fetchProjectInfo, { ProjectInfo } from '../hooks/Project'
+import fetchProjectInfo, { ProjectInfo } from '../hooks/juicebox/Project'
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
