@@ -4,6 +4,7 @@ import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer';
 import SiteNav from '../components/SiteNav';
 
 import TerminalV1 from '@jbx-protocol/contracts-v1/deployments/mainnet/TerminalV1.json';
+import TerminalV1_1 from '@jbx-protocol/contracts-v1/deployments/mainnet/TerminalV1_1.json';
 import JBControllerV2 from '@jbx-protocol/contracts-v2/deployments/mainnet/JBController.json';
 import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController.json';
 import formatArgs from '../libs/TransactionArgFormatter';
@@ -12,12 +13,15 @@ import SearchableComboBox, { Option } from '../components/SearchableComboBox';
 import { useHistoryTransactions, useQueuedTransactions } from '../hooks/SafeHooks';
 import { useRouter } from 'next/router';
 import { SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../models/SafeTypes';
+import { StringParam, useQueryParam } from 'next-query-params';
+import { useEnsAddress } from 'wagmi';
 
 type ABIOption = Option & { abi: string }
 type TxOption = Option & { tx: SafeMultisigTransaction }
 
 const PRELOAD_ABI_OPTIONS: { [address: string]: ABIOption } = {
     [TerminalV1.address]:  { id: TerminalV1.address, label: `TerminalV1 (${TerminalV1.address})`, abi: JSON.stringify(TerminalV1.abi), status: true },
+    [TerminalV1_1.address]: { id: TerminalV1_1.address, label: `TerminalV1_1 (${TerminalV1_1.address})`, abi: JSON.stringify(TerminalV1_1.abi), status: true },
     [JBControllerV2.address]: { id: JBControllerV2.address, label: `JBControllerV2 (${JBControllerV2.address})`, abi: JSON.stringify(JBControllerV2.abi), status: true },
     [JBControllerV3.address]: { id: JBControllerV3.address, label: `JBControllerV3 (${JBControllerV3.address})`, abi: JSON.stringify(JBControllerV3.abi), status: true },
 }
@@ -26,10 +30,9 @@ const ABIOptions: ABIOption[] = Object.values(PRELOAD_ABI_OPTIONS)
 export default function DiffPage() {
     // router
     const router = useRouter();
-    const { safe } = router.query;
-    const safeAddress = safe as string;
 
     // state
+    const [safeAddressParam, setSafeAddressParam] = useQueryParam("safe", StringParam)
     const [splitView, setSplitView] = useState(true)
     // -- abi
     const [abiOptionLeft, setAbiOptionLeft] = useState<ABIOption>(undefined)
@@ -46,6 +49,11 @@ export default function DiffPage() {
     const { data: rightStr, message: rightMessage } = formatArgs(abiRight, rawDataRight)
 
     // external
+    const { data: safeAddressResolved } = useEnsAddress({
+        name: safeAddressParam,
+        enabled: safeAddressParam?.endsWith('.eth')
+    })
+    const safeAddress = safeAddressResolved || safeAddressParam
     const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, router.isReady)
     const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
 
@@ -103,6 +111,27 @@ export default function DiffPage() {
         <>
             <SiteNav pageTitle="Transaction Diff Viewer" />
             <div className="bg-white">
+                <div className="flex flex-col w-2/3 p-6">
+                    <label htmlFor="safeAddress" className="block text-sm font-medium text-gray-700">
+                        Safe Address
+                    </label>
+                    <div className="mt-1">
+                        <input
+                            type="text"
+                            name="safeAddress"
+                            id="safeAddress"
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            placeholder="you@example.com"
+                            aria-describedby="email-description"
+                            value={safeAddressParam}
+                            onChange={(e) => setSafeAddressParam(e.target.value)}
+                        />
+                    </div>
+                    <p className="mt-2 text-sm text-gray-500" id="safeAddress-description">
+                        {`Resolved to ${safeAddress}`}
+                    </p>
+                </div>
+
                 <div className="flex justify-around py-6">
                     <div className="w-1/3 ml-3">
                         <SearchableComboBox val={abiOptionLeft} setVal={abiOptionSetter(setAbiOptionLeft, setAbiLeft)} options={ABIOptions} label="Load Contract ABI" />
@@ -137,7 +166,7 @@ export default function DiffPage() {
                     <div className="w-1/3 ml-3">
                         <SearchableComboBox val={optionLeft} setVal={optionSetterLeft} options={options} label="Load Safe Transaction" />
                     </div>
-                    
+
                     <div className="w-1/3 ml-3">
                         <SearchableComboBox val={optionRight} setVal={optionSetterRight} options={options} label="Load Safe Transaction" />
                     </div>
