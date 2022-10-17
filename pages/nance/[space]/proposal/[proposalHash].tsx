@@ -2,42 +2,43 @@ import { useRouter } from "next/router";
 import SiteNav from "../../../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
-import { useProposalMarkdown } from "../../../../hooks/NanceHooks";
+import { useProposalRequest } from "../../../../hooks/NanceHooks";
 
 export default function SnapshotProposal() {
     // router
     const router = useRouter();
-    const { space, proposal } = router.query;
-    const { data, isLoading, error } = useProposalMarkdown({ space: space as string, hash: proposal as string }, router.isReady);
+    const { space, proposalHash } = router.query;
+    const { data, isLoading, error } = useProposalRequest({ space: space as string, hash: proposalHash as string }, router.isReady);
+    const proposalData = data?.data;
 
     return (
         <>
-            <SiteNav pageTitle={`${space as string} proposal: ${proposal as string}`} description="Proposal content on Nance." image="/images/unsplash_voting.jpeg" />
+            <SiteNav pageTitle={`${space as string} proposal: ${proposalHash as string}`} description="Proposal content on Nance." image="/images/unsplash_voting.jpeg" />
 
             <div className="min-h-full">
                 <main className="py-10">
                     {/* Page header */}
                     <div className="max-w-3xl px-4 sm:px-6 md:flex md:items-center md:justify-start md:space-x-5 lg:max-w-7xl lg:px-8">
-                        {/* <div className="flex items-center space-x-5">
+                        <div className="flex items-center space-x-5">
                             <div className="flex-shrink-0">
                                 <div className="relative">
-                                <img
+                                {/* <img
                                     className="h-16 w-16 rounded-full"
                                     src={`https://cdn.stamp.fyi/space/${space}?s=160`}
                                     alt=""
-                                />
+                                /> */}
                                 <span className="absolute inset-0 rounded-full shadow-inner" aria-hidden="true" />
                                 </div>
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">{data?.proposalData.title}</h1>
+                                <h1 className="text-2xl font-bold text-gray-900">{proposalData?.proposalId} - {proposalData?.title}</h1>
                                 <p className="text-sm font-medium text-gray-500">
-                                By&nbsp;
-                                {data?.proposalData.author ? (<FormattedAddress address={data?.proposalData.author} style="text-gray-900" />) : 'Anon'}
-                                &nbsp;on <time dateTime={data?.proposalData.created ? fromUnixTime(data?.proposalData.created).toString() : ''}>{data?.proposalData.created && format(fromUnixTime(data?.proposalData.created), 'MMMM d, yyyy')}</time>
+                                {/* By&nbsp; */}
+                                {/* {data?.proposalData.author ? (<FormattedAddress address={data?.proposalData.author} style="text-gray-900" />) : 'Anon'} */}
+                                {/* &nbsp;on <time dateTime={proposalData?.data.created ? fromUnixTime(data?.proposalData.created).toString() : ''}>{data?.proposalData.created && format(fromUnixTime(data?.proposalData.created), 'MMMM d, yyyy')}</time> */}
                                 </p>
                             </div>
-                        </div> */}
+                        </div>
                         <div className="justify-stretch mt-6 flex flex-col-reverse space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-y-0 sm:space-x-3 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
                             <Link href={`/nance/${space as string}`}>
                                 <a className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
@@ -74,7 +75,7 @@ export default function SnapshotProposal() {
                                         <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
                                             {isLoading && 'Loading...'}
                                             {error && 'Error.'}
-                                            {data && <ReactMarkdown>{data}</ReactMarkdown>}
+                                            {proposalData && <ReactMarkdown>{proposalData?.body}</ReactMarkdown>}
                                         </article>
                                     </div>
                                 </div>
