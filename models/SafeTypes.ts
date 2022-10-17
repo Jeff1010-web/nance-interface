@@ -17,10 +17,10 @@ export interface SafeMultisigTransaction {
     safeTxHash: string
     transactionHash: string
     origin: string
-    dataDecoded?: {
+    dataDecoded: {
         method: string
         parameters: object[]
-    }
+    } | null
     isExecuted: boolean
     confirmations?: SafeMultisigConfirmation[]
 }

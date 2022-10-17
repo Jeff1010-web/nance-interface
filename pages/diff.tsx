@@ -8,65 +8,159 @@ import JBControllerV2 from '@jbx-protocol/contracts-v2/deployments/mainnet/JBCon
 import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController.json';
 import formatArgs from '../libs/TransactionArgFormatter';
 import renderArgEntry from '../components/TransactionArgEntry';
+import SearchableComboBox, { Option } from '../components/SearchableComboBox';
+import { useHistoryTransactions, useQueuedTransactions } from '../hooks/SafeHooks';
+import { useRouter } from 'next/router';
+import { SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../models/SafeTypes';
 
-const TerminalV1ABI = JSON.stringify(TerminalV1.abi)
-const JBControllerV2ABI = JSON.stringify(JBControllerV2.abi)
-const JBControllerV3ABI = JSON.stringify(JBControllerV3.abi)
+type ABIOption = Option & { abi: string }
+type TxOption = Option & { tx: SafeMultisigTransaction }
+
+const PRELOAD_ABI_OPTIONS: { [address: string]: ABIOption } = {
+    [TerminalV1.address]:  { id: TerminalV1.address, label: `TerminalV1 (${TerminalV1.address})`, abi: JSON.stringify(TerminalV1.abi), status: true },
+    [JBControllerV2.address]: { id: JBControllerV2.address, label: `JBControllerV2 (${JBControllerV2.address})`, abi: JSON.stringify(JBControllerV2.abi), status: true },
+    [JBControllerV3.address]: { id: JBControllerV3.address, label: `JBControllerV3 (${JBControllerV3.address})`, abi: JSON.stringify(JBControllerV3.abi), status: true },
+}
+const ABIOptions: ABIOption[] = Object.values(PRELOAD_ABI_OPTIONS)
 
 export default function DiffPage() {
-    // const tabs = ['Raw', 'Formatted']
-    // const [currentTab, setCurrentTab] = useState('Raw')
+    // router
+    const router = useRouter();
+    const { safe } = router.query;
+    const safeAddress = safe as string;
 
+    // state
     const [splitView, setSplitView] = useState(true)
-    const [abiLeft, setAbiLeft] = useState<string>(TerminalV1ABI)
-    const [abiRight, setAbiRight] = useState<string>(TerminalV1ABI)
+    // -- abi
+    const [abiOptionLeft, setAbiOptionLeft] = useState<ABIOption>(undefined)
+    const [abiOptionRight, setAbiOptionRight] = useState<ABIOption>(undefined)
+    const [abiLeft, setAbiLeft] = useState<string>(undefined)
+    const [abiRight, setAbiRight] = useState<string>(undefined)
+    // -- raw data
+    const [optionLeft, setOptionLeft] = useState<TxOption>(undefined)
+    const [optionRight, setOptionRight] = useState<TxOption>(undefined)
     const [rawDataLeft, setRawDataLeft] = useState<string>('')
     const [rawDataRight, setRawDataRight] = useState<string>('')
 
     const { data: leftStr, message: leftMessage } = formatArgs(abiLeft, rawDataLeft)
     const { data: rightStr, message: rightMessage } = formatArgs(abiRight, rawDataRight)
 
+    // external
+    const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, router.isReady)
+    const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
+
+    const isLoading = !router.isReady || historyTxsLoading || queuedTxsLoading;
+
+    const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
+        if(!res) return []
+        return res.results.map((tx) => {
+            return {
+                id: tx.safeTxHash,
+                label: `Tx ${tx.nonce} ${tx.dataDecoded ? tx.dataDecoded.method : 'unknown'} -- ${tx.submissionDate}`,
+                status,
+                tx: tx
+            }
+        })
+    }
+    const options = convertToOptions(queuedTxs, true).concat(convertToOptions(historyTxs, false))
+
+    const abiOptionSetter = (setVal: (val: ABIOption) => void, setData: (val: string) => void) => {
+        return (val: ABIOption) => {
+            setVal(val)
+            if(val?.abi) {
+                setData(val?.abi)
+            }
+        }
+    }
+    const optionSetterLeft = (val: TxOption) => {
+        setOptionLeft(val)
+        if(val?.tx.data) {
+            setRawDataLeft(val?.tx.data)
+        }
+        if(val?.tx.to) {
+            const option = PRELOAD_ABI_OPTIONS[val?.tx.to]
+            if(option) {
+                setAbiOptionLeft(option)
+                setAbiLeft(option.abi)
+            }
+        }
+    }
+    const optionSetterRight = (val: TxOption) => {
+        setOptionRight(val)
+        if(val?.tx.data) {
+            setRawDataRight(val?.tx.data)
+        }
+        if(val?.tx.to) {
+            const option = PRELOAD_ABI_OPTIONS[val?.tx.to]
+            if(option) {
+                setAbiOptionRight(option)
+                setAbiRight(option.abi)
+            }
+        }
+    }
+
     return (
         <>
             <SiteNav pageTitle="Transaction Diff Viewer" />
-            {/* <Tabs tabs={tabs} currentTab={currentTab} setCurrentTab={setCurrentTab} /> */}
             <div className="bg-white">
-                <div className="flex justify-around p-6">
-                    <select
-                        id="contract-select-left"
-                        name="contract-select-left"
-                        className="w-1/3 mt-1 rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                        onChange={(e) => setAbiLeft(e.target.value)}
-                    >
-                        <option value={TerminalV1ABI}>TerminalV1</option>
-                        <option value={JBControllerV2ABI}>JBControllerV2</option>
-                        <option value={JBControllerV3ABI}>JBControllerV3</option>
-                    </select>
-                    <select
-                        id="contract-select-right"
-                        name="contract-select-right"
-                        className="w-1/3 mt-1 rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                        onChange={(e) => setAbiRight(e.target.value)}
-                    >
-                        <option value={TerminalV1ABI}>TerminalV1</option>
-                        <option value={JBControllerV2ABI}>JBControllerV2</option>
-                        <option value={JBControllerV3ABI}>JBControllerV3</option>
-                    </select>
+                <div className="flex justify-around py-6">
+                    <div className="w-1/3 ml-3">
+                        <SearchableComboBox val={abiOptionLeft} setVal={abiOptionSetter(setAbiOptionLeft, setAbiLeft)} options={ABIOptions} label="Load Contract ABI" />
+                    </div>
+                    
+                    <div className="w-1/3 ml-3">
+                        <SearchableComboBox val={abiOptionRight} setVal={abiOptionSetter(setAbiOptionRight, setAbiRight)} options={ABIOptions} label="Load Contract ABI" />
+                    </div>      
                 </div>
 
-                <div id="message-info" className="flex justify-around gap-x-3">
-                    <p className='w-1/3 overflow-y-auto'>{(abiLeft && rawDataLeft) && leftMessage}</p>
-                    <p className='w-1/3 overflow-y-auto'>{(abiRight && rawDataRight) && rightMessage}</p>
+                <div id="abi-input" className="flex justify-around gap-x-3 pb-6">
+                    <div className="w-1/3 ml-3">
+                        <label htmlFor="abi-left" className="block text-sm font-medium text-gray-700">
+                            ABI (Left)
+                        </label>
+                        <div className="mt-1">
+                            <textarea rows={3} className="w-full rounded-xl" id="abi-left" placeholder="Paste ABI here" value={abiLeft} onChange={(e) => setAbiLeft(e.target.value)} />
+                        </div>
+                    </div>
+
+                    <div className="w-1/3 ml-3">
+                        <label htmlFor="abi-right" className="block text-sm font-medium text-gray-700">
+                            ABI (Right)
+                        </label>
+                        <div className="mt-1">
+                            <textarea rows={3} className="w-full rounded-xl" id="abi-right" placeholder="Paste ABI here" value={abiRight} onChange={(e) => setAbiRight(e.target.value)} />
+                        </div>
+                    </div>
                 </div>
 
-                <div id="abi-input" className="flex justify-around gap-x-3 py-6">
-                    <textarea rows={3} className="w-1/3 rounded-xl ml-3" id="raw-data-left" placeholder="Paste ABI here" value={abiLeft} onChange={(e) => setAbiLeft(e.target.value)} />
-                    <textarea rows={3} className="w-1/3 rounded-xl mr-3" id="raw-data-right" placeholder="Paste ABI here" value={abiRight} onChange={(e) => setAbiRight(e.target.value)} />
+                <div className="flex justify-around gap-x-3 pb-6">
+                    <div className="w-1/3 ml-3">
+                        <SearchableComboBox val={optionLeft} setVal={optionSetterLeft} options={options} label="Load Safe Transaction" />
+                    </div>
+                    
+                    <div className="w-1/3 ml-3">
+                        <SearchableComboBox val={optionRight} setVal={optionSetterRight} options={options} label="Load Safe Transaction" />
+                    </div>
                 </div>
 
                 <div id="data-input" className="flex justify-around gap-x-3 pb-6">
-                    <textarea rows={3} className="w-1/3 rounded-xl ml-3" id="raw-data-left" placeholder="Paste raw data here" value={rawDataLeft} onChange={(e) => setRawDataLeft(e.target.value)} />
-                    <textarea rows={3} className="w-1/3 rounded-xl mr-3" id="raw-data-right" placeholder="Paste raw data here" value={rawDataRight} onChange={(e) => setRawDataRight(e.target.value)} />
+                    <div className="w-1/3 ml-3">
+                        <label htmlFor="raw-data-left" className="block text-sm font-medium text-gray-700">
+                            Raw Data (Left)
+                        </label>
+                        <div className="mt-1">
+                            <textarea rows={3} className="w-full rounded-xl" id="raw-data-left" placeholder="Paste raw data here" value={rawDataLeft} onChange={(e) => setRawDataLeft(e.target.value)} />
+                        </div>
+                    </div>
+
+                    <div className="w-1/3 ml-3">
+                        <label htmlFor="raw-data-right" className="block text-sm font-medium text-gray-700">
+                            Raw Data (Right)
+                        </label>
+                        <div className="mt-1">
+                            <textarea rows={3} className="w-full rounded-xl" id="raw-data-right" placeholder="Paste raw data here" value={rawDataRight} onChange={(e) => setRawDataRight(e.target.value)} />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex justify-center mb-3">
@@ -96,8 +190,8 @@ export default function DiffPage() {
 
             <div className="m-3">
                 <ReactDiffViewer 
-                    oldValue={leftStr}
-                    newValue={rightStr}
+                    oldValue={leftStr || (rawDataLeft && abiLeft ? leftMessage : '')}
+                    newValue={rightStr || (rawDataRight && abiRight ? rightMessage : '')}
                     splitView={splitView} 
                     compareMethod={DiffMethod.LINES} 
                     leftTitle={splitView ? 'Left' : 'Unified Mode'}
