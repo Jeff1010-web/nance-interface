@@ -2,33 +2,10 @@
 import { CalendarIcon, ChevronRightIcon } from '@heroicons/react/solid'
 import { formatDistanceToNow } from 'date-fns'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
 import SiteNav from '../../components/SiteNav'
+import { useHistoryTransactions, useQueuedTransactions } from '../../hooks/SafeHooks'
+import { SafeMultisigTransaction } from '../../models/SafeTypes'
 
-
-interface SafeTx {
-    nonce: number
-    origin: string
-    data?: string
-    dataDecoded?: {
-        method: string
-        parameters: object[]
-    }
-    isExecuted: boolean
-    safeTxHash: string
-    submissionDate: string
-    executionDate: string
-    confirmations?: {
-        owner: string
-        submissionDate: string
-        transactionHash: string
-        signature: string
-        signatureType: string
-    }[]
-}
-
-const urlOfHistoryTxs = (safeAddress: string, limit: number = 10) => `https://safe-transaction.gnosis.io/api/v1/safes/${safeAddress}/multisig-transactions/?executed=true&trusted=true&limit=${limit}`
-const urlOfQueuedTxs = (safeAddress: string, currentNonce: number, limit: number = 10) => `https://safe-transaction.gnosis.io/api/v1/safes/${safeAddress}/multisig-transactions/?nonce__gte=${currentNonce}&trusted=true&limit=${limit}`
 const urlOfSafeTx = (safeAddr: string, txHash: string) => `https://gnosis-safe.io/app/eth:${safeAddr}/transactions/multisig_${safeAddr}_${txHash}`
 
 export default function SafeUI() {
@@ -36,28 +13,11 @@ export default function SafeUI() {
     const router = useRouter();
     const { safe } = router.query;
     const safeAddress = safe as string;
-    // state
-    const [queuedTxs, setQueuedTxs] = useState(null)
-    const [historyTxs, setHistoryTxs] = useState(null)
-    const [isLoading, setLoading] = useState(true)
+    // external
+    const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, router.isReady)
+    const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
 
-    useEffect(() => {
-      if(!router.isReady) return;
-      setLoading(true)
-      fetch(urlOfHistoryTxs(safeAddress))
-        .then((res) => res.json())
-        .then((data) => {
-          console.info('📗 SafeUI.historyTxs >', {data})
-          setHistoryTxs(data)
-          fetch(urlOfQueuedTxs(safeAddress, data.count))
-            .then((res) => res.json())
-            .then((data) => {
-              console.info('📗 SafeUI.queuedTxs >', {data})
-              setQueuedTxs(data)
-              setLoading(false)
-            })
-        })
-    }, [router.isReady])
+    const isLoading = !router.isReady || historyTxsLoading || queuedTxsLoading;
 
   return (
     <>
@@ -65,14 +25,14 @@ export default function SafeUI() {
       <div className="overflow-hidden bg-white shadow sm:rounded-md">
         <ul role="list" className="divide-y divide-gray-200">
           {isLoading && <p>Loading...</p>}
-          {!isLoading && queuedTxs.results.map((tx: SafeTx) => (
-            <li key={tx.nonce}>
+          {!isLoading && queuedTxs.results.map((tx) => (
+            <li key={tx.safeTxHash}>
               <TxCard safe={safeAddress} tx={tx} />
             </li>
           ))}
           <span className="bg-white pr-2 text-sm text-gray-500">History Transactions</span>
-          {!isLoading && historyTxs.results.map((tx: SafeTx) => (
-            <li key={tx.nonce}>
+          {!isLoading && historyTxs.results.map((tx) => (
+            <li key={tx.safeTxHash}>
               <TxCard safe={safeAddress} tx={tx} />
             </li>
           ))}
@@ -82,7 +42,7 @@ export default function SafeUI() {
   )
 }
 
-function TxCard({safe, tx}: {safe: string, tx: SafeTx}) {
+function TxCard({safe, tx}: {safe: string, tx: SafeMultisigTransaction}) {
 
   return (
     <a href={urlOfSafeTx(safe, tx.safeTxHash)} className="block hover:bg-gray-50">
