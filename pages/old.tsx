@@ -5,7 +5,7 @@ export default function OldHome() {
   return (
     <>
       <SiteNav pageTitle={`Old Homepage`} />
-      <div className="px-8">
+      <div className="px-8 bg-white">
         <div className="py-16 flex-1 flex flex-col items-center">
           <h1 className="text-7xl font-medium">
             JuiceTool

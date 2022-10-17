@@ -3,23 +3,6 @@ import SiteNav from "../components/SiteNav"
 
 const posts: PostCard[] = [
     {
-        title: 'Automate your governance system',
-        href: '/nance/juicebox',
-        category: { name: 'Governance', href: '#' },
-        description:
-            'Nance is a tool for automating your governance system. It can integrate with Notion, Discord, Snapshot and Juicebox to create a seamless experience for your community. Check repo on https://github.com/jigglyjams/nance-ts.',
-        date: 'May 5, 2022',
-        datetime: '2022-05-05',
-        imageUrl:
-            'https://images.unsplash.com/photo-1586374579358-9d19d632b6df?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=987&q=80',
-        author: {
-            name: 'jigglyjams.eth',
-            href: 'https://twitter.com/jjjjigglyjams',
-            imageUrl:
-                'https://cdn.stamp.fyi/avatar/jigglyjams.eth?s=160',
-        },
-    },
-    {
         title: 'Snapshot voting with search, filter and more stats',
         href: '/snapshot/jbdao.eth',
         category: { name: 'Governance', href: '#' },
@@ -37,18 +20,35 @@ const posts: PostCard[] = [
         },
     },
     {
-        title: 'Roll dice and get a random project',
-        href: '/lucky',
+        title: 'Automate your governance system',
+        href: '/nance/juicebox',
+        category: { name: 'Governance', href: '#' },
+        description:
+            'Nance is a tool for automating your governance system. It can integrate with Notion, Discord, Snapshot and Juicebox to create a seamless experience for your community. Check repo on https://github.com/jigglyjams/nance-ts.',
+        date: 'May 5, 2022',
+        datetime: '2022-05-05',
+        imageUrl:
+            'https://images.unsplash.com/photo-1586374579358-9d19d632b6df?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=987&q=80',
+        author: {
+            name: 'jigglyjams.eth',
+            href: 'https://twitter.com/jjjjigglyjams',
+            imageUrl:
+                'https://cdn.stamp.fyi/avatar/jigglyjams.eth?s=160',
+        },
+    },
+    {
+        title: 'Visualize the diff of two transactions',
+        href: '/diff',
         category: { name: 'Project', href: '#' },
         description:
-            'There are almost 900 projects on Juicebox, do you want to see some of them and be the lucky one?',
-        date: 'Sep 7, 2022',
-        datetime: '2022-09-07',
+            'Ever wanted to see the diff of two transactions? Now you can with the Transaction Diff tool. Just enter the transaction hashes and see the diff. In a strucutal&typed way.',
+        date: 'Oct 4, 2022',
+        datetime: '2022-10-04',
         imageUrl:
-            'https://images.unsplash.com/photo-1614767629805-3bbcf6e26c7d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1480&q=80',
+            'https://images.unsplash.com/photo-1591691203197-c00ee071407a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2381&q=80',
         author: {
             name: 'twodam.eth',
-            href: 'https://twitter.com/twodam_eth/status/1567505926789435393?s=20&t=haebQN-vXRSssGH8MrYYfQ',
+            href: 'https://twitter.com/twodam_eth/status/1581844871597654019?s=20&t=kIKp2lWVlMrvV5fNdwquVw',
             imageUrl:
                 'https://cdn.stamp.fyi/avatar/twodam.eth?s=160',
         },

@@ -15,12 +15,10 @@ export default function SiteNav({ pageTitle, description, image }: SiteNavProps)
     
     const navigation = [
         { name: 'Home', href: '/' },
-        { name: 'Nance', href: '/nance/juicebox' },
-        { name: 'Funding', href: '/funding' },
         { name: 'Snapshot Plus', href: '/snapshot/jbdao.eth' },
-        { name: 'Random Project', href: '/lucky' },
+        { name: 'Juicebox Center', href: '/old' },
+        { name: 'Nance Interface', href: '/nance/juicebox' },
         { name: 'Transaction Diff', href: '/diff' },
-        { name: 'Old Homepage', href: '/old' },
     ]
 
     const meta = {
