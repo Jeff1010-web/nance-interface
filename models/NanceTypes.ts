@@ -1,38 +1,114 @@
+export interface APIResponse<T> {
+  success: boolean;
+  error: string;
+  data: T;
+}
+
+export type SpaceInfo = {
+  name: string,
+  currentCycle: number
+};
+
+export type ProposalUpload = {
+  hash: string;
+}
+
+export type ProposalsQueryResponse = APIResponse<Proposal[]>;
+
+export type ProposalResponse = APIResponse<Proposal>;
+
+export type SpaceInfoResponse = APIResponse<SpaceInfo>;
+
+export type ProposalUploadResponse = APIResponse<ProposalUpload>;
+
+export type APIErrorResponse = APIResponse<undefined>;
+
+interface BaseRequest {
+  space: string;
+}
+
+export interface ProposalsQueryRequest extends BaseRequest {
+  cycle: number | undefined;
+}
+
+export type SpaceInfoRequest = BaseRequest;
+
+export interface ProposalRequest extends BaseRequest {
+  hash: string;
+}
+
+export interface ProposalUploadRequest {
+  proposal: Proposal;
+}
+
 // from https://github.com/jigglyjams/nance-ts/blob/main/src/types.ts
+type ProposalType = 'Payout' | 'ReservedToken' | 'ParameterUpdate' | 'ProcessUpdate' | 'CustomTransaction';
+
 export interface Proposal {
   hash: string;
   title: string;
-  markdown?: string;
+  body?: string;
   translation?: {
-    markdown?: string;
+    body?: string;
     language?: string;
   },
-  payout?: Payout,
+  payout?: Payout;
+  notification?: Notification;
+  reserve?: Reserve;
   url: string;
   governanceCycle?: number;
   date?: string,
-  translationURL?: string | undefined;
-  type?: string | undefined;
+  translationURL?: string;
+  type?: ProposalType;
   status: string;
   proposalId: string;
   author?: string;
   discussionThreadURL: string;
-  ipfsURL?: string;
-  voteURL?: string;
+  ipfsURL: string;
+  voteURL: string;
   voteResults?: VoteResults;
+  version?: string;
 }
 
 export type Payout = {
-  type: 'onetime' | 'recurring';
+  type?: 'address' | 'project';
   address: string;
   amountUSD: number;
-  count?: number;
-  treasuryVersion?: string;
+  count: number;
+};
+
+type Notification = {
+  discordUserId: string;
+  expiry: boolean;
+  execution: boolean;
+  progress: boolean;
 };
 
 export type Reserve = {
   address: string;
   percentage: number;
+};
+
+export type ParameterUpdate = {
+  durationDays: number;
+  discountPercentage: number;
+  reservedPercentage: number;
+  redemptionPercentage: number;
+};
+
+export type VoteResults = {
+  voteProposalId: string;
+  totalVotes: number;
+  scoresState: string;
+  scores: Record<string, number>;
+  percentages: Record<string, number>;
+  outcomePercentage: string;
+  outcomeEmoji: string;
+};
+
+export type GnosisTransaction = {
+  address: string;
+  bytes: string;
 };
 
 export type ProposalNoHash = Omit<Proposal, 'hash'>;
@@ -138,16 +214,6 @@ export interface NanceConfig {
     minTokenPassingAmount: number;
     passingRatio: number;
   };
-}
-
-export interface VoteResults {
-  voteProposalId: string;
-  totalVotes: number;
-  scoresState: string;
-  scores: Record<string, number>;
-  percentages: Record<string, number>;
-  outcomePercentage: string;
-  outcomeEmoji: string;
 }
 
 export interface DateEvent {

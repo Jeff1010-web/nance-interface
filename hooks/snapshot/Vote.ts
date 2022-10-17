@@ -35,7 +35,7 @@ export default function useVote(
                     space,
                     proposal,
                     type: type as ProposalType,
-                    choice,
+                    choice: choice as number | number[] | string,
                     reason,
                     app: 'juicetool'
                 }

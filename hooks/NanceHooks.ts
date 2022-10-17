@@ -1,90 +1,64 @@
 import useSWR, { Fetcher } from 'swr'
 import useSWRMutation from 'swr/mutation'
 import { NANCE_API_URL } from "../constants/Nance"
-import { Proposal } from '../models/NanceTypes';
+import {
+    APIResponse,
+    ProposalsQueryRequest,
+    ProposalsQueryResponse,
+    SpaceInfoRequest,
+    SpaceInfoResponse,
+    ProposalRequest,
+    ProposalResponse,
+    ProposalUploadRequest,
+    ProposalUploadResponse
+} from '../models/NanceTypes';
 
-interface BaseRequest {
-    space: string;
-}
-
-interface SpaceQueryRequest extends BaseRequest {
-    cycle: number | undefined;
-}
-interface SpaceQueryResponse {
-    proposals: Proposal[];
-    space: {
-        name: string,
-        currentCycle: number
-    }
-}
-
-interface ProposalMarkdownRequest extends BaseRequest {
-    hash: string;
-}
-//type ProposalMarkdownResponse = string
-
-type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
-export interface ProposalUploadBaseRequest {
-    type: ProposalType;
-    version: number;
-    project: number;
-    proposal: {
-        title: string;
-        body: string;
-    }
-    notification: {
-        expiry: boolean;
-        execution: boolean;
-        progress: boolean;
-    }
-}
-export type ProposalUploadResponse = {
-    status: "ok";
-    data: string;
-} | {
-    status: "error";
-    data: any;
-}
-interface PayoutProposalUploadRequest extends ProposalUploadBaseRequest {
-    type: "Payout";
-    payout: {
-        type: "Address" | "Project";
-        duration: number;
-        amount: number;
-        project: number;
-        address: string;
-    }
-}
-
-function jsonFetcher(): Fetcher<SpaceQueryResponse, string> {
+function jsonFetcher(): Fetcher<APIResponse<any>, string> {
     return async (url) => {
         const res = await fetch(url)
         const json = await res.json()
-        if (json?.status === 'error') {
-            throw new Error('An error occurred while fetching the data.', { cause: json.error })
+        if (json?.success === 'false') {
+            throw new Error('An error occurred while fetching the data.')
         }
 
         return json
     }
 }
-export function useSpaceQuery(args: SpaceQueryRequest, shouldFetch: boolean = true) {
+
+function jsonSpaceInfoFetcher(): Fetcher<SpaceInfoResponse, string> {
+    return jsonFetcher();
+}
+
+function jsonProposalsQueryFetcher(): Fetcher<ProposalsQueryResponse, string> {
+    return jsonFetcher();
+}
+
+function jsonProposalFetcher(): Fetcher<ProposalResponse, string> {
+    return jsonFetcher();
+}
+
+export function useSpaceInfo(args: SpaceInfoRequest, shouldFetch: boolean = true) {
+    return useSWR(
+        shouldFetch ? `${NANCE_API_URL}/${args.space}` : null,
+        jsonSpaceInfoFetcher()
+    );
+}
+
+export function useProposalsQuery(args: ProposalsQueryRequest, shouldFetch: boolean = true) {
     return useSWR(
         shouldFetch ? `${NANCE_API_URL}/${args.space}/query/${(args.cycle ? `?cycle=${args.cycle}` : '')}` : null,
-        jsonFetcher(),
+        jsonProposalsQueryFetcher(),
     );
 }
 
-function textFetcher(): Fetcher<string, string> {
-    return (url) => fetch(url).then(r => r.text())
-}
-export function useProposalMarkdown(args: ProposalMarkdownRequest, shouldFetch: boolean = true) {
+export function useProposalRequest(args: ProposalRequest, shouldFetch: boolean = true) {
     return useSWR(
-        shouldFetch ? `${NANCE_API_URL}/${args.space}/markdown?hash=${args.hash}` : null,
-        textFetcher(),
+        shouldFetch ? `${NANCE_API_URL}/${args.space}/proposal?hash=${args.hash}` : null,
+        jsonProposalFetcher(),
     );
 }
 
-async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadBaseRequest }) {
+async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRequest }) {
     const res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -93,8 +67,8 @@ async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadBa
       body: JSON.stringify(arg)
     })
     const json: ProposalUploadResponse = await res.json()
-    if (json.status === 'error') {
-        throw new Error('An error occurred while fetching the data.', { cause: json.data })
+    if (json.success === false) {
+        throw new Error('An error occurred while fetching the data.')
     }
 
     return json

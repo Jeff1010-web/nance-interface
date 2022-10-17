@@ -5,23 +5,24 @@ import { format } from "date-fns"
 import { useQueryParam, NumberParam } from "next-query-params"
 import { useRouter } from "next/router"
 import { getLastSlash } from "../../libs/nance"
-import { useSpaceQuery } from "../../hooks/NanceHooks"
+import { useProposalsQuery, useSpaceInfo } from "../../hooks/NanceHooks"
 
 export default function NanceProposals() {
     const router = useRouter();
     const { space } = router.query;
     const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
-    const { data, isLoading, error } = useSpaceQuery({ space: space as string, cycle: cycle }, router.isReady);
-    const currentCycle = cycle || data?.space.currentCycle;
+    const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
+    const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposalsQuery({ space: space as string, cycle }, router.isReady);
+    const currentCycle = cycle || infoData?.data?.currentCycle;
 
   return (
     <>
       <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" />
       <div className="m-4 lg:m-6 flex flex-col justify-center lg:px-20 max-w-7xl">
         <p className="text-center text-xl font-bold text-gray-600">
-            {isLoading ? `Loading space ${space}...` : error 
+            { infoLoading ? `Loading space ${space}...` : infoError
                 ? `Error loading space ${space}` 
-                : `GC${data?.space.currentCycle} Proposals of ${data?.space.name}` }
+                : `GC${currentCycle} Proposals of ${space}` }
         </p>
 
         <div className="flex justify-end mt-6">
@@ -40,9 +41,9 @@ export default function NanceProposals() {
         </div>
 
         <div className="mt-6 overflow-hidden bg-white shadow sm:rounded-md">
-            {isLoading && <p>loading...</p>}
+            { (infoLoading || proposalsLoading) && <p>loading...</p>}
             <ul role="list" className="divide-y divide-gray-200">
-                {data?.proposals?.map((proposal) => (
+                {proposalData?.data?.map((proposal) => (
                     <li key={proposal.hash}>
                         <div className="px-4 py-4 sm:px-6">
                             <div className="flex items-center justify-between">
@@ -116,7 +117,7 @@ export default function NanceProposals() {
         <div className="mt-6">
             <div className="flex flex-1 justify-end">
                 <button
-                    disabled={currentCycle === 1}
+                    disabled={cycle === 1}
                     onClick={() => setCycle(currentCycle - 1)}
                     className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >

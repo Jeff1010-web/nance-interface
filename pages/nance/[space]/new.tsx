@@ -8,7 +8,10 @@ import React from "react";
 import { useRouter } from "next/router";
 import ReactMarkdown from "react-markdown";
 import Notification from "../../../components/Notification";
-import { useProposalUpload, ProposalUploadBaseRequest } from "../../../hooks/NanceHooks";
+import { useProposalUpload } from "../../../hooks/NanceHooks";
+import { ProposalUploadRequest } from "../../../models/NanceTypes";
+import { NANCE_API_URL } from "../../../constants/Nance";
+import { nanceDataTransform } from "../../../libs/nance";
 import Link from "next/link";
 
 type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
@@ -26,6 +29,7 @@ const ProposalMetadataContext = React.createContext({
 });
 
 export default function NanceNewProposal() {
+  console.log(`using nance API: ${NANCE_API_URL}`);
   const router = useRouter();
   const [proposalType, setProposalType] = useQueryParam<ProposalType>('type', withDefault(createEnumParam(["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"]), 'Payout'));
   const [version, setVersion] = useQueryParam('version', withDefault(NumberParam, 2));
@@ -112,15 +116,13 @@ function Form() {
   const { isMutating, error, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
 
   // form
-  const methods = useForm<ProposalUploadBaseRequest>();
+  const methods = useForm<ProposalUploadRequest>();
   const { register, handleSubmit, watch, getValues, formState: { errors } } = methods;
   const onSubmit = (formData) => {
+    const proposalSubmission = nanceDataTransform(formData, metadata);
     reset();
-    const data: ProposalUploadBaseRequest = {
-      ...formData,
-      type: metadata.proposalType,
-      version: metadata.version,
-      project: metadata.project
+    const data: ProposalUploadRequest = {
+      proposal: proposalSubmission
     }
     console.info("📗 Nance.new.Form.submit ->", data);
     trigger(data);
@@ -151,7 +153,7 @@ ${JSON.stringify(data)}
 
   return (
     <FormProvider {...methods} >
-      <Notification title="Success" description={`Created proposal ${data?.data}`} show={data !== undefined} close={reset} checked={true} />
+      <Notification title="Success" description={`Created proposal ${data?.data.hash}`} show={data !== undefined} close={reset} checked={true} />
       {error && 
         <Notification title="Error" description={error.error_description || error.message || error} show={true} close={reset} checked={false} />
       }
@@ -211,7 +213,7 @@ ${JSON.stringify(data)}
           </div>
         </div>
 
-        <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
+        {/* <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
           <div className="md:grid md:grid-cols-3 md:gap-6">
             <div className="md:col-span-1">
               <h3 className="text-lg font-medium leading-6 text-gray-900">Notifications</h3>
@@ -273,7 +275,7 @@ ${JSON.stringify(data)}
               </fieldset>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
           <div className="md:grid md:grid-cols-3 md:gap-6">
@@ -378,7 +380,7 @@ function ReservedTokenMetadataForm() {
           <input
             type="text"
             onChange={(e) => {
-              setValue("reserved.address", e.target.value);
+              setValue("proposal.reserve.address", e.target.value);
               setInputEns(e.target.value);
             }}
             className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -386,15 +388,15 @@ function ReservedTokenMetadataForm() {
           />
           <input
             type="text"
-            {...register("reserved.address", { required: true, shouldUnregister: true })}
+            {...register("proposal.reserve.address", { required: true, shouldUnregister: true })}
             className="hidden w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
-        <ResolvedEns ens={inputEns} hook={(address) => setValue("reserve.address", address)} />
+        <ResolvedEns ens={inputEns} hook={(address) => setValue("proposal.reserve.address", address)} />
       </div>
 
       <div className="col-span-4 sm:col-span-2">
-        <label htmlFor="reserved.percentage" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="proposal.reserve.percentage" className="block text-sm font-medium text-gray-700">
           Percentage
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
@@ -403,7 +405,7 @@ function ReservedTokenMetadataForm() {
             min={0.01}
             max={100}
             step={0.01}
-            {...register("reserved.percentage", { required: true, valueAsNumber: true, shouldUnregister: true })}
+            {...register("proposal.reserve.percentage", { required: true, valueAsNumber: true, shouldUnregister: true })}
             className="block w-full flex-1 rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="50"
           />
@@ -424,11 +426,11 @@ function PayoutMetadataForm() {
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-1">
-        <label htmlFor="payout.type" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="proposal.payout.type" className="block text-sm font-medium text-gray-700">
           Receiver Type
         </label>
         <select
-          {...register("payout.type", { shouldUnregister: true })}
+          {...register("proposal.payout.type", { shouldUnregister: true })}
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
         >
           <option value="address">Address</option>
@@ -444,14 +446,14 @@ function PayoutMetadataForm() {
             type="number"
             step={1}
             min={1}
-            {...register("payout.duration", { required: true, valueAsNumber: true, shouldUnregister: true })}
+            {...register("proposal.payout.count", { required: true, valueAsNumber: true, shouldUnregister: true })}
             className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="1"
           />
         </div>
       </div>
       <div className="col-span-4 sm:col-span-2">
-        <label htmlFor="payout.amount" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="proposal.payout.amountUSD" className="block text-sm font-medium text-gray-700">
           Amount
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
@@ -462,7 +464,7 @@ function PayoutMetadataForm() {
             type="number"
             step={1}
             min={1}
-            {...register("payout.amount", { required: true, valueAsNumber: true, shouldUnregister: true })}
+            {...register("proposal.payout.amountUSD", { required: true, valueAsNumber: true, shouldUnregister: true })}
             className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="1500"
           />
@@ -470,32 +472,32 @@ function PayoutMetadataForm() {
       </div>
 
       {
-        watch("payout.type") === "project" && (
+        watch("proposal.payout.type") === "project" && (
           <div className="col-span-4 sm:col-span-2">
-            <label htmlFor="payout.project" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="proposal.payout.project" className="block text-sm font-medium text-gray-700">
               Project Receiver
             </label>
             <div className="mt-1 flex rounded-md shadow-sm">
               <input
                 type="text"
-                {...register("payout.project", { required: true, valueAsNumber: true, shouldUnregister: true })}
+                {...register("proposal.payout.project", { required: true, valueAsNumber: true, shouldUnregister: true })}
                 className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 placeholder="1"
               />
             </div>
-            <ResolvedProject version={metadata.version} projectId={watch("payout.project")} />
+            <ResolvedProject version={metadata.version} projectId={watch("proposal.payout.project")} />
           </div>
         )
       }
       <div className="col-span-4 sm:col-span-2">
         <label htmlFor="payout.address" className="block text-sm font-medium text-gray-700">
-          {watch("payout.type") === "project" ? "Token Beneficiary" : "Receiver Address"}
+          {watch("proposal.payout.type") === "project" ? "Token Beneficiary" : "Receiver Address"}
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
           <input
             type="text"
             onChange={(e) => {
-              setValue("payout.address", e.target.value);
+              setValue("proposal.payout.address", e.target.value);
               setInputEns(e.target.value);
             }}
             className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -503,11 +505,11 @@ function PayoutMetadataForm() {
           />
           <input
             type="text"
-            {...register("payout.address", { required: true, shouldUnregister: true })}
+            {...register("proposal.payout.address", { required: true, shouldUnregister: true })}
             className="hidden w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
-        <ResolvedEns ens={inputEns} hook={(address) => setValue("payout.address", address)} />
+        <ResolvedEns ens={inputEns} hook={(address) => setValue("proposal.payout.address", address)} />
       </div>
     </div>
   )
