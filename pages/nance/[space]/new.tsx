@@ -10,7 +10,6 @@ import Notification from "../../../components/Notification";
 import { useProposalUpload } from "../../../hooks/NanceHooks";
 import { ProposalUploadRequest } from "../../../models/NanceTypes";
 import { NANCE_API_URL } from "../../../constants/Nance";
-import { nanceDataTransform } from "../../../libs/nance";
 import Link from "next/link";
 
 import "@uiw/react-md-editor/markdown-editor.css";
@@ -130,10 +129,13 @@ function Form() {
   const { register, handleSubmit, control, formState: { errors } } = methods;
   const onSubmit = (formData) => {
     console.debug("📗 Nance.new.Form.submit.formData ->", {formData, metadata});
-    const proposalSubmission = nanceDataTransform(formData, metadata);
     reset();
     const data: ProposalUploadRequest = {
-      proposal: proposalSubmission
+      proposal: {
+        ...formData.proposal,
+        type: metadata.proposalType,
+        version: String(metadata.version)
+      }
     }
     console.info("📗 Nance.new.Form.submit ->", data);
     trigger(data);
