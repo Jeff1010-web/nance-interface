@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import SiteNav from "../../../components/SiteNav";
-import { useForm, FormProvider, useFormContext } from "react-hook-form";
+import { useForm, FormProvider, useFormContext, Controller } from "react-hook-form";
 import ResolvedEns from "../../../components/ResolvedEns";
 import ResolvedProject from "../../../components/ResolvedProject";
 import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-query-params";
@@ -13,6 +13,15 @@ import { ProposalUploadRequest } from "../../../models/NanceTypes";
 import { NANCE_API_URL } from "../../../constants/Nance";
 import { nanceDataTransform } from "../../../libs/nance";
 import Link from "next/link";
+
+import "@uiw/react-md-editor/markdown-editor.css";
+import "@uiw/react-markdown-preview/markdown.css";
+import dynamic from "next/dynamic";
+
+const MDEditor = dynamic(
+  () => import("@uiw/react-md-editor"),
+  { ssr: false }
+);
 
 type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
 const ProposalTypes = ["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"];
@@ -29,7 +38,7 @@ const ProposalMetadataContext = React.createContext({
 });
 
 export default function NanceNewProposal() {
-  console.log(`using nance API: ${NANCE_API_URL}`);
+  console.info(`using nance API: ${NANCE_API_URL}`);
   const router = useRouter();
   const [proposalType, setProposalType] = useQueryParam<ProposalType>('type', withDefault(createEnumParam(["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"]), 'Payout'));
   const [version, setVersion] = useQueryParam('version', withDefault(NumberParam, 2));
@@ -117,8 +126,9 @@ function Form() {
 
   // form
   const methods = useForm<ProposalUploadRequest>();
-  const { register, handleSubmit, watch, getValues, formState: { errors } } = methods;
+  const { register, handleSubmit, watch, getValues, control, formState: { errors } } = methods;
   const onSubmit = (formData) => {
+    console.debug("📗 Nance.new.Form.submit.formData ->", {formData, metadata});
     const proposalSubmission = nanceDataTransform(formData, metadata);
     reset();
     const data: ProposalUploadRequest = {
@@ -199,11 +209,11 @@ ${JSON.stringify(data)}
                   Body
                 </label>
                 <div className="mt-1">
-                  <textarea
-                    {...register("proposal.body", { required: true })}
-                    rows={20}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    placeholder="you@example.com"
+                  <Controller
+                    name="proposal.body"
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => <MDEditor {...field} height={600} />}
                     defaultValue={PORPOSAL_TEMPLATE}
                   />
                 </div>
@@ -276,23 +286,6 @@ ${JSON.stringify(data)}
             </div>
           </div>
         </div> */}
-
-        <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
-          <div className="md:grid md:grid-cols-3 md:gap-6">
-            <div className="md:col-span-1">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">Preview</h3>
-              <p className="mt-1 text-sm text-gray-500">Preview of final proposal content.</p>
-            </div>
-            <div className="mt-5 md:col-span-2 md:mt-0">
-              <div>
-                <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
-                  <ReactMarkdown>{getPreviewContent(watch("proposal.title"), watch("proposal.body"))}</ReactMarkdown>
-                </article>
-                {/* <p className="mt-2 text-sm text-gray-500">Brief description for your profile. URLs are hyperlinked.</p> */}
-              </div>
-            </div>
-          </div>
-        </div>
 
         <div className="flex justify-end">
           <Link href={`/nance/${space as string}`}>
