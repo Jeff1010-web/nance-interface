@@ -16,7 +16,7 @@ export default function SiteNav({ pageTitle, description, image }: SiteNavProps)
     const navigation = [
         { name: 'Home', href: '/' },
         { name: 'Snapshot Plus', href: '/snapshot/jbdao.eth' },
-        { name: 'Juicebox Center', href: '/old' },
+        { name: 'Juicebox Center', href: '/center' },
         { name: 'Nance Interface', href: '/nance/juicebox' },
         { name: 'Transaction Diff', href: '/diff' },
     ]
