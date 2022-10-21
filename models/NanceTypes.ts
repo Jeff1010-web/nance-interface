@@ -38,7 +38,11 @@ export interface ProposalRequest extends BaseRequest {
 }
 
 export interface ProposalUploadRequest {
-  proposal: Proposal;
+  proposal: Pick<Proposal, 
+    "type" | "version" |
+    "title" | "body" |
+    "payout" | "reserve" | 
+    "notification">;
 }
 
 // from https://github.com/jigglyjams/nance-ts/blob/main/src/types.ts

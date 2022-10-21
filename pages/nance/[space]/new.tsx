@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import SiteNav from "../../../components/SiteNav";
-import { useForm, FormProvider, useFormContext, Controller } from "react-hook-form";
+import { useForm, FormProvider, useFormContext, Controller, SubmitHandler } from "react-hook-form";
 import ResolvedEns from "../../../components/ResolvedEns";
 import ResolvedProject from "../../../components/ResolvedProject";
 import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-query-params";
@@ -120,6 +120,8 @@ interface ProposalCache {
   timestamp: number;
 }
 
+type ProposalFormValues = Omit<ProposalUploadRequest, "type" | "version">
+
 function Form() {
   // query and context
   const router = useRouter();
@@ -131,15 +133,15 @@ function Form() {
   const { isMutating, error, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
 
   // form
-  const methods = useForm<ProposalUploadRequest>();
+  const methods = useForm<ProposalFormValues>();
   const { register, handleSubmit, control, setValue, formState: { errors } } = methods;
-  const onSubmit = (formData) => {
+  const onSubmit: SubmitHandler<ProposalFormValues> = (formData) => {
     console.debug("📗 Nance.new.Form.submit.formData ->", {formData, metadata});
     reset();
     const data: ProposalUploadRequest = {
       proposal: {
         ...formData.proposal,
-        type: metadata.proposalType,
+        type: metadata.proposalType as ProposalType,
         version: String(metadata.version)
       }
     }
