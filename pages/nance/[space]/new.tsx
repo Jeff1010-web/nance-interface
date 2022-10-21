@@ -57,7 +57,7 @@ export default function NanceNewProposal() {
         </p>
         <ResolvedProject version={version} projectId={project} style="text-center" />
         <ProposalMetadataContext.Provider value={{proposalType, setProposalType, version, project}}>
-          <ProposalTypeTabs />
+          {/* <ProposalTypeTabs /> */}
           <Form />
         </ProposalMetadataContext.Provider>
       </div>
@@ -153,7 +153,7 @@ function Form() {
       {error && 
         <Notification title="Error" description={error.error_description || error.message || error} show={true} close={reset} checked={false} />
       }
-      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+      <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
           <div className="md:grid md:grid-cols-3 md:gap-6">
             <div className="md:col-span-1">
