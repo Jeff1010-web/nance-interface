@@ -16,6 +16,7 @@ import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
 import useLocalStorage from "../../../hooks/LocalStorage";
+import { format } from "date-fns";
 
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor"),
@@ -114,6 +115,11 @@ function ProposalTypeTabs() {
   )
 }
 
+interface ProposalCache {
+  body: string;
+  timestamp: number;
+}
+
 function Form() {
   // query and context
   const router = useRouter();
@@ -121,12 +127,12 @@ function Form() {
   const metadata = useContext(ProposalMetadataContext);
 
   // state
-  const [cachedContent, setCachedContent] = useLocalStorage<string>("cachedContent", "");
+  const [cachedProposal, setCachedProposal] = useLocalStorage<ProposalCache>("cachedProposal", undefined);
   const { isMutating, error, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
 
   // form
   const methods = useForm<ProposalUploadRequest>();
-  const { register, handleSubmit, control, formState: { errors } } = methods;
+  const { register, handleSubmit, control, setValue, formState: { errors } } = methods;
   const onSubmit = (formData) => {
     console.debug("📗 Nance.new.Form.submit.formData ->", {formData, metadata});
     reset();
@@ -188,6 +194,7 @@ function Form() {
                 <label htmlFor="about" className="mt-6 block text-sm font-medium text-gray-700">
                   Body
                 </label>
+                
                 <div className="mt-1">
                   <Controller
                     name="proposal.body"
@@ -197,12 +204,28 @@ function Form() {
                       <MDEditor ref={ref} onBlur={onBlur}
                         value={value} onChange={(val) => {
                           onChange(val);
-                          setCachedContent(val);
+                          setCachedProposal({
+                            body: val,
+                            timestamp: Date.now()
+                          });
                         }}
                         height={600} />}
-                    defaultValue={cachedContent || PORPOSAL_TEMPLATE}
+                    defaultValue={cachedProposal?.body || PORPOSAL_TEMPLATE}
                   />
                 </div>
+
+                {cachedProposal && (
+                  <div className="mt-1 flex">
+                    <p className="text-gray-500">Last saved on {format(cachedProposal.timestamp, 'LLL d, yy HH:mm')}</p>
+                    <button type="button" className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2 py-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 ml-2 mb-1"
+                    onClick={() => {
+                      setCachedProposal(undefined)
+                      setValue("proposal.body", PORPOSAL_TEMPLATE)
+                    }}>
+                      Reset to template
+                    </button>
+                </div>
+                )}
                 {/* <p className="mt-2 text-sm text-gray-500">Brief description for your profile. URLs are hyperlinked.</p> */}
               </div>
             </div>
