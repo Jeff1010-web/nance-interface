@@ -11,7 +11,6 @@ export const TYPES = {
     APIPayload: [
         { name: 'path', type: 'string' },
         { name: 'timestamp', type: 'uint256' },
-        { name: 'wallet', type: 'address' },
         { name: 'payload', type: 'string' },
     ],
   }

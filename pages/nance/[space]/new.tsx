@@ -157,7 +157,6 @@ function Form() {
     };
     const typedValue = {
       path: getUploadUrl(space as string),
-      wallet: address,
       timestamp: Math.floor(Date.now() / 1000),
       payload: solidityKeccak256(["string"], [JSON.stringify(payload)])
     };
