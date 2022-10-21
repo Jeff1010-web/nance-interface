@@ -79,3 +79,7 @@ export function useProposalUpload(space: string, shouldFetch: boolean = true) {
         uploader,
     );
 }
+
+export function getUploadUrl(space: string) {
+    return `${NANCE_API_URL}/${space}/upload`;
+}

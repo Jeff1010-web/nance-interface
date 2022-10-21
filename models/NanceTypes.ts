@@ -37,7 +37,17 @@ export interface ProposalRequest extends BaseRequest {
   hash: string;
 }
 
-export interface ProposalUploadRequest {
+interface Signature {
+  address: string;
+  signature: string;
+  timestamp: number;
+}
+
+export interface SignatureRequest {
+  signature: Signature
+}
+
+export interface ProposalUploadRequest extends SignatureRequest {
   proposal: Pick<Proposal, 
     "type" | "version" |
     "title" | "body" |
