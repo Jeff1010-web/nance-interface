@@ -41,6 +41,7 @@ interface Signature {
   address: string;
   signature: string;
   timestamp: number;
+  typedValue: Record<string, string | number>
 }
 
 export interface SignatureRequest {

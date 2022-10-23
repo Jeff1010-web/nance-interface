@@ -12,6 +12,7 @@ import {
   configureChains, chain
 } from 'wagmi'
 import { publicProvider } from 'wagmi/providers/public'
+import { infuraProvider } from 'wagmi/providers/infura';
 
 import {NextQueryParamProvider} from 'next-query-params';
 
@@ -25,7 +26,10 @@ const graphqlClient = new GraphQLClient({
 // WAGMI and RainbowKit configuration
 const { chains, provider } = configureChains(
   [chain.mainnet],
-  [publicProvider()],
+  [
+    infuraProvider({ infuraId: process.env.NEXT_PUBLIC_INFURA_KEY}),
+    publicProvider()
+  ],
 )
 
 const { connectors } = getDefaultWallets({
