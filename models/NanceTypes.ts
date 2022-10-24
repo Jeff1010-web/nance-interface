@@ -21,6 +21,8 @@ export type SpaceInfoResponse = APIResponse<SpaceInfo>;
 
 export type ProposalUploadResponse = APIResponse<ProposalUpload>;
 
+export type ReconfigureResponse = APIResponse<NanceTransaction>;
+
 export type APIErrorResponse = APIResponse<undefined>;
 
 interface BaseRequest {
@@ -35,6 +37,15 @@ export type SpaceInfoRequest = BaseRequest;
 
 export interface ProposalRequest extends BaseRequest {
   hash: string;
+}
+
+export interface ReconfigureRequest extends BaseRequest {
+  version: string;
+}
+
+export interface NanceTransaction {
+  address: string;
+  bytes: string;
 }
 
 interface Signature {

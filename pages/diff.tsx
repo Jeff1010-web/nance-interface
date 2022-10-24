@@ -15,6 +15,7 @@ import { useRouter } from 'next/router';
 import { SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../models/SafeTypes';
 import { StringParam, useQueryParam } from 'next-query-params';
 import { useEnsAddress } from 'wagmi';
+import { UseReconfigureRequest } from '../hooks/NanceHooks';
 
 type ABIOption = Option & { abi: string }
 type TxOption = Option & { tx: SafeMultisigTransaction }
@@ -34,6 +35,7 @@ export default function DiffPage() {
     // state
     const [safeAddressParam, setSafeAddressParam] = useQueryParam("safe", StringParam)
     const [splitView, setSplitView] = useState(true)
+    const [nanceLoading, setNanceLoading] = useState(false)
     // -- abi
     const [abiOptionLeft, setAbiOptionLeft] = useState<ABIOption>(undefined)
     const [abiOptionRight, setAbiOptionRight] = useState<ABIOption>(undefined)
@@ -58,6 +60,19 @@ export default function DiffPage() {
     const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
 
     const isLoading = !router.isReady || historyTxsLoading || queuedTxsLoading;
+
+    const fetchFromNance = async () => {
+        setNanceLoading(true);
+        const address = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
+        const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
+        if (!address || !version) {
+            setNanceLoading(false);
+            return;
+        }
+        const reconfiguration = await UseReconfigureRequest({ space: 'juicebox', version});
+        (address === reconfiguration?.data?.address) ? setRawDataRight(reconfiguration?.data?.bytes) : setRawDataRight('');
+        setNanceLoading(false);
+    }
 
     const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
         if(!res) return []
@@ -191,7 +206,12 @@ export default function DiffPage() {
                         </div>
                     </div>
                 </div>
-
+                <div className="flex justify-end w-2/3 ml-10">
+                    <button
+                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                        onClick={fetchFromNance}
+                    >{(nanceLoading) ? 'loading...' : 'fetch from nance'}</button>
+                </div>
                 <div className="flex justify-center mb-3">
                     <Switch.Group as="div" className="items-center">
                         <Switch

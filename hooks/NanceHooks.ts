@@ -10,7 +10,9 @@ import {
     ProposalRequest,
     ProposalResponse,
     ProposalUploadRequest,
-    ProposalUploadResponse
+    ProposalUploadResponse,
+    ReconfigureRequest,
+    ReconfigureResponse
 } from '../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -82,4 +84,19 @@ export function useProposalUpload(space: string, shouldFetch: boolean = true) {
 
 export function getUploadUrl(space: string) {
     return `${NANCE_API_URL}/${space}/upload`;
+}
+
+async function jsonReconfigureFecther(url: string): Promise<ReconfigureResponse> {
+    const res = await fetch(url)
+    const json = await res.json()
+    if (json?.success === 'false') {
+        console.log(false);
+        throw new Error(`An error occurred while fetching the data: ${json?.error}`)
+    }
+
+    return json
+}
+
+export function UseReconfigureRequest(args: ReconfigureRequest, shouldFetch: boolean = true) {
+    return jsonReconfigureFecther(`${NANCE_API_URL}/${args.space}/reconfigure?version=${args.version}`);
 }
