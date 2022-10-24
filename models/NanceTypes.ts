@@ -37,8 +37,22 @@ export interface ProposalRequest extends BaseRequest {
   hash: string;
 }
 
-export interface ProposalUploadRequest {
-  proposal: Proposal;
+interface Signature {
+  address: string;
+  signature: string;
+  timestamp: number;
+}
+
+export interface SignatureRequest {
+  signature: Signature
+}
+
+export interface ProposalUploadRequest extends SignatureRequest {
+  proposal: Pick<Proposal, 
+    "type" | "version" |
+    "title" | "body" |
+    "payout" | "reserve" | 
+    "notification">;
 }
 
 // from https://github.com/jigglyjams/nance-ts/blob/main/src/types.ts

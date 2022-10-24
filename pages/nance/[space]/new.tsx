@@ -1,13 +1,13 @@
 import { useContext, useState } from "react";
 import SiteNav from "../../../components/SiteNav";
-import { useForm, FormProvider, useFormContext, Controller } from "react-hook-form";
+import { useForm, FormProvider, useFormContext, Controller, SubmitHandler } from "react-hook-form";
 import ResolvedEns from "../../../components/ResolvedEns";
 import ResolvedProject from "../../../components/ResolvedProject";
 import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-query-params";
 import React from "react";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
-import { useProposalUpload } from "../../../hooks/NanceHooks";
+import { getUploadUrl, useProposalUpload } from "../../../hooks/NanceHooks";
 import { ProposalUploadRequest } from "../../../models/NanceTypes";
 import { NANCE_API_URL } from "../../../constants/Nance";
 import Link from "next/link";
@@ -17,6 +17,11 @@ import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
 import useLocalStorage from "../../../hooks/LocalStorage";
 import { format } from "date-fns";
+import { useAccount, useSigner, useSignTypedData } from "wagmi";
+import { DOMAIN, TYPES } from "../../../constants/Signature";
+import { Signer } from "ethers";
+import { JsonRpcSigner } from "@ethersproject/providers";
+import { keccak256, solidityKeccak256, verifyTypedData } from "ethers/lib/utils";
 
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor"),
@@ -57,7 +62,7 @@ export default function NanceNewProposal() {
         </p>
         <ResolvedProject version={version} projectId={project} style="text-center" />
         <ProposalMetadataContext.Provider value={{proposalType, setProposalType, version, project}}>
-          <ProposalTypeTabs />
+          {/* <ProposalTypeTabs /> */}
           <Form />
         </ProposalMetadataContext.Provider>
       </div>
@@ -120,6 +125,8 @@ interface ProposalCache {
   timestamp: number;
 }
 
+type ProposalFormValues = Omit<ProposalUploadRequest, "type" | "version">
+
 function Form() {
   // query and context
   const router = useRouter();
@@ -127,33 +134,78 @@ function Form() {
   const metadata = useContext(ProposalMetadataContext);
 
   // state
+  const [signing, setSigning] = useState(false);
+  const [signError, setSignError] = useState(undefined);
+
+  // hooks
   const [cachedProposal, setCachedProposal] = useLocalStorage<ProposalCache>("cachedProposal", undefined);
-  const { isMutating, error, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
+  const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
+  const { address, isConnecting, isDisconnected } = useAccount()
+  const { data: signer, isError, isLoading } = useSigner()
+  const jrpcSigner = signer as JsonRpcSigner;
 
   // form
-  const methods = useForm<ProposalUploadRequest>();
-  const { register, handleSubmit, control, setValue, formState: { errors } } = methods;
-  const onSubmit = (formData) => {
-    console.debug("📗 Nance.new.Form.submit.formData ->", {formData, metadata});
-    reset();
-    const data: ProposalUploadRequest = {
-      proposal: {
-        ...formData.proposal,
-        type: metadata.proposalType,
-        version: String(metadata.version)
+  const methods = useForm<ProposalFormValues>();
+  const { register, handleSubmit, control, setValue, getValues, formState: { errors } } = methods;
+  const onSubmit: SubmitHandler<ProposalFormValues> = (formData) => {
+    console.debug("📗 Nance.newProposal.onSubmit ->", {formData, metadata});
+
+    const timestamp = Math.floor(Date.now() / 1000);
+    const payload = {
+      ...formData.proposal,
+      type: metadata.proposalType as ProposalType,
+      version: String(metadata.version)
+    };
+    const typedValue = {
+      path: getUploadUrl(space as string),
+      timestamp: timestamp,
+      payload: solidityKeccak256(["string"], [JSON.stringify(payload)])
+    };
+
+    setSigning(true);
+    // request the signature from user
+    jrpcSigner._signTypedData(
+      DOMAIN,
+      TYPES,
+      typedValue
+    ).then((signature) => {
+
+      setSigning(false);
+      // send to API endpoint
+      reset();
+      const req: ProposalUploadRequest = {
+        signature: {
+          address: address,
+          timestamp,
+          signature
+        },
+        proposal: payload
       }
-    }
-    console.info("📗 Nance.new.Form.submit ->", data);
-    trigger(data);
+      console.debug("📗 Nance.newProposal.verifySignature", {address: verifyTypedData(DOMAIN, TYPES, typedValue, signature), valid: verifyTypedData(DOMAIN, TYPES, typedValue, signature) == address});
+      console.debug("📗 Nance.newProposal.upload ->", req);
+      trigger(req);
+    }).catch((err) => {
+      setSigning(false);
+      setSignError(err);
+      console.warn("📗 Nance.newProposal.onSignError ->", err);
+    });
+  }
+
+  // shortcut
+  const isSubmitting = signing || isMutating;
+  const error = signError || uploadError;
+  const resetSignAndUpload = () => {
+    setSignError(undefined);
+    reset();
   }
 
   return (
     <FormProvider {...methods} >
-      <Notification title="Success" description={`Created proposal ${data?.data.hash}`} show={data !== undefined} close={reset} checked={true} />
-      {error && 
-        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={reset} checked={false} />
+      <Notification title="Success" description={`Created proposal ${data?.data.hash}`} show={data !== undefined} close={resetSignAndUpload} checked={true} />
+      {(signError || uploadError) && 
+        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={resetSignAndUpload} checked={false} />
       }
-      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+      <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
           <div className="md:grid md:grid-cols-3 md:gap-6">
             <div className="md:col-span-1">
@@ -306,10 +358,10 @@ function Form() {
           </Link>
           <button
             type="submit"
-            disabled={isMutating}
-            className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            disabled={!jrpcSigner || isSubmitting}
+            className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
           >
-            {isMutating ? "Submitting" : "Submit"}
+            {isSubmitting ? "Submitting" : "Submit"}
           </button>
         </div>
       </form>
