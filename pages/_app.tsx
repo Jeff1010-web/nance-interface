@@ -11,8 +11,8 @@ import {
   WagmiConfig, createClient,
   configureChains, chain
 } from 'wagmi'
+import { infuraProvider } from 'wagmi/providers/infura'
 import { publicProvider } from 'wagmi/providers/public'
-import { infuraProvider } from 'wagmi/providers/infura';
 
 import {NextQueryParamProvider} from 'next-query-params';
 
@@ -27,8 +27,7 @@ const graphqlClient = new GraphQLClient({
 const { chains, provider } = configureChains(
   [chain.mainnet],
   [
-    infuraProvider({ infuraId: process.env.NEXT_PUBLIC_INFURA_KEY}),
-    publicProvider()
+    infuraProvider({ infuraId: process.env.NEXT_PUBLIC_INFURA_KEY }),
   ],
 )
 
