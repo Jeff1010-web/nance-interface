@@ -1,4 +1,5 @@
-const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/id/QmX4XXkA1XA1Fb8gQHd4TNvkRDQGPWZ2m7oANQG3W9iRq8";
+import { SUBGRAPH_URL } from "../../constants/Juicebox";
+
 const projectQuery = `query project($id: ID!) {
     project(id: $id) {
         metadataUri
