@@ -43,15 +43,14 @@ export default function LogbookPage() {
                     <div className="min-w-0 flex-1">
                       <div>
                         <div className="text-sm">
-                          <FormattedAddress address={event.caller} />
+                          <FormattedAddress address={event.caller} style={"font-bold"} /> · <p className="mt-0.5 text-sm text-gray-500 inline">{formatDistanceToNow(fromUnixTime(event.timestamp), { addSuffix: true })}</p>
                         </div>
                         <p className="mt-0.5 text-sm"><a className="text-blue-700 font-bold" href={`https://etherscan.io/tx/${event.txHash}`}>{event.eventType}</a> on
-                          <ResolvedProjectWithMetadata version={parseInt(event.project.cv[0])} projectId={event.project.projectId} handle={event.project.handle} metadataUri={event.project.metadataUri} style={"text-black font-bold"} />
+                          <ResolvedProjectWithMetadata version={parseInt(event.project.cv[0])} projectId={event.project.projectId} handle={event.project.handle} metadataUri={event.project.metadataUri} style={"text-xs text-black font-semibold"} />
                         </p>
-                        <p className="mt-0.5 text-sm text-gray-500">{formatDistanceToNow(fromUnixTime(event.timestamp), { addSuffix: true })}</p>
                       </div>
                       {event.description && (
-                        <div className="mt-2 text-sm text-gray-700 break-words rounded-lg shadow p-2 bg-slate-200">
+                        <div className="mt-2 text-sm text-gray-700 break-words rounded-lg shadow p-2 border-slate-400">
                           <p>{event.description}</p>
                         </div>
                       )}
