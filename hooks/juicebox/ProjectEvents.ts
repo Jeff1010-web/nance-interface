@@ -219,7 +219,7 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           eventType: 'CreateProject',
           txHash: eventRes.projectCreateEvent.txHash,
           ethAmount: '0',
-          description: 'Project created'
+          description: ''
         }
       } else if (eventRes.tapEvent) {
         return {
@@ -230,7 +230,7 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           eventType: 'Tap',
           txHash: eventRes.tapEvent.txHash,
           ethAmount: formatEther(eventRes.tapEvent.netTransferAmount),
-          description: `Tapped ${eventRes.tapEvent.beneficiary}`
+          description: `Tapped ${formatEther(eventRes.tapEvent.netTransferAmount)} ETH`
         }
       } else if (eventRes.distributePayoutsEvent) {
         return {
@@ -241,7 +241,7 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           eventType: 'DistributePayouts',
           txHash: eventRes.distributePayoutsEvent.txHash,
           ethAmount: formatEther(BigNumber.from(eventRes.distributePayoutsEvent.distributedAmount).add(eventRes.distributePayoutsEvent.fee)),
-          description: eventRes.distributePayoutsEvent.memo
+          description: `Tapped ${formatEther(BigNumber.from(eventRes.distributePayoutsEvent.distributedAmount).add(eventRes.distributePayoutsEvent.fee))} ETH | Memo: ${eventRes.distributePayoutsEvent.memo}`
         }
       } else if (eventRes.printReservesEvent) {
         return {

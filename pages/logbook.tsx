@@ -5,7 +5,6 @@ import { formatDistanceToNow, fromUnixTime } from 'date-fns'
 import SiteNav from '../components/SiteNav'
 import { NumberParam, useQueryParam, withDefault } from 'next-query-params'
 import Pagination from '../components/Pagination'
-import useProjectMetadata from '../hooks/juicebox/ProjectMetadata'
 import ResolvedProjectWithMetadata from '../components/ResolvedProjectWithMetadata'
 
 export default function LogbookPage() {
