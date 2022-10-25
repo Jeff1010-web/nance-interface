@@ -11,8 +11,8 @@ import {
     ProposalResponse,
     ProposalUploadRequest,
     ProposalUploadResponse,
-    ReconfigureRequest,
-    ReconfigureResponse
+    FetchReconfigureRequest,
+    FetchReconfigureResponse
 } from '../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -86,17 +86,22 @@ export function getUploadUrl(space: string) {
     return `${NANCE_API_URL}/${space}/upload`;
 }
 
-async function jsonReconfigureFecther(url: string): Promise<ReconfigureResponse> {
-    const res = await fetch(url)
-    const json = await res.json()
-    if (json?.success === 'false') {
-        console.log(false);
-        throw new Error(`An error occurred while fetching the data: ${json?.error}`)
-    }
+async function jsonReconfigureFecther(url: RequestInfo | URL, { arg }: { arg: FetchReconfigureRequest }): Promise<FetchReconfigureResponse> {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(arg)
+      })
+      const json: FetchReconfigureResponse = await res.json()
+      if (json.success === false) {
+          throw new Error(`An error occurred while uploading the data: ${json?.error}`)
+      }
 
     return json
 }
 
-export function UseReconfigureRequest(args: ReconfigureRequest, shouldFetch: boolean = true) {
-    return jsonReconfigureFecther(`${NANCE_API_URL}/${args.space}/reconfigure?version=${args.version}`);
+export function UseReconfigureRequest(args: FetchReconfigureRequest) {
+    return jsonReconfigureFecther(`${NANCE_API_URL}/${args.space}/reconfigure?version=${args.version}`, { arg: args });
 }

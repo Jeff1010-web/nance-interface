@@ -176,8 +176,7 @@ function Form() {
         signature: {
           address: address,
           timestamp: Math.floor(Date.now() / 1000),
-          signature,
-          typedValue
+          signature
         },
         proposal: {
           ...formData.proposal,

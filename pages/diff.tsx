@@ -14,7 +14,7 @@ import { useHistoryTransactions, useQueuedTransactions } from '../hooks/SafeHook
 import { useRouter } from 'next/router';
 import { SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../models/SafeTypes';
 import { StringParam, useQueryParam } from 'next-query-params';
-import { useEnsAddress } from 'wagmi';
+import { useEnsAddress, useAccount, useEnsName } from 'wagmi';
 import { UseReconfigureRequest } from '../hooks/NanceHooks';
 
 type ABIOption = Option & { abi: string }
@@ -58,21 +58,35 @@ export default function DiffPage() {
     const safeAddress = safeAddressResolved || safeAddressParam
     const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, router.isReady)
     const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
-
+    const { address } = useAccount();
+    const { data: ensName } = useEnsName({address});
     const isLoading = !router.isReady || historyTxsLoading || queuedTxsLoading;
 
     const fetchFromNance = async () => {
         setNanceLoading(true);
-        const address = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
+        const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
         const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
         if (!address || !version) {
             setNanceLoading(false);
             return;
         }
-        const reconfiguration = await UseReconfigureRequest({ space: 'juicebox', version});
-        (address === reconfiguration?.data?.address) ? setRawDataRight(reconfiguration?.data?.bytes) : setRawDataRight('');
+        const reconfiguration = await UseReconfigureRequest({ space: safeAddressParam.split('.eth')[0], version, address: ensName, datetime: new Date().toISOString() });
+        (contract === reconfiguration?.data?.address) ? setRawDataRight(reconfiguration?.data?.bytes) : setRawDataRight('');
         setNanceLoading(false);
     }
+
+    // const postTransactionFromNance = async () => {
+    //     setNanceLoading(true);
+    //     const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
+    //     const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
+    //     if (!address || !version) {
+    //         setNanceLoading(false);
+    //         return;
+    //     }
+    //     const reconfiguration = await UseReconfigureRequest({ space: 'juicebox', version, signature: {address, timestamp: Math.floor(Date.now() / 1000), signature: ''} });
+    //     (contract === reconfiguration?.data?.address) ? setRawDataRight(reconfiguration?.data?.bytes) : setRawDataRight('');
+    //     setNanceLoading(false);
+    // }
 
     const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
         if(!res) return []
