@@ -67,19 +67,3 @@ export default function LogbookPage() {
     </div>
   )
 }
-
-function ProjectLogo({ uri }) {
-  const { data, loading, error } = useProjectMetadata(uri)
-
-  if (loading || error) {
-    return null
-  }
-  
-  return (
-    <img
-      className="h-6 w-6 rounded-full inline mx-1"
-      src={data.logoUri}
-      alt=""
-    />
-  )
-}
