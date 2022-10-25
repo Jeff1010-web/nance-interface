@@ -22,6 +22,7 @@ const Query = `query ProjectEvents($first: Int, $skip: Int) {
       projectId
       handle
       cv
+      metadataUri
     }
     timestamp
     payEvent {
@@ -87,6 +88,7 @@ export interface ProjectEventResponse {
       projectId: string
       cv: string
       handle: string
+      metadataUri: string
     }
     timestamp: number
     payEvent: {
@@ -150,6 +152,7 @@ export interface ProjectEvent {
     projectId: string
     cv: string
     handle: string
+    metadataUri: string
   }
   // timestamp call eventType project ethAmount description
   timestamp: number

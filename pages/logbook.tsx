@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import fetchProjectEvents, { ProjectEvent } from '../hooks/juicebox/ProjectEvents'
 import FormattedAddress from '../components/FormattedAddress'
-import ResolvedProject from '../components/ResolvedProject'
 import { formatDistanceToNow, fromUnixTime } from 'date-fns'
 import SiteNav from '../components/SiteNav'
 import { NumberParam, useQueryParam, withDefault } from 'next-query-params'
 import Pagination from '../components/Pagination'
+import useProjectMetadata from '../hooks/juicebox/ProjectMetadata'
+import ResolvedProjectWithMetadata from '../components/ResolvedProjectWithMetadata'
 
 export default function LogbookPage() {
   const [events, setEvents] = useState<ProjectEvent[]>([])
@@ -34,7 +35,7 @@ export default function LogbookPage() {
                   <>
                     <div className="relative">
                       <img
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white"
+                        className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white"
                         src={`https://cdn.stamp.fyi/avatar/${event.caller || 0}?s=160`}
                         alt=""
                       />
@@ -44,12 +45,17 @@ export default function LogbookPage() {
                         <div className="text-sm">
                           <FormattedAddress address={event.caller} />
                         </div>
-                        <p className="mt-0.5 text-sm"><a className="text-blue-700" href={`https://etherscan.io/tx/${event.txHash}`}>{event.eventType}</a> on <ResolvedProject version={parseInt(event.project.cv[0])} projectId={parseInt(event.project.projectId)} style={"text-black font-bold"} /></p>
+                        <p className="mt-0.5 text-sm"><a className="text-blue-700 font-bold" href={`https://etherscan.io/tx/${event.txHash}`}>{event.eventType}</a> on
+                          <ResolvedProjectWithMetadata version={parseInt(event.project.cv[0])} projectId={event.project.projectId} handle={event.project.handle} metadataUri={event.project.metadataUri} style={"text-black font-bold"} />
+                        </p>
                         <p className="mt-0.5 text-sm text-gray-500">{formatDistanceToNow(fromUnixTime(event.timestamp), { addSuffix: true })}</p>
                       </div>
-                      <div className="mt-2 text-sm text-gray-700 break-words">
-                        <p>{event.description}</p>
-                      </div>
+                      {event.description && (
+                        <div className="mt-2 text-sm text-gray-700 break-words rounded-lg shadow p-2 bg-slate-200">
+                          <p>{event.description}</p>
+                        </div>
+                      )}
+                      
                     </div>
                   </>
                 </div>
@@ -60,5 +66,21 @@ export default function LogbookPage() {
       </div>
       <Pagination page={page} setPage={setPage} limit={limit} total={1000} />
     </div>
+  )
+}
+
+function ProjectLogo({ uri }) {
+  const { data, loading, error } = useProjectMetadata(uri)
+
+  if (loading || error) {
+    return null
+  }
+  
+  return (
+    <img
+      className="h-6 w-6 rounded-full inline mx-1"
+      src={data.logoUri}
+      alt=""
+    />
   )
 }
