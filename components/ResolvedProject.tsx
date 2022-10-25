@@ -26,16 +26,13 @@ export default function ResolvedProject({ version, projectId, style }: Props) {
             return;
         }
         // external fetch
-        console.info('📗 ResolvedProject >', {version, projectId});
         fetchProjectInfo(version, projectId)
             .then((res) => {
-                console.info('📗 ResolvedProject.then >', {res});
                 setProjectInfo(res.data.project)
                 setLoading(false);
                 setError(false);
             })
             .catch(e => {
-                console.error('📗 ResolvedProject.catch >', {e});
                 setLoading(false);
                 setError(true);
             })

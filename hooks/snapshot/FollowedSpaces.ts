@@ -81,7 +81,6 @@ export default function useFollowedSpaces(address: string): {data: FollowedSpace
           // a must be equal to b
           return 0;
     })
-    console.info("📗 useFollowedSpaces ->", {address, spaceMap}, {spacesData, proposalsData, ret});
 
     return { loading: spacesLoading || proposalsLoading, data: ret };
 }

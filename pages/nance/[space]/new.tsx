@@ -43,7 +43,7 @@ const ProposalMetadataContext = React.createContext({
 });
 
 export default function NanceNewProposal() {
-  console.info(`using nance API: ${NANCE_API_URL}`);
+  console.debug(`using nance API: ${NANCE_API_URL}`);
   const router = useRouter();
   const [proposalType, setProposalType] = useQueryParam<ProposalType>('type', withDefault(createEnumParam(["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"]), 'Payout'));
   const [version, setVersion] = useQueryParam('version', withDefault(NumberParam, 2));
@@ -152,8 +152,6 @@ function Form() {
   const methods = useForm<ProposalFormValues>();
   const { register, handleSubmit, control, setValue, getValues, formState: { errors } } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = (formData) => {
-    console.debug("📗 Nance.newProposal.onSubmit ->", {formData, metadata});
-
     const timestamp = Math.floor(Date.now() / 1000);
     const payload = {
       ...formData.proposal,
@@ -186,7 +184,6 @@ function Form() {
         proposal: payload
       }
       console.debug("📗 Nance.newProposal.verifySignature", {address: verifyTypedData(DOMAIN, TYPES, typedValue, signature), valid: verifyTypedData(DOMAIN, TYPES, typedValue, signature) == address});
-      console.debug("📗 Nance.newProposal.upload ->", req);
       trigger(req);
     }).catch((err) => {
       setSigning(false);

@@ -26,6 +26,5 @@ export default function useSpaceInfo(spaceId: string): {data: SpaceInfo, loading
             spaceId: spaceId
         }
     });
-    console.info("📗 useSpaceInfo ->", {spaceId}, {data});
     return { loading, data: data?.space };
 }

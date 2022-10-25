@@ -63,7 +63,6 @@ export default function Lucky() {
             const rng = seedrandom(today.toString());
             [randomProjectVersion, randomProjectId] = genRandomProject(rng());
         }
-        console.info('📗 Lucky.random >', {isRandom, v1ProjectCount, v2ProjectCount, randomProjectId, randomProjectVersion});
 
         setProjectId(randomProjectId);
         setProjectVersion(randomProjectVersion);
@@ -71,7 +70,6 @@ export default function Lucky() {
         // load infos
         fetchProjectInfo(randomProjectVersion, randomProjectId)
             .then((res) => {
-                console.info('📗 Lucky.subgraph >', {res});
                 setProjectInfo(res.data.project)
                 return fetchMetadata(res.data.project.metadataUri)
                     .then((metadata) => {

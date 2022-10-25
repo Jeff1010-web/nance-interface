@@ -20,10 +20,10 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
   if (!readContract || !functionName || args === null) return
 
   try {
-    console.info(`📚 Read >`, functionName)
+    console.debug(`📚 Read >`, functionName)
     return await readContract[functionName](...(args ?? []))
   } catch (err) {
-    console.error(
+    console.warn(
       `📕 Read error >`,
       functionName,
       { args },
@@ -82,7 +82,7 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
       const newValue = _formatter(result)
 
       if (_valueDidChange(value, newValue)) {
-        console.info(
+        console.debug(
           `📗 New >`,
           functionName,
           { args },
@@ -92,7 +92,7 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
         setValue(newValue)
       }
     } catch (err) {
-      console.error('Read contract >', {
+      console.warn('Read contract >', {
         functionName,
         error: err,
       })
