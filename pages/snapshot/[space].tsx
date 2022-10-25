@@ -81,7 +81,8 @@ export default function SnapshotSpace() {
             <SiteNav 
                 pageTitle={`${spaceInfo?.name || (space as string) || ''} Proposals`} 
                 description="Snapshot voting with filter, search bar and quick overview on single page." 
-                image="/images/unsplash_voting.jpeg" />
+                image="/images/unsplash_voting.jpeg"
+                withWallet />
 
             <SpaceContext.Provider 
                 value={{address: connectedAddress, space: space as string, votedData}}>

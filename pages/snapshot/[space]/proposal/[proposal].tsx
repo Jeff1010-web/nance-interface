@@ -63,7 +63,11 @@ export default function SnapshotProposal() {
 
     return (
         <>
-            <SiteNav pageTitle={`${spaceInfo?.name || (space as string) || ''} proposal: ${data?.proposalData.title}`} description="Snapshot voting with filter, search bar and quick overview on single page." image="/images/unsplash_voting.jpeg" />
+            <SiteNav 
+                pageTitle={`${spaceInfo?.name || (space as string) || ''} proposal: ${data?.proposalData.title}`} 
+                description="Snapshot voting with filter, search bar and quick overview on single page." 
+                image="/images/unsplash_voting.jpeg"
+                withWallet />
 
             <div className="min-h-full">
                 <main className="py-10">
