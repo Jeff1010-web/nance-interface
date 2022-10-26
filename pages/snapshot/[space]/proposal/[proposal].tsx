@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
-import { useProposalExtendedOf } from "../../../../hooks/snapshot/Proposals";
+import { fetchProposalInfo, SnapshotProposal, useProposalExtendedOf } from "../../../../hooks/snapshot/Proposals";
 import { useAccount } from 'wagmi'
 import SiteNav from "../../../../components/SiteNav";
-import useSpaceInfo from "../../../../hooks/snapshot/SpaceInfo";
+import { fetchSpaceInfo, SpaceInfo } from "../../../../hooks/snapshot/SpaceInfo";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { Tooltip } from 'flowbite-react';
@@ -47,7 +47,16 @@ const getColorOfPencentage = (percentage: number) => {
     }
 }
 
-export default function SnapshotProposal() {
+export async function getServerSideProps(context) {
+    // Fetch data from external API
+    const spaceInfo = await fetchSpaceInfo(context.params.space);
+    const proposalInfo = await fetchProposalInfo(context.params.proposal);
+  
+    // Pass data to the page via props
+    return { props: { spaceInfo, proposalInfo } }
+}
+
+export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spaceInfo: SpaceInfo, proposalInfo: SnapshotProposal }) {
     // router
     const router = useRouter();
     const { space, proposal } = router.query;
@@ -57,16 +66,15 @@ export default function SnapshotProposal() {
     const [sortBy, setSortBy] = useQueryParam('sortBy', withDefault(createEnumParam(["created", "vp"]), "created"));
     // external hook
     const { address, isConnected } = useAccount();
-    const { data: spaceInfo } = useSpaceInfo(space as string);
     // load data
-    const { loading, data, error } = useProposalExtendedOf(proposal as string, address, Math.max((page-1)*10, 0), sortBy as "created" | "vp");
+    const { loading, data, error } = useProposalExtendedOf(proposalInfo.type, proposalInfo.choices, proposalInfo.id, address, Math.max((page-1)*10, 0), sortBy as "created" | "vp");
 
     return (
         <>
             <SiteNav 
-                pageTitle={`${spaceInfo?.name || (space as string) || ''} proposal: ${data?.proposalData.title}`} 
-                description="Snapshot voting with filter, search bar and quick overview on single page." 
-                image="/images/unsplash_voting.jpeg"
+                pageTitle={`${proposalInfo.title} - ${spaceInfo?.name || (space as string) || ''}`} 
+                description={proposalInfo.body?.slice(0, 140) || 'No content'} 
+                image={`https://cdn.stamp.fyi/space/${space as string}?s=160`}
                 withWallet />
 
             <div className="min-h-full">
@@ -85,11 +93,11 @@ export default function SnapshotProposal() {
                         </div>
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{data?.proposalData.title}</h1>
+                        <h1 className="text-2xl font-bold text-gray-900">{proposalInfo.title}</h1>
                         <p className="text-sm font-medium text-gray-500">
                         By&nbsp;
-                        {data?.proposalData.author ? (<FormattedAddress address={data?.proposalData.author} style="text-gray-900" />) : 'Anon'}
-                        &nbsp;on <time dateTime={data?.proposalData.created ? fromUnixTime(data?.proposalData.created).toString() : ''}>{data?.proposalData.created && format(fromUnixTime(data?.proposalData.created), 'MMMM d, yyyy')}</time>
+                        {proposalInfo.author ? (<FormattedAddress address={proposalInfo.author} style="text-gray-900" />) : 'Anon'}
+                        &nbsp;on <time dateTime={proposalInfo.created ? fromUnixTime(proposalInfo.created).toString() : ''}>{proposalInfo.created && format(fromUnixTime(proposalInfo.created), 'MMMM d, yyyy')}</time>
                         </p>
                     </div>
                     </div>
@@ -101,16 +109,14 @@ export default function SnapshotProposal() {
                         </Link>
                         <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:hidden"
                             onClick={() => setModalIsOpen(true)}
-                            disabled={data?.proposalData?.state !== 'active' || !address}>
+                            disabled={proposalInfo?.state !== 'active' || !address}>
 
-                            {(data?.proposalData?.state !== 'active' || !address) ? (
-                                <Tooltip trigger="hover" content={data?.proposalData?.state !== 'active' ? "Proposal is not active" : !address ? "You haven't connected wallet" : "Proposal is active and you can vote on it"}>
-                                    <span>Vote</span>
-                                </Tooltip>
-                            ) : (<span>Vote</span>)}
+                            <Tooltip trigger="hover" content={proposalInfo?.state !== 'active' ? "Proposal is not active" : !address ? "You haven't connected wallet" : "Proposal is active and you can vote on it"}>
+                                <span>Vote</span>
+                            </Tooltip>
                         </button>
-                        {data?.proposalData?.choices && (
-                            <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId={space as string} proposal={data?.proposalData} />
+                        {proposalInfo?.choices && (
+                            <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId={space as string} proposal={proposalInfo} />
                         )}
                     </div>
                 </div>
@@ -126,15 +132,15 @@ export default function SnapshotProposal() {
                                 </h2>
                                 {/* Proposal status */}
                                 <div className='min-w-fit'>
-                                {data?.proposalData.state === 'active' && labelWithTooltip('Active', 'Ends ' + formatDistanceToNow(fromUnixTime(data?.proposalData.end), { addSuffix: true }), 'text-green-800 bg-green-100')}
-                                {data?.proposalData.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
-                                {data?.proposalData.state === 'closed' && labelWithTooltip('Closed', formatDistanceToNow(fromUnixTime(data?.proposalData.end), { addSuffix: true }), 'text-gray-800 bg-gray-100')}
+                                {proposalInfo.state === 'active' && labelWithTooltip('Active', 'Ends ' + formatDistanceToNow(fromUnixTime(proposalInfo.end), { addSuffix: true }), 'text-green-800 bg-green-100')}
+                                {proposalInfo.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
+                                {proposalInfo.state === 'closed' && labelWithTooltip('Closed', formatDistanceToNow(fromUnixTime(proposalInfo.end), { addSuffix: true }), 'text-gray-800 bg-gray-100')}
                                 </div>
                                 {/* <p className="mt-1 max-w-2xl text-sm text-gray-500">Proposal details.</p> */}
                             </div>
                             <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
                                 <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
-                                    <ReactMarkdown>{data?.proposalData.body}</ReactMarkdown>
+                                    <ReactMarkdown>{proposalInfo.body}</ReactMarkdown>
                                 </article>
                             </div>
                             <div>
@@ -148,14 +154,14 @@ export default function SnapshotProposal() {
                         </section>
 
                         {/* Votes */}
-                        <section aria-labelledby="votes-title" className={data?.proposalData?.state == 'pending' ? 'hidden' : undefined}>
+                        <section aria-labelledby="votes-title" className={proposalInfo?.state == 'pending' ? 'hidden' : undefined}>
                             <div className="bg-white shadow sm:overflow-hidden sm:rounded-lg">
                             <div className="divide-y divide-gray-200">
                                 <div className="px-4 py-5 sm:px-6 flex flex-row justify-between">
                                     <h2 id="notes-title" className="text-lg font-medium text-gray-900">
                                         Votes
                                         <span className='bg-indigo-100 text-indigo-600 hidden ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block'>
-                                            {data?.proposalData?.votes}
+                                            {proposalInfo?.votes}
                                         </span>
                                     </h2>
                                     <div className="mt-1 flex rounded-md shadow-sm">
@@ -195,13 +201,13 @@ export default function SnapshotProposal() {
                                                         </div>
                                                         <div className="text-sm">
                                                             <div className={classNames(
-                                                                getColorOfPencentage(vote.vp*100/data?.proposalData?.scores_total),
+                                                                getColorOfPencentage(vote.vp*100/proposalInfo?.scores_total),
                                                                 'underline w-1/3'
                                                             )}>
-                                                                {` ${formatNumber(vote.vp)} (${(vote.vp*100/data?.proposalData?.scores_total).toFixed()}%)`}
+                                                                {` ${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
                                                             </div>
                                                             <div className="w-full overflow-hidden">
-                                                                <p className="truncate">{formatChoices(data?.proposalData.type, vote.choice)}</p>
+                                                                <p className="truncate">{formatChoices(proposalInfo.type, vote.choice)}</p>
                                                             </div>
                                                         </div>
                                                         <div className="text-sm text-gray-800 font-semibold">
@@ -229,7 +235,7 @@ export default function SnapshotProposal() {
                                             </li>
                                         ))}
                                     </ul>
-                                    <Pagination page={page} setPage={setPage} total={data?.proposalData?.votes || 0} limit={10} />
+                                    <Pagination page={page} setPage={setPage} total={proposalInfo?.votes || 0} limit={10} />
                                 </div>
                             </div>
                             </div>
@@ -247,18 +253,18 @@ export default function SnapshotProposal() {
                                     <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
                                         <dt className="text-sm font-medium text-gray-500 truncate">Quorum</dt>
                                         <Tooltip
-                                            content={data?.proposalData.quorum>0 && `(${(data?.proposalData.scores_total*100/data?.proposalData.quorum).toFixed()}% of quorum)`}
+                                            content={proposalInfo.quorum>0 && `(${(proposalInfo.scores_total*100/proposalInfo.quorum).toFixed()}% of quorum)`}
                                             trigger="hover"
                                         >
                                             <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">
-                                                {formatNumber(data?.proposalData.scores_total)}
+                                                {formatNumber(proposalInfo.scores_total)}
                                             </dd>
-                                            <span className="text-sm font-medium text-gray-500">{data?.proposalData.quorum>0 && `/ ${formatNumber(data?.proposalData.quorum)}`}</span>
+                                            <span className="text-sm font-medium text-gray-500">{proposalInfo.quorum>0 && `/ ${formatNumber(proposalInfo.quorum)}`}</span>
                                         </Tooltip>
                                     </div>
                                     {/* Vote choice data */}
-                                    {data?.proposalData.scores_total > 0 && 
-                                        data?.proposalData?.scores
+                                    {proposalInfo.scores_total > 0 && 
+                                        proposalInfo?.scores
                                             ?.filter((score) => score>0)
                                             .map((score, index) => {return { score, index }})
                                             // sort by score desc
@@ -267,20 +273,20 @@ export default function SnapshotProposal() {
 
                                         <div key={index} className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
                                             <Tooltip
-                                                content={data?.proposalData?.choices[index]}
+                                                content={proposalInfo?.choices[index]}
                                                 trigger="hover"
                                             >
-                                                <dt className="text-sm font-medium text-gray-500 truncate">{data?.proposalData?.choices[index]}</dt>
+                                                <dt className="text-sm font-medium text-gray-500 truncate">{proposalInfo?.choices[index]}</dt>
                                             </Tooltip>
                                             <Tooltip
-                                                content={`${(score*100/data?.proposalData.scores_total).toFixed(2)}%`}
+                                                content={`${(score*100/proposalInfo.scores_total).toFixed(2)}%`}
                                                 trigger="hover"
                                             >
-                                                {/* <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(data?.proposalData.voteByChoice[choice]*100/data?.proposalData.scores_total).toFixed(2)}%</dd> */}
+                                                {/* <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(proposalInfo.voteByChoice[choice]*100/proposalInfo.scores_total).toFixed(2)}%</dd> */}
                                                 <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">
                                                     {formatNumber(score)}
                                                 </dd>
-                                                <span className="text-sm font-medium text-gray-500">{(score*100/data?.proposalData.scores_total).toFixed(0)}%</span>
+                                                <span className="text-sm font-medium text-gray-500">{(score*100/proposalInfo.scores_total).toFixed(0)}%</span>
                                             </Tooltip>
                                         </div>
                                     ))}

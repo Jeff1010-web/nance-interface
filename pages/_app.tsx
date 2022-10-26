@@ -12,7 +12,6 @@ import {
   configureChains, chain
 } from 'wagmi'
 import { infuraProvider } from 'wagmi/providers/infura'
-import { publicProvider } from 'wagmi/providers/public'
 
 import {NextQueryParamProvider} from 'next-query-params';
 
