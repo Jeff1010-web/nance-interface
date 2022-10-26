@@ -7,7 +7,7 @@ import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-q
 import React from "react";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
-import { getUploadUrl, useProposalUpload } from "../../../hooks/NanceHooks";
+import { useProposalUpload } from "../../../hooks/NanceHooks";
 import { ProposalUploadRequest } from "../../../models/NanceTypes";
 import { NANCE_API_URL } from "../../../constants/Nance";
 import Link from "next/link";
@@ -18,10 +18,8 @@ import dynamic from "next/dynamic";
 import useLocalStorage from "../../../hooks/LocalStorage";
 import { format } from "date-fns";
 import { useAccount, useSigner, useSignTypedData } from "wagmi";
-import { DOMAIN, TYPES } from "../../../constants/Signature";
-import { Signer } from "ethers";
 import { JsonRpcSigner } from "@ethersproject/providers";
-import { keccak256, solidityKeccak256, verifyTypedData } from "ethers/lib/utils";
+import { signPayload } from "../../../libs/signer";
 
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor"),
@@ -150,38 +148,21 @@ function Form() {
   const onSubmit: SubmitHandler<ProposalFormValues> = (formData) => {
     console.debug("📗 Nance.newProposal.onSubmit ->", {formData, metadata});
 
-    const timestamp = Math.floor(Date.now() / 1000);
     const payload = {
       ...formData.proposal,
       type: metadata.proposalType as ProposalType,
       version: String(metadata.version)
     };
-    const typedValue = {
-      path: getUploadUrl(space as string),
-      timestamp: timestamp,
-      payload: solidityKeccak256(["string"], [JSON.stringify(payload)])
-    };
 
-    setSigning(true);
-    // request the signature from user
-    jrpcSigner._signTypedData(
-      DOMAIN,
-      TYPES,
-      typedValue
-    ).then((signature) => {
+    signPayload(jrpcSigner, space as string, 'upload', payload).then((signature) => {
 
       setSigning(false);
       // send to API endpoint
       reset();
       const req: ProposalUploadRequest = {
-        signature: {
-          address: address,
-          timestamp,
-          signature
-        },
+        signature,
         proposal: payload
       }
-      console.debug("📗 Nance.newProposal.verifySignature", {address: verifyTypedData(DOMAIN, TYPES, typedValue, signature), valid: verifyTypedData(DOMAIN, TYPES, typedValue, signature) == address});
       console.debug("📗 Nance.newProposal.upload ->", req);
       trigger(req);
     }).catch((err) => {

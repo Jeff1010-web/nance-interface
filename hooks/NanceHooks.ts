@@ -12,7 +12,9 @@ import {
     ProposalUploadRequest,
     ProposalUploadResponse,
     FetchReconfigureRequest,
-    FetchReconfigureResponse
+    FetchReconfigureResponse,
+    SubmitTransactionRequest,
+    SubmitTransactionResponse
 } from '../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -82,8 +84,8 @@ export function useProposalUpload(space: string, shouldFetch: boolean = true) {
     );
 }
 
-export function getUploadUrl(space: string) {
-    return `${NANCE_API_URL}/${space}/upload`;
+export function getPath(space: string, command: string) {
+    return `${NANCE_API_URL}/${space}/${command}`;
 }
 
 async function jsonReconfigureFecther(url: RequestInfo | URL, { arg }: { arg: FetchReconfigureRequest }): Promise<FetchReconfigureResponse> {
@@ -104,4 +106,24 @@ async function jsonReconfigureFecther(url: RequestInfo | URL, { arg }: { arg: Fe
 
 export function UseReconfigureRequest(args: FetchReconfigureRequest) {
     return jsonReconfigureFecther(`${NANCE_API_URL}/${args.space}/reconfigure?version=${args.version}`, { arg: args });
+}
+
+async function submitTransaction(url: RequestInfo | URL, { arg }: { arg: SubmitTransactionRequest }): Promise<SubmitTransactionResponse> {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(arg)
+    })
+    const json: SubmitTransactionResponse = await res.json()
+    if (json.success === false) {
+        throw new Error(`An error occurred while uploading the data: ${json?.error}`)
+    }
+
+  return json
+}
+
+export function UseSubmitTransactionRequest(args: SubmitTransactionRequest) {
+    return submitTransaction(`${NANCE_API_URL}/${args.space}/reconfigure/submit?version=${args.version}`, { arg: args });
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Switch } from '@headlessui/react'
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer';
 import SiteNav from '../components/SiteNav';
+import Notification from "../components/Notification";
 
 import TerminalV1 from '@jbx-protocol/contracts-v1/deployments/mainnet/TerminalV1.json';
 import TerminalV1_1 from '@jbx-protocol/contracts-v1/deployments/mainnet/TerminalV1_1.json';
@@ -14,8 +15,10 @@ import { useHistoryTransactions, useQueuedTransactions } from '../hooks/SafeHook
 import { useRouter } from 'next/router';
 import { SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../models/SafeTypes';
 import { StringParam, useQueryParam } from 'next-query-params';
-import { useEnsAddress, useAccount, useEnsName } from 'wagmi';
-import { UseReconfigureRequest } from '../hooks/NanceHooks';
+import { useEnsAddress, useAccount, useEnsName, useSigner } from 'wagmi';
+import { JsonRpcSigner } from "@ethersproject/providers";
+import { UseReconfigureRequest, UseSubmitTransactionRequest } from '../hooks/NanceHooks';
+import { signPayload } from '../libs/signer';
 
 type ABIOption = Option & { abi: string }
 type TxOption = Option & { tx: SafeMultisigTransaction }
@@ -36,6 +39,9 @@ export default function DiffPage() {
     const [safeAddressParam, setSafeAddressParam] = useQueryParam("safe", StringParam)
     const [splitView, setSplitView] = useState(true)
     const [nanceLoading, setNanceLoading] = useState(false)
+    const [nanceTransactionLoading, setNanceTransactionLoading] = useState(false)
+    const [nanceTransactionDatetime, setNanceTransactionDatetime] = useState('');
+    const [nanceSuggestedNonce, setNanceSuggestedNonce] = useState<string>(undefined)
     // -- abi
     const [abiOptionLeft, setAbiOptionLeft] = useState<ABIOption>(undefined)
     const [abiOptionRight, setAbiOptionRight] = useState<ABIOption>(undefined)
@@ -59,7 +65,8 @@ export default function DiffPage() {
     const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, router.isReady)
     const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
     const { address } = useAccount();
-    const { data: ensName } = useEnsName({address});
+    const { data: signer, isError, isLoading: signerLoading } = useSigner()
+    const jrpcSigner = signer as JsonRpcSigner;
     const isLoading = !router.isReady || historyTxsLoading || queuedTxsLoading;
 
     const fetchFromNance = async () => {
@@ -70,23 +77,40 @@ export default function DiffPage() {
             setNanceLoading(false);
             return;
         }
-        const reconfiguration = await UseReconfigureRequest({ space: safeAddressParam.split('.eth')[0], version, address: ensName, datetime: new Date().toISOString() });
-        (contract === reconfiguration?.data?.address) ? setRawDataRight(reconfiguration?.data?.bytes) : setRawDataRight('');
+        const datetime = new Date().toISOString();
+        setNanceTransactionDatetime(datetime);
+        const reconfiguration = await UseReconfigureRequest({
+            space: safeAddressParam.split('.eth')[0],
+            version,
+            address,
+            datetime
+        });
+        (contract === reconfiguration?.data?.transaction.address) ? setRawDataRight(reconfiguration?.data?.transaction?.bytes) : setRawDataRight('');
+        console.debug(reconfiguration);
+        setNanceSuggestedNonce(reconfiguration?.data?.nonce);
         setNanceLoading(false);
     }
 
-    // const postTransactionFromNance = async () => {
-    //     setNanceLoading(true);
-    //     const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
-    //     const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
-    //     if (!address || !version) {
-    //         setNanceLoading(false);
-    //         return;
-    //     }
-    //     const reconfiguration = await UseReconfigureRequest({ space: 'juicebox', version, signature: {address, timestamp: Math.floor(Date.now() / 1000), signature: ''} });
-    //     (contract === reconfiguration?.data?.address) ? setRawDataRight(reconfiguration?.data?.bytes) : setRawDataRight('');
-    //     setNanceLoading(false);
-    // }
+    const postTransactionFromNance = async () => {
+        setNanceTransactionLoading(true);
+        const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
+        const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
+        if (!address || !version) {
+            setNanceLoading(false);
+            return;
+        }
+        const payload = { address: contract, bytes: rawDataRight };
+        console.debug(`\n\nLength of data: ${payload.bytes.length}\n\n`)
+        signPayload(jrpcSigner, safeAddressParam.split('.eth')[0], 'reconfigure/submit', payload).then((signature) => {
+            const transaction = UseSubmitTransactionRequest({
+                space: safeAddressParam.split('.eth')[0],
+                version,
+                signature,
+                datetime: nanceTransactionDatetime
+            });
+            setNanceTransactionLoading(false);
+        });
+    }
 
     const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
         if(!res) return []
@@ -138,6 +162,10 @@ export default function DiffPage() {
 
     return (
         <>
+              {/* <Notification title="Success" description={`Created proposal ${data?.data.hash}`} show={ '' } close={ '' } checked={true} />
+      {(signError || uploadError) && 
+        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={resetSignAndUpload} checked={false} />
+      } */}
             <SiteNav pageTitle="Transaction Diff Viewer" />
             <div className="bg-white">
                 <div className="flex flex-col w-2/3 p-6">
@@ -224,8 +252,21 @@ export default function DiffPage() {
                     <button
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
                         onClick={fetchFromNance}
-                    >{(nanceLoading) ? 'loading...' : 'fetch from nance'}</button>
+                    >{(nanceLoading) ? 'loading...' : 'fetch from nance'}</button> 
                 </div>
+                <div className="flex justify-end w-2/3 space-x-5">
+                    <button
+                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                        onClick={postTransactionFromNance}
+                    >{(nanceTransactionLoading) ? 'loading...' : 'queue gnosis transaction'}</button>
+                    <input
+                        type="number"
+                        placeholder="nonce"
+                        value={nanceSuggestedNonce}
+                        onChange={(e) => setNanceSuggestedNonce(e.target.value)}
+                        className="block rounded rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+                    />
+                    </div>   
                 <div className="flex justify-center mb-3">
                     <Switch.Group as="div" className="items-center">
                         <Switch
