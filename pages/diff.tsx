@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Switch } from '@headlessui/react'
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer';
 import SiteNav from '../components/SiteNav';
-import Notification from "../components/Notification";
 
 import TerminalV1 from '@jbx-protocol/contracts-v1/deployments/mainnet/TerminalV1.json';
 import TerminalV1_1 from '@jbx-protocol/contracts-v1/deployments/mainnet/TerminalV1_1.json';
@@ -162,10 +161,6 @@ export default function DiffPage() {
 
     return (
         <>
-              {/* <Notification title="Success" description={`Created proposal ${data?.data.hash}`} show={ '' } close={ '' } checked={true} />
-      {(signError || uploadError) && 
-        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={resetSignAndUpload} checked={false} />
-      } */}
             <SiteNav pageTitle="Transaction Diff Viewer" />
             <div className="bg-white">
                 <div className="flex flex-col w-2/3 p-6">
