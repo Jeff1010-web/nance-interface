@@ -74,7 +74,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
             <SiteNav 
                 pageTitle={`${proposalInfo.title} - ${spaceInfo?.name || (space as string) || ''}`} 
                 description={proposalInfo.body?.slice(0, 140) || 'No content'} 
-                image={`https://cdn.stamp.fyi/space/${space as string}?s=160`}
+                image={`https://cdn.stamp.fyi/space/${space as string}?w=1200&h=630`}
                 withWallet />
 
             <div className="min-h-full">

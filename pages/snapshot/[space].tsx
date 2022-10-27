@@ -88,7 +88,7 @@ export default function SnapshotSpacePage({ spaceInfo }: { spaceInfo: SpaceInfo 
             <SiteNav 
                 pageTitle={`${spaceInfo?.name || (space as string) || ''} Proposals`} 
                 description={spaceInfo?.about || "Snapshot voting with filter, search bar and quick overview on single page."} 
-                image={`https://cdn.stamp.fyi/space/${space as string}?s=160`}
+                image={`https://cdn.stamp.fyi/space/${space as string}?w=1200&h=630`}
                 withWallet />
 
             <SpaceContext.Provider 
