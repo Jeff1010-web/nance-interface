@@ -38,3 +38,9 @@ export interface SafeMultisigTransactionRequest {
     offset?: number;
     nonceGte?: number;
 }
+
+export interface SafeTransactionPartial {
+    to: string;
+    value: number;
+    data: string;
+}

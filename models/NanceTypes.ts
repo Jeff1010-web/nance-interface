@@ -58,6 +58,7 @@ export interface SubmitTransactionRequest extends BaseRequest {
 export interface IFetchReconfigureResponse {
   transaction: NanceBasicTransaction;
   nonce: string;
+  safe: string;
 }
 
 export interface NanceBasicTransaction {

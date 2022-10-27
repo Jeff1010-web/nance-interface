@@ -18,6 +18,7 @@ import { useEnsAddress, useAccount, useEnsName, useSigner } from 'wagmi';
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { UseReconfigureRequest, UseSubmitTransactionRequest } from '../hooks/NanceHooks';
 import { signPayload } from '../libs/signer';
+import { getEstimate, getGnosisMessageToSign } from '../libs/gnosis';
 
 type ABIOption = Option & { abi: string }
 type TxOption = Option & { tx: SafeMultisigTransaction }
@@ -41,6 +42,7 @@ export default function DiffPage() {
     const [nanceTransactionLoading, setNanceTransactionLoading] = useState(false)
     const [nanceTransactionDatetime, setNanceTransactionDatetime] = useState('');
     const [nanceSuggestedNonce, setNanceSuggestedNonce] = useState<string>(undefined)
+    const [nanceSafeAddress, setNanceSafeAddress] = useState('');
     // -- abi
     const [abiOptionLeft, setAbiOptionLeft] = useState<ABIOption>(undefined)
     const [abiOptionRight, setAbiOptionRight] = useState<ABIOption>(undefined)
@@ -72,7 +74,7 @@ export default function DiffPage() {
         setNanceLoading(true);
         const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
         const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
-        if (!address || !version) {
+        if (!version) {
             setNanceLoading(false);
             return;
         }
@@ -81,34 +83,66 @@ export default function DiffPage() {
         const reconfiguration = await UseReconfigureRequest({
             space: safeAddressParam.split('.eth')[0],
             version,
-            address,
+            address: address || '0x0000000000000000000000000000000000000000',
             datetime
         });
         (contract === reconfiguration?.data?.transaction.address) ? setRawDataRight(reconfiguration?.data?.transaction?.bytes) : setRawDataRight('');
         console.debug(reconfiguration);
         setNanceSuggestedNonce(reconfiguration?.data?.nonce);
+        setNanceSafeAddress(reconfiguration?.data?.safe);
         setNanceLoading(false);
     }
 
     const postTransactionFromNance = async () => {
-        setNanceTransactionLoading(true);
+        // setNanceTransactionLoading(true);
+        // const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
+        // const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
+        // if (!address || !version) {
+        //     setNanceTransactionLoading(false);
+        //     return;
+        // }
+        // const payload = { address: contract, bytes: rawDataRight };
+        // console.debug(`\n\nLength of data: ${payload.bytes.length}\n\n`)
+        // signPayload(jrpcSigner, safeAddressParam.split('.eth')[0], 'reconfigure/submit', payload).then((signature) => {
+        //     const transaction = UseSubmitTransactionRequest({
+        //         space: safeAddressParam.split('.eth')[0],
+        //         version,
+        //         signature,
+        //         datetime: nanceTransactionDatetime
+        //     });
+        //     setNanceTransactionLoading(false);
+        // });
         const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
-        const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
-        if (!address || !version) {
-            setNanceLoading(false);
-            return;
-        }
-        const payload = { address: contract, bytes: rawDataRight };
-        console.debug(`\n\nLength of data: ${payload.bytes.length}\n\n`)
-        signPayload(jrpcSigner, safeAddressParam.split('.eth')[0], 'reconfigure/submit', payload).then((signature) => {
-            const transaction = UseSubmitTransactionRequest({
-                space: safeAddressParam.split('.eth')[0],
-                version,
+        const { safeTxGas } = await getEstimate({to: contract, value: 0, data: rawDataRight}, nanceSafeAddress);
+        console.log(nanceSafeAddress);
+        const { message, transactionHash } = await getGnosisMessageToSign(safeTxGas, nanceSafeAddress, {to: contract, value: 0, data: rawDataRight}, Number(nanceSuggestedNonce));
+        const signature = (await signer.signMessage(message))
+            .replace(/1b$/, "1f")
+            .replace(/1c$/, "20");
+            const body = {
+                headers: { "Content-type": "application/json" },
+                body: JSON.stringify({
+                to: contract,
+                value: 0,
+                data: rawDataRight,
+                operation: 0,
+                safeTxGas,
+                baseGas: 0,
+                gasPrice: 0,
+                gasToken: null,
+                refundReceiver: null,
+                nonce: Number(nanceSuggestedNonce),
+                contractTransactionHash: transactionHash,
+                sender: address,
                 signature,
-                datetime: nanceTransactionDatetime
-            });
-            setNanceTransactionLoading(false);
-        });
+                origin: "Juicetool"
+      }),
+      method: "POST"
+    }
+    const env = 'mainnet';
+    const baseUrl = `https://safe-transaction-${env}.safe.global/`
+    const res = await fetch(baseUrl + `api/v1/safes/${nanceSafeAddress}/multisig-transactions/`, body)
+    console.debug(res.json);
     }
 
     const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
@@ -252,6 +286,7 @@ export default function DiffPage() {
                 <div className="flex justify-end w-2/3 space-x-5">
                     <button
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                        disabled={!jrpcSigner}
                         onClick={postTransactionFromNance}
                     >{(nanceTransactionLoading) ? 'loading...' : 'queue gnosis transaction'}</button>
                     <input
