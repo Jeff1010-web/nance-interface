@@ -10,15 +10,16 @@ import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet
 import formatArgs from '../libs/TransactionArgFormatter';
 import renderArgEntry from '../components/TransactionArgEntry';
 import SearchableComboBox, { Option } from '../components/SearchableComboBox';
+import Notification from "../components/Notification";
 import { useHistoryTransactions, useQueuedTransactions } from '../hooks/SafeHooks';
+import { GnosisHandler } from '../libs/gnosis';
 import { useRouter } from 'next/router';
-import { SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../models/SafeTypes';
+import { QueueSafeTransaction, SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../models/SafeTypes';
 import { StringParam, useQueryParam } from 'next-query-params';
-import { useEnsAddress, useAccount, useEnsName, useSigner } from 'wagmi';
+import { useEnsAddress, useAccount, useSigner } from 'wagmi';
 import { JsonRpcSigner } from "@ethersproject/providers";
-import { UseReconfigureRequest, UseSubmitTransactionRequest } from '../hooks/NanceHooks';
-import { signPayload } from '../libs/signer';
-import { getEstimate, getGnosisMessageToSign } from '../libs/gnosis';
+import { UseReconfigureRequest } from '../hooks/NanceHooks';
+import { IFetchReconfigureResponse } from '../models/NanceTypes';
 
 type ABIOption = Option & { abi: string }
 type TxOption = Option & { tx: SafeMultisigTransaction }
@@ -37,12 +38,11 @@ export default function DiffPage() {
 
     // state
     const [safeAddressParam, setSafeAddressParam] = useQueryParam("safe", StringParam)
+    const [networkParam, setNetworkParam] = useQueryParam("network", StringParam)
     const [splitView, setSplitView] = useState(true)
     const [nanceLoading, setNanceLoading] = useState(false)
-    const [nanceTransactionLoading, setNanceTransactionLoading] = useState(false)
-    const [nanceTransactionDatetime, setNanceTransactionDatetime] = useState('');
-    const [nanceSuggestedNonce, setNanceSuggestedNonce] = useState<string>(undefined)
-    const [nanceSafeAddress, setNanceSafeAddress] = useState('');
+    const [nanceResponse, setNanceResponse] = useState<IFetchReconfigureResponse>(undefined)
+    const [gnosisResponse, setGnosisResponse] = useState({success: undefined, data: undefined})
     // -- abi
     const [abiOptionLeft, setAbiOptionLeft] = useState<ABIOption>(undefined)
     const [abiOptionRight, setAbiOptionRight] = useState<ABIOption>(undefined)
@@ -70,79 +70,54 @@ export default function DiffPage() {
     const jrpcSigner = signer as JsonRpcSigner;
     const isLoading = !router.isReady || historyTxsLoading || queuedTxsLoading;
 
+    // shortcut
+    const resetGnosisResponse = () => {
+        setGnosisResponse({success: undefined, data: undefined});
+    }
+
     const fetchFromNance = async () => {
         setNanceLoading(true);
-        const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
         const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
         if (!version) {
             setNanceLoading(false);
             return;
         }
         const datetime = new Date().toISOString();
-        setNanceTransactionDatetime(datetime);
         const reconfiguration = await UseReconfigureRequest({
             space: safeAddressParam.split('.eth')[0],
             version,
             address: address || '0x0000000000000000000000000000000000000000',
-            datetime
+            datetime,
+            network: networkParam || 'mainnet'
         });
-        (contract === reconfiguration?.data?.transaction.address) ? setRawDataRight(reconfiguration?.data?.transaction?.bytes) : setRawDataRight('');
-        console.debug(reconfiguration);
-        setNanceSuggestedNonce(reconfiguration?.data?.nonce);
-        setNanceSafeAddress(reconfiguration?.data?.safe);
+        setRawDataRight(reconfiguration?.data?.transaction?.bytes);
+        setNanceResponse(reconfiguration?.data);
         setNanceLoading(false);
     }
 
-    const postTransactionFromNance = async () => {
-        // setNanceTransactionLoading(true);
-        // const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
-        // const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
-        // if (!address || !version) {
-        //     setNanceTransactionLoading(false);
-        //     return;
-        // }
-        // const payload = { address: contract, bytes: rawDataRight };
-        // console.debug(`\n\nLength of data: ${payload.bytes.length}\n\n`)
-        // signPayload(jrpcSigner, safeAddressParam.split('.eth')[0], 'reconfigure/submit', payload).then((signature) => {
-        //     const transaction = UseSubmitTransactionRequest({
-        //         space: safeAddressParam.split('.eth')[0],
-        //         version,
-        //         signature,
-        //         datetime: nanceTransactionDatetime
-        //     });
-        //     setNanceTransactionLoading(false);
-        // });
+    const postTransaction = async () => {
         const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
-        const { safeTxGas } = await getEstimate({to: contract, value: 0, data: rawDataRight}, nanceSafeAddress);
-        console.log(nanceSafeAddress);
-        const { message, transactionHash } = await getGnosisMessageToSign(safeTxGas, nanceSafeAddress, {to: contract, value: 0, data: rawDataRight}, Number(nanceSuggestedNonce));
+        const gnosis = new GnosisHandler(nanceResponse.safe, networkParam || 'mainnet');
+        const txnPartial = {
+            to: nanceResponse.transaction.address,
+            value: 0,
+            data: nanceResponse.transaction.bytes,
+            nonce: nanceResponse.nonce
+        };
+        const { safeTxGas } = await gnosis.getEstimate(txnPartial);
+        const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
         const signature = (await signer.signMessage(message))
-            .replace(/1b$/, "1f")
-            .replace(/1c$/, "20");
-            const body = {
-                headers: { "Content-type": "application/json" },
-                body: JSON.stringify({
-                to: contract,
-                value: 0,
-                data: rawDataRight,
-                operation: 0,
-                safeTxGas,
-                baseGas: 0,
-                gasPrice: 0,
-                gasToken: null,
-                refundReceiver: null,
-                nonce: Number(nanceSuggestedNonce),
-                contractTransactionHash: transactionHash,
-                sender: address,
-                signature,
-                origin: "Juicetool"
-      }),
-      method: "POST"
-    }
-    const env = 'mainnet';
-    const baseUrl = `https://safe-transaction-${env}.safe.global/`
-    const res = await fetch(baseUrl + `api/v1/safes/${nanceSafeAddress}/multisig-transactions/`, body)
-    console.debug(res.json);
+            .replace(/1b$/, '1f')
+            .replace(/1c$/, '20');
+        const txn: QueueSafeTransaction = {
+            ...txnPartial,
+            address,
+            safeTxGas,
+            transactionHash,
+            signature
+        };
+        const res = await gnosis.queueTransaction(txn)
+        setGnosisResponse(res)
     }
 
     const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
@@ -195,6 +170,10 @@ export default function DiffPage() {
 
     return (
         <>
+            <Notification title="Success" description={`Transaction queued!`} show={gnosisResponse?.success === true} close={resetGnosisResponse} checked={true} />
+            {(gnosisResponse?.success === false ) &&
+            <Notification title="Error" description={`Problem submitting transaction: ${gnosisResponse?.data}`} show={true} close={resetGnosisResponse} checked={false} />
+            }
             <SiteNav pageTitle="Transaction Diff Viewer" />
             <div className="bg-white">
                 <div className="flex flex-col w-2/3 p-6">
@@ -277,26 +256,24 @@ export default function DiffPage() {
                         </div>
                     </div>
                 </div>
-                <div className="flex justify-end w-2/3 ml-10">
+                <div className="flex justify-end w-5/6 ml-10 space-x-5">
                     <button
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
                         onClick={fetchFromNance}
                     >{(nanceLoading) ? 'loading...' : 'fetch from nance'}</button> 
-                </div>
-                <div className="flex justify-end w-2/3 space-x-5">
                     <button
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
                         disabled={!jrpcSigner}
-                        onClick={postTransactionFromNance}
-                    >{(nanceTransactionLoading) ? 'loading...' : 'queue gnosis transaction'}</button>
+                        onClick={postTransaction}
+                    >{'queue gnosis transaction'}</button>
                     <input
                         type="number"
                         placeholder="nonce"
-                        value={nanceSuggestedNonce}
-                        onChange={(e) => setNanceSuggestedNonce(e.target.value)}
+                        value={nanceResponse?.nonce || ''}
+                        onChange={(e) => setNanceResponse({...nanceResponse, nonce: e.target.value})}
                         className="block rounded rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
                     />
-                    </div>   
+                </div>
                 <div className="flex justify-center mb-3">
                     <Switch.Group as="div" className="items-center">
                         <Switch

@@ -47,6 +47,7 @@ export interface FetchReconfigureRequest extends BaseRequest {
   version: string;
   address: string;
   datetime: string;
+  network: string;
 }
 
 export interface SubmitTransactionRequest extends BaseRequest {

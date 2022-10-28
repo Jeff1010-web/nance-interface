@@ -1,5 +1,5 @@
 import useSWR, { Fetcher } from 'swr'
-import { SafeMultisigTransactionRequest, SafeMultisigTransactionResponse } from '../models/SafeTypes'
+import { SafeMultisigTransactionResponse } from '../models/SafeTypes'
 
 function jsonFetcher(): Fetcher<SafeMultisigTransactionResponse, string> {
     return async (url) => {
