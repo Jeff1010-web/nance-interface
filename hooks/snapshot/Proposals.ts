@@ -172,6 +172,19 @@ export type SnapshotVotedData = Omit<SnapshotVote & {
   }
 }, 'voter'>;
 
+export async function fetchProposalInfo(proposalId: string): Promise<SnapshotProposal> {
+  return fetch('https://hub.snapshot.org/graphql', {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ 
+      query: SINGLE_PROPOSAL_QUERY, 
+      variables: { id: proposalId } 
+    }),
+  }).then(res => res.json()).then(json => json.data.proposal)
+}
+
 export function useProposalsByID(proposalIds: string[], address: string) {
   return useProposalsWithCustomQuery(PROPOSALS_BY_ID_QUERY, {
     first: proposalIds.length,
@@ -242,27 +255,16 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
   return ret;
 }
 
-export function useProposalExtendedOf(proposalId: string, address: string, skip: number, orderBy: 'created' | 'vp' = 'created'): {
+export function useProposalExtendedOf(proposalType: string, proposalChoices: string[], proposalId: string, address: string, skip: number, orderBy: 'created' | 'vp' = 'created'): {
   loading: boolean,
   error: APIError<object>,
   data: {
-    proposalData: SnapshotProposal, 
     votedData: SnapshotVotedData, 
     votesData: SnapshotVote[]}
 } {
 
   console.debug("🔧 useProposalExtendedOf.args ->", {proposalId, address, skip, orderBy});
 
-  // Load proposals
-  const {
-    loading: proposalLoading,
-    data: proposalData,
-    error: proposalError
-  } = useQuery<{ proposal: SnapshotProposal }>(SINGLE_PROPOSAL_QUERY, {
-    variables: {
-      id: proposalId
-    }
-  });
   // Load related votes
   const {
     loading: voteLoading,
@@ -291,7 +293,7 @@ export function useProposalExtendedOf(proposalId: string, address: string, skip:
   const votesData: SnapshotVote[] = voteData?.votes.map(vote => {
     return {
       ...vote,
-      choice: mapChoiceIndex(proposalData?.proposal.type, proposalData?.proposal.choices, vote.choice)
+      choice: mapChoiceIndex(proposalType, proposalChoices, vote.choice)
     }
   })
 
@@ -303,21 +305,18 @@ export function useProposalExtendedOf(proposalId: string, address: string, skip:
     if (vote) {
       votedData = {
         ...vote,
-        choice: mapChoiceIndex(proposalData?.proposal.type, proposalData?.proposal.choices, vote.choice)
+        choice: mapChoiceIndex(proposalType, proposalChoices, vote.choice)
       }
     }
   }
 
   const ret = { 
     data: {
-      proposalData: {
-        ...proposalData?.proposal
-      },
       votedData,
       votesData
     }, 
-    loading: proposalLoading || voteLoading, 
-    error: proposalError || voteError 
+    loading: voteLoading, 
+    error: voteError 
   };
   console.debug("🔧 useProposalExtendedOf.return ->", {ret});
   return ret;

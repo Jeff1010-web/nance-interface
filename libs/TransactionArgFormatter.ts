@@ -61,8 +61,6 @@ function _parse(abi: string, rawData: string) {
         message = e.message;
     }
 
-    // console.info('Diff.parse', {abi, rawData, data, message})
-
     return { data, message };
 }
 

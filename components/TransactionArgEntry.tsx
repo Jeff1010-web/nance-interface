@@ -26,7 +26,7 @@ export default function renderArgEntry(entryStr: string) {
             </div>
         )
     } catch(e) {
-        console.error("Error parsing entryStr", entryStr)
+        console.warn("Error parsing entryStr", entryStr)
         return <pre>{entryStr}</pre>
     }
 }

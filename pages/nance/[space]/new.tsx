@@ -41,7 +41,7 @@ const ProposalMetadataContext = React.createContext({
 });
 
 export default function NanceNewProposal() {
-  console.info(`using nance API: ${NANCE_API_URL}`);
+  console.debug(`using nance API: ${NANCE_API_URL}`);
   const router = useRouter();
   const [proposalType, setProposalType] = useQueryParam<ProposalType>('type', withDefault(createEnumParam(["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"]), 'Payout'));
   const [version, setVersion] = useQueryParam('version', withDefault(NumberParam, 2));
@@ -53,7 +53,11 @@ export default function NanceNewProposal() {
 
   return (
     <>
-      <SiteNav pageTitle="New Proposal on Nance" description="Create new proposal on Nance." image="/images/opengraph/nance_current_demo.png" />
+      <SiteNav 
+        pageTitle="New Proposal on Nance" 
+        description="Create new proposal on Nance." 
+        image="/images/opengraph/nance_current_demo.png"
+        withWallet />
       <div className="m-4 lg:m-6 flex flex-col justify-center">
         <p className="text-center text-xl font-bold text-gray-600">
           New Proposal
@@ -146,8 +150,6 @@ function Form() {
   const methods = useForm<ProposalFormValues>();
   const { register, handleSubmit, control, setValue, getValues, formState: { errors } } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = (formData) => {
-    console.debug("📗 Nance.newProposal.onSubmit ->", {formData, metadata});
-
     const payload = {
       ...formData.proposal,
       type: metadata.proposalType as ProposalType,

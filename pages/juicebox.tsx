@@ -63,7 +63,6 @@ function Compare({arr}: {arr: FundingCycleConfigProps[]}) {
   const keyOfTicket = (mod: TicketModV1) => mod.beneficiary;
   const tickets: TicketModV1[] = unionBy(...arr.map((fc) => fc.ticketMods), keyOfTicket).sort(orderByPercent);
   const ticketMaps = arr.map((fc) => convertTicketToMap(fc.ticketMods));
-  console.info('Parsed', {payouts, payoutMaps, tickets, ticketMaps});
 
   return (
     <div>
@@ -329,7 +328,6 @@ export default function Juicebox() {
         const raw = (document.getElementById("v1-reconfig-input") as HTMLInputElement).value
         try {
           const ret = iface.parseTransaction({data: raw, value: 0});
-          console.info("📗 TerminalV1.interface.parse >", {raw, args: ret.args, func: ret.signature, hash: ret.sighash});
           setPreviewArgs(ret.args);
           // FIXME: detect illegal raw data
           const {
@@ -354,7 +352,7 @@ export default function Juicebox() {
           setConfigs([currentConfig, newConfig]);
           //router.push(`/juicebox?project=${ret.args._projectId.toNumber()}`, undefined, { shallow: true })
         } catch (e) {
-          console.error('TerminalV1.interface.parse >', e);
+          console.warn('TerminalV1.interface.parse >', e);
         }
     }
     const loadProject = () => {

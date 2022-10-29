@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi'
 import SiteNav from "../../components/SiteNav";
 import SpaceProposalNavigator from '../../components/SpaceProposalNavigator';
 import ProposalCards from '../../components/ProposalCards';
-import useSpaceInfo from '../../hooks/snapshot/SpaceInfo';
+import { fetchSpaceInfo, SpaceInfo } from '../../hooks/snapshot/SpaceInfo';
 import {useQueryParam, BooleanParam, StringParam, NumberParam, withDefault} from 'next-query-params';
 import Pagination from '../../components/Pagination';
 import { useProposalsOverview } from '../../hooks/snapshot/ProposalsOverview';
@@ -20,13 +20,20 @@ export interface SpaceContextData {
 
 export const SpaceContext = createContext<SpaceContextData>(undefined);
 
-export default function SnapshotSpace() {
+export async function getServerSideProps(context) {
+    // Fetch data from external API
+    const spaceInfo = await fetchSpaceInfo(context.params.space);
+  
+    // Pass data to the page via props
+    return { props: { spaceInfo } }
+}
+
+export default function SnapshotSpacePage({ spaceInfo }: { spaceInfo: SpaceInfo }) {
     // router
     const router = useRouter();
     const { space } = router.query;
     // external hook
     const { address, isConnected } = useAccount();
-    const { data: spaceInfo } = useSpaceInfo(space as string);
     // state
     const [page, setPage] = useQueryParam('page', withDefault(NumberParam, 1));
     const [filterByActive, setFilterByActive] = useQueryParam('active', withDefault(BooleanParam, false));
@@ -80,8 +87,9 @@ export default function SnapshotSpace() {
         <>
             <SiteNav 
                 pageTitle={`${spaceInfo?.name || (space as string) || ''} Proposals`} 
-                description="Snapshot voting with filter, search bar and quick overview on single page." 
-                image="/images/unsplash_voting.jpeg" />
+                description={spaceInfo?.about || "Snapshot voting with filter, search bar and quick overview on single page."} 
+                image={`https://cdn.stamp.fyi/space/${space as string}?w=1200&h=630`}
+                withWallet />
 
             <SpaceContext.Provider 
                 value={{address: connectedAddress, space: space as string, votedData}}>

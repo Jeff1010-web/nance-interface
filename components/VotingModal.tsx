@@ -286,7 +286,6 @@ function WeightedChoiceSelector({value, setValue, choices}: Omit<SelectorProps, 
     return () => subscription.unsubscribe();
   }, [watch]);
 
-  console.debug('🔧WeightedChoiceSelector', {choice: value, formValues: getValues()});
   const totalUnits = Object.values(value ?? {}).reduce((a, b) => a + b, 0);
 
   return (

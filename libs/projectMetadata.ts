@@ -4,7 +4,7 @@ type TokenRef = {
   }
   
 
-type ProjectMetadata =
+export type ProjectMetadata =
   | ProjectMetadataV1
   | ProjectMetadataV2
   | ProjectMetadataV3

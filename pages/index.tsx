@@ -58,7 +58,7 @@ const posts: PostCard[] = [
 export default function Home() {
     return (
         <>
-            <SiteNav pageTitle="Home" description="Homebrew docs and tools for Juicebox ecosystems" />
+            <SiteNav pageTitle="Home" description="Homebrew docs and tools for Juicebox ecosystems" image="/images/juicetool.png" />
             <div className="relative bg-gray-50 px-4 pt-16 pb-20 sm:px-6 lg:px-8 lg:pt-24 lg:pb-28">
                 <div className="absolute inset-0">
                     <div className="h-1/3 bg-white sm:h-2/3" />

@@ -8,13 +8,15 @@ interface SiteNavProps {
     pageTitle: string,
     description?: string,
     image?: string
+    withWallet?: boolean;
 }
 
-export default function SiteNav({ pageTitle, description, image }: SiteNavProps) {
+export default function SiteNav({ pageTitle, description, image, withWallet }: SiteNavProps) {
     const router = useRouter();
     
     const navigation = [
         { name: 'Home', href: '/' },
+        { name: 'Logbook', href: '/logbook' },
         { name: 'Snapshot Plus', href: '/snapshot/jbdao.eth' },
         { name: 'Juicebox Center', href: '/center' },
         { name: 'Nance Interface', href: '/nance/juicebox' },
@@ -80,9 +82,13 @@ export default function SiteNav({ pageTitle, description, image }: SiteNavProps)
                                             ))}
                                         </div>
                                     </div>
-                                    <div className="hidden sm:ml-6 sm:flex sm:items-center">
-                                        <ConnectButton />
-                                    </div>
+
+                                    {withWallet && (
+                                        <div className="hidden sm:ml-6 sm:flex sm:items-center">
+                                            <ConnectButton />
+                                        </div>
+                                    )}
+
                                     <div className="-mr-2 flex items-center sm:hidden">
                                         {/* Mobile menu button */}
                                         <Disclosure.Button className="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -110,9 +116,13 @@ export default function SiteNav({ pageTitle, description, image }: SiteNavProps)
                                         </Disclosure.Button>
                                     ))}
                                 </div>
-                                <div className="py-2 mx-2 border-t border-gray-200">
-                                    <ConnectButton />
-                                </div>
+
+                                {withWallet && (
+                                    <div className="py-2 mx-2 border-t border-gray-200">
+                                        <ConnectButton />
+                                    </div>
+                                )}
+
                             </Disclosure.Panel>
                         </>
                     )}

@@ -23,7 +23,6 @@ export function mapChoiceIndex (type: string, choices: string[], choice: any) {
   }
 
 export function formatChoices(type: string, choice: any): string {
-  console.debug("🔧 formatChoices.args", {type, choice});
   let ret: string;
 
   if (!choice || !type) return '';
@@ -43,6 +42,5 @@ export function formatChoices(type: string, choice: any): string {
       ret = str;
   }
 
-  console.debug("🔧 formatChoices.return", {ret});
   return ret;
 }
