@@ -41,6 +41,8 @@ export default function DiffPage() {
     const [networkParam, setNetworkParam] = useQueryParam("network", StringParam)
     const [splitView, setSplitView] = useState(true)
     const [nanceLoading, setNanceLoading] = useState(false)
+    const [gnosisLoading, setGnosisLoading] = useState(false)
+    const [nanceError, setNanceError] = useState<string>(undefined);
     const [nanceResponse, setNanceResponse] = useState<IFetchReconfigureResponse>(undefined)
     const [gnosisResponse, setGnosisResponse] = useState({success: undefined, data: undefined})
     // -- abi
@@ -71,8 +73,9 @@ export default function DiffPage() {
     const isLoading = !router.isReady || historyTxsLoading || queuedTxsLoading;
 
     // shortcut
-    const resetGnosisResponse = () => {
+    const resetErrors = () => {
         setGnosisResponse({success: undefined, data: undefined});
+        setNanceError(undefined);
     }
 
     const fetchFromNance = async () => {
@@ -80,8 +83,15 @@ export default function DiffPage() {
         const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
         if (!version) {
             setNanceLoading(false);
+            setNanceError('Please load a contract ABI')
             return;
         }
+        if (!safeAddress) {
+            setNanceLoading(false)
+            setNanceError('Please provide a safe address')
+            return;
+        }
+        setNanceError('');
         const datetime = new Date().toISOString();
         const reconfiguration = await UseReconfigureRequest({
             space: safeAddressParam.split('.eth')[0],
@@ -89,13 +99,19 @@ export default function DiffPage() {
             address: address || '0x0000000000000000000000000000000000000000',
             datetime,
             network: networkParam || 'mainnet'
+        }).catch((e) => {
+            setNanceLoading(false)
+            setNanceError(e)
+            return
         });
-        setRawDataRight(reconfiguration?.data?.transaction?.bytes);
-        setNanceResponse(reconfiguration?.data);
-        setNanceLoading(false);
+        if (!reconfiguration) return;
+        setRawDataRight(reconfiguration?.data?.transaction?.bytes)
+        setNanceResponse(reconfiguration?.data)
+        setNanceLoading(false)
     }
 
     const postTransaction = async () => {
+        setGnosisLoading(true);
         const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
         const gnosis = new GnosisHandler(nanceResponse.safe, networkParam || 'mainnet');
         const txnPartial = {
@@ -106,9 +122,14 @@ export default function DiffPage() {
         };
         const { safeTxGas } = await gnosis.getEstimate(txnPartial);
         const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
-        const signature = (await signer.signMessage(message))
-            .replace(/1b$/, '1f')
-            .replace(/1c$/, '20');
+        const signature = await signer.signMessage(message).then((sig) => {
+            return sig.replace(/1b$/, '1f').replace(/1c$/, '20')
+        }).catch(() => {
+            setGnosisLoading(false)
+            setNanceError('user rejected transaction')
+            return 'signature rejected'
+        })
+        if (signature === 'signature rejected') { return }
         const txn: QueueSafeTransaction = {
             ...txnPartial,
             address,
@@ -117,6 +138,7 @@ export default function DiffPage() {
             signature
         };
         const res = await gnosis.queueTransaction(txn)
+        setGnosisLoading(false);
         setGnosisResponse(res)
     }
 
@@ -170,9 +192,9 @@ export default function DiffPage() {
 
     return (
         <>
-            <Notification title="Success" description={`Transaction queued!`} show={gnosisResponse?.success === true} close={resetGnosisResponse} checked={true} />
-            {(gnosisResponse?.success === false ) &&
-            <Notification title="Error" description={`Problem submitting transaction: ${gnosisResponse?.data}`} show={true} close={resetGnosisResponse} checked={false} />
+            <Notification title="Success" description={`Transaction queued!`} show={gnosisResponse?.success === true} close={resetErrors} checked={true} />
+            {(gnosisResponse?.success === false || nanceError ) &&
+            <Notification title="Error" description={`Problem submitting transaction: ${gnosisResponse?.data || nanceError}`} show={true} close={resetErrors} checked={false} />
             }
             <SiteNav pageTitle="Transaction Diff Viewer" />
             <div className="bg-white">
@@ -263,9 +285,9 @@ export default function DiffPage() {
                     >{(nanceLoading) ? 'loading...' : 'fetch from nance'}</button> 
                     <button
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-                        disabled={!jrpcSigner}
+                        disabled={!jrpcSigner || !rawDataRight}
                         onClick={postTransaction}
-                    >{'queue gnosis transaction'}</button>
+                    >{(gnosisLoading) ? 'sign...' : 'queue gnosis transaction'}</button>
                     <input
                         type="number"
                         placeholder="nonce"

@@ -4,6 +4,7 @@ import { gnosisSafeInterface } from "./abi/GnosisSafe"
 
 export class GnosisHandler {
     provider;
+    baseUrl: string;
     safe: Contract;
 
     constructor(
@@ -16,10 +17,16 @@ export class GnosisHandler {
             gnosisSafeInterface.abi,
             this.provider
         );
+        this.baseUrl = `https://safe-transaction-${this.network}.safe.global/`
+    }
+
+    getNextNonce = async () => {
+        const res = await fetch(this.baseUrl + `api/v1/safes/${this.safeAddress}`);
+        const json = await res.json();
+        return (Number(json.nonce) + 1).toString();
     }
 
     getEstimate = async (txn: SafeTransactionPartial) => {
-        const baseUrl = `https://safe-transaction-${this.network}.safe.global/`
         const endpoint = `api/v1/safes/${this.safeAddress}/multisig-transactions/estimations/`
   
         const data = {
@@ -32,8 +39,8 @@ export class GnosisHandler {
             }),
             method: "POST"
         }
-        return fetch(baseUrl + endpoint, data).then((res) => {
-            return res.json()
+        return fetch(this.baseUrl + endpoint, data).then((res) => {
+            return res.json().then((json) => { return json })
         }).catch((e) => console.error(e));
     }
 
@@ -77,8 +84,7 @@ export class GnosisHandler {
             }),
         method: "POST"
         }
-        const baseUrl = `https://safe-transaction-${this.network}.safe.global/`
-        const res = await fetch(baseUrl + `api/v1/safes/${this.safeAddress}/multisig-transactions/`, data)
+        const res = await fetch(this.baseUrl + `api/v1/safes/${this.safeAddress}/multisig-transactions/`, data)
         if (res.status === 201) return { success: true, data: '' }
         const json = await res.json();
         return { success: false, data: json.nonFieldErrors[0] }
