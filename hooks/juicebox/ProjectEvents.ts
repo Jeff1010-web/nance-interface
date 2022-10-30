@@ -1,5 +1,4 @@
 import { BigNumber } from "ethers";
-import { formatEther } from "ethers/lib/utils";
 import { SUBGRAPH_URL } from "../../constants/Juicebox";
 import { shortenAddress } from "../../libs/address";
 
@@ -160,7 +159,9 @@ export interface ProjectEvent {
   eventType: 'Pay' | 'Redeem' | 'DeployERC20' | 'CreateProject' | 'Tap' | 'DistributePayouts' | 'PrintReserves' | 'DistributeReservedTokens' | 'DeployETHERC20ProjectPayer' | 'Unknown'
   txHash: string
   ethAmount: string
-  description: string
+  tokenAmount: string
+  memo?: string
+  payload?: any
 }
 
 export default async function fetchProjectEvents(first: number = 20, skip: number = 0): Promise<ProjectEvent[]> {
@@ -185,8 +186,9 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           caller: eventRes.payEvent.caller,
           eventType: 'Pay',
           txHash: eventRes.payEvent.txHash,
-          ethAmount: formatEther(eventRes.payEvent.amount),
-          description: eventRes.payEvent.note
+          ethAmount: eventRes.payEvent.amount,
+          tokenAmount: '0',
+          memo: eventRes.payEvent.note
         }
       } else if (eventRes.redeemEvent) {
         return {
@@ -196,8 +198,8 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           caller: eventRes.redeemEvent.holder,
           eventType: 'Redeem',
           txHash: eventRes.redeemEvent.txHash,
-          ethAmount: formatEther(eventRes.redeemEvent.returnAmount),
-          description: `Redeemed ${formatEther(eventRes.redeemEvent.amount)} tokens`
+          ethAmount: eventRes.redeemEvent.returnAmount,
+          tokenAmount: eventRes.redeemEvent.amount,
         }
       } else if (eventRes.deployedERC20Event) {
         return {
@@ -208,7 +210,11 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           eventType: 'DeployERC20',
           txHash: eventRes.deployedERC20Event.txHash,
           ethAmount: '0',
-          description: `Deployed ERC20 token ${eventRes.deployedERC20Event.symbol} at ${shortenAddress(eventRes.deployedERC20Event.address)}`
+          tokenAmount: '0',
+          payload: {
+            address: eventRes.deployedERC20Event.address,
+            symbol: eventRes.deployedERC20Event.symbol
+          }
         }
       } else if (eventRes.projectCreateEvent) {
         return {
@@ -219,7 +225,7 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           eventType: 'CreateProject',
           txHash: eventRes.projectCreateEvent.txHash,
           ethAmount: '0',
-          description: ''
+          tokenAmount: '0',
         }
       } else if (eventRes.tapEvent) {
         return {
@@ -229,8 +235,8 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           caller: eventRes.tapEvent.caller,
           eventType: 'Tap',
           txHash: eventRes.tapEvent.txHash,
-          ethAmount: formatEther(eventRes.tapEvent.netTransferAmount),
-          description: `Tapped ${formatEther(eventRes.tapEvent.netTransferAmount)} ETH`
+          ethAmount: eventRes.tapEvent.netTransferAmount,
+          tokenAmount: '0',
         }
       } else if (eventRes.distributePayoutsEvent) {
         return {
@@ -240,8 +246,9 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           caller: eventRes.distributePayoutsEvent.caller,
           eventType: 'DistributePayouts',
           txHash: eventRes.distributePayoutsEvent.txHash,
-          ethAmount: formatEther(BigNumber.from(eventRes.distributePayoutsEvent.distributedAmount).add(eventRes.distributePayoutsEvent.fee)),
-          description: `Tapped ${formatEther(BigNumber.from(eventRes.distributePayoutsEvent.distributedAmount).add(eventRes.distributePayoutsEvent.fee))} ETH | Memo: ${eventRes.distributePayoutsEvent.memo}`
+          ethAmount: BigNumber.from(eventRes.distributePayoutsEvent.distributedAmount).add(eventRes.distributePayoutsEvent.fee).toString(),
+          tokenAmount: '0',
+          memo: eventRes.distributePayoutsEvent.memo
         }
       } else if (eventRes.printReservesEvent) {
         return {
@@ -252,7 +259,7 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           eventType: 'PrintReserves',
           txHash: eventRes.printReservesEvent.txHash,
           ethAmount: '0',
-          description: `Printed ${formatEther(eventRes.printReservesEvent.count)} tokens`
+          tokenAmount: eventRes.printReservesEvent.count,
         }
       } else if (eventRes.distributeReservedTokensEvent) {
         return {
@@ -263,7 +270,8 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           eventType: 'DistributeReservedTokens',
           txHash: eventRes.distributeReservedTokensEvent.txHash,
           ethAmount: '0',
-          description: `${formatEther(eventRes.distributeReservedTokensEvent.tokenCount)} tokens distributed | memo: ${eventRes.distributeReservedTokensEvent.memo}`
+          tokenAmount: eventRes.distributeReservedTokensEvent.tokenCount,
+          memo: eventRes.distributeReservedTokensEvent.memo
         }
       } else if (eventRes.deployETHERC20ProjectPayerEvent) {
         return {
@@ -274,7 +282,8 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           eventType: 'DeployETHERC20ProjectPayer',
           txHash: eventRes.deployETHERC20ProjectPayerEvent.txHash,
           ethAmount: '0',
-          description: `Deployed ETHERC20 project payer at ${shortenAddress(eventRes.deployETHERC20ProjectPayerEvent.address)} | memo: ${eventRes.deployETHERC20ProjectPayerEvent.memo}`
+          tokenAmount: '0',
+          memo: `Deployed ETHERC20 project payer at ${shortenAddress(eventRes.deployETHERC20ProjectPayerEvent.address)} | memo: ${eventRes.deployETHERC20ProjectPayerEvent.memo}`
         }
       } else {
         console.warn('Unknown event type', eventRes)
@@ -286,7 +295,7 @@ export default async function fetchProjectEvents(first: number = 20, skip: numbe
           eventType: 'Unknown',
           txHash: '',
           ethAmount: '0',
-          description: ''
+          tokenAmount: '0'
         }
       }
     })
