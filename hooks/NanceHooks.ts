@@ -88,22 +88,25 @@ export function getPath(space: string, command: string) {
     return `${NANCE_API_URL}/${space}/${command}`;
 }
 
-async function jsonReconfigureFecther(url: RequestInfo | URL, { arg }: { arg: FetchReconfigureRequest }): Promise<FetchReconfigureResponse> {
+async function reconfigureUploader(url: RequestInfo | URL, { arg }: { arg: FetchReconfigureRequest }) {
     const res = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(arg)
-      })
-      const json: FetchReconfigureResponse = await res.json()
-      if (json.success === false) {
-          throw new Error(`An error occurred while uploading the data: ${json?.error}`)
-      }
+    })
+    const json: FetchReconfigureResponse = await res.json()
+    if (json.success === false) {
+        throw new Error(`An error occurred while uploading the data: ${json?.error}`)
+    }
 
     return json
 }
 
-export function UseReconfigureRequest(args: FetchReconfigureRequest) {
-    return jsonReconfigureFecther(`${NANCE_API_URL}/${args.space}/reconfigure?version=${args.version}`, { arg: args });
+export function useReconfigureRequest(space: string, version: string, shouldFetch: boolean = true) {
+    return useSWRMutation(
+        shouldFetch ? `${NANCE_API_URL}/${space}/reconfigure?version=${version}` : null,
+        reconfigureUploader,
+    );
 }

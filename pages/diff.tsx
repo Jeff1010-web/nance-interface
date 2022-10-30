@@ -15,10 +15,10 @@ import { useHistoryTransactions, useQueuedTransactions } from '../hooks/SafeHook
 import { GnosisHandler } from '../libs/gnosis';
 import { useRouter } from 'next/router';
 import { QueueSafeTransaction, SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../models/SafeTypes';
-import { StringParam, useQueryParam } from 'next-query-params';
+import { StringParam, useQueryParam, withDefault } from 'next-query-params';
 import { useEnsAddress, useAccount, useSigner } from 'wagmi';
 import { JsonRpcSigner } from "@ethersproject/providers";
-import { UseReconfigureRequest } from '../hooks/NanceHooks';
+import { useReconfigureRequest } from '../hooks/NanceHooks';
 import { IFetchReconfigureResponse } from '../models/NanceTypes';
 
 type ABIOption = Option & { abi: string }
@@ -32,47 +32,53 @@ const PRELOAD_ABI_OPTIONS: { [address: string]: ABIOption } = {
 }
 const ABIOptions: ABIOption[] = Object.values(PRELOAD_ABI_OPTIONS)
 
-export default function DiffPage() {
-    // router
-    const router = useRouter();
+const TABS = ["Simple", "Nance"]
 
-    // state
-    const [safeAddressParam, setSafeAddressParam] = useQueryParam("safe", StringParam)
+export default function DiffPage() {
+    const [currentTab, setCurrentTab] = useState("Simple");
+
+    return (
+        <>
+            <SiteNav pageTitle="Transaction Diff Viewer" withWallet />
+            <Tabs tabs={TABS} currentTab={currentTab} setCurrentTab={setCurrentTab} />
+
+            {currentTab === "Simple" && <SimpleDiff />}
+            {currentTab === "Nance" && <NanceDiff />}
+        </>
+    )
+}
+
+function NanceDiff() {
+    const safeAddress = "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"
+    const abi = JSON.stringify(TerminalV1.abi)
+
+    const [rawDataLeft, setRawDataLeft] = useState<string>('')
+    const [rawDataRight, setRawDataRight] = useState<string>('')
+    // FIXME not fixed to v1 abi
+    const { data: leftStr, message: leftMessage } = formatArgs(abi, rawDataLeft)
+    const { data: rightStr, message: rightMessage } = formatArgs(abi, rawDataRight)
+
+    const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined)
     const [networkParam, setNetworkParam] = useQueryParam("network", StringParam)
-    const [splitView, setSplitView] = useState(true)
     const [nanceLoading, setNanceLoading] = useState(false)
     const [gnosisLoading, setGnosisLoading] = useState(false)
     const [nanceError, setNanceError] = useState<string>(undefined);
     const [nanceResponse, setNanceResponse] = useState<IFetchReconfigureResponse>(undefined)
     const [gnosisResponse, setGnosisResponse] = useState({success: undefined, data: undefined})
-    // -- abi
-    const [abiOptionLeft, setAbiOptionLeft] = useState<ABIOption>(undefined)
-    const [abiOptionRight, setAbiOptionRight] = useState<ABIOption>(undefined)
-    const [abiLeft, setAbiLeft] = useState<string>(undefined)
-    const [abiRight, setAbiRight] = useState<string>(undefined)
-    // -- raw data
-    const [optionLeft, setOptionLeft] = useState<TxOption>(undefined)
-    const [optionRight, setOptionRight] = useState<TxOption>(undefined)
-    const [rawDataLeft, setRawDataLeft] = useState<string>('')
-    const [rawDataRight, setRawDataRight] = useState<string>('')
 
-    const { data: leftStr, message: leftMessage } = formatArgs(abiLeft, rawDataLeft)
-    const { data: rightStr, message: rightMessage } = formatArgs(abiRight, rawDataRight)
-
-    // external
-    const { data: safeAddressResolved } = useEnsAddress({
-        name: safeAddressParam,
-        enabled: safeAddressParam?.endsWith('.eth')
-    })
-    const safeAddress = safeAddressResolved || safeAddressParam
-    const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, router.isReady)
-    const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
     const { address } = useAccount();
     const { data: signer, isError, isLoading: signerLoading } = useSigner()
     const jrpcSigner = signer as JsonRpcSigner;
-    const isLoading = !router.isReady || historyTxsLoading || queuedTxsLoading;
 
-    // shortcut
+    const { isMutating, error: uploadError, trigger, data, reset } = useReconfigureRequest("juicebox", "V1");
+
+    const txSetter = (val: TxOption) => {
+        setSelectedSafeTx(val)
+        if(val?.tx.data) {
+            setRawDataLeft(val?.tx.data)
+        }
+    }
+
     const resetErrors = () => {
         setGnosisResponse({success: undefined, data: undefined});
         setNanceError(undefined);
@@ -80,22 +86,11 @@ export default function DiffPage() {
 
     const fetchFromNance = async () => {
         setNanceLoading(true);
-        const version = abiOptionRight?.label?.match(/[V][1-9]/g)[0];
-        if (!version) {
-            setNanceLoading(false);
-            setNanceError('Please load a contract ABI')
-            return;
-        }
-        if (!safeAddress) {
-            setNanceLoading(false)
-            setNanceError('Please provide a safe address')
-            return;
-        }
         setNanceError('');
         const datetime = new Date().toISOString();
-        const reconfiguration = await UseReconfigureRequest({
-            space: safeAddressParam.split('.eth')[0],
-            version,
+        const reconfiguration = await trigger({
+            space: "juicebox",
+            version: "V1",
             address: address || '0x0000000000000000000000000000000000000000',
             datetime,
             network: networkParam || 'mainnet'
@@ -112,7 +107,6 @@ export default function DiffPage() {
 
     const postTransaction = async () => {
         setGnosisLoading(true);
-        const contract = abiOptionRight?.label?.match(/\((.*?)\)/s)[1];
         const gnosis = new GnosisHandler(nanceResponse.safe, networkParam || 'mainnet');
         const txnPartial = {
             to: nanceResponse.transaction.address,
@@ -142,6 +136,54 @@ export default function DiffPage() {
         setGnosisResponse(res)
     }
 
+    return (
+        <>
+            <Notification title="Success" description={`Transaction queued!`} show={gnosisResponse?.success === true} close={resetErrors} checked={true} />
+            {(gnosisResponse?.success === false || nanceError ) &&
+            <Notification title="Error" description={`Problem submitting transaction: ${gnosisResponse?.data || nanceError}`} show={true} close={resetErrors} checked={false} />
+            }
+            <div className="bg-white">
+                <div className="flex flex-col w-2/3 p-6">
+                    <SafeTransactionSelector safeAddress={safeAddress} val={selectedSafeTx} setVal={txSetter} />
+                </div>
+                <div className="flex w-5/6 ml-10 space-x-5">
+                    <button
+                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                        onClick={fetchFromNance}
+                    >{(nanceLoading) ? 'loading...' : 'fetch from nance'}</button> 
+                    <button
+                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                        disabled={!jrpcSigner || !rawDataRight}
+                        onClick={postTransaction}
+                    >{(gnosisLoading) ? 'sign...' : 'queue gnosis transaction'}</button>
+                    <input
+                        type="number"
+                        placeholder="nonce"
+                        value={nanceResponse?.nonce || ''}
+                        onChange={(e) => setNanceResponse({...nanceResponse, nonce: e.target.value})}
+                        className="block rounded rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+                    />
+                </div>
+
+                <div className="m-3">
+                    <ReactDiffViewer 
+                        oldValue={leftStr || (rawDataLeft && abi ? leftMessage : '')}
+                        newValue={rightStr || (rawDataRight && abi ? rightMessage : '')}
+                        splitView={true} 
+                        compareMethod={DiffMethod.LINES} 
+                        leftTitle={true ? 'Left' : 'Unified Mode'}
+                        rightTitle="Right"
+                        renderContent={(s) => renderArgEntry(s)} />
+                </div>
+            </div>
+        </>
+    )
+}
+
+function SafeTransactionSelector({safeAddress, val, setVal, shouldRun = true} : {safeAddress: string, val: TxOption, setVal: (val: TxOption) => void, shouldRun?: boolean}) {
+    const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, shouldRun)
+    const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
+
     const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
         if(!res) return []
         return res.results.map((tx) => {
@@ -155,6 +197,43 @@ export default function DiffPage() {
     }
     const options = convertToOptions(queuedTxs, true).concat(convertToOptions(historyTxs, false))
 
+    return (
+        <SearchableComboBox val={val} setVal={setVal} options={options} label="Load Safe Transaction" />
+    )
+}
+
+function SimpleDiff() {
+    // router
+    const router = useRouter();
+
+    // state
+    const [safeAddressParam, setSafeAddressParam] = useQueryParam("safe", withDefault(StringParam, ''))
+    const [splitView, setSplitView] = useState(true)
+    
+    // -- abi
+    const [abiOptionLeft, setAbiOptionLeft] = useState<ABIOption>(undefined)
+    const [abiOptionRight, setAbiOptionRight] = useState<ABIOption>(undefined)
+    const [abiLeft, setAbiLeft] = useState<string>(undefined)
+    const [abiRight, setAbiRight] = useState<string>(undefined)
+    // -- raw data
+    const [optionLeft, setOptionLeft] = useState<TxOption>(undefined)
+    const [optionRight, setOptionRight] = useState<TxOption>(undefined)
+    const [rawDataLeft, setRawDataLeft] = useState<string>('')
+    const [rawDataRight, setRawDataRight] = useState<string>('')
+
+    const { data: leftStr, message: leftMessage } = formatArgs(abiLeft, rawDataLeft)
+    const { data: rightStr, message: rightMessage } = formatArgs(abiRight, rawDataRight)
+
+    // external
+    const { data: safeAddressResolved } = useEnsAddress({
+        name: safeAddressParam,
+        enabled: safeAddressParam?.endsWith('.eth')
+    })
+    const safeAddress = safeAddressResolved || safeAddressParam
+    
+    const isLoading = !router.isReady;
+
+    // shortcut
     const abiOptionSetter = (setVal: (val: ABIOption) => void, setData: (val: string) => void) => {
         return (val: ABIOption) => {
             setVal(val)
@@ -192,11 +271,6 @@ export default function DiffPage() {
 
     return (
         <>
-            <Notification title="Success" description={`Transaction queued!`} show={gnosisResponse?.success === true} close={resetErrors} checked={true} />
-            {(gnosisResponse?.success === false || nanceError ) &&
-            <Notification title="Error" description={`Problem submitting transaction: ${gnosisResponse?.data || nanceError}`} show={true} close={resetErrors} checked={false} />
-            }
-            <SiteNav pageTitle="Transaction Diff Viewer" withWallet />
             <div className="bg-white">
                 <div className="flex flex-col w-2/3 p-6">
                     <label htmlFor="safeAddress" className="block text-sm font-medium text-gray-700">
@@ -251,11 +325,11 @@ export default function DiffPage() {
 
                 <div className="flex justify-around gap-x-3 pb-6">
                     <div className="w-1/3 ml-3">
-                        <SearchableComboBox val={optionLeft} setVal={optionSetterLeft} options={options} label="Load Safe Transaction" />
+                        <SafeTransactionSelector safeAddress={safeAddress} shouldRun={router.isReady} val={optionLeft} setVal={optionSetterLeft} />
                     </div>
 
                     <div className="w-1/3 ml-3">
-                        <SearchableComboBox val={optionRight} setVal={optionSetterRight} options={options} label="Load Safe Transaction" />
+                        <SafeTransactionSelector safeAddress={safeAddress} shouldRun={router.isReady} val={optionRight} setVal={optionSetterRight} />
                     </div>
                 </div>
 
@@ -278,24 +352,7 @@ export default function DiffPage() {
                         </div>
                     </div>
                 </div>
-                <div className="flex justify-end w-5/6 ml-10 space-x-5">
-                    <button
-                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-                        onClick={fetchFromNance}
-                    >{(nanceLoading) ? 'loading...' : 'fetch from nance'}</button> 
-                    <button
-                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-                        disabled={!jrpcSigner || !rawDataRight}
-                        onClick={postTransaction}
-                    >{(gnosisLoading) ? 'sign...' : 'queue gnosis transaction'}</button>
-                    <input
-                        type="number"
-                        placeholder="nonce"
-                        value={nanceResponse?.nonce || ''}
-                        onChange={(e) => setNanceResponse({...nanceResponse, nonce: e.target.value})}
-                        className="block rounded rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
-                    />
-                </div>
+                
                 <div className="flex justify-center mb-3">
                     <Switch.Group as="div" className="items-center">
                         <Switch
