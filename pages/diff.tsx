@@ -19,7 +19,7 @@ import { StringParam, useQueryParam, withDefault } from 'next-query-params';
 import { useEnsAddress, useAccount, useSigner } from 'wagmi';
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { useReconfigureRequest } from '../hooks/NanceHooks';
-import { IFetchReconfigureResponse } from '../models/NanceTypes';
+import { FetchReconfigureRequest, IFetchReconfigureResponse } from '../models/NanceTypes';
 
 type ABIOption = Option & { abi: string }
 type TxOption = Option & { tx: SafeMultisigTransaction }
@@ -60,17 +60,27 @@ function NanceDiff() {
 
     const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined)
     const [networkParam, setNetworkParam] = useQueryParam("network", StringParam)
-    const [nanceLoading, setNanceLoading] = useState(false)
+    // const [reconfigRequest, setReconfigRequest] = useState<FetchReconfigureRequest>(undefined)
+    const [fetchReconfig, setFetchReconfig] = useState(false);
     const [gnosisLoading, setGnosisLoading] = useState(false)
-    const [nanceError, setNanceError] = useState<string>(undefined);
     const [nanceResponse, setNanceResponse] = useState<IFetchReconfigureResponse>(undefined)
     const [gnosisResponse, setGnosisResponse] = useState({success: undefined, data: undefined})
+    const [error, setError] = useState<string>(undefined)
 
     const { address } = useAccount();
     const { data: signer, isError, isLoading: signerLoading } = useSigner()
     const jrpcSigner = signer as JsonRpcSigner;
+    const datetime = new Date().toISOString();
+    const reconfigRequest = {
+        space: "juicebox",
+        version: "V1",
+        address: address || '0x0000000000000000000000000000000000000000',
+        datetime,
+        network: networkParam || 'mainnet'
+    }
 
-    const { isMutating, error: uploadError, trigger, data, reset } = useReconfigureRequest("juicebox", "V1");
+    const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest(reconfigRequest);
+    const reconfigData = reconfig?.data
 
     const txSetter = (val: TxOption) => {
         setSelectedSafeTx(val)
@@ -81,38 +91,24 @@ function NanceDiff() {
 
     const resetErrors = () => {
         setGnosisResponse({success: undefined, data: undefined});
-        setNanceError(undefined);
+        setError(undefined);
     }
 
     const fetchFromNance = async () => {
-        setNanceLoading(true);
-        setNanceError('');
-        const datetime = new Date().toISOString();
-        const reconfiguration = await trigger({
-            space: "juicebox",
-            version: "V1",
-            address: address || '0x0000000000000000000000000000000000000000',
-            datetime,
-            network: networkParam || 'mainnet'
-        }).catch((e) => {
-            setNanceLoading(false)
-            setNanceError(e)
-            return
-        });
-        if (!reconfiguration) return;
-        setRawDataRight(reconfiguration?.data?.transaction?.bytes)
-        setNanceResponse(reconfiguration?.data)
-        setNanceLoading(false)
+        setRawDataRight(reconfigData?.transaction?.bytes);
+        alert(reconfigData)
+        console.warn(reconfigLoading);
+        // setFetchReconfig(false);
     }
 
     const postTransaction = async () => {
         setGnosisLoading(true);
-        const gnosis = new GnosisHandler(nanceResponse.safe, networkParam || 'mainnet');
+        const gnosis = new GnosisHandler(reconfigData?.safe, networkParam || 'mainnet');
         const txnPartial = {
-            to: nanceResponse.transaction.address,
+            to: reconfigData?.transaction?.address,
             value: 0,
-            data: nanceResponse.transaction.bytes,
-            nonce: nanceResponse.nonce
+            data: reconfigData?.transaction?.bytes,
+            nonce: reconfigData?.nonce
         };
         const { safeTxGas } = await gnosis.getEstimate(txnPartial);
         const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
@@ -120,7 +116,7 @@ function NanceDiff() {
             return sig.replace(/1b$/, '1f').replace(/1c$/, '20')
         }).catch(() => {
             setGnosisLoading(false)
-            setNanceError('user rejected transaction')
+            setError('signature rejected');
             return 'signature rejected'
         })
         if (signature === 'signature rejected') { return }
@@ -139,8 +135,8 @@ function NanceDiff() {
     return (
         <>
             <Notification title="Success" description={`Transaction queued!`} show={gnosisResponse?.success === true} close={resetErrors} checked={true} />
-            {(gnosisResponse?.success === false || nanceError ) &&
-            <Notification title="Error" description={`Problem submitting transaction: ${gnosisResponse?.data || nanceError}`} show={true} close={resetErrors} checked={false} />
+            {(gnosisResponse?.success === false || reconfigError ) &&
+            <Notification title="Error" description={`Problem submitting transaction: ${gnosisResponse?.data || reconfigError}`} show={true} close={resetErrors} checked={false} />
             }
             <div className="bg-white">
                 <div className="flex flex-col w-2/3 p-6">
@@ -150,7 +146,7 @@ function NanceDiff() {
                     <button
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
                         onClick={fetchFromNance}
-                    >{(nanceLoading) ? 'loading...' : 'fetch from nance'}</button> 
+                    >{(reconfigLoading) ? 'loading...' : 'fetch from nance'}</button> 
                     <button
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
                         disabled={!jrpcSigner || !rawDataRight}
