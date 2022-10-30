@@ -1,5 +1,5 @@
 import { shortenAddress } from "../libs/address";
-import { useEnsName } from "wagmi";
+import { Address, useEnsName } from "wagmi";
 
 export interface Props {
     address: string;
@@ -11,7 +11,8 @@ function classNames(...classes) {
 }
 
 export default function FormattedAddress({ address, style }: Props) {
-    const { data: ensName } = useEnsName({ address })
+    const addr = address as Address;
+    const { data: ensName } = useEnsName({ address: addr })
 
     return (
         <a target="_blank" rel="noopener noreferrer"

@@ -54,7 +54,7 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
 }: {
   contract: Contract | undefined
   functionName: string | undefined
-  args: unknown[] | null | undefined
+  args: unknown[] | null | undefined // undefined if there is no args
   formatter?: (val?: any) => V | undefined // eslint-disable-line @typescript-eslint/no-explicit-any
   valueDidChange?: (oldVal?: V, newVal?: V) => boolean
 }) {

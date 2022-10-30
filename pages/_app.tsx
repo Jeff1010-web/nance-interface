@@ -26,7 +26,7 @@ const graphqlClient = new GraphQLClient({
 const { chains, provider } = configureChains(
   [chain.mainnet],
   [
-    infuraProvider({ infuraId: process.env.NEXT_PUBLIC_INFURA_KEY }),
+    infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY }),
   ],
 )
 
