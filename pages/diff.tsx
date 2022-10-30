@@ -196,7 +196,7 @@ export default function DiffPage() {
             {(gnosisResponse?.success === false || nanceError ) &&
             <Notification title="Error" description={`Problem submitting transaction: ${gnosisResponse?.data || nanceError}`} show={true} close={resetErrors} checked={false} />
             }
-            <SiteNav pageTitle="Transaction Diff Viewer" />
+            <SiteNav pageTitle="Transaction Diff Viewer" withWallet />
             <div className="bg-white">
                 <div className="flex flex-col w-2/3 p-6">
                     <label htmlFor="safeAddress" className="block text-sm font-medium text-gray-700">
