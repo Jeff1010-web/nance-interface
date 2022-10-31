@@ -13,16 +13,15 @@ import SearchableComboBox, { Option } from '../components/SearchableComboBox';
 import Notification from "../components/Notification";
 import { GnosisHandler } from '../libs/gnosis';
 import { useRouter } from 'next/router';
-import { QueueSafeTransaction, SafeMultisigTransaction } from '../models/SafeTypes';
+import { QueueSafeTransaction } from '../models/SafeTypes';
 import { StringParam, useQueryParam, withDefault } from 'next-query-params';
 import { useEnsAddress, useAccount, useSigner } from 'wagmi';
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { useReconfigureRequest } from '../hooks/NanceHooks';
 import { IFetchReconfigureResponse } from '../models/NanceTypes';
-import { SafeTransactionSelector } from '../components/safe/SafeTransactionSelector';
+import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 
 type ABIOption = Option & { abi: string }
-type TxOption = Option & { tx: SafeMultisigTransaction }
 
 const PRELOAD_ABI_OPTIONS: { [address: string]: ABIOption } = {
     [TerminalV1.address]:  { id: TerminalV1.address, label: `TerminalV1 (${TerminalV1.address})`, abi: JSON.stringify(TerminalV1.abi), status: true },

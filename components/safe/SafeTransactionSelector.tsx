@@ -2,7 +2,7 @@ import { useHistoryTransactions, useQueuedTransactions } from '../../hooks/SafeH
 import { SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../../models/SafeTypes';
 import SearchableComboBox, { Option } from '../SearchableComboBox';
 
-type TxOption = Option & { tx: SafeMultisigTransaction }
+export type TxOption = Option & { tx: SafeMultisigTransaction }
 
 export function SafeTransactionSelector({safeAddress, val, setVal, shouldRun = true} : {safeAddress: string, val: TxOption, setVal: (val: TxOption) => void, shouldRun?: boolean}) {
     const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, shouldRun)
