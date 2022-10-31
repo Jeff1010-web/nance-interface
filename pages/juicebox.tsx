@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import { amountSubFee } from "../libs/math";
 
 import { BigNumber, utils } from 'ethers'
@@ -13,9 +12,11 @@ import { useCurrentPayoutMods, useCurrentTicketMods } from '../hooks/juicebox/Cu
 import { FundingCycleV1Args, parseV1Metadata, PayoutModV1, TicketModV1, V1FundingCycleMetadata } from '../models/JuiceboxTypes'
 import { CheckIcon, MinusIcon } from '@heroicons/react/solid'
 import unionBy from 'lodash.unionby'
-import { NumberParam, useQueryParam, withDefault } from 'next-query-params';
+import { NumberParam, useQueryParam, useQueryParams, withDefault } from 'next-query-params';
 import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 import useProjectInfo from '../hooks/juicebox/ProjectInfo';
+import ProjectSearch, { ProjectOption } from "../components/juicebox/ProjectSearch";
+import ResolvedProject from "../components/ResolvedProject";
 
 const jsonEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -234,16 +235,21 @@ function orderByPercent(a: { percent: number; }, b: { percent: number; }) {
     return 0;
 }
 
-export default function Juicebox() {
+export default function JuiceboxPage() {
     // router
-    const [project, setProject] = useQueryParam<number>('project', withDefault(NumberParam, 1));
+    const [query, setQuery] = useQueryParams({ 
+      project: withDefault(NumberParam, 1), 
+      version: withDefault(NumberParam, 1) 
+    });
+    const project = query.project;
+    const version = query.version;
     // state
     const [previewArgs, setPreviewArgs] = useState(undefined);
     const [configs, setConfigs] = useState([]);
     const [rawData, setRawData] = useState<string>(undefined);
     const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined)
 
-    // load current fc
+    // external hooks
     const { value: fc, loading: fcIsLoading } = useCurrentFundingCycle({projectId: project});
     const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(1, project);
     const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentPayoutMods(fc?.projectId, fc?.configured);
@@ -297,6 +303,12 @@ export default function Juicebox() {
       setSelectedSafeTx(option);
       setRawData(option.tx.data);
     }
+    const onProjectOptionSet = (option: ProjectOption) => {
+      setQuery({
+        project: option.projectId, 
+        version: parseInt(option.version[0] ?? "1")
+      });
+    }
 
     useEffect(() => {
       loadV1Reconfig();
@@ -307,13 +319,35 @@ export default function Juicebox() {
           <SiteNav pageTitle="Juicebox Reconfiguration Helper" />
           <div className="bg-white">
             <div id="project-status" className="flex justify-center py-2 mx-6">
-                Current:&nbsp;<FormattedProject projectId={project} />
-                {previewArgs && <span className="text-amber-300">(Compare Mode)</span>}
+                <ResolvedProject projectId={project} version={version} />
             </div>
             <div id="project-selector" className="flex justify-center gap-x-3 pt-2 mx-6">
-                <input type="number" min="1" className="rounded-xl pl-2" id="project-input" placeholder="Input project id here" value={project} onChange={(e) => setProject(parseInt(e.target.value))} />
+              <span className="isolate inline-flex rounded-md shadow-sm">
+                <button
+                  type="button"
+                  disabled={version === 1}
+                  className="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 disabled:bg-gray-200 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  V1
+                </button>
+                <button
+                  type="button"
+                  disabled={version === 2}
+                  className="relative -ml-px inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 disabled:bg-gray-200 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  V2
+                </button>
+                <button
+                  type="button"
+                  disabled={version === 3}
+                  className="relative -ml-px inline-flex items-center rounded-r-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 disabled:bg-gray-200 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  V3
+                </button>
+              </span>
+              <ProjectSearch onProjectOptionSet={onProjectOptionSet} label="Seach project by handle" />
             </div>
-            <div id="v1-reconfig-loader" className="flex justify-center pt-2 mx-6">
+            <div id="safetx-loader" className="flex justify-center pt-2 mx-6">
                 <div className="w-1/3">
                   <SafeTransactionSelector val={selectedSafeTx} setVal={setSafeTx} safeAddress={owner} shouldRun={owner !== undefined} />
                 </div>
