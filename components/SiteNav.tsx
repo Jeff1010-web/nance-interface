@@ -19,6 +19,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
         { name: 'Logbook', href: '/logbook' },
         { name: 'Snapshot Plus', href: '/snapshot/jbdao.eth' },
         { name: 'Juicebox Center', href: '/center' },
+        { name: 'Reconfiguration Helper', href: '/juicebox' },
         { name: 'Nance Interface', href: '/nance/juicebox' },
         { name: 'Transaction Diff', href: '/diff' },
     ]

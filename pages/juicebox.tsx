@@ -12,7 +12,7 @@ import { useCurrentPayoutMods, useCurrentTicketMods } from '../hooks/juicebox/Cu
 import { FundingCycleV1Args, parseV1Metadata, PayoutModV1, TicketModV1, V1FundingCycleMetadata } from '../models/JuiceboxTypes'
 import { CheckIcon, MinusIcon } from '@heroicons/react/solid'
 import unionBy from 'lodash.unionby'
-import { NumberParam, useQueryParam, useQueryParams, withDefault } from 'next-query-params';
+import { NumberParam, useQueryParams, withDefault } from 'next-query-params';
 import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 import useProjectInfo from '../hooks/juicebox/ProjectInfo';
 import ProjectSearch, { ProjectOption } from "../components/juicebox/ProjectSearch";
@@ -293,7 +293,6 @@ export default function JuiceboxPage() {
             ticketMods: _ticketMods
           };
           setConfigs([currentConfig, newConfig]);
-          //router.push(`/juicebox?project=${ret.args._projectId.toNumber()}`, undefined, { shallow: true })
         } catch (e) {
           console.warn('TerminalV1.interface.parse >', e);
         }
@@ -322,29 +321,6 @@ export default function JuiceboxPage() {
                 <ResolvedProject projectId={project} version={version} />
             </div>
             <div id="project-selector" className="flex justify-center gap-x-3 pt-2 mx-6">
-              <span className="isolate inline-flex rounded-md shadow-sm">
-                <button
-                  type="button"
-                  disabled={version === 1}
-                  className="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 disabled:bg-gray-200 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                  V1
-                </button>
-                <button
-                  type="button"
-                  disabled={version === 2}
-                  className="relative -ml-px inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 disabled:bg-gray-200 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                  V2
-                </button>
-                <button
-                  type="button"
-                  disabled={version === 3}
-                  className="relative -ml-px inline-flex items-center rounded-r-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 disabled:bg-gray-200 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                  V3
-                </button>
-              </span>
               <ProjectSearch onProjectOptionSet={onProjectOptionSet} label="Seach project by handle" />
             </div>
             <div id="safetx-loader" className="flex justify-center pt-2 mx-6">

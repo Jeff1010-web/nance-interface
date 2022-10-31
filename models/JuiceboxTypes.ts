@@ -90,3 +90,23 @@ export function parseV1Metadata(raw: { toHexString: () => string; }): V1FundingC
     }
     return ret;
 }
+
+// === V2 ===
+
+// uint256 public constant MAX_RESERVED_RATE = 10000;
+// uint256 public constant MAX_REDEMPTION_RATE = 10000;
+// uint256 public constant MAX_DISCOUNT_RATE = 1000000000;
+// uint256 public constant SPLITS_TOTAL_PERCENT = 1000000000;
+export const ETH_PAYOUT_SPLIT_GROUP = 1
+export const RESERVED_TOKEN_SPLIT_GROUP = 2
+export const SPLITS_TOTAL_PERCENT = 1000000000;
+
+export type Split = {
+    preferClaimed: boolean;
+    preferAddToBalance: boolean;
+    percent: number;
+    lockedUntil: number;
+    beneficiary: string;
+    projectId: BigNumber;
+    allocator: string | undefined // address, If an allocator is specified, funds will be sent to the allocator contract along with the projectId, beneficiary, preferClaimed properties.
+}
