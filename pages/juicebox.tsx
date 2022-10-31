@@ -6,7 +6,7 @@ import { TerminalV1Contract } from "../libs/contractsV1";
 
 import FormattedAddress from "../components/FormattedAddress";
 import FormattedProject from "../components/FormattedProject";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SiteNav from "../components/SiteNav";
 import useCurrentFundingCycle from '../hooks/juicebox/CurrentFundingCycle';
 import { useCurrentPayoutMods, useCurrentTicketMods } from '../hooks/juicebox/CurrentMods';
@@ -14,6 +14,9 @@ import { FundingCycleV1Args, parseV1Metadata, PayoutModV1, TicketModV1, V1Fundin
 import { CheckIcon, MinusIcon } from '@heroicons/react/solid'
 import unionBy from 'lodash.unionby'
 import { NumberParam, useQueryParam, withDefault } from 'next-query-params';
+import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
+import useProjectInfo from '../hooks/juicebox/ProjectInfo';
+import { getAddress } from 'ethers/lib/utils';
 
 const jsonEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -63,6 +66,8 @@ function Compare({arr}: {arr: FundingCycleConfigProps[]}) {
   const keyOfTicket = (mod: TicketModV1) => mod.beneficiary;
   const tickets: TicketModV1[] = unionBy(...arr.map((fc) => fc.ticketMods), keyOfTicket).sort(orderByPercent);
   const ticketMaps = arr.map((fc) => convertTicketToMap(fc.ticketMods));
+
+  console.debug("Raw", arr, payoutMaps)
 
   return (
     <div>
@@ -307,9 +312,12 @@ export default function Juicebox() {
     // state
     const [previewArgs, setPreviewArgs] = useState(undefined);
     const [configs, setConfigs] = useState([]);
+    const [rawData, setRawData] = useState<string>(undefined);
+    const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined)
 
     // load current fc
     const { value: fc, loading: fcIsLoading } = useCurrentFundingCycle({projectId: project});
+    const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(1, project);
     const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentPayoutMods(fc?.projectId, fc?.configured);
     const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentTicketMods(fc?.projectId, fc?.configured);
     const metadata = parseV1Metadata(fc?.metadata);
@@ -320,12 +328,13 @@ export default function Juicebox() {
       ticketMods
     };
 
+    const owner = projectInfo?.owner ? getAddress(projectInfo.owner) : undefined;
     const loading = fcIsLoading || payoutModsIsLoading || ticketModsIsLoading;
     const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
     const iface = new utils.Interface(TerminalV1Contract.contractInterface);
     const loadV1Reconfig = () => {
-        const raw = (document.getElementById("v1-reconfig-input") as HTMLInputElement).value
+        const raw = rawData;
         try {
           const ret = iface.parseTransaction({data: raw, value: 0});
           setPreviewArgs(ret.args);
@@ -359,6 +368,15 @@ export default function Juicebox() {
         setPreviewArgs(undefined);
         setProject(parseInt((document.getElementById("project-input") as HTMLInputElement).value));
     }
+
+    const setSafeTx = (option: TxOption) => {
+      setSelectedSafeTx(option);
+      setRawData(option.tx.data);
+    }
+
+    useEffect(() => {
+      loadV1Reconfig();
+    }, [rawData]);
     
     return (
         <>
@@ -372,9 +390,9 @@ export default function Juicebox() {
                 <input type="number" min="1" className="rounded-xl pl-2" id="project-input" placeholder="Input project id here" onKeyDown={genOnEnter("load-project-btn")} />
                 <button id="load-project-btn" onClick={loadProject} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Project</button>
             </div>
-            <div id="v1-reconfig-loader" className="flex justify-center gap-x-3 pt-2">
-                <input type="text" className="rounded-xl pl-2" id="v1-reconfig-input" placeholder="Paste raw data here" onKeyDown={genOnEnter("load-v1-reconfig-btn")} />
-                <button id="load-v1-reconfig-btn" onClick={loadV1Reconfig} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Reconfig</button>
+            <div id="v1-reconfig-loader" className="flex flex-col justify-center space-y-3 pt-2 mx-6">
+                <SafeTransactionSelector val={selectedSafeTx} setVal={setSafeTx} safeAddress={owner} shouldRun={owner !== undefined} />
+                <textarea rows={3} className="w-full rounded-xl" id="raw-data" placeholder="Paste raw data here" value={rawData} onChange={(e) => setRawData(e.target.value)} />
             </div>
             <br />
             {(loading || dataIsEmpty)
