@@ -16,7 +16,7 @@ import unionBy from 'lodash.unionby'
 import { NumberParam, useQueryParam, withDefault } from 'next-query-params';
 import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 import useProjectInfo from '../hooks/juicebox/ProjectInfo';
-import { getAddress } from 'ethers/lib/utils';
+import { formatEther, getAddress } from 'ethers/lib/utils';
 
 const jsonEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -174,7 +174,9 @@ function Compare({arr}: {arr: FundingCycleConfigProps[]}) {
                             (i>0 && jsonEq(payoutMaps[0].get(keyOfPayout(mod)), map.get(keyOfPayout(mod)))) ? (
                               <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
                             ) : (
-                              <span>{map.get(`${mod.beneficiary}-${mod.projectId}-${mod.allocator}`).percent/100 + "%"} ({parseInt(utils.formatEther(amountSubFee(arr[i].fundingCycle.target, arr[i].fundingCycle.fee).mul(mod.percent).div(10000)))})</span>
+                              <span>
+                                {map.get(`${mod.beneficiary}-${mod.projectId}-${mod.allocator}`).percent/100 + "%"} ({parseInt(utils.formatEther(amountSubFee(arr[i].fundingCycle.target, arr[i].fundingCycle.fee).mul(map.get(`${mod.beneficiary}-${mod.projectId}-${mod.allocator}`).percent).div(10000)))})
+                              </span>
                             )
                           ) : (
                             <MinusIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
