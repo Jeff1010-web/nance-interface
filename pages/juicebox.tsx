@@ -16,7 +16,6 @@ import unionBy from 'lodash.unionby'
 import { NumberParam, useQueryParam, withDefault } from 'next-query-params';
 import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 import useProjectInfo from '../hooks/juicebox/ProjectInfo';
-import { formatEther, getAddress } from 'ethers/lib/utils';
 
 const jsonEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -71,7 +70,7 @@ function Compare({arr}: {arr: FundingCycleConfigProps[]}) {
 
   return (
     <div>
-      <div className="mx-auto max-w-7xl bg-white py-16 sm:py-24 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl bg-white py-4 sm:py-6 sm:px-6 lg:px-8">
         {/* xs to lg */}
         <div className="mx-auto max-w-2xl space-y-16 md:hidden">
           <p>Please use desktop for better experience for now</p>
@@ -110,13 +109,6 @@ function Compare({arr}: {arr: FundingCycleConfigProps[]}) {
                         <span className="text-4xl font-bold tracking-tight text-gray-900">{formatCurrency(fc.fundingCycle.currency, fc.fundingCycle.target)}</span>{' '}
                         <span className="text-base font-medium text-gray-500">/{fc.fundingCycle.duration.toNumber()}&nbsp;days</span>
                       </p>
-                      <p className="mt-4 mb-16 text-sm text-gray-500">Quis suspendisse ut fermentum neque vivamus non tellus.</p>
-                      <a
-                        href='#'
-                        className="5 absolute bottom-0 block w-full flex-grow rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
-                      >
-                        Load
-                      </a>
                     </div>
                   </td>
                 ))}
@@ -219,64 +211,7 @@ function Compare({arr}: {arr: FundingCycleConfigProps[]}) {
                   </tr>
                 ))}
               </>
-
-              {/* {sections.map((section) => (
-                <Fragment key={section.name}>
-                  <tr>
-                    <th
-                      className="bg-gray-50 py-3 pl-6 text-left text-sm font-medium text-gray-900"
-                      colSpan={4}
-                      scope="colgroup"
-                    >
-                      {section.name}
-                    </th>
-                  </tr>
-                  {section.features.map((feature) => (
-                    <tr key={feature.name}>
-                      <th className="py-5 px-6 text-left text-sm font-normal text-gray-500" scope="row">
-                        {feature.name}
-                      </th>
-                      {tiers.map((tier) => (
-                        <td key={tier.name} className="py-5 px-6">
-                          {typeof feature.tiers[tier.name] === 'string' ? (
-                            <span className="block text-sm text-gray-700">{feature.tiers[tier.name]}</span>
-                          ) : (
-                            <>
-                              {feature.tiers[tier.name] === true ? (
-                                <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
-                              ) : (
-                                <MinusIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                              )}
-
-                              <span className="sr-only">
-                                {feature.tiers[tier.name] === true ? 'Included' : 'Not included'} in {tier.name}
-                              </span>
-                            </>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </Fragment>
-              ))} */}
             </tbody>
-            {/* <tfoot>
-              <tr className="border-t border-gray-200">
-                <th className="sr-only" scope="row">
-                  Choose your plan
-                </th>
-                {tiers.map((tier) => (
-                  <td key={tier.name} className="px-6 pt-5">
-                    <a
-                      href={tier.href}
-                      className="block w-full rounded-md border border-gray-800 bg-gray-800 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900"
-                    >
-                      Buy {tier.name}
-                    </a>
-                  </td>
-                ))}
-              </tr>
-            </tfoot> */}
           </table>
         </div>
       </div>
@@ -287,14 +222,6 @@ function Compare({arr}: {arr: FundingCycleConfigProps[]}) {
 const formatter = new Intl.NumberFormat('en-GB', { style: "decimal" });
 const formatNumber = (num) => formatter.format(num);
 const formatCurrency = (currency, amount) => (currency.toNumber() == 0 ? "Ξ" : "$") + formatNumber(utils.formatEther(amount ?? 0));
-
-function genOnEnter(elementId: string) {
-    return (e: { keyCode: number; }) => {
-        if(e.keyCode == 13) {
-            document.getElementById(elementId).click();
-        }
-    }
-}
 
 function orderByPercent(a: { percent: number; }, b: { percent: number; }) {
     if (a.percent > b.percent) {
@@ -309,7 +236,6 @@ function orderByPercent(a: { percent: number; }, b: { percent: number; }) {
 
 export default function Juicebox() {
     // router
-    const router = useRouter();
     const [project, setProject] = useQueryParam<number>('project', withDefault(NumberParam, 1));
     // state
     const [previewArgs, setPreviewArgs] = useState(undefined);
@@ -330,7 +256,7 @@ export default function Juicebox() {
       ticketMods
     };
 
-    const owner = projectInfo?.owner ? getAddress(projectInfo.owner) : undefined;
+    const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : undefined;
     const loading = fcIsLoading || payoutModsIsLoading || ticketModsIsLoading;
     const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
@@ -366,10 +292,6 @@ export default function Juicebox() {
           console.warn('TerminalV1.interface.parse >', e);
         }
     }
-    const loadProject = () => {
-        setPreviewArgs(undefined);
-        setProject(parseInt((document.getElementById("project-input") as HTMLInputElement).value));
-    }
 
     const setSafeTx = (option: TxOption) => {
       setSelectedSafeTx(option);
@@ -384,17 +306,19 @@ export default function Juicebox() {
         <>
           <SiteNav pageTitle="Juicebox Reconfiguration Helper" />
           <div className="bg-white">
-            <div id="project-status" className="flex justify-center py-2">
+            <div id="project-status" className="flex justify-center py-2 mx-6">
                 Current:&nbsp;<FormattedProject projectId={project} />
                 {previewArgs && <span className="text-amber-300">(Compare Mode)</span>}
             </div>
-            <div id="project-selector" className="flex justify-center gap-x-3 pt-2">
-                <input type="number" min="1" className="rounded-xl pl-2" id="project-input" placeholder="Input project id here" onKeyDown={genOnEnter("load-project-btn")} />
-                <button id="load-project-btn" onClick={loadProject} className="px-4 py-2 font-semibold text-sm bg-amber-200 hover:bg-amber-300 rounded-xl shadow-sm">Load V1 Project</button>
+            <div id="project-selector" className="flex justify-center gap-x-3 pt-2 mx-6">
+                <input type="number" min="1" className="rounded-xl pl-2" id="project-input" placeholder="Input project id here" value={project} onChange={(e) => setProject(parseInt(e.target.value))} />
             </div>
-            <div id="v1-reconfig-loader" className="flex flex-col justify-center space-y-3 pt-2 mx-6">
-                <SafeTransactionSelector val={selectedSafeTx} setVal={setSafeTx} safeAddress={owner} shouldRun={owner !== undefined} />
-                <textarea rows={3} className="w-full rounded-xl" id="raw-data" placeholder="Paste raw data here" value={rawData} onChange={(e) => setRawData(e.target.value)} />
+            <div id="v1-reconfig-loader" className="flex justify-center pt-2 mx-6">
+                <div className="w-1/3">
+                  <SafeTransactionSelector val={selectedSafeTx} setVal={setSafeTx} safeAddress={owner} shouldRun={owner !== undefined} />
+                </div>
+                
+                {/* <textarea rows={3} className="w-full rounded-xl" id="raw-data" placeholder="Paste raw data here" value={rawData} onChange={(e) => setRawData(e.target.value)} /> */}
             </div>
             <br />
             {(loading || dataIsEmpty)
