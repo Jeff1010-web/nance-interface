@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Switch } from '@headlessui/react'
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer';
 import SiteNav from '../components/SiteNav';
@@ -53,10 +53,6 @@ function NanceDiff() {
     const abi = JSON.stringify(TerminalV1.abi)
 
     const [rawDataLeft, setRawDataLeft] = useState<string>('')
-    const [rawDataRight, setRawDataRight] = useState<string>('')
-    // FIXME not fixed to v1 abi
-    const { data: leftStr, message: leftMessage } = formatArgs(abi, rawDataLeft)
-    const { data: rightStr, message: rightMessage } = formatArgs(abi, rawDataRight)
 
     const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined)
     const [networkParam, setNetworkParam] = useQueryParam("network", StringParam)
@@ -66,21 +62,29 @@ function NanceDiff() {
     const [nanceResponse, setNanceResponse] = useState<IFetchReconfigureResponse>(undefined)
     const [gnosisResponse, setGnosisResponse] = useState({success: undefined, data: undefined})
     const [error, setError] = useState<string>(undefined)
+    const [currentTime, setCurrentTime] = useState<string>(undefined)
 
     const { address } = useAccount();
     const { data: signer, isError, isLoading: signerLoading } = useSigner()
     const jrpcSigner = signer as JsonRpcSigner;
-    const datetime = new Date().toISOString();
-    const reconfigRequest = {
+
+    const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest({
         space: "juicebox",
         version: "V1",
         address: address || '0x0000000000000000000000000000000000000000',
-        datetime,
+        datetime: currentTime,
         network: networkParam || 'mainnet'
-    }
-
-    const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest(reconfigRequest);
+    }, currentTime !== undefined);
     const reconfigData = reconfig?.data
+    const rawDataRight = reconfigData?.transaction?.bytes
+
+    // FIXME not fixed to v1 abi
+    const { data: leftStr, message: leftMessage } = formatArgs(abi, rawDataLeft)
+    const { data: rightStr, message: rightMessage } = formatArgs(abi, rawDataRight)
+
+    useEffect(() => {
+        setCurrentTime(new Date().toISOString())
+    }, [address, networkParam])
 
     const txSetter = (val: TxOption) => {
         setSelectedSafeTx(val)
@@ -92,13 +96,6 @@ function NanceDiff() {
     const resetErrors = () => {
         setGnosisResponse({success: undefined, data: undefined});
         setError(undefined);
-    }
-
-    const fetchFromNance = async () => {
-        setRawDataRight(reconfigData?.transaction?.bytes);
-        alert(reconfigData)
-        console.warn(reconfigLoading);
-        // setFetchReconfig(false);
     }
 
     const postTransaction = async () => {
@@ -145,10 +142,6 @@ function NanceDiff() {
                 <div className="flex w-5/6 ml-10 space-x-5">
                     <button
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-                        onClick={fetchFromNance}
-                    >{(reconfigLoading) ? 'loading...' : 'fetch from nance'}</button> 
-                    <button
-                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
                         disabled={!jrpcSigner || !rawDataRight}
                         onClick={postTransaction}
                     >{(gnosisLoading) ? 'sign...' : 'queue gnosis transaction'}</button>
@@ -165,7 +158,7 @@ function NanceDiff() {
                     <ReactDiffViewer 
                         oldValue={leftStr || (rawDataLeft && abi ? leftMessage : '')}
                         newValue={rightStr || (rawDataRight && abi ? rightMessage : '')}
-                        splitView={true} 
+                        splitView={false} 
                         compareMethod={DiffMethod.LINES} 
                         leftTitle={true ? 'Left' : 'Unified Mode'}
                         rightTitle="Right"
