@@ -11,15 +11,15 @@ import formatArgs from '../libs/TransactionArgFormatter';
 import renderArgEntry from '../components/TransactionArgEntry';
 import SearchableComboBox, { Option } from '../components/SearchableComboBox';
 import Notification from "../components/Notification";
-import { useHistoryTransactions, useQueuedTransactions } from '../hooks/SafeHooks';
 import { GnosisHandler } from '../libs/gnosis';
 import { useRouter } from 'next/router';
-import { QueueSafeTransaction, SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../models/SafeTypes';
+import { QueueSafeTransaction, SafeMultisigTransaction } from '../models/SafeTypes';
 import { StringParam, useQueryParam, withDefault } from 'next-query-params';
 import { useEnsAddress, useAccount, useSigner } from 'wagmi';
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { useReconfigureRequest } from '../hooks/NanceHooks';
-import { FetchReconfigureRequest, IFetchReconfigureResponse } from '../models/NanceTypes';
+import { IFetchReconfigureResponse } from '../models/NanceTypes';
+import { SafeTransactionSelector } from '../components/safe/SafeTransactionSelector';
 
 type ABIOption = Option & { abi: string }
 type TxOption = Option & { tx: SafeMultisigTransaction }
@@ -166,28 +166,6 @@ function NanceDiff() {
                 </div>
             </div>
         </>
-    )
-}
-
-function SafeTransactionSelector({safeAddress, val, setVal, shouldRun = true} : {safeAddress: string, val: TxOption, setVal: (val: TxOption) => void, shouldRun?: boolean}) {
-    const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, shouldRun)
-    const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
-
-    const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
-        if(!res) return []
-        return res.results.map((tx) => {
-            return {
-                id: tx.safeTxHash,
-                label: `Tx ${tx.nonce} ${tx.dataDecoded ? tx.dataDecoded.method : 'unknown'} -- ${tx.submissionDate}`,
-                status,
-                tx: tx
-            }
-        })
-    }
-    const options = convertToOptions(queuedTxs, true).concat(convertToOptions(historyTxs, false))
-
-    return (
-        <SearchableComboBox val={val} setVal={setVal} options={options} label="Load Safe Transaction" />
     )
 }
 
