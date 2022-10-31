@@ -51,7 +51,7 @@ export default function LogbookPage() {
                       </p>
                     </div>
                     {event.memo && (
-                      <p className="text-sm truncate hidden sm:block">{event.memo}</p>
+                      <p className="text-sm truncate max-w-xs md:max-w-md">{event.memo}</p>
                     )}
                     {event.eventType === "Pay" && <PayCard event={event} />}
                     {event.eventType === "Redeem" && <RedeemCard event={event} />}
@@ -75,7 +75,7 @@ function PayCard({ event }: { event: ProjectEvent }) {
   return (
     <div className="mt-2 text-sm text-gray-700 rounded-lg shadow p-2 border-slate-400 flex justify-between">
       <img className="inline h-12 w-12" src="https://cdn.stamp.fyi/token/0x0000000000000000000000000000000000000000" alt="ETH" />
-      <div className="text-2xl text-center content-center">{`- ${ethAmount} ETH`}</div>
+      <div className="text-2xl">{`- ${ethAmount} ETH`}</div>
     </div>
   )
 }
