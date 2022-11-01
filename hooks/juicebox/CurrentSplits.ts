@@ -2,7 +2,7 @@ import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
 import { useProvider } from "wagmi";
 import { getJBSplitsStore } from "juice-sdk";
 import { useContractReadValue } from "./ContractReadValue";
-import { Split } from '../../models/JuiceboxTypes';
+import { JBSplit } from '../../models/JuiceboxTypes';
 
 export function useCurrentSplits(
     projectId: BigNumberish | undefined,
@@ -14,7 +14,7 @@ export function useCurrentSplits(
     const provider = useProvider();
     const contract = getJBSplitsStore(provider);
 
-    return useContractReadValue<Split[]>({
+    return useContractReadValue<JBSplit[]>({
         contract,
         functionName: 'splitsOf',
         args: projectId && domain && group

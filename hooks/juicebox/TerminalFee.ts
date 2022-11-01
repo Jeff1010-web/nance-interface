@@ -1,5 +1,6 @@
 import { useProvider } from 'wagmi';
 import { getTerminalV1, getTerminalV1_1 } from 'juice-sdk-v1';
+import { getJBETHPaymentTerminal } from 'juice-sdk';
 import { useContractReadValue } from './ContractReadValue';
 import { BigNumber } from '@ethersproject/bignumber';
 
@@ -42,7 +43,7 @@ export const getTerminalVersion = (
 export default function useTerminalFee({
   version
 }: {
-  version: "1" | "1.1" | undefined
+  version: "1" | "1.1" | "2" | undefined
 }) {
   const provider = useProvider();
   let terminal;
@@ -50,6 +51,8 @@ export default function useTerminalFee({
     terminal = getTerminalV1(provider);
   } else if(version == "1.1") {
     terminal = getTerminalV1_1(provider);
+  } else if (version == "2") {
+    terminal = getJBETHPaymentTerminal(provider);
   }
 
   return useContractReadValue<BigNumber>({

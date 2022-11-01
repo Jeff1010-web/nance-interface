@@ -5,7 +5,7 @@ import SearchableComboBox, { Option } from '../SearchableComboBox';
 export type TxOption = Option & { tx: SafeMultisigTransaction }
 
 export function SafeTransactionSelector({safeAddress, val, setVal, shouldRun = true} : {safeAddress: string, val: TxOption, setVal: (val: TxOption) => void, shouldRun?: boolean}) {
-    const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, shouldRun)
+    const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 20, shouldRun)
     const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
 
     const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
