@@ -55,7 +55,7 @@ export default function JuiceboxPage() {
         datetime: currentTime,
         network: 'mainnet'
     }, currentTime !== undefined && project === 1);
-    const rawData = reconfig?.data.transaction.bytes
+    const rawData = reconfig?.data?.transaction?.bytes
 
     const onProjectOptionSet = (option: ProjectOption) => {
       setQuery({
@@ -88,8 +88,10 @@ export default function JuiceboxPage() {
                     disabled={rawData === undefined || selectedSafeTx === undefined}
                     className="ml-3 flex content-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
                     onClick={() => setSelectedSafeTx(undefined)}
-                  >{reconfigLoading ? "Nance loading..." 
-                      : selectedSafeTx === undefined ? "Nance loaded"
+                  >{reconfigLoading ? 
+                      "Nance loading..." 
+                      : selectedSafeTx === undefined ? 
+                          rawData !== undefined ? "Nance loaded" : "Nance error"
                       : "Use nance"}</button>
                 )}
                 
