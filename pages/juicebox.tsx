@@ -39,17 +39,12 @@ export default function JuiceboxPage() {
     const project = query.project;
     const version = query.version;
     // state
-    const [rawData, setRawData] = useState<string>(undefined);
     const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined)
 
     // external hooks
     const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(1, project);
 
     const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : undefined;
-    const setSafeTx = (option: TxOption) => {
-      setSelectedSafeTx(option);
-      setRawData(option.tx.data);
-    }
     const onProjectOptionSet = (option: ProjectOption) => {
       setQuery({
         project: option.projectId, 
@@ -69,20 +64,20 @@ export default function JuiceboxPage() {
             </div>
             <div id="safetx-loader" className="flex justify-center pt-2 mx-6">
                 <div className="w-1/3">
-                  <SafeTransactionSelector val={selectedSafeTx} setVal={setSafeTx} safeAddress={owner} shouldRun={owner !== undefined} />
+                  <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedSafeTx} safeAddress={owner} shouldRun={owner !== undefined} />
                 </div>
                 
                 {/* <textarea rows={3} className="w-full rounded-xl" id="raw-data" placeholder="Paste raw data here" value={rawData} onChange={(e) => setRawData(e.target.value)} /> */}
             </div>
             <br />
-            {version == 1 && <V1Compare projectId={project} rawData={rawData} />}
-            {version == 2 && <V2Compare projectId={project} rawData={rawData} />}
+            {version == 1 && <V1Compare projectId={project} tx={selectedSafeTx} />}
+            {version == 2 && <V2Compare projectId={project} tx={selectedSafeTx} />}
           </div>
         </>
     )
 }
 
-function V1Compare({ projectId, rawData }: { projectId: number, rawData: string }) {
+function V1Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
   // state
   const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
 
@@ -105,47 +100,50 @@ function V1Compare({ projectId, rawData }: { projectId: number, rawData: string 
   const loading = fcIsLoading || payoutModsIsLoading || ticketModsIsLoading;
   const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
-  const iface = new utils.Interface(TerminalV1Contract.contractInterface);
-  const raw = rawData;
-  try {
-    const ret = iface.parseTransaction({data: raw, value: 0});
-    // FIXME: detect illegal raw data
-    const {
-      _projectId,
-      _properties,
-      _metadata,
-      _payoutMods,
-      _ticketMods
-    }: {
-      _projectId: BigNumber,
-      _properties: Omit<FundingCycleArgs, "fee" | "configuration">,
-      _metadata: V1FundingCycleMetadata,
-      _payoutMods: PayoutModV1[],
-      _ticketMods: TicketModV1[],
-    } = ret.args as any;
-    const newConfig: FundingCycleConfigProps = {
-      version: 1,
-      fundingCycle: {..._properties, fee: fc?.fee, configuration: fc?.configured},
-      metadata: v1metadata2args(_metadata),
-      payoutMods: _payoutMods.map(payoutMod2Split),
-      ticketMods: _ticketMods.map(ticketMod2Split)
-    };
-    setPreviewConfig(newConfig);
-  } catch (e) {
-    console.warn('TerminalV1.interface.parse >', e);
-  }
-
-  console.log('FCs', currentConfig, previewConfig)
+  useEffect(() => {
+    const iface = new utils.Interface(TerminalV1Contract.contractInterface);
+    const raw = tx?.tx.data;
+    try {
+      const ret = iface.parseTransaction({data: raw, value: 0});
+      // FIXME: detect illegal raw data
+      const {
+        _projectId,
+        _properties,
+        _metadata,
+        _payoutMods,
+        _ticketMods
+      }: {
+        _projectId: BigNumber,
+        _properties: Omit<FundingCycleArgs, "fee" | "configuration">,
+        _metadata: V1FundingCycleMetadata,
+        _payoutMods: PayoutModV1[],
+        _ticketMods: TicketModV1[],
+      } = ret.args as any;
+      const newConfig: FundingCycleConfigProps = {
+        version: 1,
+        fundingCycle: {
+          ..._properties, 
+          fee: fc?.fee, 
+          configuration: BigNumber.from(parseInt((new Date(tx?.tx.submissionDate).getTime()/1000).toString())) || fc?.configured
+        },
+        metadata: v1metadata2args(_metadata),
+        payoutMods: _payoutMods.map(payoutMod2Split),
+        ticketMods: _ticketMods.map(ticketMod2Split)
+      };
+      setPreviewConfig(newConfig);
+    } catch (e) {
+      console.debug('TerminalV1.interface.parse >', e);
+    }
+  }, [tx, fc]);
 
   return (
     (loading || dataIsEmpty)
       ? <div className="text-center">Loading...</div>
       : <ReconfigurationCompare currentFC={currentConfig} previewFC={previewConfig || currentConfig} />
-  
   )
 }
 
-function V2Compare({ projectId, rawData }: { projectId: number, rawData: string }) {
+function V2Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
   // state
   const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
 
@@ -177,7 +175,7 @@ function V2Compare({ projectId, rawData }: { projectId: number, rawData: string 
 
   useEffect(() => {
     const iface = new utils.Interface(JBControllerV2.abi);
-    const raw = rawData;
+    const raw = tx?.tx.data;
     try {
       const ret = iface.parseTransaction({data: raw, value: 0});
       // FIXME: detect illegal raw data
@@ -198,7 +196,7 @@ function V2Compare({ projectId, rawData }: { projectId: number, rawData: string 
         fundingCycle: {
           ..._data, 
           fee,
-          configuration: fc?.configuration,
+          configuration: BigNumber.from(parseInt((new Date(tx?.tx.submissionDate).getTime()/1000).toString())) || fc?.configuration,
           currency: fac?.distributionLimitCurrency.sub(1),
           target: fac?.distributionLimit
         },
@@ -208,14 +206,13 @@ function V2Compare({ projectId, rawData }: { projectId: number, rawData: string 
       };
       setPreviewConfig(newConfig);
     } catch (e) {
-      console.warn('JBETHPaymentTerminal.interface.parse >', e);
+      console.debug('JBETHPaymentTerminal.interface.parse >', e);
     }
-  }, [rawData])
+  }, [tx, fc])
 
   return (
     (loading || dataIsEmpty)
       ? <div className="text-center">Loading...</div>
       : <ReconfigurationCompare currentFC={currentConfig} previewFC={previewConfig || currentConfig} />
-  
   )
 }

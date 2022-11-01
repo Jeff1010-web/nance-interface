@@ -7,6 +7,7 @@ import { BigNumber, constants, utils } from "ethers";
 import { CheckIcon, MinusIcon } from '@heroicons/react/solid';
 import ResolvedProject from "../ResolvedProject";
 import { amountSubFee, amountSubFeeV2 } from "../../libs/math";
+import { formatDistanceToNow, fromUnixTime } from "date-fns";
 
 // 'projectId-beneficiary-allocator': mod
 const splits2map = (splits: JBSplit[]) => {
@@ -35,7 +36,6 @@ const formatNumber = (num) => formatter.format(num);
 const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
     const symbol = currency.toNumber() == 0 ? "Ξ" : "$";
     const formatted = amount.eq(JBConstants.UintMax) ? "∞" : formatNumber(utils.formatEther(amount ?? 0));
-    console.log('formatCurrency', currency, amount, amount.eq(JBConstants.UintMax), JBConstants.UintMax, symbol + formatted)
     return symbol + formatted;
 }
 
@@ -147,13 +147,13 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                             className="w-1/4 px-6 pb-4 text-left text-lg font-medium leading-6 text-gray-900"
                             scope="col"
                         >
-                            {currentFC.fundingCycle.configuration.toNumber()}
+                            {formatDistanceToNow(fromUnixTime(currentFC.fundingCycle.configuration.toNumber()), { addSuffix: true })}
                         </th>
                         <th
                             className="w-1/4 px-6 pb-4 text-left text-lg font-medium leading-6 text-gray-900"
                             scope="col"
                         >
-                            {previewFC.fundingCycle.configuration.toNumber()}
+                            {formatDistanceToNow(fromUnixTime(previewFC.fundingCycle.configuration.toNumber()), { addSuffix: true })}
                         </th>
                     </tr>
                 </thead>
