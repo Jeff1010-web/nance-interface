@@ -17,6 +17,8 @@ import ReconfigurationCompare, { FundingCycleArgs, FundingCycleConfigProps, Meta
 import { useCurrentSplits } from '../hooks/juicebox/CurrentSplits';
 import { useDistributionLimit } from '../hooks/juicebox/DistributionLimit';
 import useTerminalFee from '../hooks/juicebox/TerminalFee';
+import { useReconfigureRequest } from '../hooks/NanceHooks';
+import { getUnixTime } from 'date-fns';
 
 function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
   if (!m) return undefined;
@@ -39,18 +41,32 @@ export default function JuiceboxPage() {
     const project = query.project;
     const version = query.version;
     // state
-    const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined)
+    const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined);
+    // FIXME remove me on endpoint and here
+    const [currentTime, setCurrentTime] = useState<string>(undefined);
 
     // external hooks
     const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(1, project);
-
     const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : undefined;
+    const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest({
+        space: "juicebox",
+        version: `V${version}`,
+        address: owner || '0x0000000000000000000000000000000000000000',
+        datetime: currentTime,
+        network: 'mainnet'
+    }, currentTime !== undefined && project === 1);
+    const rawData = reconfig?.data.transaction.bytes
+
     const onProjectOptionSet = (option: ProjectOption) => {
       setQuery({
         project: option.projectId, 
         version: parseInt(option.version[0] ?? "1")
       });
     }
+
+    useEffect(() => {
+        setCurrentTime(new Date().toISOString())
+    }, [projectInfo, owner])
     
     return (
         <>
@@ -66,18 +82,28 @@ export default function JuiceboxPage() {
                 <div className="w-1/3">
                   <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedSafeTx} safeAddress={owner} shouldRun={owner !== undefined} />
                 </div>
+
+                {project === 1 && (
+                  <button
+                    disabled={rawData === undefined || selectedSafeTx === undefined}
+                    className="ml-3 flex content-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                    onClick={() => setSelectedSafeTx(undefined)}
+                  >{reconfigLoading ? "Nance loading..." 
+                      : selectedSafeTx === undefined ? "Nance loaded"
+                      : "Use nance"}</button>
+                )}
                 
                 {/* <textarea rows={3} className="w-full rounded-xl" id="raw-data" placeholder="Paste raw data here" value={rawData} onChange={(e) => setRawData(e.target.value)} /> */}
             </div>
             <br />
-            {version == 1 && <V1Compare projectId={project} tx={selectedSafeTx} />}
-            {version == 2 && <V2Compare projectId={project} tx={selectedSafeTx} />}
+            {version == 1 && <V1Compare projectId={project} tx={selectedSafeTx} rawData={rawData} />}
+            {version == 2 && <V2Compare projectId={project} tx={selectedSafeTx} rawData={rawData} />}
           </div>
         </>
     )
 }
 
-function V1Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
+function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: TxOption, rawData?: string }) {
   // state
   const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
 
@@ -102,7 +128,7 @@ function V1Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
 
   useEffect(() => {
     const iface = new utils.Interface(TerminalV1Contract.contractInterface);
-    const raw = tx?.tx.data;
+    const raw = tx?.tx.data || rawData;
     try {
       const ret = iface.parseTransaction({data: raw, value: 0});
       // FIXME: detect illegal raw data
@@ -119,12 +145,13 @@ function V1Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
         _payoutMods: PayoutModV1[],
         _ticketMods: TicketModV1[],
       } = ret.args as any;
+      const txDate = getUnixTime(new Date(tx?.tx.submissionDate)) || getUnixTime(new Date());
       const newConfig: FundingCycleConfigProps = {
         version: 1,
         fundingCycle: {
           ..._properties, 
           fee: fc?.fee, 
-          configuration: BigNumber.from(parseInt((new Date(tx?.tx.submissionDate).getTime()/1000).toString())) || fc?.configured
+          configuration: txDate ? BigNumber.from(txDate) : fc?.configured
         },
         metadata: v1metadata2args(_metadata),
         payoutMods: _payoutMods.map(payoutMod2Split),
@@ -134,7 +161,7 @@ function V1Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
     } catch (e) {
       console.debug('TerminalV1.interface.parse >', e);
     }
-  }, [tx, fc]);
+  }, [tx, fc, rawData]);
 
   return (
     (loading || dataIsEmpty)
@@ -143,7 +170,7 @@ function V1Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
   )
 }
 
-function V2Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
+function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: TxOption, rawData?: string }) {
   // state
   const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
 
@@ -175,7 +202,7 @@ function V2Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
 
   useEffect(() => {
     const iface = new utils.Interface(JBControllerV2.abi);
-    const raw = tx?.tx.data;
+    const raw = tx?.tx.data || rawData;
     try {
       const ret = iface.parseTransaction({data: raw, value: 0});
       // FIXME: detect illegal raw data
@@ -191,12 +218,13 @@ function V2Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
         _fundAccessConstraints: JBFundAccessConstraints[]
       } = ret.args as any;
       const fac = _fundAccessConstraints.find(c => c.terminal == JBETHPaymentTerminal.address);
+      const txDate = getUnixTime(new Date(tx?.tx.submissionDate)) || getUnixTime(new Date());
       const newConfig: FundingCycleConfigProps = {
         version: 2,
         fundingCycle: {
           ..._data, 
           fee,
-          configuration: BigNumber.from(parseInt((new Date(tx?.tx.submissionDate).getTime()/1000).toString())) || fc?.configuration,
+          configuration: txDate ? BigNumber.from(txDate) : fc?.configuration,
           currency: fac?.distributionLimitCurrency.sub(1),
           target: fac?.distributionLimit
         },
@@ -208,7 +236,7 @@ function V2Compare({ projectId, tx }: { projectId: number, tx: TxOption }) {
     } catch (e) {
       console.debug('JBETHPaymentTerminal.interface.parse >', e);
     }
-  }, [tx, fc])
+  }, [tx, fc, rawData])
 
   return (
     (loading || dataIsEmpty)
