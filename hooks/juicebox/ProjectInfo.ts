@@ -31,7 +31,7 @@ export interface ProjectInfo {
 const fetcher: Fetcher<ProjectInfo, {version: number, projectId: number}> = ({version, projectId}) => fetch(SUBGRAPH_URL, {
     method: "POST",
     body: JSON.stringify({ query: projectQuery, variables: { id: `${version}-${projectId}` } }),
-}).then(res => res.json());
+}).then(res => res.json()).then(res => res.data.project);
 
 export default function useProjectInfo(version: number, projectId: number) {
 

@@ -38,3 +38,17 @@ export interface SafeMultisigTransactionRequest {
     offset?: number;
     nonceGte?: number;
 }
+
+export interface SafeTransactionPartial {
+    to: string;
+    value: number;
+    data: string;
+    nonce: string;
+}
+
+export interface QueueSafeTransaction extends SafeTransactionPartial {
+    address: string;
+    safeTxGas: string;
+    transactionHash: string;
+    signature: string;
+}

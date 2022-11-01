@@ -1,9 +1,10 @@
 import { useProvider } from 'wagmi';
 import { getFundingCycles } from 'juice-sdk-v1';
+import { getJBController } from 'juice-sdk';
 import { useContractReadValue } from './ContractReadValue';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { useCallback } from 'react';
-import { FundingCycleV1 } from '../../models/JuiceboxTypes';
+import { FundingCycleV1, V2V3FundingCycle, V2V3FundingCycleMetadata } from '../../models/JuiceboxTypes';
 
 const deepEqFundingCycles = (a?: FundingCycleV1, b?: FundingCycleV1) => {
   if (a && !b) return false
@@ -41,5 +42,20 @@ export default function useCurrentFundingCycle({
     functionName: 'currentOf',
     args: projectId ? [BigNumber.from(projectId).toHexString()] : null,
     valueDidChange: useCallback((a, b) => !deepEqFundingCycles(a, b), [])
+  })
+}
+
+export function useCurrentFundingCycleV2({
+  projectId
+}: {
+  projectId: BigNumberish | undefined
+}) {
+  const provider = useProvider();
+  const contract = getJBController(provider);
+
+  return useContractReadValue<[V2V3FundingCycle, V2V3FundingCycleMetadata]>({
+    contract,
+    functionName: 'currentFundingCycleOf',
+    args: projectId ? [BigNumber.from(projectId).toHexString()] : null
   })
 }

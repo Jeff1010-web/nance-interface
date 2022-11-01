@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Switch } from '@headlessui/react'
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer';
 import SiteNav from '../components/SiteNav';
@@ -10,14 +10,18 @@ import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet
 import formatArgs from '../libs/TransactionArgFormatter';
 import renderArgEntry from '../components/TransactionArgEntry';
 import SearchableComboBox, { Option } from '../components/SearchableComboBox';
-import { useHistoryTransactions, useQueuedTransactions } from '../hooks/SafeHooks';
+import Notification from "../components/Notification";
+import { GnosisHandler } from '../libs/gnosis';
 import { useRouter } from 'next/router';
-import { SafeMultisigTransaction, SafeMultisigTransactionResponse } from '../models/SafeTypes';
-import { StringParam, useQueryParam } from 'next-query-params';
-import { useEnsAddress } from 'wagmi';
+import { QueueSafeTransaction } from '../models/SafeTypes';
+import { StringParam, useQueryParam, withDefault } from 'next-query-params';
+import { useEnsAddress, useAccount, useSigner } from 'wagmi';
+import { JsonRpcSigner } from "@ethersproject/providers";
+import { useReconfigureRequest } from '../hooks/NanceHooks';
+import { IFetchReconfigureResponse } from '../models/NanceTypes';
+import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 
 type ABIOption = Option & { abi: string }
-type TxOption = Option & { tx: SafeMultisigTransaction }
 
 const PRELOAD_ABI_OPTIONS: { [address: string]: ABIOption } = {
     [TerminalV1.address]:  { id: TerminalV1.address, label: `TerminalV1 (${TerminalV1.address})`, abi: JSON.stringify(TerminalV1.abi), status: true },
@@ -27,13 +31,151 @@ const PRELOAD_ABI_OPTIONS: { [address: string]: ABIOption } = {
 }
 const ABIOptions: ABIOption[] = Object.values(PRELOAD_ABI_OPTIONS)
 
+const TABS = ["Simple", "Nance"]
+
 export default function DiffPage() {
+    const [currentTab, setCurrentTab] = useState("Simple");
+
+    return (
+        <>
+            <SiteNav pageTitle="Transaction Diff Viewer" withWallet />
+            <Tabs tabs={TABS} currentTab={currentTab} setCurrentTab={setCurrentTab} />
+
+            {currentTab === "Simple" && <SimpleDiff />}
+            {currentTab === "Nance" && <NanceDiff />}
+        </>
+    )
+}
+
+function NanceDiff() {
+    const safeAddress = "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"
+    const abi = JSON.stringify(TerminalV1.abi)
+
+    const [rawDataLeft, setRawDataLeft] = useState<string>('')
+
+    const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined)
+    const [networkParam, setNetworkParam] = useQueryParam("network", StringParam)
+    // const [reconfigRequest, setReconfigRequest] = useState<FetchReconfigureRequest>(undefined)
+    const [fetchReconfig, setFetchReconfig] = useState(false);
+    const [gnosisLoading, setGnosisLoading] = useState(false)
+    const [nanceResponse, setNanceResponse] = useState<IFetchReconfigureResponse>(undefined)
+    const [gnosisResponse, setGnosisResponse] = useState({success: undefined, data: undefined})
+    const [error, setError] = useState<string>(undefined)
+    const [currentTime, setCurrentTime] = useState<string>(undefined)
+
+    const { address } = useAccount();
+    const { data: signer, isError, isLoading: signerLoading } = useSigner()
+    const jrpcSigner = signer as JsonRpcSigner;
+
+    const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest({
+        space: "juicebox",
+        version: "V1",
+        address: address || '0x0000000000000000000000000000000000000000',
+        datetime: currentTime,
+        network: networkParam || 'mainnet'
+    }, currentTime !== undefined);
+    const reconfigData = reconfig?.data
+    const rawDataRight = reconfigData?.transaction?.bytes
+
+    // FIXME not fixed to v1 abi
+    const { data: leftStr, message: leftMessage } = formatArgs(abi, rawDataLeft)
+    const { data: rightStr, message: rightMessage } = formatArgs(abi, rawDataRight)
+
+    useEffect(() => {
+        setCurrentTime(new Date().toISOString())
+    }, [address, networkParam])
+
+    const txSetter = (val: TxOption) => {
+        setSelectedSafeTx(val)
+        if(val?.tx.data) {
+            setRawDataLeft(val?.tx.data)
+        }
+    }
+
+    const resetErrors = () => {
+        setGnosisResponse({success: undefined, data: undefined});
+        setError(undefined);
+    }
+
+    const postTransaction = async () => {
+        setGnosisLoading(true);
+        const gnosis = new GnosisHandler(reconfigData?.safe, networkParam || 'mainnet');
+        const txnPartial = {
+            to: reconfigData?.transaction?.address,
+            value: 0,
+            data: reconfigData?.transaction?.bytes,
+            nonce: reconfigData?.nonce
+        };
+        const { safeTxGas } = await gnosis.getEstimate(txnPartial);
+        const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
+        const signature = await signer.signMessage(message).then((sig) => {
+            return sig.replace(/1b$/, '1f').replace(/1c$/, '20')
+        }).catch(() => {
+            setGnosisLoading(false)
+            setError('signature rejected');
+            return 'signature rejected'
+        })
+        if (signature === 'signature rejected') { return }
+        const txn: QueueSafeTransaction = {
+            ...txnPartial,
+            address,
+            safeTxGas,
+            transactionHash,
+            signature
+        };
+        const res = await gnosis.queueTransaction(txn)
+        setGnosisLoading(false);
+        setGnosisResponse(res)
+    }
+
+    return (
+        <>
+            <Notification title="Success" description={`Transaction queued!`} show={gnosisResponse?.success === true} close={resetErrors} checked={true} />
+            {(gnosisResponse?.success === false || reconfigError ) &&
+            <Notification title="Error" description={`Problem submitting transaction: ${gnosisResponse?.data || reconfigError}`} show={true} close={resetErrors} checked={false} />
+            }
+            <div className="bg-white">
+                <div className="flex flex-col w-2/3 p-6">
+                    <SafeTransactionSelector safeAddress={safeAddress} val={selectedSafeTx} setVal={txSetter} />
+                </div>
+                <div className="flex w-5/6 ml-10 space-x-5">
+                    <button
+                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                        disabled={!jrpcSigner || !rawDataRight}
+                        onClick={postTransaction}
+                    >{(gnosisLoading) ? 'sign...' : 'queue gnosis transaction'}</button>
+                    <input
+                        type="number"
+                        placeholder="nonce"
+                        value={nanceResponse?.nonce || ''}
+                        onChange={(e) => setNanceResponse({...nanceResponse, nonce: e.target.value})}
+                        className="block rounded rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+                    />
+                </div>
+
+                <div className="m-3">
+                    <ReactDiffViewer 
+                        oldValue={leftStr || (rawDataLeft && abi ? leftMessage : '')}
+                        newValue={rightStr || (rawDataRight && abi ? rightMessage : '')}
+                        splitView={false} 
+                        compareMethod={DiffMethod.LINES} 
+                        leftTitle={true ? 'Left' : 'Unified Mode'}
+                        rightTitle="Right"
+                        renderContent={(s) => renderArgEntry(s)} />
+                </div>
+            </div>
+        </>
+    )
+}
+
+function SimpleDiff() {
     // router
     const router = useRouter();
 
     // state
-    const [safeAddressParam, setSafeAddressParam] = useQueryParam("safe", StringParam)
+    const [safeAddressParam, setSafeAddressParam] = useQueryParam("safe", withDefault(StringParam, ''))
     const [splitView, setSplitView] = useState(true)
+    
     // -- abi
     const [abiOptionLeft, setAbiOptionLeft] = useState<ABIOption>(undefined)
     const [abiOptionRight, setAbiOptionRight] = useState<ABIOption>(undefined)
@@ -54,24 +196,10 @@ export default function DiffPage() {
         enabled: safeAddressParam?.endsWith('.eth')
     })
     const safeAddress = safeAddressResolved || safeAddressParam
-    const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 10, router.isReady)
-    const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
+    
+    const isLoading = !router.isReady;
 
-    const isLoading = !router.isReady || historyTxsLoading || queuedTxsLoading;
-
-    const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
-        if(!res) return []
-        return res.results.map((tx) => {
-            return {
-                id: tx.safeTxHash,
-                label: `Tx ${tx.nonce} ${tx.dataDecoded ? tx.dataDecoded.method : 'unknown'} -- ${tx.submissionDate}`,
-                status,
-                tx: tx
-            }
-        })
-    }
-    const options = convertToOptions(queuedTxs, true).concat(convertToOptions(historyTxs, false))
-
+    // shortcut
     const abiOptionSetter = (setVal: (val: ABIOption) => void, setData: (val: string) => void) => {
         return (val: ABIOption) => {
             setVal(val)
@@ -109,7 +237,6 @@ export default function DiffPage() {
 
     return (
         <>
-            <SiteNav pageTitle="Transaction Diff Viewer" />
             <div className="bg-white">
                 <div className="flex flex-col w-2/3 p-6">
                     <label htmlFor="safeAddress" className="block text-sm font-medium text-gray-700">
@@ -164,11 +291,11 @@ export default function DiffPage() {
 
                 <div className="flex justify-around gap-x-3 pb-6">
                     <div className="w-1/3 ml-3">
-                        <SearchableComboBox val={optionLeft} setVal={optionSetterLeft} options={options} label="Load Safe Transaction" />
+                        <SafeTransactionSelector safeAddress={safeAddress} shouldRun={router.isReady} val={optionLeft} setVal={optionSetterLeft} />
                     </div>
 
                     <div className="w-1/3 ml-3">
-                        <SearchableComboBox val={optionRight} setVal={optionSetterRight} options={options} label="Load Safe Transaction" />
+                        <SafeTransactionSelector safeAddress={safeAddress} shouldRun={router.isReady} val={optionRight} setVal={optionSetterRight} />
                     </div>
                 </div>
 
@@ -191,7 +318,7 @@ export default function DiffPage() {
                         </div>
                     </div>
                 </div>
-
+                
                 <div className="flex justify-center mb-3">
                     <Switch.Group as="div" className="items-center">
                         <Switch

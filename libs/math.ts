@@ -23,6 +23,25 @@ export const amountSubFee = (amount?: BigNumber, feePerbicent?: BigNumber) => {
     return amount.sub(feeForAmount(amount, feePerbicent) ?? 0)
 }
 
+export const ONE_BILLION = 1_000_000_000
+
+export const feeForAmountV2 = (
+    amountWad: BigNumber | undefined,
+    feePerBillion: BigNumber | undefined,
+  ): BigNumber | undefined => {
+    if (!feePerBillion || !amountWad) return
+    return amountWad.mul(feePerBillion).div(ONE_BILLION)
+  }
+
+export const amountSubFeeV2 = (
+    amountWad?: BigNumber,
+    feePerBillion?: BigNumber,
+  ): BigNumber | undefined => {
+    if (!feePerBillion || !amountWad) return
+    const feeAmount = feeForAmountV2(amountWad, feePerBillion) ?? 0
+    return amountWad.sub(feeAmount)
+  }
+
 /**
  * new amount = old amount / (1 - fee)
  */

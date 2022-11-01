@@ -10,7 +10,9 @@ import {
     ProposalRequest,
     ProposalResponse,
     ProposalUploadRequest,
-    ProposalUploadResponse
+    ProposalUploadResponse,
+    FetchReconfigureRequest,
+    FetchReconfigureResponse
 } from '../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -20,7 +22,6 @@ function jsonFetcher(): Fetcher<APIResponse<any>, string> {
         if (json?.success === 'false') {
             throw new Error(`An error occurred while fetching the data: ${json?.error}`)
         }
-
         return json
     }
 }
@@ -34,6 +35,10 @@ function jsonProposalsQueryFetcher(): Fetcher<ProposalsQueryResponse, string> {
 }
 
 function jsonProposalFetcher(): Fetcher<ProposalResponse, string> {
+    return jsonFetcher();
+}
+
+function jsonReconfigurationFetcher(): Fetcher<FetchReconfigureResponse, string> {
     return jsonFetcher();
 }
 
@@ -80,6 +85,13 @@ export function useProposalUpload(space: string, shouldFetch: boolean = true) {
     );
 }
 
-export function getUploadUrl(space: string) {
-    return `${NANCE_API_URL}/${space}/upload`;
+export function getPath(space: string, command: string) {
+    return `${NANCE_API_URL}/${space}/${command}`;
+}
+
+export function useReconfigureRequest(args: FetchReconfigureRequest, shouldFetch: boolean = true) {
+    return useSWR(
+        shouldFetch ? `${NANCE_API_URL}/${args.space}/reconfigure?version=${args.version}&address=${args.address}&datetime=${args.datetime}&network=${args.network}` : null,
+        jsonReconfigurationFetcher(),
+    );
 }
