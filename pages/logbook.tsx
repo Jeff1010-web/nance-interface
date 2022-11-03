@@ -26,7 +26,7 @@ export default function LogbookPage() {
     <div className="bg-white">
       <SiteNav pageTitle='Juicebox Logbook' />
       <div className="flex p-6 justify-center">
-        <ul role="list" className="-mb-8">
+        <ul role="list" className="-mb-8 truncate">
           {events.map((event, index) => (
             <li key={event.id}>
               <div className="relative pb-8 truncate">
@@ -44,12 +44,16 @@ export default function LogbookPage() {
                   <div className="min-w-0 flex-1">
                     <div>
                       <div className="text-sm">
-                        <FormattedAddress address={event.caller} style={"font-bold"} /> · <p className="mt-0.5 text-sm text-gray-500 inline">{formatDistanceToNow(fromUnixTime(event.timestamp), { addSuffix: true })}</p>
+                        <div className="truncate break-words max-w-2/3 inline">
+                          <FormattedAddress address={event.caller} style={"font-bold"} />
+                        </div>
+                        <p className="mt-0.5 text-sm text-gray-500 inline min-w-1/3">&nbsp;·&nbsp;{formatDistanceToNow(fromUnixTime(event.timestamp), { addSuffix: true })}</p>
                       </div>
                       <p className="mt-0.5 text-sm"><a className="text-blue-700 font-bold" href={`https://etherscan.io/tx/${event.txHash}`}>{event.eventType}</a> on
                         <ResolvedProjectWithMetadata version={parseInt(event.project.cv[0])} projectId={event.project.projectId} handle={event.project.handle} metadataUri={event.project.metadataUri} style={"text-xs text-black font-semibold"} />
                       </p>
                     </div>
+
                     {event.memo && (
                       <p className="text-sm truncate max-w-xs md:max-w-md">{event.memo}</p>
                     )}
