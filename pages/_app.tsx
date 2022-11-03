@@ -17,6 +17,7 @@ import {NextQueryParamProvider} from 'next-query-params';
 
 import {JuiceProvider} from 'juice-hooks'
 import { Flowbite } from 'flowbite-react';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const graphqlClient = new GraphQLClient({
   url: 'https://hub.snapshot.org/graphql'
@@ -62,7 +63,9 @@ function MyApp({ Component, pageProps }) {
           <NextQueryParamProvider>
             <JuiceProvider provider={wagmiClient.provider}>
               <Flowbite theme={theme}>
-                <Component {...pageProps} />
+                <ErrorBoundary>
+                  <Component {...pageProps} />
+                </ErrorBoundary>
               </Flowbite>
             </JuiceProvider>
           </NextQueryParamProvider>

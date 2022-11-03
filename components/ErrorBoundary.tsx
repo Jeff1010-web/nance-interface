@@ -1,4 +1,5 @@
 import React, {Component, PropsWithChildren} from "react";
+import Custom500 from "../pages/500";
 
 interface State {
   hasError: boolean;
@@ -23,7 +24,7 @@ export default class ErrorBoundary extends Component<PropsWithChildren, State> {
   render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI
-      return <h1>Something went wrong.</h1>;
+      return <Custom500 />
     }
 
     return this.props.children;
