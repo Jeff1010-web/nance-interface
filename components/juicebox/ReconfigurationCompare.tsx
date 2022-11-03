@@ -287,7 +287,7 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                                 <td className="py-5 px-6">
                                     <CompareCell 
                                         hasValue={previewTicketMaps.has(keyOfSplit(mod))}
-                                        isSame={currentTicketMaps.get(keyOfSplit(mod))?.percent.eq(previewTicketMaps.get(keyOfSplit(mod))?.percent)}
+                                        isSame={currentTicketMaps.get(keyOfSplit(mod))?.percent?.eq(previewTicketMaps.get(keyOfSplit(mod))?.percent ?? 0)}
                                         valueGetter={() => `${(previewTicketMaps.get(keyOfSplit(mod))?.percent.toNumber()/JBConstants.TotalPercent.Splits[previewFC.version-1]*100).toFixed(2)}%`} />
                                 </td>
                             </tr>
