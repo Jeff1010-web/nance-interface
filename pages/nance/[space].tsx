@@ -48,7 +48,7 @@ export default function NanceProposals() {
                         <div className="px-4 py-4 sm:px-6">
                             <div className="flex items-center justify-between">
                                 <Link href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : `/nance/${space as string}/proposal/${proposal.hash}`}>
-                                    <a className="truncate text-sm font-medium text-indigo-600 hover:underline">
+                                    <a className="break-words text-sm font-medium text-indigo-600 hover:underline">
                                         {`${(proposal.proposalId !== '') ? proposal.proposalId : '#TBD'} - ${proposal.title}`}
                                     </a>
                                 </Link>
