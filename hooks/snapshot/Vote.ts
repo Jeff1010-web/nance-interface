@@ -50,6 +50,12 @@ export default function useVote(
         }
         
     }, [signer, space, proposal, type, choice, reason, address]);
+
+    const reset = () => {
+        setValue(undefined);
+        setError(undefined);
+        setLoading(false);
+    }
     
-    return { trigger, value, loading, error };
+    return { trigger, value, loading, error, reset };
 }

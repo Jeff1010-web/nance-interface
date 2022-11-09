@@ -4,12 +4,12 @@ import { Transition } from '@headlessui/react'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/outline'
 import { XIcon } from '@heroicons/react/outline'
 
-export default function Notification({title, description, show, close, checked}:
-    {title: string, description: string, show: boolean, close: () => void, checked: boolean}) {
+export default function Notification({title, description, show, close, checked, autoClose = false}:
+    {title: string, description: string, show: boolean, close: () => void, checked: boolean, autoClose?: boolean}) {
 
   // close notification after 5 seconds
   useEffect(() => {
-    if(show) {
+    if(show && autoClose) {
       const timeout = setTimeout(close, 5000)
       return () => clearTimeout(timeout)
     }

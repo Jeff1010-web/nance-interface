@@ -33,7 +33,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   // external
   const { data: vp, loading: vpLoading } = useVotingPower(address, spaceId, proposal?.id || '');
-  const { trigger, value, loading, error } = useVote(spaceId, proposal?.id, proposal?.type, choice, reason);
+  const { trigger, value, loading, error, reset } = useVote(spaceId, proposal?.id, proposal?.type, choice, reason);
 
   // shorthand functions
   const submitVote = () => {
@@ -42,6 +42,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
   }
   const close = () => {
     setNotificationEnabled(false);
+    reset();
     closeModal();
   }
 
@@ -116,10 +117,13 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
 
                   <div className="w-full grid grid-cols-1 gap-y-8 gap-x-6 items-start sm:grid-cols-12 lg:gap-x-8">
                     {value && 
-                      <Notification title="Vote result" description="Success!" show={notificationEnabled} close={() => setNotificationEnabled(false)} checked={true} />
+                      <Notification title="Vote result" description="Success!" show={notificationEnabled} close={close} checked={true} autoClose={true} />
                     }
                     {error && 
-                      <Notification title="Vote result" description={error.error_description || error.message} show={notificationEnabled} close={() => setNotificationEnabled(false)} checked={false} />
+                      <Notification title="Vote result" description={error.error_description || error.message} show={notificationEnabled} close={() => {
+                        setNotificationEnabled(false);
+                        reset();
+                      }} checked={false} />
                     }
                     <div className="sm:col-span-12 lg:col-span-12">
                       <h2 className="text-2xl font-bold text-gray-900 sm:pr-12">{proposal.title}</h2>
