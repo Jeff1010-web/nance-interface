@@ -265,8 +265,8 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                     {/* Vote choice data */}
                                     {proposalInfo.scores_total > 0 && 
                                         proposalInfo?.scores
-                                            ?.filter((score) => score>0)
-                                            .map((score, index) => {return { score, index }})
+                                            ?.map((score, index) => {return { score, index }})
+                                            .filter((o) => o.score>0)
                                             // sort by score desc
                                             .sort((a, b) => b.score - a.score)
                                             .map(({ score, index }) => (

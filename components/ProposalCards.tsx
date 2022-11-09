@@ -55,8 +55,8 @@ function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotPr
 
   const scores = 
     proposal.scores
-      .filter((score) => score>0)
       .map((score, index) => {return { score, index }})
+      .filter((o) => o.score>0)
       // sort by score desc
       .sort((a, b) => b.score - a.score)
   const moreThanThreeScores = scores.length > 3;
