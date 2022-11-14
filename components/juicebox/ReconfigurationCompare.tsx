@@ -3,7 +3,7 @@ import FormattedAddress from "../FormattedAddress";
 // unionBy([2.1], [1.2, 2.3], Math.floor);
 // => [2.1, 1.2]
 import unionBy from 'lodash.unionby';
-import { BigNumber, constants, utils } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { CheckIcon, MinusIcon } from '@heroicons/react/solid';
 import ResolvedProject from "../ResolvedProject";
 import { amountSubFee, amountSubFeeV2 } from "../../libs/math";
@@ -175,7 +175,7 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                             <div className="relative table h-full">
                                 <p>
                                     <span className="text-4xl font-bold tracking-tight text-gray-900">{formatCurrency(previewFC.fundingCycle.currency, previewFC.fundingCycle.target)}</span>{' '}
-                                    <span className="text-base font-medium text-gray-500">/{previewFC.fundingCycle.duration.toNumber() / JBConstants.DurationUnit[currentFC.version-1]}&nbsp;days</span>
+                                    <span className="text-base font-medium text-gray-500">/{previewFC.fundingCycle.duration.toNumber() / JBConstants.DurationUnit[previewFC.version-1]}&nbsp;days</span>
                                 </p>
                             </div>
                         </td>
@@ -281,7 +281,7 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                                 <td className="py-5 px-6">
                                     <CompareCell 
                                         hasValue={currentTicketMaps.has(keyOfSplit(mod))}
-                                        valueGetter={() => `${(currentTicketMaps.get(keyOfSplit(mod)).percent.toNumber()/JBConstants.TotalPercent.Splits[previewFC.version-1]*100).toFixed(2)}%`} />
+                                        valueGetter={() => `${(currentTicketMaps.get(keyOfSplit(mod)).percent.toNumber()/JBConstants.TotalPercent.Splits[currentFC.version-1]*100).toFixed(2)}%`} />
                                 </td>
 
                                 <td className="py-5 px-6">

@@ -1,28 +1,24 @@
 import { BigNumber, utils } from 'ethers'
-import { TerminalV1Contract } from "../libs/contractsV1";
-import JBETHPaymentTerminal from '@jbx-protocol/contracts-v2/deployments/mainnet/JBETHPaymentTerminal.json';
-import JBControllerV2 from '@jbx-protocol/contracts-v2/deployments/mainnet/JBController.json';
-
 import { useEffect, useState } from "react";
 import SiteNav from "../components/SiteNav";
 import useCurrentFundingCycle, { useCurrentFundingCycleV2 } from '../hooks/juicebox/CurrentFundingCycle';
 import { useCurrentPayoutMods, useCurrentTicketMods } from '../hooks/juicebox/CurrentMods';
-import { JBConstants, JBFundAccessConstraints, JBGroupedSplits, parseV1Metadata, payoutMod2Split, PayoutModV1, ticketMod2Split, TicketModV1, V1FundingCycleMetadata, V2FundingCycleMetadata, V2V3FundingCycleData } from '../models/JuiceboxTypes'
+import { JBConstants, parseV1Metadata, payoutMod2Split, ticketMod2Split, V1FundingCycleMetadata } from '../models/JuiceboxTypes'
 import { NumberParam, useQueryParams, withDefault } from 'next-query-params';
 import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 import useProjectInfo from '../hooks/juicebox/ProjectInfo';
 import ProjectSearch, { ProjectOption } from "../components/juicebox/ProjectSearch";
 import ResolvedProject from "../components/ResolvedProject";
-import ReconfigurationCompare, { FundingCycleArgs, FundingCycleConfigProps, MetadataArgs } from '../components/juicebox/ReconfigurationCompare';
+import ReconfigurationCompare, { FundingCycleConfigProps, MetadataArgs } from '../components/juicebox/ReconfigurationCompare';
 import { useCurrentSplits } from '../hooks/juicebox/CurrentSplits';
 import { useDistributionLimit } from '../hooks/juicebox/DistributionLimit';
 import useTerminalFee from '../hooks/juicebox/TerminalFee';
 import { useReconfigureRequest } from '../hooks/NanceHooks';
-import { getUnixTime } from 'date-fns';
 import { useAccount, useSigner } from 'wagmi';
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { GnosisHandler } from '../libs/gnosis';
 import { QueueSafeTransaction } from '../models/SafeTypes';
+import parseSafeJuiceboxTx, { getVersionOfTx } from '../libs/SafeJuiceboxParser';
 
 function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
   if (!m) return undefined;
@@ -128,8 +124,6 @@ export default function JuiceboxPage() {
                   <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedSafeTx} safeAddress={owner} shouldRun={owner !== undefined} />
                 </div>
 
-                
-
                 {project === 1 && (
                   <div className="w-1/4 space-y-2">
                     <button
@@ -196,39 +190,9 @@ function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: TxOptio
   const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
   useEffect(() => {
-    const iface = new utils.Interface(TerminalV1Contract.contractInterface);
-    const raw = tx?.tx.data || rawData;
-    try {
-      const ret = iface.parseTransaction({data: raw, value: 0});
-      // FIXME: detect illegal raw data
-      const {
-        _projectId,
-        _properties,
-        _metadata,
-        _payoutMods,
-        _ticketMods
-      }: {
-        _projectId: BigNumber,
-        _properties: Omit<FundingCycleArgs, "fee" | "configuration">,
-        _metadata: V1FundingCycleMetadata,
-        _payoutMods: PayoutModV1[],
-        _ticketMods: TicketModV1[],
-      } = ret.args as any;
-      const txDate = getUnixTime(new Date(tx?.tx.submissionDate)) || getUnixTime(new Date());
-      const newConfig: FundingCycleConfigProps = {
-        version: 1,
-        fundingCycle: {
-          ..._properties, 
-          fee: fc?.fee, 
-          configuration: txDate ? BigNumber.from(txDate) : fc?.configured
-        },
-        metadata: v1metadata2args(_metadata),
-        payoutMods: _payoutMods.map(payoutMod2Split),
-        ticketMods: _ticketMods.map(ticketMod2Split)
-      };
+    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx?.tx, 1), tx?.tx.data || rawData, tx?.tx.submissionDate, fc?.fee, fc?.configured);
+    if (newConfig) {
       setPreviewConfig(newConfig);
-    } catch (e) {
-      console.debug('TerminalV1.interface.parse >', e);
     }
   }, [tx, fc, rawData]);
 
@@ -270,40 +234,9 @@ function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: TxOptio
   const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
   useEffect(() => {
-    const iface = new utils.Interface(JBControllerV2.abi);
-    const raw = tx?.tx.data || rawData;
-    try {
-      const ret = iface.parseTransaction({data: raw, value: 0});
-      // FIXME: detect illegal raw data
-      const {
-        _data,
-        _metadata,
-        _groupedSplits,
-        _fundAccessConstraints
-      }: {
-        _data: V2V3FundingCycleData,
-        _metadata: V2FundingCycleMetadata,
-        _groupedSplits: JBGroupedSplits[],
-        _fundAccessConstraints: JBFundAccessConstraints[]
-      } = ret.args as any;
-      const fac = _fundAccessConstraints.find(c => c.terminal == JBETHPaymentTerminal.address);
-      const txDate = getUnixTime(new Date(tx?.tx.submissionDate)) || getUnixTime(new Date());
-      const newConfig: FundingCycleConfigProps = {
-        version: 2,
-        fundingCycle: {
-          ..._data, 
-          fee,
-          configuration: txDate ? BigNumber.from(txDate) : fc?.configuration,
-          currency: fac?.distributionLimitCurrency.sub(1),
-          target: fac?.distributionLimit
-        },
-        metadata: _metadata,
-        payoutMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.ETH)?.splits,
-        ticketMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.RESERVED_TOKEN)?.splits
-      };
+    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx?.tx, 2), tx?.tx.data || rawData, tx?.tx.submissionDate, fee, fc?.configuration);
+    if (newConfig) {
       setPreviewConfig(newConfig);
-    } catch (e) {
-      console.debug('JBETHPaymentTerminal.interface.parse >', e);
     }
   }, [tx, fc, rawData])
 
