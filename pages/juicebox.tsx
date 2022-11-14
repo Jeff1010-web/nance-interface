@@ -69,7 +69,7 @@ export default function JuiceboxPage() {
     const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest({
         space: "juicebox",
         version: `V${version}`,
-        address: owner || '0x0000000000000000000000000000000000000000',
+        address: address || '0x0000000000000000000000000000000000000000',
         datetime: currentTime,
         network: 'mainnet'
     }, currentTime !== undefined && project === 1);
@@ -190,7 +190,6 @@ export default function JuiceboxPage() {
                         type="number"
                         placeholder="custom nonce"
                         defaultValue={reconfigData?.nonce}
-                        value={nonce}
                         onChange={(e) => setNonce(e.target.value)}
                         className="inline-flex rounded rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
                     />
