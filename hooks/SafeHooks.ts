@@ -35,3 +35,10 @@ export function useQueuedTransactions(address: string, nonceGte: number, limit: 
         jsonFetcher(),
     );
 }
+
+export function useMultisigTransactionOf(address: string, safeTxHash: string, shouldFetch: boolean = true) {
+    return useSWR(
+        shouldFetch ? `https://safe-transaction-mainnet.safe.global/api/v1/safes/${address}/multisig-transactions/?safe_tx_hash=${safeTxHash}` : null,
+        jsonFetcher(),
+    );
+}

@@ -81,40 +81,17 @@ interface ReconfigurationCompareProps {
 export default function ReconfigurationCompare({currentFC, previewFC}: ReconfigurationCompareProps) {
     const configFormatter: {
       name: string;
-      getFunc: (fc: FundingCycleConfigProps) => any[];
+      getFunc: (fc: FundingCycleConfigProps) => any;
     }[] = [
-        {name: 'Reserve rate', getFunc: (fc) => [
-            fc.metadata.reservedRate.toNumber(), 
-            fc.metadata.reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[fc.version-1] * 100 + "%"
-        ]},
-        {name: 'Rdemption rate', getFunc: (fc) => [
-            fc.metadata.redemptionRate.toNumber(), 
-            fc.metadata.redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[fc.version-1] * 100 + "%"
-        ]},
-        {name: 'Discount rate', getFunc: (fc) => [
-            fc.fundingCycle.discountRate.toNumber(), 
-            fc.fundingCycle.discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[fc.version-1] * 100 + "%"
-        ]},
-        {name: 'Payments', getFunc: (fc) => [
-            fc.metadata.pausePay, 
-            fc.metadata.pausePay ? "Disabled" : "Enabled"
-        ]},
-        {name: 'Token minting', getFunc: (fc) => [
-            fc.metadata.allowMinting, 
-            fc.metadata.allowMinting ? "Enabled" : "Disabled"
-        ]},
-        {name: 'Terminal migration', getFunc: (fc) => [
-            fc.metadata.allowTerminalMigration, 
-            fc.metadata.allowTerminalMigration ? "Enabled" : "Disabled"
-        ]},
-        {name: 'Controller migration', getFunc: (fc) => [
-            fc.metadata.allowControllerMigration, 
-            fc.metadata.allowControllerMigration ? "Enabled" : "Disabled"
-        ]},
-        {name: 'Reconfiguration strategy', getFunc: (fc) => [
-            fc.fundingCycle.ballot, 
-            <FormattedAddress key={fc.fundingCycle.ballot} address={fc.fundingCycle.ballot} />
-        ]},      
+        {name: 'Reserve rate', getFunc: (fc) => fc.metadata.reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[fc.version-1] * 100 + "%"},
+        {name: 'Rdemption rate', getFunc: (fc) => fc.metadata.redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[fc.version-1] * 100 + "%"},
+        {name: 'Discount rate', getFunc: (fc) => fc.fundingCycle.discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[fc.version-1] * 100 + "%"},
+        {name: 'Payments', getFunc: (fc) => fc.metadata.pausePay ? "Disabled" : "Enabled"},
+        {name: 'Token minting', getFunc: (fc) => fc.metadata.allowMinting ? "Enabled" : "Disabled"},
+        {name: 'Terminal migration', getFunc: (fc) => fc.metadata.allowTerminalMigration ? "Enabled" : "Disabled"},
+        {name: 'Controller migration', getFunc: (fc) => fc.metadata.allowControllerMigration ? "Enabled" : "Disabled"},
+        //{name: 'Reconfiguration strategy', getFunc: (fc) => <FormattedAddress key={fc.fundingCycle.ballot} address={fc.fundingCycle.ballot} />},   
+        {name: 'Reconfiguration strategy', getFunc: (fc) => fc.fundingCycle.ballot},    
     ]
   
     const payouts: JBSplit[] = unionBy(currentFC.payoutMods, previewFC.payoutMods, keyOfSplit).sort(orderByPercent);
@@ -199,13 +176,9 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                                     {config.name}
                                 </th>
 
-                                <td className="py-5 px-6">
-                                    <span>{config.getFunc(currentFC)[1]}</span>
-                                </td>
-
-                                <td className="py-5 px-6">
-                                    <CompareCell hasValue={config.getFunc(previewFC)[0] !== undefined} isSame={config.getFunc(currentFC)[0] == config.getFunc(previewFC)[0]} valueGetter={() => config.getFunc(previewFC)[1]} />
-                                </td>
+                                <CompareCell
+                                    oldVal={config.getFunc(currentFC)}
+                                    newVal={config.getFunc(previewFC)} />
                             </tr>
                         ))}
                     </>
@@ -231,30 +204,22 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                                     </div>
                                 </th>
 
-                                <td className="py-5 px-6">
-                                    <CompareCell 
-                                        hasValue={currentPayoutMaps.has(keyOfSplit(mod))}
-                                        valueGetter={() => formattedSplit(
-                                            currentPayoutMaps.get(keyOfSplit(mod)).percent,
-                                            currentFC.fundingCycle.currency,
-                                            currentFC.fundingCycle.target, 
-                                            currentFC.fundingCycle.fee,
-                                            currentFC.version
-                                        )} />
-                                </td>
-
-                                <td className="py-5 px-6">
-                                    <CompareCell 
-                                        hasValue={previewPayoutMaps.has(keyOfSplit(mod))}
-                                        isSame={almostEqual(currentFC.fundingCycle.target.mul(currentPayoutMaps.get(keyOfSplit(mod))?.percent ?? 0), previewFC.fundingCycle.target.mul(previewPayoutMaps.get(keyOfSplit(mod))?.percent ?? 0))}
-                                        valueGetter={() => formattedSplit(
-                                            previewPayoutMaps.get(keyOfSplit(mod)).percent,
-                                            previewFC.fundingCycle.currency,
-                                            previewFC.fundingCycle.target, 
-                                            previewFC.fundingCycle.fee,
-                                            previewFC.version
-                                        )} />
-                                </td>
+                                <CompareCell 
+                                    oldVal={formattedSplit(
+                                        currentPayoutMaps.get(keyOfSplit(mod))?.percent,
+                                        currentFC.fundingCycle.currency,
+                                        currentFC.fundingCycle.target, 
+                                        currentFC.fundingCycle.fee,
+                                        currentFC.version
+                                    )}
+                                    newVal={formattedSplit(
+                                        previewPayoutMaps.get(keyOfSplit(mod))?.percent,
+                                        previewFC.fundingCycle.currency,
+                                        previewFC.fundingCycle.target, 
+                                        previewFC.fundingCycle.fee,
+                                        previewFC.version
+                                    )}
+                                    isSame={almostEqual(currentFC.fundingCycle.target.mul(currentPayoutMaps.get(keyOfSplit(mod))?.percent ?? 0), previewFC.fundingCycle.target.mul(previewPayoutMaps.get(keyOfSplit(mod))?.percent ?? 0))} />
                             </tr>
                         ))}
                     </>
@@ -278,18 +243,9 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                                     <FormattedAddress address={mod.beneficiary} />:&nbsp;
                                 </th>
 
-                                <td className="py-5 px-6">
-                                    <CompareCell 
-                                        hasValue={currentTicketMaps.has(keyOfSplit(mod))}
-                                        valueGetter={() => `${(currentTicketMaps.get(keyOfSplit(mod)).percent.toNumber()/JBConstants.TotalPercent.Splits[currentFC.version-1]*100).toFixed(2)}%`} />
-                                </td>
-
-                                <td className="py-5 px-6">
-                                    <CompareCell 
-                                        hasValue={previewTicketMaps.has(keyOfSplit(mod))}
-                                        isSame={currentTicketMaps.get(keyOfSplit(mod))?.percent?.eq(previewTicketMaps.get(keyOfSplit(mod))?.percent ?? 0)}
-                                        valueGetter={() => `${(previewTicketMaps.get(keyOfSplit(mod))?.percent.toNumber()/JBConstants.TotalPercent.Splits[previewFC.version-1]*100).toFixed(2)}%`} />
-                                </td>
+                                <CompareCell 
+                                    oldVal={currentTicketMaps.has(keyOfSplit(mod)) ? `${(currentTicketMaps.get(keyOfSplit(mod)).percent.toNumber()/JBConstants.TotalPercent.Splits[currentFC.version-1]*100).toFixed(2)}%` : undefined}
+                                    newVal={previewTicketMaps.has(keyOfSplit(mod)) ? `${(previewTicketMaps.get(keyOfSplit(mod)).percent.toNumber()/JBConstants.TotalPercent.Splits[previewFC.version-1]*100).toFixed(2)}%` : undefined} />
                             </tr>
                         ))}
                     </>
@@ -299,9 +255,11 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
         </div>
       </div>
     )
-  }
+}
 
 function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumber, fee: BigNumber, version: number) {
+    if(!percent) return undefined;
+
     const _totalPercent = JBConstants.TotalPercent.Splits[version-1];
     const _percent = percent.toNumber();
 
@@ -313,18 +271,41 @@ function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumb
     return `${(_percent/_totalPercent*100).toFixed(2)}% (${formatCurrency(currency, _amount.mul(percent).div(_totalPercent))})`
 }
 
-function CompareCell({ valueGetter, hasValue = true, isSame = false }: { valueGetter: () => string, hasValue?: boolean, isSame?: boolean }) {
-  return (
-    <>
-      {hasValue ? (
-        isSame ? (
-          <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
-        ) : (
-          <span>{valueGetter()}</span>
-        )
-      ) : (
-        <MinusIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-      )}
-    </>
-  )
+function CompareCell({ oldVal, newVal, isSame = false }: { oldVal: string, newVal: string, isSame?: boolean }) {
+    const _isSame = isSame || oldVal == newVal;
+    const deleted = newVal === undefined;
+    const added = oldVal === undefined && newVal !== undefined;
+
+    return (
+        <>
+            {!deleted ? (
+                _isSame ? (
+                    <td colSpan={2} className="py-5 px-6 text-center">
+                        <span>{oldVal}</span>
+                    </td>
+                    // <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
+                ) : (
+                    added ? (
+                        <td colSpan={2} className="py-5 px-6 text-center text-green-500">
+                            <span>{newVal}</span>
+                        </td>
+                    ) : (
+                        <>
+                            <td className="py-5 px-6">
+                                <span>{oldVal}</span>
+                            </td>
+                            <td className="py-5 px-6 text-yellow-400">
+                                <span>{newVal}</span>
+                            </td>
+                        </>
+                    )
+                ) 
+            ) : (
+                <td colSpan={2} className="py-5 px-6 line-through text-center text-red-500">
+                    <span>{oldVal}</span>
+                </td>
+                //<MinusIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            )}
+        </>
+    )
 }

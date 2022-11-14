@@ -72,7 +72,7 @@ export default function ProjectSearch({onProjectOptionSet, label}: {onProjectOpt
                         aria-hidden="true"
                       />
                       <span className={classNames('ml-3 truncate', selected && 'font-semibold')}>
-                        {option.handle}
+                        {option.version?.[0] === "1" ? "(v1)" : ""} {option.handle}
                         <span className="sr-only"> is {option.version === "2" ? 'newest' : 'old'}</span>
                       </span>
                     </div>

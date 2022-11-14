@@ -4,7 +4,7 @@ import SiteNav from "../components/SiteNav";
 import useCurrentFundingCycle, { useCurrentFundingCycleV2 } from '../hooks/juicebox/CurrentFundingCycle';
 import { useCurrentPayoutMods, useCurrentTicketMods } from '../hooks/juicebox/CurrentMods';
 import { JBConstants, parseV1Metadata, payoutMod2Split, ticketMod2Split, V1FundingCycleMetadata } from '../models/JuiceboxTypes'
-import { NumberParam, useQueryParams, withDefault } from 'next-query-params';
+import { NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
 import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 import useProjectInfo from '../hooks/juicebox/ProjectInfo';
 import ProjectSearch, { ProjectOption } from "../components/juicebox/ProjectSearch";
@@ -17,8 +17,10 @@ import { useReconfigureRequest } from '../hooks/NanceHooks';
 import { useAccount, useSigner } from 'wagmi';
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { GnosisHandler } from '../libs/gnosis';
-import { QueueSafeTransaction } from '../models/SafeTypes';
+import { QueueSafeTransaction, SafeMultisigTransaction } from '../models/SafeTypes';
 import parseSafeJuiceboxTx, { getVersionOfTx } from '../libs/SafeJuiceboxParser';
+import Tabs from '../components/Tabs';
+import { useMultisigTransactionOf } from '../hooks/SafeHooks';
 
 function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
   if (!m) return undefined;
@@ -32,14 +34,19 @@ function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
   }
 }
 
+const TABS = ["Multisig", "Bookkeeper"]
+
 export default function JuiceboxPage() {
     // router
     const [query, setQuery] = useQueryParams({ 
       project: withDefault(NumberParam, 1), 
-      version: withDefault(NumberParam, 1) 
+      version: withDefault(NumberParam, 1),
+      role: withDefault(StringParam, "Multisig"),
+      safeTxHash: withDefault(StringParam, "") 
     });
     const project = query.project;
     const version = query.version;
+    const role = query.role;
     // state
     const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined);
     // FIXME remove me on endpoint and here
@@ -48,6 +55,12 @@ export default function JuiceboxPage() {
     // external hooks
     const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(1, project);
     const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : undefined;
+    const { data: specifiedSafeTx } = useMultisigTransactionOf(owner, query.safeTxHash, query.safeTxHash !== "");
+
+    const setSelectedTxOption = (tx: TxOption) => {
+      setSelectedSafeTx(tx);
+      setQuery({ safeTxHash: tx?.tx?.safeTxHash });
+    }
 
     // nance
     const { address } = useAccount();
@@ -61,7 +74,14 @@ export default function JuiceboxPage() {
         network: 'mainnet'
     }, currentTime !== undefined && project === 1);
     const reconfigData = reconfig?.data
+
+    // this will override selectedSafeTx from options
     const rawData = reconfig?.data?.transaction?.bytes
+    let _txForComponent = selectedSafeTx?.tx
+    if (role === "Multisig" && specifiedSafeTx?.results?.[0]) {
+      _txForComponent = selectedSafeTx?.tx || specifiedSafeTx?.results?.[0]
+    }
+
     // nance post safe transaction
     const [nonce, setNonce] = useState<string>(undefined);
     const [error, setError] = useState<string>(undefined)
@@ -112,6 +132,7 @@ export default function JuiceboxPage() {
     return (
         <>
           <SiteNav pageTitle="Juicebox Reconfiguration Helper" withWallet />
+          <Tabs tabs={TABS} currentTab={role} setCurrentTab={(tab) => setQuery({role: tab})} />
           <div className="bg-white">
             <div id="project-status" className="flex justify-center py-2 mx-6">
                 <ResolvedProject projectId={project} version={version} />
@@ -121,10 +142,10 @@ export default function JuiceboxPage() {
             </div>
             <div id="safetx-loader" className="flex justify-center pt-2 mx-6">
                 <div className="w-1/4">
-                  <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedSafeTx} safeAddress={owner} shouldRun={owner !== undefined} />
+                  <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedTxOption} safeAddress={owner} shouldRun={owner !== undefined} />
                 </div>
 
-                {project === 1 && (
+                {project === 1 && role === "Bookkeeper" && (
                   <div className="w-1/4 space-y-2">
                     <button
                       disabled={rawData === undefined || selectedSafeTx === undefined}
@@ -159,14 +180,14 @@ export default function JuiceboxPage() {
                 {/* <textarea rows={3} className="w-full rounded-xl" id="raw-data" placeholder="Paste raw data here" value={rawData} onChange={(e) => setRawData(e.target.value)} /> */}
             </div>
             <br />
-            {version == 1 && <V1Compare projectId={project} tx={selectedSafeTx} rawData={rawData} />}
-            {version == 2 && <V2Compare projectId={project} tx={selectedSafeTx} rawData={rawData} />}
+            {version == 1 && <V1Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
+            {version == 2 && <V2Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
           </div>
         </>
     )
 }
 
-function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: TxOption, rawData?: string }) {
+function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
   // state
   const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
 
@@ -190,7 +211,7 @@ function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: TxOptio
   const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
   useEffect(() => {
-    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx?.tx, 1), tx?.tx.data || rawData, tx?.tx.submissionDate, fc?.fee, fc?.configured);
+    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 1), tx?.data || rawData, tx?.submissionDate, fc?.fee, fc?.configured);
     if (newConfig) {
       setPreviewConfig(newConfig);
     }
@@ -203,7 +224,7 @@ function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: TxOptio
   )
 }
 
-function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: TxOption, rawData?: string }) {
+function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
   // state
   const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
 
@@ -234,7 +255,7 @@ function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: TxOptio
   const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
   useEffect(() => {
-    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx?.tx, 2), tx?.tx.data || rawData, tx?.tx.submissionDate, fee, fc?.configuration);
+    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 2), tx?.data || rawData, tx?.submissionDate, fee, fc?.configuration);
     if (newConfig) {
       setPreviewConfig(newConfig);
     }
