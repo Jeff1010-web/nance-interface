@@ -1,4 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber';
+import { constants } from 'ethers';
 
 export type PayoutModV1 = {
     preferUnstaked: boolean;
@@ -206,6 +207,6 @@ export function ticketMod2Split(ticketMod: TicketModV1): JBSplit {
         lockedUntil: BigNumber.from(ticketMod.lockedUntil),
         beneficiary: ticketMod.beneficiary,
         projectId: BigNumber.from(0),
-        allocator: '0'
+        allocator: constants.AddressZero
     }
 }

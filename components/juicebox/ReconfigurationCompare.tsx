@@ -226,7 +226,7 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                             <tr key={keyOfSplit(mod)}>
                                 <th className="py-5 px-6 text-left text-sm font-normal text-gray-500" scope="row">
                                     <div className="flex flex-col">
-                                        {mod.projectId.toNumber() != 0 && <ResolvedProject version={currentFC.version} projectId={mod.projectId.toNumber()} style="font-semibold" />}
+                                        {mod.projectId.toNumber() != 0 && <ResolvedProject version={currentPayoutMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} projectId={mod.projectId.toNumber()} style="font-semibold" />}
                                         <FormattedAddress address={mod.beneficiary} style={mod.projectId.toNumber() != 0 ? "text-xs italic" : "font-semibold"} />
                                     </div>
                                 </th>
@@ -274,7 +274,7 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                         {tickets.map((mod) => (
                             <tr key={keyOfSplit(mod)}>
                                 <th className="py-5 px-6 text-left text-sm font-normal text-gray-500" scope="row">
-                                    {mod.projectId.toNumber() != 0 && <ResolvedProject version={1} projectId={mod.projectId.toNumber()} />}
+                                    {mod.projectId.toNumber() != 0 && <ResolvedProject version={currentTicketMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} projectId={mod.projectId.toNumber()} />}
                                     <FormattedAddress address={mod.beneficiary} />:&nbsp;
                                 </th>
 
