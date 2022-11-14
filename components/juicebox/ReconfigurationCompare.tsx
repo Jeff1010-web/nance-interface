@@ -280,13 +280,14 @@ function CompareCell({ oldVal, newVal, isSame = false }: { oldVal: string, newVa
         <>
             {!deleted ? (
                 _isSame ? (
-                    <td colSpan={2} className="py-5 px-6 text-center">
+                    <td colSpan={2} className="py-5 px-6 text-center text-gray-300">
                         <span>{oldVal}</span>
                     </td>
                     // <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
                 ) : (
                     added ? (
                         <td colSpan={2} className="py-5 px-6 text-center text-green-500">
+                            <span className="text-gray-500">Added </span>
                             <span>{newVal}</span>
                         </td>
                     ) : (
@@ -295,14 +296,16 @@ function CompareCell({ oldVal, newVal, isSame = false }: { oldVal: string, newVa
                                 <span>{oldVal}</span>
                             </td>
                             <td className="py-5 px-6 text-yellow-400">
+                                <span className="text-gray-500">Changed to </span>
                                 <span>{newVal}</span>
                             </td>
                         </>
                     )
                 ) 
             ) : (
-                <td colSpan={2} className="py-5 px-6 line-through text-center text-red-500">
-                    <span>{oldVal}</span>
+                <td colSpan={2} className="py-5 px-6 text-center text-red-500">
+                    <span className="text-gray-500">Removed </span>
+                    <span className="line-through">{oldVal}</span>
                 </td>
                 //<MinusIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
             )}
