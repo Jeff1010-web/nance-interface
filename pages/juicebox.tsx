@@ -139,6 +139,17 @@ export default function JuiceboxPage() {
             <div id="project-status" className="flex justify-center py-2 mx-6">
                 <ResolvedProject projectId={project} version={version} />
             </div>
+
+            {_txForComponent?.safeTxHash && (
+              <div className="flex justify-center py-2 mx-6">
+                <a target="_blank" rel="noopener noreferrer"
+                  className="text-green-500 hover:underline"
+                  href={`https://gnosis-safe.io/app/eth:${owner}/transactions/${_txForComponent?.safeTxHash}`}>
+                  Sign on Gnosis Safe
+                </a>
+              </div>
+            )}
+            
             <div id="project-selector" className="flex justify-center gap-x-3 pt-2 mx-6">
               <ProjectSearch onProjectOptionSet={onProjectOptionSet} label="Seach project by handle" />
             </div>
@@ -193,6 +204,16 @@ export default function JuiceboxPage() {
 
             {version == 1 && !notSupportedByNance && <V1Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
             {version == 2 && !notSupportedByNance && <V2Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
+
+            {_txForComponent?.safeTxHash && (
+              <div className="flex justify-center pt-2 pb-10 mx-6">
+                <a target="_blank" rel="noopener noreferrer"
+                  className="text-green-500 hover:underline text-lg"
+                  href={`https://gnosis-safe.io/app/eth:${owner}/transactions/${_txForComponent?.safeTxHash}`}>
+                  Sign on Gnosis Safe
+                </a>
+              </div>
+            )}
           </div>
         </>
     )
