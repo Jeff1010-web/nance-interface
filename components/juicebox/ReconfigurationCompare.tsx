@@ -4,7 +4,6 @@ import FormattedAddress from "../FormattedAddress";
 // => [2.1, 1.2]
 import unionBy from 'lodash.unionby';
 import { BigNumber, utils } from "ethers";
-import { CheckIcon, MinusIcon } from '@heroicons/react/solid';
 import ResolvedProject from "../ResolvedProject";
 import { amountSubFee, amountSubFeeV2 } from "../../libs/math";
 import { formatDistanceToNow, fromUnixTime } from "date-fns";
@@ -35,7 +34,7 @@ const formatNumber = (num) => formatter.format(num);
 // In v2, ETH = 1, USD = 2, we subtract 1 to get the same value
 const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
     const symbol = currency.toNumber() == 0 ? "Ξ" : "$";
-    const formatted = amount.eq(JBConstants.UintMax) ? "∞" : formatNumber(utils.formatEther(amount ?? 0));
+    const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatNumber(utils.formatEther(amount ?? 0));
     return symbol + formatted;
 }
 
@@ -90,8 +89,8 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
         {name: 'Token minting', getFunc: (fc) => fc.metadata.allowMinting ? "Enabled" : "Disabled"},
         {name: 'Terminal migration', getFunc: (fc) => fc.metadata.allowTerminalMigration ? "Enabled" : "Disabled"},
         {name: 'Controller migration', getFunc: (fc) => fc.metadata.allowControllerMigration ? "Enabled" : "Disabled"},
-        //{name: 'Reconfiguration strategy', getFunc: (fc) => <FormattedAddress key={fc.fundingCycle.ballot} address={fc.fundingCycle.ballot} />},   
-        {name: 'Reconfiguration strategy', getFunc: (fc) => fc.fundingCycle.ballot},    
+        {name: 'Reconfiguration strategy', getFunc: (fc) => <FormattedAddress key={fc.fundingCycle.ballot} address={fc.fundingCycle.ballot} />},   
+        //{name: 'Reconfiguration strategy', getFunc: (fc) => fc.fundingCycle.ballot},    
     ]
   
     const payouts: JBSplit[] = unionBy(currentFC.payoutMods, previewFC.payoutMods, keyOfSplit).sort(orderByPercent);
@@ -178,7 +177,8 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
 
                                 <CompareCell
                                     oldVal={config.getFunc(currentFC)}
-                                    newVal={config.getFunc(previewFC)} />
+                                    newVal={config.getFunc(previewFC)}
+                                    isSame={config.name == "Reconfiguration strategy" && currentFC.fundingCycle.ballot === previewFC.fundingCycle.ballot} />
                             </tr>
                         ))}
                     </>
@@ -271,7 +271,7 @@ function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumb
     return `${(_percent/_totalPercent*100).toFixed(2)}% (${formatCurrency(currency, _amount.mul(percent).div(_totalPercent))})`
 }
 
-function CompareCell({ oldVal, newVal, isSame = false }: { oldVal: string, newVal: string, isSame?: boolean }) {
+function CompareCell({ oldVal, newVal, isSame = false }: { oldVal: any, newVal: any, isSame?: boolean }) {
     const _isSame = isSame || oldVal == newVal;
     const deleted = newVal === undefined;
     const added = oldVal === undefined && newVal !== undefined;

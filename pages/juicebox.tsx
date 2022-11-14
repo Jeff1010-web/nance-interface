@@ -128,6 +128,8 @@ export default function JuiceboxPage() {
     useEffect(() => {
         setCurrentTime(new Date().toISOString())
     }, [projectInfo, owner])
+
+    const notSupportedByNance = project !== 1 && role === "Bookkeeper";
     
     return (
         <>
@@ -141,47 +143,56 @@ export default function JuiceboxPage() {
               <ProjectSearch onProjectOptionSet={onProjectOptionSet} label="Seach project by handle" />
             </div>
             <div id="safetx-loader" className="flex justify-center pt-2 mx-6">
+              {role === "Multisig" && (
                 <div className="w-1/4">
                   <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedTxOption} safeAddress={owner} shouldRun={owner !== undefined} />
                 </div>
+              )}
 
-                {project === 1 && role === "Bookkeeper" && (
-                  <div className="w-1/4 space-y-2">
+              {project !== 1 && role === "Bookkeeper" && (
+                <div className="">
+                  <span>Not supported by Nance, you can reach out on <a href="https://discord.com/channels/775859454780244028/955977240787685416" className="underline">Discord</a></span>
+                </div>
+              )}
+              
+              {project === 1 && role === "Bookkeeper" && (
+                <div className="w-1/4 space-y-2">
+                  <button
+                    disabled={rawData === undefined || selectedSafeTx === undefined}
+                    className="ml-3 inline-flex content-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                    onClick={() => setSelectedSafeTx(undefined)}
+                  >
+                    {reconfigLoading ? 
+                      "Nance loading..." 
+                      : selectedSafeTx === undefined ? 
+                          rawData !== undefined ? "Nance loaded" : "Nance error"
+                      : "Use nance"}
+                  </button>
+
+                  <div className="flex space-x-2">
                     <button
-                      disabled={rawData === undefined || selectedSafeTx === undefined}
-                      className="ml-3 inline-flex content-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-                      onClick={() => setSelectedSafeTx(undefined)}
-                    >
-                      {reconfigLoading ? 
-                        "Nance loading..." 
-                        : selectedSafeTx === undefined ? 
-                            rawData !== undefined ? "Nance loaded" : "Nance error"
-                        : "Use nance"}
-                    </button>
-
-                    <div className="flex space-x-2">
-                      <button
-                          className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-                          disabled={!jrpcSigner || !rawData}
-                          onClick={postTransaction}
-                      >{(gnosisLoading) ? 'Signing...' : 'Queue'}</button>
-                      <input
-                          type="number"
-                          placeholder="custom nonce"
-                          defaultValue={reconfigData?.nonce}
-                          value={nonce}
-                          onChange={(e) => setNonce(e.target.value)}
-                          className="inline-flex rounded rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
-                      />
-                    </div>
+                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                        disabled={!jrpcSigner || !rawData}
+                        onClick={postTransaction}
+                    >{(gnosisLoading) ? 'Signing...' : 'Queue'}</button>
+                    <input
+                        type="number"
+                        placeholder="custom nonce"
+                        defaultValue={reconfigData?.nonce}
+                        value={nonce}
+                        onChange={(e) => setNonce(e.target.value)}
+                        className="inline-flex rounded rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+                    />
                   </div>
-                )}
-                
-                {/* <textarea rows={3} className="w-full rounded-xl" id="raw-data" placeholder="Paste raw data here" value={rawData} onChange={(e) => setRawData(e.target.value)} /> */}
+                </div>
+              )}
+              
+              {/* <textarea rows={3} className="w-full rounded-xl" id="raw-data" placeholder="Paste raw data here" value={rawData} onChange={(e) => setRawData(e.target.value)} /> */}
             </div>
             <br />
-            {version == 1 && <V1Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
-            {version == 2 && <V2Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
+
+            {version == 1 && !notSupportedByNance && <V1Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
+            {version == 2 && !notSupportedByNance && <V2Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
           </div>
         </>
     )
