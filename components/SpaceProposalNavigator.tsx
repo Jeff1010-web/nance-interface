@@ -1,10 +1,11 @@
 import { Dispatch, Fragment, SetStateAction, useContext, useState } from 'react'
-import { Dialog, Disclosure, Menu, Popover, Transition } from '@headlessui/react'
+import { Dialog, Disclosure, Popover, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
 import { ChevronDownIcon, DocumentSearchIcon } from '@heroicons/react/solid'
 import { SpaceInfo } from '../hooks/snapshot/SpaceInfo'
 import useFollowedSpaces from '../hooks/snapshot/FollowedSpaces'
 import { SpaceContext } from '../pages/snapshot/[space]'
+import ScrollTabsWithCount from './ScrollTabsWithCount'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -127,37 +128,7 @@ export default function SpaceProposalNavigator({spaceInfo, options, keyword, set
 
       <div className="max-w-7xl mx-auto py-6 lg:py-16 px-4 sm:px-6 lg:px-8">
         {/* Followed Space Tabs */}
-        <div>
-          <div>
-            <nav className="-mb-px flex space-x-8 overflow-auto" aria-label="Tabs">
-              {tabs.map((tab) => (
-                <a
-                  key={tab.name}
-                  href={`/snapshot/${tab.id}`}
-                  className={classNames(
-                    tab.id == context.space
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200',
-                    'whitespace-nowrap flex py-4 px-1 border-b-2 font-medium text-sm'
-                  )}
-                  aria-current={tab.id == context.space ? 'page' : undefined}
-                >
-                  {tab.name}
-                  {tab.activeProposals ? (
-                    <span
-                      className={classNames(
-                        tab.id == context.space ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-900',
-                        'hidden ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block'
-                      )}
-                    >
-                      {tab.activeProposals}
-                    </span>
-                  ) : null}
-                </a>
-              ))}
-            </nav>
-          </div>
-        </div>
+        <ScrollTabsWithCount tabs={tabs.map(data => {return {id: data.id, name: data.name, count: data.activeProposals}})} activeTab={context.space} />
 
         {/* Space Info */}
         <img
