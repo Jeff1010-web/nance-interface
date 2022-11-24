@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { SyntheticEvent, useContext, useEffect, useState } from "react";
 import SiteNav from "../../../components/SiteNav";
 import { useForm, FormProvider, useFormContext, Controller, SubmitHandler } from "react-hook-form";
 import ResolvedEns from "../../../components/ResolvedEns";
@@ -16,7 +16,7 @@ import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
 import useLocalStorage from "../../../hooks/LocalStorage";
-import { format } from "date-fns";
+import { formatDistanceToNow, fromUnixTime } from "date-fns";
 import { useAccount, useSigner, useSignTypedData } from "wagmi";
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { signPayload } from "../../../libs/signer";
@@ -122,7 +122,11 @@ function ProposalTypeTabs() {
   )
 }
 
+const CURRENT_CACHE_VERSION = 1;
+
 interface ProposalCache {
+  version: number;
+  title: string;
   body: string;
   timestamp: number;
 }
@@ -140,7 +144,7 @@ function Form() {
   const [signError, setSignError] = useState(undefined);
 
   // hooks
-  const [cachedProposal, setCachedProposal] = useLocalStorage<ProposalCache>("cachedProposal", undefined);
+  const [cachedProposal, setCachedProposal] = useLocalStorage<ProposalCache>("cachedProposal", CURRENT_CACHE_VERSION, undefined);
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
   const { address, isConnecting, isDisconnected } = useAccount()
   const { data: signer, isError, isLoading } = useSigner()
@@ -166,8 +170,10 @@ function Form() {
         proposal: payload
       }
       console.debug("📗 Nance.newProposal.upload ->", req);
-      trigger(req);
-    }).catch((err) => {
+      return trigger(req);
+    })
+    .then(res => router.push(`/nance/${space as string}/proposal/${res.data.hash}`))
+    .catch((err) => {
       setSigning(false);
       setSignError(err);
       console.warn("📗 Nance.newProposal.onSignError ->", err);
@@ -212,6 +218,19 @@ function Form() {
               <p className="mt-1 text-sm text-gray-500">Detailed content of your proposal.</p>
             </div>
             <div className="mt-5 md:col-span-2 md:mt-0">
+              {cachedProposal && (
+                <div className="mt-1 flex">
+                  <p className="text-gray-500">Last saved on {formatDistanceToNow(fromUnixTime(cachedProposal.timestamp/1000), { addSuffix: true })}</p>
+                  <button type="button" className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2 py-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 ml-2 mb-1"
+                  onClick={() => {
+                    setCachedProposal(undefined)
+                    setValue("proposal.title", "");
+                    setValue("proposal.body", PORPOSAL_TEMPLATE)
+                  }}>
+                    Reset to template
+                  </button>
+              </div>
+              )}
               <div className="grid grid-cols-6 gap-6">
                 <div className="col-span-6 sm:col-span-3">
                   <label htmlFor="first-name" className="block text-sm font-medium text-gray-700">
@@ -219,7 +238,15 @@ function Form() {
                   </label>
                   <input
                     type="text"
-                    {...register("proposal.title", { required: true })}
+                    {...register("proposal.title", { required: true, onChange: (e: SyntheticEvent) => {
+                      setCachedProposal({
+                        version: CURRENT_CACHE_VERSION,
+                        title: (e.currentTarget as HTMLInputElement).value,
+                        body: cachedProposal?.body,
+                        timestamp: Date.now()
+                      });
+                    }})}
+                    value={cachedProposal?.title || ""}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                 </div>
@@ -240,6 +267,8 @@ function Form() {
                         value={value} onChange={(val) => {
                           onChange(val);
                           setCachedProposal({
+                            version: CURRENT_CACHE_VERSION,
+                            title: cachedProposal?.title,
                             body: val,
                             timestamp: Date.now()
                           });
@@ -249,18 +278,6 @@ function Form() {
                   />
                 </div>
 
-                {cachedProposal && (
-                  <div className="mt-1 flex">
-                    <p className="text-gray-500">Last saved on {format(cachedProposal.timestamp, 'LLL d, yy HH:mm')}</p>
-                    <button type="button" className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2 py-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 ml-2 mb-1"
-                    onClick={() => {
-                      setCachedProposal(undefined)
-                      setValue("proposal.body", PORPOSAL_TEMPLATE)
-                    }}>
-                      Reset to template
-                    </button>
-                </div>
-                )}
                 {/* <p className="mt-2 text-sm text-gray-500">Brief description for your profile. URLs are hyperlinked.</p> */}
               </div>
             </div>
@@ -458,7 +475,7 @@ function ReservedTokenMetadataForm() {
 function PayoutMetadataForm() {
   const metadata = useContext(ProposalMetadataContext);
   const { register, setValue, watch, formState: { errors } } = useFormContext();
-  const [inputEns, setInputEns] = useState<string>('')
+  const [inputEns, setInputEns] = useState<string>("dao.jbx.eth");
 
   return (
     <div className="grid grid-cols-4 gap-6">
@@ -537,8 +554,9 @@ function PayoutMetadataForm() {
               setValue("proposal.payout.address", e.target.value);
               setInputEns(e.target.value);
             }}
+            defaultValue="dao.jbx.eth"
             className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            placeholder="jbdao.eth / 0x0000000000000000000000000000000000000000"
+            placeholder="dao.jbx.eth / 0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"
           />
           <input
             type="text"

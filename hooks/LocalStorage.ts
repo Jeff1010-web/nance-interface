@@ -1,6 +1,10 @@
 import { useState } from "react";
 
-export default function useLocalStorage<T>(key: string, initialValue: T) {
+export type LocalStorageState = {
+  version: number
+}
+
+export default function useLocalStorage<T extends LocalStorageState>(key: string, minVersion: number, initialValue: T) {
     // State to store our value
     // Pass initial state function to useState so logic is only executed once
     const [storedValue, setStoredValue] = useState<T>(() => {
@@ -11,7 +15,9 @@ export default function useLocalStorage<T>(key: string, initialValue: T) {
         // Get from local storage by key
         const item = window.localStorage.getItem(key);
         // Parse stored json or if none return initialValue
-        return item ? JSON.parse(item) : initialValue;
+        const val = item ? JSON.parse(item) : initialValue;
+        // Deprecate old versions
+        return val.version >= minVersion ? val : initialValue;
       } catch (error) {
         // If error also return initialValue
         console.warn(`Error parsing ${key} from localStorage`, error);
