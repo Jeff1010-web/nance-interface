@@ -31,7 +31,7 @@ export default function SnapshotProposal() {
                                 </div>
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">{proposalData?.proposalId} - {proposalData?.title}</h1>
+                                <h1 className="text-2xl font-bold text-gray-900">{proposalData?.proposalId|| '#TBD'} - {proposalData?.title}</h1>
                                 <p className="text-sm font-medium text-gray-500">
                                 {/* By&nbsp; */}
                                 {/* {data?.proposalData.author ? (<FormattedAddress address={data?.proposalData.author} style="text-gray-900" />) : 'Anon'} */}

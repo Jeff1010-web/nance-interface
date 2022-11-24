@@ -31,7 +31,7 @@ export default function NanceProposals() {
                 <Link
                     href={{
                         pathname: `/nance/${space as string}/new`,
-                        query: { type: 'Payout', version: 1, project: 1 },
+                        query: { type: 'Payout', version: 2, project: 1 },
                     }}
                 >
                     <a

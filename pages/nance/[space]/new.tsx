@@ -17,7 +17,7 @@ import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
 import useLocalStorage from "../../../hooks/LocalStorage";
 import { formatDistanceToNow, fromUnixTime } from "date-fns";
-import { useAccount, useSigner, useSignTypedData } from "wagmi";
+import { useAccount, useSigner } from "wagmi";
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { signPayload } from "../../../libs/signer";
 
@@ -146,7 +146,6 @@ function Form() {
   // hooks
   const [cachedProposal, setCachedProposal] = useLocalStorage<ProposalCache>("cachedProposal", CURRENT_CACHE_VERSION, undefined);
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
-  const { address, isConnecting, isDisconnected } = useAccount()
   const { data: signer, isError, isLoading } = useSigner()
   const jrpcSigner = signer as JsonRpcSigner;
 
@@ -159,6 +158,7 @@ function Form() {
       type: metadata.proposalType as ProposalType,
       version: String(metadata.version)
     };
+    setSigning(true);
 
     signPayload(jrpcSigner, space as string, 'upload', payload).then((signature) => {
 
@@ -220,7 +220,7 @@ function Form() {
             <div className="mt-5 md:col-span-2 md:mt-0">
               {cachedProposal && (
                 <div className="mt-1 flex">
-                  <p className="text-gray-500">Last saved on {formatDistanceToNow(fromUnixTime(cachedProposal.timestamp/1000), { addSuffix: true })}</p>
+                  <p className="text-gray-500">Last saved on {formatDistanceToNow(fromUnixTime(cachedProposal.timestamp), { addSuffix: true })}</p>
                   <button type="button" className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2 py-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 ml-2 mb-1"
                   onClick={() => {
                     setCachedProposal(undefined)
@@ -239,11 +239,12 @@ function Form() {
                   <input
                     type="text"
                     {...register("proposal.title", { required: true, onChange: (e: SyntheticEvent) => {
+                      console.log((e.currentTarget as HTMLInputElement).value, e)
                       setCachedProposal({
                         version: CURRENT_CACHE_VERSION,
                         title: (e.currentTarget as HTMLInputElement).value,
                         body: cachedProposal?.body,
-                        timestamp: Date.now()
+                        timestamp: Date.now()/1000
                       });
                     }})}
                     value={cachedProposal?.title || ""}
@@ -268,9 +269,9 @@ function Form() {
                           onChange(val);
                           setCachedProposal({
                             version: CURRENT_CACHE_VERSION,
-                            title: cachedProposal?.title,
+                            title: getValues("proposal.title"),
                             body: val,
-                            timestamp: Date.now()
+                            timestamp: Date.now()/1000
                           });
                         }}
                         height={600} />}
@@ -361,7 +362,7 @@ function Form() {
             disabled={!jrpcSigner || isSubmitting}
             className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
           >
-            {isSubmitting ? "Submitting" : "Submit"}
+            {signing ? (isMutating ? "Submitting..." : "Signing...") : "Submit"}
           </button>
         </div>
       </form>
@@ -475,7 +476,22 @@ function ReservedTokenMetadataForm() {
 function PayoutMetadataForm() {
   const metadata = useContext(ProposalMetadataContext);
   const { register, setValue, watch, formState: { errors } } = useFormContext();
-  const [inputEns, setInputEns] = useState<string>("dao.jbx.eth");
+  const [inputEns, setInputEns] = useState<string>("");
+
+  useEffect(() => {
+    const subscription = watch((value, { name, type }) => {
+      if(name === "proposal.payout.type" && type === "change") {
+        if(value.proposal.payout.type == "project") {
+          (document.getElementById("payoutAddressInput") as HTMLInputElement).value = "dao.jbx.eth";
+          setInputEns("dao.jbx.eth");
+        } else {
+          (document.getElementById("payoutAddressInput") as HTMLInputElement).value = "";
+          setInputEns("");
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   return (
     <div className="grid grid-cols-4 gap-6">
@@ -550,11 +566,8 @@ function PayoutMetadataForm() {
         <div className="mt-1 flex rounded-md shadow-sm">
           <input
             type="text"
-            onChange={(e) => {
-              setValue("proposal.payout.address", e.target.value);
-              setInputEns(e.target.value);
-            }}
-            defaultValue="dao.jbx.eth"
+            id="payoutAddressInput"
+            onChange={(e) => setInputEns(e.target.value)}
             className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="dao.jbx.eth / 0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"
           />
