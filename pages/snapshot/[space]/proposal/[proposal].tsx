@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../../../components/FormattedAddress";
 import { formatDistanceToNow, fromUnixTime, format } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import VotingModal from "../../../../components/VotingModal";
 import { useQueryParam, withDefault, NumberParam, createEnumParam } from "next-query-params";
 import Pagination from "../../../../components/Pagination";
@@ -62,12 +62,25 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
     const { space, proposal } = router.query;
     // state
     const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [voteDisabled, setVoteDisabled] = useState(true);
+    const [voteTip, setVoteTip] = useState("Proposal is not active");
     const [page, setPage] = useQueryParam('page', withDefault(NumberParam, 1));
     const [sortBy, setSortBy] = useQueryParam('sortBy', withDefault(createEnumParam(["created", "vp"]), "created"));
     // external hook
     const { address, isConnected } = useAccount();
     // load data
     const { loading, data, error } = useProposalExtendedOf(proposalInfo.type, proposalInfo.choices, proposalInfo.id, address, Math.max((page-1)*10, 0), sortBy as "created" | "vp");
+
+    useEffect(() => {
+        if(proposalInfo?.state === 'active') {
+            if(isConnected) {
+                setVoteTip("Proposal is active and you can vote on it");
+                setVoteDisabled(false);
+            } else {
+                setVoteTip("You haven't connected wallet");
+            }
+        }
+    }, [isConnected, proposalInfo]);
 
     return (
         <>
@@ -96,7 +109,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                         <h1 className="text-2xl font-bold text-gray-900">{proposalInfo.title}</h1>
                         <p className="text-sm font-medium text-gray-500">
                         By&nbsp;
-                        {proposalInfo.author ? (<FormattedAddress address={proposalInfo.author} style="text-gray-900" />) : 'Anon'}
+                        <FormattedAddress address={proposalInfo.author} style="text-gray-900" />
                         &nbsp;on <time dateTime={proposalInfo.created ? fromUnixTime(proposalInfo.created).toString() : ''}>{proposalInfo.created && format(fromUnixTime(proposalInfo.created), 'MMMM d, yyyy')}</time>
                         </p>
                     </div>
@@ -107,11 +120,11 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                 Back
                             </a>
                         </Link>
-                        <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:hidden"
+                        <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={() => setModalIsOpen(true)}
-                            disabled={proposalInfo?.state !== 'active' || !address}>
+                            disabled={voteDisabled}>
 
-                            <Tooltip trigger="hover" content={proposalInfo?.state !== 'active' ? "Proposal is not active" : !address ? "You haven't connected wallet" : "Proposal is active and you can vote on it"}>
+                            <Tooltip trigger="hover" content={voteTip}>
                                 <span>Vote</span>
                             </Tooltip>
                         </button>

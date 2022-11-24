@@ -1,5 +1,6 @@
 import { shortenAddress } from "../libs/address";
 import { Address, useEnsName } from "wagmi";
+import { useEffect, useState } from "react";
 
 export interface Props {
     address: string;
@@ -12,7 +13,16 @@ function classNames(...classes) {
 
 export default function FormattedAddress({ address, style }: Props) {
     const addr = address as Address;
-    const { data: ensName } = useEnsName({ address: addr })
+    const hasAddr = addr && addr.length == 42;
+
+    const [label, setLabel] = useState(shortenAddress(address) || "Anon");
+    const { data: ensName } = useEnsName({ address: addr, enabled: hasAddr });
+
+    useEffect(() => {
+        if (ensName) {
+            setLabel(ensName);
+        }
+    }, [ensName]);
 
     return (
         <a target="_blank" rel="noopener noreferrer"
@@ -20,7 +30,7 @@ export default function FormattedAddress({ address, style }: Props) {
                 style,
                 'hover:underline'
             )} href={`https://etherscan.io/address/${encodeURIComponent(address)}`}>
-            {ensName || shortenAddress(address)}
+            {label}
         </a>
     )
 }
