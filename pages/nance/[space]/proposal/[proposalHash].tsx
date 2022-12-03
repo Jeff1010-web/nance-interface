@@ -8,12 +8,13 @@ export default function SnapshotProposal() {
     // router
     const router = useRouter();
     const { space, proposalHash } = router.query;
+      
     const { data, isLoading, error } = useProposalRequest({ space: space as string, hash: proposalHash as string }, router.isReady);
     const proposalData = data?.data;
 
     return (
         <>
-            <SiteNav pageTitle={`${space as string} proposal: ${proposalHash as string}`} description="Proposal content on Nance." image="/images/unsplash_voting.jpeg" />
+            <SiteNav pageTitle={`${proposalData?.title || proposalHash as string} | ${space as string} proposal`} description="Proposal content on Nance." image="/images/unsplash_voting.jpeg" />
 
             <div className="min-h-full">
                 <main className="py-10">
@@ -45,6 +46,13 @@ export default function SnapshotProposal() {
                                     Back
                                 </a>
                             </Link>
+
+                            <Link href={proposalData?.discussionThreadURL ?? '#'}>
+                                <a target="_blank" className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
+                                    Vote
+                                </a>
+                            </Link>
+
                             {/* <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100"
                                 onClick={() => setModalIsOpen(true)}
                                 disabled={data?.proposalData?.state !== 'active' || !address}>

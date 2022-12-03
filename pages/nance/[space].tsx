@@ -45,20 +45,30 @@ export default function NanceProposals() {
             <div className="mt-6 overflow-hidden bg-white shadow sm:rounded-md">
                 { (infoLoading || proposalsLoading) && <p>loading...</p>}
                 <ul role="list" className="divide-y divide-gray-200">
-                    {proposalData?.data?.map((proposal) => (
+                    {proposalData?.data?.map((proposal, index, arr) => (
                         <li key={proposal.hash}>
                             <div className="px-4 py-4 sm:px-6">
                                 <div className="flex items-center justify-between">
-                                    <Link href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : `/nance/${space as string}/proposal/${proposal.hash}`}>
-                                        <a className="break-words text-sm font-medium text-indigo-600 hover:underline">
-                                            {`${(proposal.proposalId !== '') ? proposal.proposalId : '#TBD'} - ${proposal.title}`}
-                                        </a>
-                                    </Link>
+                                    {proposal?.voteURL && (
+                                        <Link href={`/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}`}>
+                                            <a className="break-words text-sm font-medium text-indigo-600 hover:underline">
+                                                {`${(proposal.proposalId !== '') ? proposal.proposalId : '#TBD'} - ${proposal.title}`}
+                                            </a>
+                                        </Link>
+                                    )}
+
+                                    {!proposal?.voteURL && (
+                                        <Link href={`/nance/${space as string}/proposal/${proposal.hash}`}>
+                                            <a className="break-words text-sm font-medium text-indigo-600 hover:underline">
+                                                {`${(proposal.proposalId !== '') ? proposal.proposalId : '#TBD'} - ${proposal.title}`}
+                                            </a>
+                                        </Link>
+                                    )}
                                 
                                     <div className="ml-2 flex flex-shrink-0">
-                                        {proposal.status === 'Discussion' && (
+                                        {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
                                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                Discussion
+                                                {proposal.status}
                                             </span>
                                         )}
                                         {proposal.status === 'Approved' && (
@@ -71,7 +81,7 @@ export default function NanceProposals() {
                                                 Cancelled
                                             </span>
                                         )}
-                                        {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled') && (
+                                        {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled' && proposal.status !== 'Draft' && proposal.status !== 'Revoked') && (
                                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
                                                 {proposal.status}
                                             </span>
