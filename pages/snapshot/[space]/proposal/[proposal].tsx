@@ -10,7 +10,7 @@ import FormattedAddress from "../../../../components/FormattedAddress";
 import { formatDistanceToNow, fromUnixTime, format } from "date-fns";
 import { useEffect, useState } from "react";
 import VotingModal from "../../../../components/VotingModal";
-import { useQueryParam, withDefault, NumberParam, createEnumParam, useQueryParams, ArrayParam } from "next-query-params";
+import { withDefault, NumberParam, createEnumParam, useQueryParams, ArrayParam } from "next-query-params";
 import Pagination from "../../../../components/Pagination";
 import { formatChoices } from "../../../../libs/snapshotUtil";
 import ProposalStats from "../../../../components/ProposalStats";
@@ -226,7 +226,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                     </div>
 
                                 </div>
-                                <div className="px-4 py-6 sm:px-6 truncate">
+                                <div className="px-4 py-6 sm:px-6">
                                     <ul role="list" className="space-y-8">
                                         {loading && "loading..."}
                                         {data?.votesData?.map((vote) => (
@@ -253,8 +253,13 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                                                 <p className="truncate">{formatChoices(proposalInfo.type, vote.choice)}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="text-sm text-gray-800 font-semibold">
-                                                            {vote.reason && <p>{vote.reason}</p>}
+                                                        <div className="text-sm text-gray-800 font-semibold line-clamp-3 lg:line-clamp-5">
+                                                            <Tooltip
+                                                                content={vote.reason}
+                                                                trigger="hover"
+                                                                >
+                                                                {vote.reason && <p>{vote.reason}</p>}
+                                                            </Tooltip>
                                                         </div>
                                                         <div className="space-x-2 text-sm">
                                                             <span className="text-gray-500">
