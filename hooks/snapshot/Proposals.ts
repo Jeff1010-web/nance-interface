@@ -83,9 +83,9 @@ query Proposals($id: String) {
 `
 
 const VOTES_OF_PROPOSAL_QUERY = `
-query VotesBySingleProposalId($id: String, $skip: Int, $orderBy: String) {
+query VotesBySingleProposalId($id: String, $skip: Int, $orderBy: String, $first: Int) {
   votes (
-    first: 10
+    first: $first
     skip: $skip
     where: {
       proposal: $id
@@ -255,15 +255,18 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
   return ret;
 }
 
-export function useProposalExtendedOf(proposalType: string, proposalChoices: string[], proposalId: string, address: string, skip: number, orderBy: 'created' | 'vp' = 'created'): {
+export function useProposalVotes(proposal: SnapshotProposal, address: string, skip: number, orderBy: 'created' | 'vp' = 'created', withField: "" | "reason" | "app"): {
   loading: boolean,
   error: APIError<object>,
   data: {
-    votedData: SnapshotVotedData, 
-    votesData: SnapshotVote[]}
+    votesData: SnapshotVote[],
+    totalVotes: number
+  }
 } {
-
-  console.debug("🔧 useProposalExtendedOf.args ->", {proposalId, address, skip, orderBy});
+  
+  // sort after query if need reason
+  const sortAfterQuery = withField === "reason" || withField === "app";
+  console.debug("🔧 useProposalVotes.args ->", {proposal, address, skip, orderBy, withField});
 
   // Load related votes
   const {
@@ -272,52 +275,52 @@ export function useProposalExtendedOf(proposalType: string, proposalChoices: str
     error: voteError
   } = useQuery<{ votes: SnapshotVote[] }>(VOTES_OF_PROPOSAL_QUERY, {
     variables: {
-      skip: skip,
+      first: sortAfterQuery ? proposal.votes : 10,
+      skip: sortAfterQuery ? 0 : skip,
       orderBy: orderBy,
-      id: proposalId
-    }
-  });
-  // Load voted proposals
-  const {
-    loading: votedLoading,
-    data: votedRawData,
-    error: votedError
-  } = useQuery<{ votes: SnapshotVotedData[] }>(VOTED_PROPOSALS_QUERY, {
-    variables: {
-      voter: address,
-      proposalIds: [proposalId],
-      first: 1
+      id: proposal.id
     }
   });
 
-  const votesData: SnapshotVote[] = voteData?.votes.map(vote => {
+  let totalVotes = proposal?.votes || 0;
+  let votes = voteData?.votes || [];
+
+  if(sortAfterQuery) {
+    const allVotes = voteData?.votes
+      .filter((vote) => {
+        if(withField === "reason") {
+          return vote.reason && vote.reason !== "";
+        } else if(withField === "app") {
+          return vote.app && vote.app !== "" && vote.app !== "snapshot";
+        } else {
+          return true;
+        }
+      });
+    totalVotes = allVotes?.length || 0;
+    votes = allVotes?.sort((a, b) => {
+      if (orderBy === 'created') {
+        return b.created - a.created;
+      } else {
+        return b.vp - a.vp;
+      }
+    }).slice(skip, skip + 10);
+  }
+
+  let votesData: SnapshotVote[] = votes?.map(vote => {
     return {
       ...vote,
-      choice: mapChoiceIndex(proposalType, proposalChoices, vote.choice)
+      choice: mapChoiceIndex(proposal.type, proposal.choices, vote.choice)
     }
   })
 
-  // Find voted proposals
-  // FIXME use separate graph ql to get voted data
-  let votedData: SnapshotVotedData;
-  if (address) {
-    const vote = votedRawData?.votes[0];
-    if (vote) {
-      votedData = {
-        ...vote,
-        choice: mapChoiceIndex(proposalType, proposalChoices, vote.choice)
-      }
-    }
-  }
-
   const ret = { 
     data: {
-      votedData,
-      votesData
+      votesData,
+      totalVotes
     }, 
     loading: voteLoading, 
     error: voteError 
   };
-  console.debug("🔧 useProposalExtendedOf.return ->", {ret});
+  console.debug("🔧 useProposalVotes.return ->", {ret});
   return ret;
 }

@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { fetchProposalInfo, SnapshotProposal, useProposalExtendedOf } from "../../../../hooks/snapshot/Proposals";
+import { fetchProposalInfo, SnapshotProposal, useProposalVotes } from "../../../../hooks/snapshot/Proposals";
 import { useAccount } from 'wagmi'
 import SiteNav from "../../../../components/SiteNav";
 import { fetchSpaceInfo, SpaceInfo } from "../../../../hooks/snapshot/SpaceInfo";
@@ -10,7 +10,7 @@ import FormattedAddress from "../../../../components/FormattedAddress";
 import { formatDistanceToNow, fromUnixTime, format } from "date-fns";
 import { useEffect, useState } from "react";
 import VotingModal from "../../../../components/VotingModal";
-import { useQueryParam, withDefault, NumberParam, createEnumParam } from "next-query-params";
+import { useQueryParam, withDefault, NumberParam, createEnumParam, useQueryParams, ArrayParam } from "next-query-params";
 import Pagination from "../../../../components/Pagination";
 import { formatChoices } from "../../../../libs/snapshotUtil";
 import ProposalStats from "../../../../components/ProposalStats";
@@ -65,12 +65,17 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [voteDisabled, setVoteDisabled] = useState(true);
     const [voteTip, setVoteTip] = useState("Proposal is not active");
-    const [page, setPage] = useQueryParam('page', withDefault(NumberParam, 1));
-    const [sortBy, setSortBy] = useQueryParam('sortBy', withDefault(createEnumParam(["created", "vp"]), "created"));
+    const [query, setQuery] = useQueryParams({ 
+        page: withDefault(NumberParam, 1), 
+        sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
+        withField: withDefault(createEnumParam(["reason", "app"]), "")
+      });
+    // const [page, setPage] = useQueryParam('page', withDefault(NumberParam, 1));
+    // const [sortBy, setSortBy] = useQueryParam('sortBy', withDefault(createEnumParam(["created", "vp"]), "created"));
     // external hook
     const { address, isConnected } = useAccount();
     // load data
-    const { loading, data, error } = useProposalExtendedOf(proposalInfo.type, proposalInfo.choices, proposalInfo.id, address, Math.max((page-1)*10, 0), sortBy as "created" | "vp");
+    const { loading, data, error } = useProposalVotes(proposalInfo, address, Math.max((query.page-1)*10, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
 
     useEffect(() => {
         if(proposalInfo?.state === 'active') {
@@ -175,27 +180,51 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                     <h2 id="notes-title" className="text-lg font-medium text-gray-900">
                                         Votes
                                         <span className='bg-indigo-100 text-indigo-600 hidden ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block'>
-                                            {proposalInfo?.votes}
+                                            {data?.totalVotes || 0}
                                         </span>
                                     </h2>
+
                                     <div className="mt-1 flex rounded-md shadow-sm">
                                         <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
-                                            Sort
+                                            SortBy
                                         </span>
                                         <select
                                             id="sortBy"
                                             name="sortBy"
-                                            className="block w-full rounded-none rounded-r-md border-gray-300 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                                            value={sortBy}
+                                            className="block w-full rounded-none border-gray-300 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                                            value={query.sortBy}
                                             onChange={(e) => {
-                                                setPage(1, 'push');
-                                                setSortBy(e.target.value as "created" | "vp", 'push');
+                                                setQuery({
+                                                    page: 1,
+                                                    sortBy: e.target.value,
+                                                })
+                                                // setPage(1, 'push');
+                                                // setSortBy(e.target.value as "created" | "vp", 'push');
                                             }}
                                         >
-                                            <option value="created">Voted Time</option>
-                                            <option value="vp">Voting Power</option>
+                                            <option value="created">Time</option>
+                                            <option value="vp">Score</option>
+                                        </select>
+                                        <span className="inline-flex items-center rounded-none border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
+                                            With
+                                        </span>
+                                        <select
+                                            id="withField"
+                                            name="withField"
+                                            className="block w-full rounded-none rounded-r-md border-gray-300 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                                            value={query.withField}
+                                            onChange={(e) => {
+                                                setQuery({
+                                                    withField: e.target.value,
+                                                })
+                                            }}
+                                        >
+                                            <option value="">None</option>
+                                            <option value="reason">Reason</option>
+                                            <option value="app">App</option>
                                         </select>
                                     </div>
+
                                 </div>
                                 <div className="px-4 py-6 sm:px-6 truncate">
                                     <ul role="list" className="space-y-8">
@@ -249,7 +278,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                             </li>
                                         ))}
                                     </ul>
-                                    <Pagination page={page} setPage={setPage} total={proposalInfo?.votes || 0} limit={10} />
+                                    <Pagination page={query.page} setPage={(page) => setQuery({page})} total={data?.totalVotes || 0} limit={10} />
                                 </div>
                             </div>
                             </div>
