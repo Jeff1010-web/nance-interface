@@ -13,6 +13,7 @@ import VotingModal from "../../../../components/VotingModal";
 import { useQueryParam, withDefault, NumberParam, createEnumParam } from "next-query-params";
 import Pagination from "../../../../components/Pagination";
 import { formatChoices } from "../../../../libs/snapshotUtil";
+import ProposalStats from "../../../../components/ProposalStats";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -262,49 +263,9 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                             </h2>
 
                             <div className="mt-6 flow-root">
-                                <dl className="m-2 grid grid-cols-2 gap-5">
-                                    <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
-                                        <dt className="text-sm font-medium text-gray-500 truncate">Quorum</dt>
-                                        <Tooltip
-                                            content={proposalInfo.quorum>0 && `(${(proposalInfo.scores_total*100/proposalInfo.quorum).toFixed()}% of quorum)`}
-                                            trigger="hover"
-                                        >
-                                            <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">
-                                                {formatNumber(proposalInfo.scores_total)}
-                                            </dd>
-                                            <span className="text-sm font-medium text-gray-500">{proposalInfo.quorum>0 && `/ ${formatNumber(proposalInfo.quorum)}`}</span>
-                                        </Tooltip>
-                                    </div>
-                                    {/* Vote choice data */}
-                                    {proposalInfo.scores_total > 0 && 
-                                        proposalInfo?.scores
-                                            ?.map((score, index) => {return { score, index }})
-                                            .filter((o) => o.score>0)
-                                            // sort by score desc
-                                            .sort((a, b) => b.score - a.score)
-                                            .map(({ score, index }) => (
-
-                                        <div key={index} className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
-                                            <Tooltip
-                                                content={proposalInfo?.choices[index]}
-                                                trigger="hover"
-                                            >
-                                                <dt className="text-sm font-medium text-gray-500 truncate">{proposalInfo?.choices[index]}</dt>
-                                            </Tooltip>
-                                            <Tooltip
-                                                content={`${(score*100/proposalInfo.scores_total).toFixed(2)}%`}
-                                                trigger="hover"
-                                            >
-                                                {/* <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(proposalInfo.voteByChoice[choice]*100/proposalInfo.scores_total).toFixed(2)}%</dd> */}
-                                                <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">
-                                                    {formatNumber(score)}
-                                                </dd>
-                                                <span className="text-sm font-medium text-gray-500">{(score*100/proposalInfo.scores_total).toFixed(0)}%</span>
-                                            </Tooltip>
-                                        </div>
-                                    ))}
-                                </dl>
+                                <ProposalStats proposal={proposalInfo} />
                             </div>
+
                         </div>
                     </section>
                 </div>

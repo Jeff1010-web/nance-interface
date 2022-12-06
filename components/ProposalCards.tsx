@@ -6,6 +6,7 @@ import VotingModal from './VotingModal';
 import { useContext, useState } from 'react';
 import Link from 'next/link';
 import { SpaceContext } from '../pages/snapshot/[space]';
+import ProposalStats from './ProposalStats';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -94,26 +95,7 @@ function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotPr
       </div>
       {proposal.scores_total > 0 && (
       <div className="w-full">
-        {moreThanThreeScores && (<p className="p-3 text-gray-500">Top 3 choices</p>)}
-        <dl className="m-2 grid grid-cols-1 gap-5 sm:grid-cols-3">
-          {/* Vote choice data */}
-          {topScores.map(({score, index}) => (
-            <div key={`${proposal.id}-${index}`} className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
-              <Tooltip
-                content={proposal.choices[index]}
-                trigger="hover"
-              >
-                <dt className="text-sm font-medium text-gray-500 truncate">{proposal.choices[index]}</dt>
-              </Tooltip>
-              <Tooltip
-                  content={formatNumber(score)}
-                  trigger="hover"
-              >
-                <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(score*100/proposal.scores_total).toFixed(2)}%</dd>
-              </Tooltip>
-            </div>
-          ))}
-        </dl>
+        <ProposalStats proposal={proposal} isOverview />
       </div>
       )}
       <div>
