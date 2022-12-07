@@ -53,42 +53,44 @@ export default function ProposalCards({proposals}: {proposals: SnapshotProposal[
 
 function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotProposal, setVotingProposal: (proposal: SnapshotProposal) => void}) {
   const {votedData, space: spaceId, address} = useContext(SpaceContext);
-
-  const scores = 
-    proposal.scores
-      .map((score, index) => {return { score, index }})
-      .filter((o) => o.score>0)
-      // sort by score desc
-      .sort((a, b) => b.score - a.score)
-  const moreThanThreeScores = scores.length > 3;
-  const topScores = scores.slice(0, 3);
+  const reasonStr = (votedData[proposal.id] && votedData[proposal.id].reason !== "") ? ` [Reason: ${votedData[proposal.id].reason}]` : "";
 
   return (
     <li className="col-span-1 bg-white rounded-lg shadow divide-y divide-gray-200">
       <div className="w-full flex items-center justify-between p-6 space-x-6">
         <div className="flex-1 overflow-hidden">
-          <div className="flex break-words justify-between flex-col md:flex-row">
+          <div className="flex break-words justify-start">
             <h3 className="text-gray-900 text-xl font-medium">{proposal.title}</h3>
-            <div className="flex items-center space-x-2 break-words">
-              {/* Voted status */}
-              <div className='min-w-fit'>
-                {votedData[proposal.id] && labelWithTooltip('Voted', `You voted ${votedData[proposal.id].choice} with ${formatNumber(votedData[proposal.id].vp)} (${(votedData[proposal.id].vp*100/proposal.scores_total).toFixed()}% of total votes) [Reason: ${votedData[proposal.id].reason}]`, 'text-blue-800 bg-blue-100')}
-              </div>
+          </div>
+          <div className="flex sm:space-x-1 break-words flex-col sm:flex-row">
+            {/* Voted status */}
+            <div className='min-w-fit'>
+              {votedData[proposal.id] && labelWithTooltip(`Voted: ${votedData[proposal.id].choice}`, `You voted ${votedData[proposal.id].choice} with ${formatNumber(votedData[proposal.id].vp)} (${(votedData[proposal.id].vp*100/proposal.scores_total).toFixed()}% of total votes)${reasonStr}`, 'text-blue-800 bg-blue-100')}
+            </div>
 
-              {/* Proposal status */}
-              <div className='min-w-fit'>
-                {proposal.state === 'active' && labelWithTooltip('Active', 'Ends ' + formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true }), 'text-green-800 bg-green-100')}
-                {proposal.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
-                {proposal.state === 'closed' && labelWithTooltip('Closed', formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true }), 'text-gray-800 bg-gray-100')}
-              </div>
-              
-              {/* Under quorum status */}
-              {proposal.quorum != 0 && proposal.scores_total < proposal.quorum && (
-                <div className='min-w-fit'>
-                {labelWithTooltip('Under quorum', `${formatNumber(proposal.scores_total)} (${(proposal.scores_total*100/proposal.quorum).toFixed()}% of quorum)`, 'text-purple-800 bg-purple-100')}
-                </div>
+            {/* Proposal status */}
+            <div className='min-w-fit'>
+              {proposal.state === 'active' && (
+                <span className="text-green-800 bg-green-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
+                  Active {formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true })}
+                </span>
+              )}
+              {proposal.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
+              {proposal.state === 'closed' && (
+                <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
+                  Closed {formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true })}
+                </span>
               )}
             </div>
+            
+            {/* Under quorum status */}
+            {proposal.quorum != 0 && proposal.scores_total < proposal.quorum && (
+              <div className='min-w-fit'>
+                <span className="text-purple-800 bg-purple-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
+                  Under quorum: {(proposal.scores_total*100/proposal.quorum).toFixed()}%
+                </span>
+              </div>
+            )}
           </div>
           <p className="mt-1 text-gray-500 text-sm break-words line-clamp-5 lg:line-clamp-3">{proposal.body}</p>
         </div>

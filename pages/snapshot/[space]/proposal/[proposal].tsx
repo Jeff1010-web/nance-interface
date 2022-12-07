@@ -149,12 +149,31 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                 <h2 id="applicant-information-title" className="text-lg font-medium leading-6 text-gray-900">
                                     Proposal
                                 </h2>
+
                                 {/* Proposal status */}
                                 <div className='min-w-fit'>
-                                {proposalInfo.state === 'active' && labelWithTooltip('Active', 'Ends ' + formatDistanceToNow(fromUnixTime(proposalInfo.end), { addSuffix: true }), 'text-green-800 bg-green-100')}
-                                {proposalInfo.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
-                                {proposalInfo.state === 'closed' && labelWithTooltip('Closed', formatDistanceToNow(fromUnixTime(proposalInfo.end), { addSuffix: true }), 'text-gray-800 bg-gray-100')}
+                                    {proposalInfo.state === 'active' && (
+                                        <span className="text-green-800 bg-green-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
+                                            Active {formatDistanceToNow(fromUnixTime(proposalInfo.end), { addSuffix: true })}
+                                        </span>
+                                    )}
+                                    {proposalInfo.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
+                                    {proposalInfo.state === 'closed' && (
+                                        <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
+                                            Closed {formatDistanceToNow(fromUnixTime(proposalInfo.end), { addSuffix: true })}
+                                        </span>
+                                    )}
                                 </div>
+
+                                {/* Under quorum status */}
+                                {proposalInfo.quorum != 0 && proposalInfo.scores_total < proposalInfo.quorum && (
+                                    <div className='min-w-fit'>
+                                        <span className="text-purple-800 bg-purple-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
+                                        Under quorum: {(proposalInfo.scores_total*100/proposalInfo.quorum).toFixed()}%
+                                        </span>
+                                    </div>
+                                )}
+
                                 {/* <p className="mt-1 max-w-2xl text-sm text-gray-500">Proposal details.</p> */}
                             </div>
                             <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
@@ -203,10 +222,10 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                             }}
                                         >
                                             <option value="created">Time</option>
-                                            <option value="vp">Score</option>
+                                            <option value="vp">Weight</option>
                                         </select>
                                         <span className="inline-flex items-center rounded-none border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
-                                            With
+                                            Require
                                         </span>
                                         <select
                                             id="withField"
@@ -245,7 +264,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                                         <div className="text-sm">
                                                             <div className={classNames(
                                                                 getColorOfPencentage(vote.vp*100/proposalInfo?.scores_total),
-                                                                'underline w-1/3'
+                                                                'underline'
                                                             )}>
                                                                 {` ${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
                                                             </div>
