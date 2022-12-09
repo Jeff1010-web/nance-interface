@@ -60,6 +60,8 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
       label = "Loading...";
     } else if(!SUPPORTED_VOTING_TYPES.includes(proposal.type)) {
       label = "Not supported"
+    } else if(choice === undefined) {
+      label = "You need to select a choice";
     } else if(vp > 0) {
       label = "Submit vote";
       canVote = true;
@@ -70,8 +72,9 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
     return (
       <button
         type="button"
+        disabled={!canVote}
         onClick={canVote ? submitVote : close}
-        className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
+        className="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white disabled:bg-gray-400 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-indigo-500"
       >
         {label}
       </button>

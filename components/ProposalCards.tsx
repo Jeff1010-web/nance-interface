@@ -92,7 +92,7 @@ function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotPr
               </div>
             )}
           </div>
-          <p className="mt-1 text-gray-500 text-sm break-words line-clamp-5 lg:line-clamp-3">{proposal.body}</p>
+          <p className="mt-1 text-gray-500 text-sm break-words line-clamp-5">{proposal.body}</p>
         </div>
       </div>
       {proposal.scores_total > 0 && (
