@@ -105,9 +105,10 @@ query VotesBySingleProposalId($id: String, $skip: Int, $orderBy: String, $first:
 `
 
 const VOTED_PROPOSALS_QUERY = `
-query VotedProposals($first: Int, $voter: String, $proposalIds: [String]) {
+query VotedProposals($first: Int, $skip: Int, $voter: String, $proposalIds: [String]) {
   votes (
-    first: $first
+    first: $first,
+    skip: $skip,
     where: {
       voter: $voter,
       proposal_in: $proposalIds
@@ -124,7 +125,11 @@ query VotedProposals($first: Int, $voter: String, $proposalIds: [String]) {
     proposal {
       id,
       choices,
-      type
+      type,
+      title
+    },
+    space {
+      id
     }
   }
 }
@@ -169,6 +174,10 @@ export type SnapshotVotedData = Omit<SnapshotVote & {
     id: string;
     choices: string[];
     type: string;
+    title: string;
+  },
+  space: {
+    id: string;
   }
 }, 'voter'>;
 
@@ -252,6 +261,51 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
     error: proposalsError || votedError 
   };
   console.debug("🔧 useProposalsWithCustomQuery.return ->", {ret});
+  return ret;
+}
+
+export function useVotesOfAddress(address: string, skip: number, limit: number): {
+  loading: boolean,
+  error: APIError<object>,
+  data: {
+    votedData: SnapshotVotedData[]
+  }
+} {
+
+  //console.debug("🔧 useProposalsWithCustomQuery.args ->", {query, variables});
+
+  // Load voted proposals
+  const {
+    loading: votedLoading,
+    data: votedRawData,
+    error: votedError
+  } = useQuery<{ votes: SnapshotVotedData[] }>(VOTED_PROPOSALS_QUERY, {
+    variables: {
+      voter: address,
+      first: limit,
+      skip
+    }
+  });
+
+  // Find voted proposals
+  let votedData: SnapshotVotedData[] = [];
+  if (address) {
+    votedData = votedRawData?.votes.map(vote => {
+      return {
+        ...vote,
+        choice: mapChoiceIndex(vote.proposal.type, vote.proposal.choices, vote.choice)
+      }
+    });
+  }
+
+  const ret = { 
+    data: {
+      votedData
+    }, 
+    loading: votedLoading, 
+    error: votedError 
+  };
+  console.debug("🔧 useVotesOfAddress.return ->", {ret});
   return ret;
 }
 
