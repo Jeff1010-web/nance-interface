@@ -195,10 +195,10 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                         <section aria-labelledby="votes-title" className={proposalInfo?.state == 'pending' ? 'hidden' : undefined}>
                             <div className="bg-white shadow sm:overflow-hidden sm:rounded-lg">
                             <div className="divide-y divide-gray-200">
-                                <div className="px-4 py-5 sm:px-6 flex flex-row justify-between">
+                                <div className="px-4 py-5 sm:px-6 flex flex-col sm:flex-row justify-between">
                                     <h2 id="notes-title" className="text-lg font-medium text-gray-900">
                                         Votes
-                                        <span className='bg-indigo-100 text-indigo-600 hidden ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium md:inline-block'>
+                                        <span className='bg-indigo-100 text-indigo-600 ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium'>
                                             {data?.totalVotes || 0}
                                         </span>
                                     </h2>
@@ -259,14 +259,14 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                                     </div>
                                                     <div className="space-y-1 overflow-hidden">
                                                         <div className="text-sm">
-                                                            <FormattedAddress address={vote.voter} style="font-medium text-gray-900" />
+                                                            <FormattedAddress address={vote.voter} style="text-gray-900" />
                                                             <span className={classNames(
                                                                 getColorOfPencentage(vote.vp*100/proposalInfo?.scores_total),
                                                                 ''
                                                             )}>
                                                                 {` - ${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
                                                             </span>
-                                                            <div className="line-clamp-1">
+                                                            <div className="line-clamp-1 font-medium ">
                                                                 <Tooltip
                                                                     content={formatChoices(proposalInfo.type, vote.choice)}
                                                                     trigger="hover"
@@ -275,7 +275,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                                                 </Tooltip>
                                                             </div>
                                                         </div>
-                                                        <div className="text-sm text-gray-800 font-semibold line-clamp-3 lg:line-clamp-5">
+                                                        <div className="text-sm text-gray-800 italic line-clamp-3 lg:line-clamp-5">
                                                             <Tooltip
                                                                 content={vote.reason}
                                                                 trigger="hover"
