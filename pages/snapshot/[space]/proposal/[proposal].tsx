@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { fetchProposalInfo, SnapshotProposal, useProposalVotes } from "../../../../hooks/snapshot/Proposals";
+import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE } from "../../../../hooks/snapshot/Proposals";
 import { useAccount } from 'wagmi'
 import SiteNav from "../../../../components/SiteNav";
 import { fetchSpaceInfo, SpaceInfo } from "../../../../hooks/snapshot/SpaceInfo";
@@ -75,7 +75,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
     // external hook
     const { address, isConnected } = useAccount();
     // load data
-    const { loading, data, error } = useProposalVotes(proposalInfo, address, Math.max((query.page-1)*10, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
+    const { loading, data, error } = useProposalVotes(proposalInfo, address, Math.max((query.page-1)*VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
 
     useEffect(() => {
         if(proposalInfo?.state === 'active') {
@@ -260,16 +260,19 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                                     <div className="space-y-1 overflow-hidden">
                                                         <div className="text-sm">
                                                             <FormattedAddress address={vote.voter} style="font-medium text-gray-900" />
-                                                        </div>
-                                                        <div className="text-sm">
-                                                            <div className={classNames(
+                                                            <span className={classNames(
                                                                 getColorOfPencentage(vote.vp*100/proposalInfo?.scores_total),
-                                                                'underline'
+                                                                ''
                                                             )}>
-                                                                {` ${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
-                                                            </div>
-                                                            <div className="w-full overflow-hidden">
-                                                                <p className="truncate">{formatChoices(proposalInfo.type, vote.choice)}</p>
+                                                                {` - ${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
+                                                            </span>
+                                                            <div className="line-clamp-1">
+                                                                <Tooltip
+                                                                    content={formatChoices(proposalInfo.type, vote.choice)}
+                                                                    trigger="hover"
+                                                                    >
+                                                                    <p>{formatChoices(proposalInfo.type, vote.choice)}</p>
+                                                                </Tooltip>
                                                             </div>
                                                         </div>
                                                         <div className="text-sm text-gray-800 font-semibold line-clamp-3 lg:line-clamp-5">
@@ -302,7 +305,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                             </li>
                                         ))}
                                     </ul>
-                                    <Pagination page={query.page} setPage={(page) => setQuery({page})} total={data?.totalVotes || 0} limit={10} />
+                                    <Pagination page={query.page} setPage={(page) => setQuery({page})} total={data?.totalVotes || 0} limit={VOTES_PER_PAGE} />
                                 </div>
                             </div>
                             </div>

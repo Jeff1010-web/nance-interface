@@ -255,6 +255,8 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
   return ret;
 }
 
+export const VOTES_PER_PAGE = 15;
+
 export function useProposalVotes(proposal: SnapshotProposal, address: string, skip: number, orderBy: 'created' | 'vp' = 'created', withField: "" | "reason" | "app"): {
   loading: boolean,
   error: APIError<object>,
@@ -275,7 +277,7 @@ export function useProposalVotes(proposal: SnapshotProposal, address: string, sk
     error: voteError
   } = useQuery<{ votes: SnapshotVote[] }>(VOTES_OF_PROPOSAL_QUERY, {
     variables: {
-      first: sortAfterQuery ? proposal.votes : 10,
+      first: sortAfterQuery ? proposal.votes : VOTES_PER_PAGE,
       skip: sortAfterQuery ? 0 : skip,
       orderBy: orderBy,
       id: proposal.id
@@ -303,7 +305,7 @@ export function useProposalVotes(proposal: SnapshotProposal, address: string, sk
       } else {
         return b.vp - a.vp;
       }
-    }).slice(skip, skip + 10);
+    }).slice(skip, skip + VOTES_PER_PAGE);
   }
 
   let votesData: SnapshotVote[] = votes?.map(vote => {
