@@ -1,6 +1,6 @@
 import { DocumentTextIcon, ArchiveIcon } from '@heroicons/react/solid'
-import { SnapshotProposal, SnapshotVotedData } from '../hooks/snapshot/Proposals'
-import { fromUnixTime, formatDistanceToNow } from 'date-fns'
+import { SnapshotProposal } from '../hooks/snapshot/Proposals'
+import { fromUnixTime, formatDistanceToNowStrict } from 'date-fns'
 import { Tooltip } from 'flowbite-react';
 import VotingModal from './VotingModal';
 import { useContext, useState } from 'react';
@@ -72,13 +72,13 @@ function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotPr
             <div className='min-w-fit'>
               {proposal.state === 'active' && (
                 <span className="text-green-800 bg-green-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                  Active {formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true })}
+                  Active for {formatDistanceToNowStrict(fromUnixTime(proposal.end))}
                 </span>
               )}
               {proposal.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
               {proposal.state === 'closed' && (
                 <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                  Closed {formatDistanceToNow(fromUnixTime(proposal.end), { addSuffix: true })}
+                  Closed {formatDistanceToNowStrict(fromUnixTime(proposal.end), { addSuffix: true })}
                 </span>
               )}
             </div>

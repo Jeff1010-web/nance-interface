@@ -7,10 +7,10 @@ import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../../../components/FormattedAddress";
-import { formatDistanceToNow, fromUnixTime, format } from "date-fns";
+import { fromUnixTime, format, formatDistanceToNowStrict } from "date-fns";
 import { useEffect, useState } from "react";
 import VotingModal from "../../../../components/VotingModal";
-import { withDefault, NumberParam, createEnumParam, useQueryParams, ArrayParam } from "next-query-params";
+import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-query-params";
 import Pagination from "../../../../components/Pagination";
 import { formatChoices } from "../../../../libs/snapshotUtil";
 import ProposalStats from "../../../../components/ProposalStats";
@@ -154,13 +154,13 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                 <div className='min-w-fit'>
                                     {proposalInfo.state === 'active' && (
                                         <span className="text-green-800 bg-green-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                                            Active {formatDistanceToNow(fromUnixTime(proposalInfo.end), { addSuffix: true })}
+                                            Active for {formatDistanceToNowStrict(fromUnixTime(proposalInfo.end))}
                                         </span>
                                     )}
                                     {proposalInfo.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
                                     {proposalInfo.state === 'closed' && (
                                         <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                                            Closed {formatDistanceToNow(fromUnixTime(proposalInfo.end), { addSuffix: true })}
+                                            Closed {formatDistanceToNowStrict(fromUnixTime(proposalInfo.end), { addSuffix: true })}
                                         </span>
                                     )}
                                 </div>
@@ -282,7 +282,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                                         </div>
                                                         <div className="space-x-2 text-sm">
                                                             <span className="text-gray-500">
-                                                                {formatDistanceToNow(fromUnixTime(vote.created), { addSuffix: true })}
+                                                                {formatDistanceToNowStrict(fromUnixTime(vote.created), { addSuffix: true })}
                                                             </span>{' '}
                                                             {vote.app && vote.app!="snapshot" && (
                                                                 <>
