@@ -6,16 +6,18 @@ export interface Props {
     address: string;
     style?: string;
     overrideURLPrefix?: string;
+    openInNewWindow?: boolean;
 }
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function FormattedAddress({ address, style, overrideURLPrefix }: Props) {
+export default function FormattedAddress({ address, style, overrideURLPrefix, openInNewWindow = true }: Props) {
     const addr = address as Address;
     const hasAddr = addr && addr.length == 42;
     const urlPrefix = overrideURLPrefix || "https://etherscan.io/address/";
+    const anchorTarget = openInNewWindow ? "_blank" : "_self";
 
     const [label, setLabel] = useState(shortenAddress(address) || "Anon");
     const { data: ensName } = useEnsName({ address: addr, enabled: hasAddr });
@@ -29,7 +31,7 @@ export default function FormattedAddress({ address, style, overrideURLPrefix }: 
     }, [ensName, address]);
 
     return (
-        <a target="_blank" rel="noopener noreferrer"
+        <a target={anchorTarget} rel="noopener noreferrer"
             className={classNames(
                 style,
                 'hover:underline'

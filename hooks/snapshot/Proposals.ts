@@ -284,7 +284,8 @@ export function useVotesOfAddress(address: string, skip: number, limit: number):
       voter: address,
       first: limit,
       skip
-    }
+    },
+    skip: !(address && address.length == 42)
   });
 
   // Find voted proposals

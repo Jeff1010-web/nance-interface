@@ -8,6 +8,7 @@ import { withDefault, NumberParam, useQueryParams } from "next-query-params";
 import Pagination from "../../../components/Pagination";
 import { formatChoices } from "../../../libs/snapshotUtil";
 import Link from "next/link";
+import { useEnsAddress } from "wagmi";
 
 export default function SnapshotProfilePage() {
     // router
@@ -20,15 +21,20 @@ export default function SnapshotProfilePage() {
         // withField: withDefault(createEnumParam(["reason", "app"]), "")
       });
     // load data
-    const { loading, data, error } = useVotesOfAddress(wallet as string, Math.max((query.page-1)*VOTES_PER_PAGE, 0), VOTES_PER_PAGE);
+    const { data: address, isError, isLoading } = useEnsAddress({
+        name: wallet as string,
+        enabled: wallet && (wallet as string).endsWith('.eth')
+    })
+
+    const resolvedAddress = address || wallet as string;
+    const { loading, data, error } = useVotesOfAddress(resolvedAddress as string, Math.max((query.page-1)*VOTES_PER_PAGE, 0), VOTES_PER_PAGE);
 
     return (
         <>
             <SiteNav 
-                pageTitle={`Snapshot Profile ${wallet}`} 
+                pageTitle={`Snapshot Profile ${resolvedAddress}`} 
                 description={"Read related votes of an address on Snapshot"} 
-                image={`https://cdn.stamp.fyi/avatar/${wallet as string}?w=1200&h=630`}
-                withWallet />
+                image={`https://cdn.stamp.fyi/avatar/${resolvedAddress as string}?w=1200&h=630`} />
 
             <div className="min-h-full">
                 <main className="py-10">
@@ -39,7 +45,7 @@ export default function SnapshotProfilePage() {
                         <div className="relative">
                         <img
                             className="h-16 w-16 rounded-full"
-                            src={`https://cdn.stamp.fyi/avatar/${wallet}?s=160`}
+                            src={`https://cdn.stamp.fyi/avatar/${resolvedAddress}?s=160`}
                             alt=""
                         />
                         <span className="absolute inset-0 rounded-full shadow-inner" aria-hidden="true" />
@@ -47,7 +53,7 @@ export default function SnapshotProfilePage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">
-                            <FormattedAddress address={wallet as string} />
+                            <FormattedAddress address={resolvedAddress as string} />
                         </h1>
                         {/* <p className="text-sm font-medium text-gray-500">
                         By&nbsp;

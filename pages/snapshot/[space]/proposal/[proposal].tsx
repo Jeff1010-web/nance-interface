@@ -257,7 +257,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                                     </div>
                                                     <div className="space-y-1 overflow-hidden">
                                                         <div className="text-sm">
-                                                            <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="/snapshot/profile/" />
+                                                            <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
                                                             <span className={classNames(
                                                                 getColorOfPencentage(vote.vp*100/proposalInfo?.scores_total),
                                                                 ''
