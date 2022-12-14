@@ -113,7 +113,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                         <h1 className="text-2xl font-bold text-gray-900">{proposalInfo.title}</h1>
                         <p className="text-sm font-medium text-gray-500">
                         By&nbsp;
-                        <FormattedAddress address={proposalInfo.author} style="text-gray-900" />
+                        <FormattedAddress address={proposalInfo.author} style="text-gray-900" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
                         &nbsp;on <time dateTime={proposalInfo.created ? fromUnixTime(proposalInfo.created).toString() : ''}>{proposalInfo.created && format(fromUnixTime(proposalInfo.created), 'MMMM d, yyyy')}</time>
                         </p>
                     </div>

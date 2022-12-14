@@ -105,13 +105,14 @@ query VotesBySingleProposalId($id: String, $skip: Int, $orderBy: String, $first:
 `
 
 const VOTED_PROPOSALS_QUERY = `
-query VotedProposals($first: Int, $skip: Int, $voter: String, $proposalIds: [String]) {
+query VotedProposals($first: Int, $skip: Int, $voter: String, $proposalIds: [String], $space: String) {
   votes (
     first: $first,
     skip: $skip,
     where: {
       voter: $voter,
-      proposal_in: $proposalIds
+      proposal_in: $proposalIds,
+      space: $space
     }
     orderBy: "created",
     orderDirection: desc
@@ -129,7 +130,8 @@ query VotedProposals($first: Int, $skip: Int, $voter: String, $proposalIds: [Str
       title
     },
     space {
-      id
+      id,
+      name
     }
   }
 }
@@ -178,6 +180,7 @@ export type SnapshotVotedData = Omit<SnapshotVote & {
   },
   space: {
     id: string;
+    name: string;
   }
 }, 'voter'>;
 
@@ -264,11 +267,18 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
   return ret;
 }
 
-export function useVotesOfAddress(address: string, skip: number, limit: number): {
+export interface SnapshotSpaceWithVotesCount {
+  id: string;
+  name: string;
+  votes: number;
+}
+
+export function useVotesOfAddress(address: string, skip: number, limit: number, spaceFilter: string = ""): {
   loading: boolean,
   error: APIError<object>,
   data: {
-    votedData: SnapshotVotedData[]
+    votedData: SnapshotVotedData[],
+    spaces: SnapshotSpaceWithVotesCount[]
   }
 } {
 
@@ -283,15 +293,26 @@ export function useVotesOfAddress(address: string, skip: number, limit: number):
     variables: {
       voter: address,
       first: limit,
-      skip
+      skip,
+      space: spaceFilter
     },
     skip: !(address && address.length == 42)
   });
 
-  // Find voted proposals
+  // Map choices from index to option label
   let votedData: SnapshotVotedData[] = [];
+  let spaces: { [id: string]: SnapshotSpaceWithVotesCount } = {};
   if (address) {
     votedData = votedRawData?.votes.map(vote => {
+      if(!spaces[vote.space.id]) {
+        spaces[vote.space.id] = {
+          id: vote.space.id,
+          name: vote.space.name,
+          votes: 0
+        }
+      }
+      spaces[vote.space.id].votes++;
+
       return {
         ...vote,
         choice: mapChoiceIndex(vote.proposal.type, vote.proposal.choices, vote.choice)
@@ -301,7 +322,7 @@ export function useVotesOfAddress(address: string, skip: number, limit: number):
 
   const ret = { 
     data: {
-      votedData
+      votedData, spaces: Object.values(spaces).sort((a, b) => b.votes - a.votes)
     }, 
     loading: votedLoading, 
     error: votedError 

@@ -4,11 +4,18 @@ import SiteNav from "../../../components/SiteNav";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../../components/FormattedAddress";
 import { fromUnixTime, formatDistanceToNowStrict } from "date-fns";
-import { withDefault, NumberParam, useQueryParams } from "next-query-params";
+import { withDefault, NumberParam, useQueryParams, StringParam } from "next-query-params";
 import Pagination from "../../../components/Pagination";
 import { formatChoices } from "../../../libs/snapshotUtil";
 import Link from "next/link";
 import { useEnsAddress } from "wagmi";
+import SearchableComboBox, { Option } from "../../../components/SearchableComboBox";
+import { useState } from "react";
+import { Switch } from "@headlessui/react";
+
+type SpaceOption = Option & {
+    votes: number
+}
 
 export default function SnapshotProfilePage() {
     // router
@@ -18,8 +25,8 @@ export default function SnapshotProfilePage() {
     const [query, setQuery] = useQueryParams({ 
         page: withDefault(NumberParam, 1), 
         // sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
-        // withField: withDefault(createEnumParam(["reason", "app"]), "")
       });
+    const [selectedSpace, setSelectedSpace] = useState<SpaceOption>({id: "", label: "", votes: 0, status: false});
     // load data
     const { data: address, isError, isLoading } = useEnsAddress({
         name: wallet as string,
@@ -27,7 +34,17 @@ export default function SnapshotProfilePage() {
     })
 
     const resolvedAddress = address || wallet as string;
-    const { loading, data, error } = useVotesOfAddress(resolvedAddress as string, Math.max((query.page-1)*VOTES_PER_PAGE, 0), VOTES_PER_PAGE);
+    const { loading, data, error } = useVotesOfAddress(resolvedAddress as string, Math.max((query.page-1)*30, 0), 30, selectedSpace.id);
+
+    const spaces = data?.spaces || [];
+    const spaceOptions: SpaceOption[] = spaces.map((space) => {
+        return {
+            id: space.id,
+            label: `${space.name} (${space.votes})`,
+            status: true,
+            votes: space.votes
+        }
+    })
 
     return (
         <>
@@ -96,6 +113,28 @@ export default function SnapshotProfilePage() {
                                         </span> */}
                                     </h2>
 
+                                    {!selectedSpace.status && <SearchableComboBox val={selectedSpace} setVal={setSelectedSpace} options={spaceOptions} label="Filter by space" />}
+                                    {selectedSpace.status && (
+                                        <div className="space-x-2">
+                                            <Switch
+                                                checked={true}
+                                                onChange={(checked) => {
+                                                    if(!checked) {
+                                                        setSelectedSpace({id: "", label: "", votes: 0, status: false})
+                                                    }
+                                                }}
+                                                className="bg-indigo-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                            >
+                                                <span className="sr-only">Space filter</span>
+                                                <span
+                                                aria-hidden="true"
+                                                className="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                                />
+                                            </Switch>
+                                            <span>Filtered</span>
+                                        </div>
+                                    )}
+
                                     {/* <div className="mt-1 flex rounded-md shadow-sm">
                                         <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
                                             SortBy
@@ -118,7 +157,7 @@ export default function SnapshotProfilePage() {
                                             <option value="vp">Weight</option>
                                         </select>
                                         <span className="inline-flex items-center rounded-none border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
-                                            Require
+                                            Space
                                         </span>
                                         <select
                                             id="withField"
@@ -198,7 +237,7 @@ export default function SnapshotProfilePage() {
                                             </li>
                                         ))}
                                     </ul>
-                                    <Pagination page={query.page} setPage={(page) => setQuery({page})} total={0} limit={VOTES_PER_PAGE} />
+                                    <Pagination page={query.page} setPage={(page) => setQuery({page})} total={0} limit={30} />
                                 </div>
                             </div>
                             </div>
