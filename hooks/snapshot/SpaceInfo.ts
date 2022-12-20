@@ -2,13 +2,16 @@ import { useQuery } from 'graphql-hooks'
 
 const QUERY = `
 query SpaceInfo($spaceId: String) {
-    space(id: $spaceId) {
-      name
-      about
-      avatar
-      proposalsCount
-      followersCount
+  space(id: $spaceId) {
+    name
+    about
+    avatar
+    proposalsCount
+    followersCount
+    voting {
+      hideAbstain
     }
+  }
 }
 `
 
@@ -17,7 +20,10 @@ export interface SpaceInfo {
     about: string,
     avatar: string,
     proposalsCount: number,
-    followersCount: number
+    followersCount: number,
+    voting: {
+      hideAbstain: boolean
+    }
 }
 
 export async function fetchSpaceInfo(spaceId: string): Promise<SpaceInfo> {

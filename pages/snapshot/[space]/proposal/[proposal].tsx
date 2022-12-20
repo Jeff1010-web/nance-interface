@@ -76,6 +76,11 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
     // load data
     const { loading, data, error } = useProposalVotes(proposalInfo, address, Math.max((query.page-1)*VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
 
+    const hideAbstain = spaceInfo.voting.hideAbstain && proposalInfo.type === "basic";
+    const totalScore = hideAbstain ? 
+        proposalInfo.scores_total-(proposalInfo?.scores[2]??0)
+        : proposalInfo.scores_total;
+
     useEffect(() => {
         if(proposalInfo?.state === 'active') {
             if(isConnected) {
@@ -165,10 +170,10 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                 </div>
 
                                 {/* Under quorum status */}
-                                {proposalInfo.quorum != 0 && proposalInfo.scores_total < proposalInfo.quorum && (
+                                {proposalInfo.quorum != 0 && totalScore < proposalInfo.quorum && (
                                     <div className='min-w-fit'>
                                         <span className="text-purple-800 bg-purple-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                                        Under quorum: {(proposalInfo.scores_total*100/proposalInfo.quorum).toFixed()}%
+                                        Under quorum: {(totalScore*100/proposalInfo.quorum).toFixed()}%
                                         </span>
                                     </div>
                                 )}
@@ -315,10 +320,15 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6">
                             <h2 id="timeline-title" className="text-lg font-medium text-gray-900">
                                 Results
+                                {hideAbstain && (
+                                    <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full ml-2">
+                                        HideAbstain
+                                    </span>
+                                )}
                             </h2>
 
                             <div className="mt-6 flow-root">
-                                <ProposalStats proposal={proposalInfo} />
+                                <ProposalStats proposal={proposalInfo} hideAbstain={hideAbstain} />
                             </div>
 
                         </div>

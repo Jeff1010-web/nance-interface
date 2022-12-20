@@ -52,8 +52,13 @@ export default function ProposalCards({proposals}: {proposals: SnapshotProposal[
 }
 
 function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotProposal, setVotingProposal: (proposal: SnapshotProposal) => void}) {
-  const {votedData, space: spaceId, address} = useContext(SpaceContext);
+  const {votedData, space: spaceId, address, hideAbstain: spaceHideAbstain} = useContext(SpaceContext);
   const reasonStr = (votedData[proposal.id] && votedData[proposal.id].reason !== "") ? ` [Reason: ${votedData[proposal.id].reason}]` : "";
+
+  const hideAbstain = spaceHideAbstain && proposal.type === "basic";
+  const totalScore = hideAbstain ? 
+    proposal.scores_total-(proposal?.scores[2]??0)
+      : proposal.scores_total;
 
   return (
     <li className="col-span-1 bg-white rounded-lg shadow divide-y divide-gray-200">
@@ -84,10 +89,10 @@ function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotPr
             </div>
             
             {/* Under quorum status */}
-            {proposal.quorum != 0 && proposal.scores_total < proposal.quorum && (
+            {proposal.quorum != 0 && totalScore < proposal.quorum && (
               <div className='min-w-fit'>
                 <span className="text-purple-800 bg-purple-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                  Under quorum: {(proposal.scores_total*100/proposal.quorum).toFixed()}%
+                  Under quorum: {(totalScore*100/proposal.quorum).toFixed()}%
                 </span>
               </div>
             )}
@@ -97,7 +102,7 @@ function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotPr
       </div>
       {proposal.scores_total > 0 && (
       <div className="w-full">
-        <ProposalStats proposal={proposal} isOverview />
+        <ProposalStats proposal={proposal} isOverview hideAbstain={hideAbstain} />
       </div>
       )}
       <div>

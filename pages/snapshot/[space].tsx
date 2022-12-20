@@ -15,7 +15,8 @@ export interface SpaceContextData {
     space: string;
     votedData: {
         [id: string]: SnapshotVotedData;
-    }
+    };
+    hideAbstain: boolean;
 }
 
 export const SpaceContext = createContext<SpaceContextData>(undefined);
@@ -92,7 +93,7 @@ export default function SnapshotSpacePage({ spaceInfo }: { spaceInfo: SpaceInfo 
                 withWallet />
 
             <SpaceContext.Provider 
-                value={{address: connectedAddress, space: space as string, votedData}}>
+                value={{address: connectedAddress, space: space as string, votedData, hideAbstain: spaceInfo.voting.hideAbstain}}>
 
                 <SpaceProposalNavigator spaceInfo={spaceInfo}  options={filterOptions} keyword={keyword} setKeyword={setKeyword} limit={limit} setLimit={setLimit} />
 
