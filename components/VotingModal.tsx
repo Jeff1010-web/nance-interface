@@ -17,6 +17,7 @@ interface VotingProps {
     closeModal: () => void
     address: string
     spaceId: string
+    spaceHideAbstain: boolean
     proposal: SnapshotProposal
 }
 
@@ -26,7 +27,7 @@ function classNames(...classes) {
 
 const SUPPORTED_VOTING_TYPES = ['single-choice', 'basic', 'weighted']
 
-export default function VotingModal({modalIsOpen, closeModal, address, spaceId, proposal}: VotingProps) {
+export default function VotingModal({modalIsOpen, closeModal, address, spaceId, spaceHideAbstain, proposal}: VotingProps) {
   // state
   const [choice, setChoice] = useState(undefined);
   const [reason, setReason] = useState('');
@@ -49,6 +50,11 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
   if(proposal === undefined) {
     return <div className="hidden">Proposal not selected</div>
   }
+
+  const hideAbstain = spaceHideAbstain && proposal.type === "basic";
+  const totalScore = hideAbstain ? 
+    proposal.scores_total-(proposal?.scores[2]??0)
+      : proposal.scores_total;
 
   const renderVoteButton = () => {
     let canVote = false;
@@ -143,9 +149,9 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                             <h4 className="sr-only">Scores</h4>
                             <div className="flex items-center">
                               <div className="flex items-center">
-                                Scores: {formatNumber(proposal.scores_total)}&nbsp;{proposal.quorum>0 && `(${(proposal.scores_total*100/proposal.quorum).toFixed()}% of quorum)`}
+                                Scores: {formatNumber(totalScore)}&nbsp;{proposal.quorum>0 && `(${(totalScore*100/proposal.quorum).toFixed()}% of quorum)`}
                               </div>
-                              <p className="sr-only">{proposal.scores_total} out of {proposal.quorum} quorum</p>
+                              <p className="sr-only">{totalScore} out of {proposal.quorum} quorum</p>
                             </div>
                           </div>
                         </div>

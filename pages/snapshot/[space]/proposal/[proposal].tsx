@@ -139,7 +139,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                             </Tooltip>
                         </button>
                         {proposalInfo?.choices && (
-                            <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId={space as string} proposal={proposalInfo} />
+                            <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId={space as string} proposal={proposalInfo} spaceHideAbstain={spaceInfo.voting.hideAbstain} />
                         )}
                     </div>
                 </div>

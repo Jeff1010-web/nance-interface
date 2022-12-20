@@ -30,6 +30,7 @@ const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
 )
 
 export default function ProposalCards({proposals}: {proposals: SnapshotProposal[]}) {
+  const {hideAbstain: spaceHideAbstain} = useContext(SpaceContext);
   const [votingProposal, setVotingProposal] = useState(undefined);
   const {address, space: spaceId} = useContext(SpaceContext);
 
@@ -46,6 +47,7 @@ export default function ProposalCards({proposals}: {proposals: SnapshotProposal[
         closeModal={() => setVotingProposal(undefined)} 
         address={address} 
         spaceId={spaceId} 
+        spaceHideAbstain={spaceHideAbstain}
         proposal={votingProposal} />
     </>
   )
