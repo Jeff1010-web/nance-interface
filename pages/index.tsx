@@ -37,18 +37,18 @@ const posts: PostCard[] = [
         },
     },
     {
-        title: 'Visualize the diff of two transactions',
-        href: '/diff',
-        category: { name: 'Project', href: '#' },
+        title: 'Visualize the diff of two reconfiguration',
+        href: '/juicebox',
+        category: { name: 'Tool', href: '#' },
         description:
-            'Ever wanted to see the diff of two transactions? Now you can with the Transaction Diff tool. Just enter the transaction hashes and see the diff. In a strucutal&typed way.',
-        date: 'Oct 4, 2022',
-        datetime: '2022-10-04',
+            'Ever wanted to see the diff of two reconfiguration for Juicebox project? Now you can with the Reconfiguration Diff tool. Just select/load new reconfiguration and see the diff. In a strucutal&typed way.',
+        date: 'Nov 14, 2022',
+        datetime: '2022-11-14',
         imageUrl:
             'https://images.unsplash.com/photo-1591691203197-c00ee071407a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2381&q=80',
         author: {
             name: 'twodam.eth',
-            href: 'https://twitter.com/twodam_eth/status/1581844871597654019?s=20&t=kIKp2lWVlMrvV5fNdwquVw',
+            href: 'https://twitter.com/twodam_eth/status/1592161975081267205?s=20&t=9g0PLy2MSviZhk5kiQjQeg',
             imageUrl:
                 'https://cdn.stamp.fyi/avatar/twodam.eth?s=160',
         },

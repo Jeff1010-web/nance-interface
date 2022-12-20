@@ -3,6 +3,7 @@ import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import Head from 'next/head'
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 interface SiteNavProps {
     pageTitle: string,
@@ -58,16 +59,15 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
                                 <div className="flex justify-between h-16">
                                     <div className="flex">
                                         <div className="flex-shrink-0 flex items-center">
-                                            <img
-                                                className="block lg:hidden h-8 w-auto"
-                                                src="/favicon.ico"
-                                                alt="Juicetool logo"
-                                            />
-                                            <img
-                                                className="hidden lg:block h-8 w-auto"
-                                                src="/favicon.ico"
-                                                alt="Juicetool logo"
-                                            />
+                                            <Link href="/">
+                                                <a>
+                                                    <img
+                                                        className="block h-8 w-auto"
+                                                        src="/favicon.ico"
+                                                        alt="Juicetool logo"
+                                                    />
+                                                </a>
+                                            </Link>
                                         </div>
                                         <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
                                             {navigation.map((item) => (
