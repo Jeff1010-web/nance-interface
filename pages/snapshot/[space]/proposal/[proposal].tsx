@@ -14,6 +14,7 @@ import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-
 import Pagination from "../../../../components/Pagination";
 import { formatChoices } from "../../../../libs/snapshotUtil";
 import ProposalStats from "../../../../components/ProposalStats";
+import remarkGfm from 'remark-gfm';
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -176,7 +177,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                             </div>
                             <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
                                 <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
-                                    <ReactMarkdown>{proposalInfo.body}</ReactMarkdown>
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{proposalInfo.body}</ReactMarkdown>
                                 </article>
                             </div>
                             <div>

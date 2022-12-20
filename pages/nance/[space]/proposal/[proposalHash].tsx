@@ -3,6 +3,7 @@ import SiteNav from "../../../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { useProposalRequest } from "../../../../hooks/NanceHooks";
+import remarkGfm from 'remark-gfm';
 
 export default function SnapshotProposal() {
     // router
@@ -83,7 +84,7 @@ export default function SnapshotProposal() {
                                         <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
                                             {isLoading && 'Loading...'}
                                             {error && 'Error.'}
-                                            {proposalData && <ReactMarkdown>{proposalData?.body}</ReactMarkdown>}
+                                            {proposalData && <ReactMarkdown remarkPlugins={[remarkGfm]>{proposalData?.body}</ReactMarkdown>}
                                         </article>
                                     </div>
                                 </div>
