@@ -18,6 +18,7 @@ import {NextQueryParamProvider} from 'next-query-params';
 import {JuiceProvider} from 'juice-hooks'
 import { Flowbite } from 'flowbite-react';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { Analytics } from '@vercel/analytics/react';
 
 const graphqlClient = new GraphQLClient({
   url: 'https://hub.snapshot.org/graphql'
@@ -53,26 +54,29 @@ const theme = {
 
 function MyApp({ Component, pageProps }) {
   return (
-    <WagmiConfig client={wagmiClient}>
-      <RainbowKitProvider
-        chains={chains}
-        appInfo={{
-          appName: 'JuiceTool',
-          learnMoreUrl: 'https://juicetool.xyz',
-        }}>
-        <ClientContext.Provider value={graphqlClient}>
-          <NextQueryParamProvider>
-            <JuiceProvider provider={wagmiClient.provider}>
-              <Flowbite theme={theme}>
-                <ErrorBoundary>
-                  <Component {...pageProps} />
-                </ErrorBoundary>
-              </Flowbite>
-            </JuiceProvider>
-          </NextQueryParamProvider>
-        </ClientContext.Provider>
-      </RainbowKitProvider>
-    </WagmiConfig>
+    <>
+      <WagmiConfig client={wagmiClient}>
+        <RainbowKitProvider
+          chains={chains}
+          appInfo={{
+            appName: 'JuiceTool',
+            learnMoreUrl: 'https://juicetool.xyz',
+          }}>
+          <ClientContext.Provider value={graphqlClient}>
+            <NextQueryParamProvider>
+              <JuiceProvider provider={wagmiClient.provider}>
+                <Flowbite theme={theme}>
+                  <ErrorBoundary>
+                    <Component {...pageProps} />
+                  </ErrorBoundary>
+                </Flowbite>
+              </JuiceProvider>
+            </NextQueryParamProvider>
+          </ClientContext.Provider>
+        </RainbowKitProvider>
+      </WagmiConfig>
+      <Analytics />
+    </>
   )
 }
 
