@@ -74,7 +74,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
     // external hook
     const { address, isConnected } = useAccount();
     // load data
-    const { loading, data, error } = useProposalVotes(proposalInfo, address, Math.max((query.page-1)*VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
+    const { loading, data, error } = useProposalVotes(proposalInfo, Math.max((query.page-1)*VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
 
     const hideAbstain = spaceInfo.voting.hideAbstain && proposalInfo.type === "basic";
     const totalScore = hideAbstain ? 

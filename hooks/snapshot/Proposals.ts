@@ -240,7 +240,7 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
     variables: {
       voter: address,
       proposalIds: proposalsData?.proposals.map(proposal => proposal.id),
-      first: proposalsData?.proposals.length || 0
+      first: Math.min(proposalsData?.proposals.length || 0, 1000)
     }
   });
 
@@ -292,7 +292,7 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
   } = useQuery<{ votes: SnapshotVotedData[] }>(VOTED_PROPOSALS_QUERY, {
     variables: {
       voter: address,
-      first: limit,
+      first: Math.min(limit, 1000),
       skip,
       space: spaceFilter
     },
@@ -333,7 +333,7 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
 
 export const VOTES_PER_PAGE = 15;
 
-export function useProposalVotes(proposal: SnapshotProposal, address: string, skip: number, orderBy: 'created' | 'vp' = 'created', withField: "" | "reason" | "app"): {
+export function useProposalVotes(proposal: SnapshotProposal, skip: number, orderBy: 'created' | 'vp' = 'created', withField: "" | "reason" | "app", skipThisHook: boolean = false, overrideLimit: number = 0): {
   loading: boolean,
   error: APIError<object>,
   data: {
@@ -344,7 +344,7 @@ export function useProposalVotes(proposal: SnapshotProposal, address: string, sk
   
   // sort after query if need reason
   const sortAfterQuery = withField === "reason" || withField === "app";
-  console.debug("🔧 useProposalVotes.args ->", {proposal, address, skip, orderBy, withField});
+  console.debug("🔧 useProposalVotes.args ->", {proposal, skip, orderBy, withField});
 
   // Load related votes
   const {
@@ -353,11 +353,13 @@ export function useProposalVotes(proposal: SnapshotProposal, address: string, sk
     error: voteError
   } = useQuery<{ votes: SnapshotVote[] }>(VOTES_OF_PROPOSAL_QUERY, {
     variables: {
-      first: sortAfterQuery ? proposal.votes : VOTES_PER_PAGE,
+      // Snapshot API Limit: The `first` argument must not be greater than 1000
+      first: sortAfterQuery ? Math.min(proposal.votes, 1000) : (overrideLimit === 0 ? VOTES_PER_PAGE : Math.min(overrideLimit, 1000)),
       skip: sortAfterQuery ? 0 : skip,
       orderBy: orderBy,
       id: proposal.id
-    }
+    }, 
+    skip: skipThisHook
   });
 
   let totalVotes = proposal?.votes || 0;

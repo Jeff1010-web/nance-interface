@@ -1,4 +1,4 @@
-import { SnapshotProposal } from "../hooks/snapshot/Proposals"
+import { SnapshotProposal, SnapshotVote, useProposalVotes } from "../hooks/snapshot/Proposals"
 import { Tooltip } from 'flowbite-react';
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
@@ -6,9 +6,12 @@ const formatNumber = (num) => formatter.format(num);
 
 // BasicVoting: For Against Abstain
 const ABSTAIN_INDEX = 2;
+const SUPPORTED_VOTING_TYPES_FOR_GROUP = ["basic", "single-choice", "approval"]
 
 export default function ProposalStats({proposal, isOverview = false, hideAbstain = false}: 
     {proposal: SnapshotProposal, isOverview?: boolean, hideAbstain?: boolean}) {
+
+    const { loading, data, error } = useProposalVotes(proposal, 0, "created", "", isOverview, proposal.votes);
 
     let scores = proposal?.scores
       ?.map((score, index) => {return { score, index }})
@@ -19,6 +22,20 @@ export default function ProposalStats({proposal, isOverview = false, hideAbstain
     const totalScore = hideAbstain ? 
         proposal.scores_total-(proposal?.scores[ABSTAIN_INDEX]??0)
         : proposal.scores_total;
+
+    const displayVotesByGroup = SUPPORTED_VOTING_TYPES_FOR_GROUP.includes(proposal.type);
+    let votesGroupByChoice: { [choice: string]: number } = {};
+    if(!isOverview && displayVotesByGroup) {
+        // iterate votesData and group by choice
+        votesGroupByChoice = data?.votesData.reduce((acc, vote) => {
+            const choice = vote.choice;
+            if(!acc[choice]) {
+                acc[choice] = 0;
+            }
+            acc[choice]++;
+            return acc;
+        }, {});
+    }
 
     return (
         <dl className="m-2 grid grid-cols-2 gap-5">
@@ -65,7 +82,17 @@ export default function ProposalStats({proposal, isOverview = false, hideAbstain
                             <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">
                                 {formatNumber(score)}
                             </dd>
-                            <span className="text-sm font-medium text-gray-500">{(score*100/proposal.scores_total).toFixed(0)}%</span>
+                            {displayVotesByGroup && (
+                                <span className="text-sm font-medium text-gray-500">
+                                    {votesGroupByChoice?.[proposal?.choices[index]] ?? 0} votes
+                                </span>
+                            )}
+                            {!displayVotesByGroup && (
+                                <span className="text-sm font-medium text-gray-500">
+                                    {(score*100/proposal.scores_total).toFixed()}%
+                                </span>
+                            )}
+                            
                         </Tooltip>
                     </div>
             ))}
