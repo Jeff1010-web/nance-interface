@@ -20,7 +20,7 @@ const Query = `query ProjectEvents($first: Int, $skip: Int) {
     project {
       projectId
       handle
-      cv
+      pv
       metadataUri
     }
     timestamp
@@ -85,7 +85,7 @@ export interface ProjectEventResponse {
     id: string
     project: {
       projectId: string
-      cv: string
+      pv: string
       handle: string
       metadataUri: string
     }
@@ -149,7 +149,7 @@ export interface ProjectEvent {
   id: string
   project: {
     projectId: string
-    cv: string
+    pv: string
     handle: string
     metadataUri: string
   }

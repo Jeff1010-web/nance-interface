@@ -9,6 +9,7 @@ import ResolvedProjectWithMetadata from '../components/ResolvedProjectWithMetada
 import { commify, formatEther } from 'ethers/lib/utils'
 import { useSymbolOfERC20, useTokenAddressOfProject } from '../hooks/juicebox/TokenOfProject'
 import { invalidateZeroAddress } from '../libs/address'
+import { Tooltip } from 'flowbite-react'
 
 export default function LogbookPage() {
   const [events, setEvents] = useState<ProjectEvent[]>([])
@@ -26,10 +27,10 @@ export default function LogbookPage() {
     <div className="bg-white">
       <SiteNav pageTitle='Juicebox Logbook' />
       <div className="flex p-6 justify-center">
-        <ul role="list" className="-mb-8 truncate">
+        <ul role="list" className="-mb-8">
           {events.map((event, index) => (
             <li key={event.id}>
-              <div className="relative pb-8 truncate">
+              <div className="relative pb-8">
                 {index !== events.length - 1 ? (
                   <span className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
                 ) : null}
@@ -50,12 +51,21 @@ export default function LogbookPage() {
                         <p className="mt-0.5 text-sm text-gray-500 inline min-w-1/3">&nbsp;·&nbsp;{formatDistanceToNow(fromUnixTime(event.timestamp), { addSuffix: true })}</p>
                       </div>
                       <p className="mt-0.5 text-sm"><a className="text-blue-700 font-bold" href={`https://etherscan.io/tx/${event.txHash}`}>{event.eventType}</a> on
-                        <ResolvedProjectWithMetadata version={parseInt(event.project.cv[0])} projectId={event.project.projectId} handle={event.project.handle} metadataUri={event.project.metadataUri} style={"text-xs text-black font-semibold"} />
+                        <ResolvedProjectWithMetadata version={parseInt(event.project.pv[0])} projectId={event.project.projectId} handle={event.project.handle} metadataUri={event.project.metadataUri} style={"text-xs text-black font-semibold"} />
                       </p>
                     </div>
 
                     {event.memo && (
-                      <p className="text-sm truncate max-w-xs md:max-w-md">{event.memo}</p>
+                      <div className="text-sm line-clamp-3 lg:line-clamp-5 max-w-xs md:max-w-md">
+                        <Tooltip
+                            content={event.memo}
+                            trigger="hover"
+                            >
+                            {event.memo && <p>{event.memo}</p>}
+                        </Tooltip>
+                      </div>
+                      
+                      // <p className="text-sm truncate max-w-xs md:max-w-md">{event.memo}</p>
                     )}
                     {event.eventType === "Pay" && <PayCard event={event} />}
                     {event.eventType === "Redeem" && <RedeemCard event={event} />}
@@ -87,7 +97,7 @@ function PayCard({ event }: { event: ProjectEvent }) {
 function RedeemCard({ event }: { event: ProjectEvent }) {
   const ethAmount = commify(parseFloat(formatEther(event.ethAmount)).toFixed(3));
   const tokenAmount = commify(parseFloat(formatEther(event.tokenAmount)).toFixed(3));
-  const { value: tokenAddress } = useTokenAddressOfProject(parseInt(event.project.cv[0]), event.project.projectId);
+  const { value: tokenAddress } = useTokenAddressOfProject(parseInt(event.project.pv[0]), event.project.projectId);
    const { value: tokenSymbol } = useSymbolOfERC20(tokenAddress);
 
   return (
