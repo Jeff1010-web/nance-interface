@@ -11,7 +11,7 @@ const projectQuery = `query Project($first: Int, $keyword: String) {
       orderDirection: desc
     ) {
       id
-      cv
+      pv
       owner
       handle
       projectId
@@ -22,7 +22,7 @@ const projectQuery = `query Project($first: Int, $keyword: String) {
 
 export interface ProjectSearchEntry {
     id: string
-    cv: string
+    pv: string
     owner: string
     handle: string
     projectId: number

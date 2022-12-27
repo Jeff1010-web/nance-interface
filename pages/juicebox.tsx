@@ -203,6 +203,7 @@ export default function JuiceboxPage() {
 
             {version == 1 && !notSupportedByNance && <V1Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
             {version == 2 && !notSupportedByNance && <V2Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
+            {version == 3 && !notSupportedByNance && <V3Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
 
             {_txForComponent?.safeTxHash && (
               <div className="flex justify-center pt-2 pb-10 mx-6">
@@ -267,6 +268,51 @@ function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   const [target, currency] = _limit || [];
   const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.ETH);
   const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN);
+  //const metadata = parseV1Metadata(fc?.metadata);
+  const currentConfig: FundingCycleConfigProps = {
+    version: 2,
+    fundingCycle: {
+      ...fc,
+      fee,
+      currency: currency?.sub(1),
+      target,
+      configuration: fc?.configuration
+    },
+    metadata,
+    payoutMods,
+    ticketMods,
+  };
+
+  const loading = fcIsLoading || feeIsLoading || targetIsLoading || payoutModsIsLoading || ticketModsIsLoading;
+  const dataIsEmpty = !fc || !payoutMods || !ticketMods
+
+  useEffect(() => {
+    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 2), tx?.data || rawData, tx?.submissionDate, fee, fc?.configuration);
+    if (newConfig) {
+      setPreviewConfig(newConfig);
+    }
+  }, [tx, fc, rawData])
+
+  return (
+    (loading || dataIsEmpty)
+      ? <div className="text-center">Loading...</div>
+      : <ReconfigurationCompare currentFC={currentConfig} previewFC={previewConfig || currentConfig} />
+  )
+}
+
+function V3Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
+  const isV3 = true;
+  // state
+  const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
+
+  // for compare
+  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({projectId, isV3});
+  const [fc, metadata] = _fc || [];
+  const { value: fee, loading: feeIsLoading } = useTerminalFee({ version: "3" });
+  const { value: _limit, loading: targetIsLoading } = useDistributionLimit(projectId, fc?.configuration, isV3);
+  const [target, currency] = _limit || [];
+  const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.ETH, isV3);
+  const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN, isV3);
   //const metadata = parseV1Metadata(fc?.metadata);
   const currentConfig: FundingCycleConfigProps = {
     version: 2,

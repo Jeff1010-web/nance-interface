@@ -1,10 +1,11 @@
-import { useProvider } from 'wagmi';
+import { useContract, useProvider } from 'wagmi';
 import { getFundingCycles } from 'juice-sdk-v1';
 import { getJBController } from 'juice-sdk';
 import { useContractReadValue } from './ContractReadValue';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { useCallback } from 'react';
 import { FundingCycleV1, V2V3FundingCycle, V2V3FundingCycleMetadata } from '../../models/JuiceboxTypes';
+import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController.json';
 
 const deepEqFundingCycles = (a?: FundingCycleV1, b?: FundingCycleV1) => {
   if (a && !b) return false
@@ -46,12 +47,15 @@ export default function useCurrentFundingCycle({
 }
 
 export function useCurrentFundingCycleV2({
-  projectId
+  projectId, isV3 = false
 }: {
-  projectId: BigNumberish | undefined
+  projectId: BigNumberish | undefined,
+  isV3?: boolean
 }) {
   const provider = useProvider();
-  const contract = getJBController(provider);
+  const contract = isV3 ? 
+    useContract({address: JBControllerV3.address, abi: JBControllerV3.abi, signerOrProvider: provider}) 
+    : getJBController(provider);
 
   return useContractReadValue<[V2V3FundingCycle, V2V3FundingCycleMetadata]>({
     contract,

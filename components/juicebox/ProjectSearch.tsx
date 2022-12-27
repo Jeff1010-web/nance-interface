@@ -23,7 +23,7 @@ export default function ProjectSearch({onProjectOptionSet, label}: {onProjectOpt
   const options: ProjectOption[] = projects?.map((project) => {
     return {
         id: project.id,
-        version: project.cv,
+        version: project.pv,
         handle: project.handle,
         projectId: project.projectId
     }
