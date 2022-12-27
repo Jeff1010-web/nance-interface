@@ -332,7 +332,7 @@ function V3Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
   useEffect(() => {
-    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 2), tx?.data || rawData, tx?.submissionDate, fee, fc?.configuration);
+    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 3), tx?.data || rawData, tx?.submissionDate, fee, fc?.configuration);
     if (newConfig) {
       setPreviewConfig(newConfig);
     }

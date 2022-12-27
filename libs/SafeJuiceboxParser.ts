@@ -6,6 +6,8 @@ import { TerminalV1Contract } from "./contractsV1";
 import JBControllerV2 from '@jbx-protocol/contracts-v2/deployments/mainnet/JBController.json';
 import JBETHPaymentTerminal from '@jbx-protocol/contracts-v2/deployments/mainnet/JBETHPaymentTerminal.json';
 import { SafeMultisigTransaction } from "../models/SafeTypes";
+import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController.json';
+import JBETHPaymentTerminalV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal.json';
 
 function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
     if (!m) return undefined;
@@ -21,7 +23,8 @@ function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
 
 export function getVersionOfTx(tx: SafeMultisigTransaction, fallbackVersion: number): number {
     const to = tx?.to;
-    if (to === JBControllerV2.address) return 2;
+    if (to === JBControllerV3.address) return 3;
+    else if (to === JBControllerV2.address) return 2;
     else if (to === TerminalV1Contract.addressOrName) return 1;
     else return fallbackVersion;
 }
@@ -103,6 +106,42 @@ export default function parseSafeJuiceboxTx(
             return newConfig;
         } catch (e) {
             console.debug('JBETHPaymentTerminal.interface.parse >', e);
+        }
+    } else if (version === 3) {
+
+        const iface = new utils.Interface(JBControllerV3.abi);
+        const raw = rawData;
+        try {
+            const ret = iface.parseTransaction({data: raw, value: 0});
+            const {
+                _data,
+                _metadata,
+                _groupedSplits,
+                _fundAccessConstraints
+            }: {
+                _data: V2V3FundingCycleData,
+                _metadata: V2FundingCycleMetadata,
+                _groupedSplits: JBGroupedSplits[],
+                _fundAccessConstraints: JBFundAccessConstraints[]
+            } = ret.args as any;
+            const fac = _fundAccessConstraints.find(c => c.terminal == JBETHPaymentTerminalV3.address);
+            const txDate = getUnixTime(new Date(submissionDate)) || getUnixTime(new Date());
+            const newConfig: FundingCycleConfigProps = {
+                version: 3,
+                fundingCycle: {
+                ..._data, 
+                fee: fallbackFee,
+                configuration: txDate ? BigNumber.from(txDate) : fallbackConfiguration,
+                currency: fac?.distributionLimitCurrency.sub(1),
+                target: fac?.distributionLimit
+                },
+                metadata: _metadata,
+                payoutMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.ETH)?.splits,
+                ticketMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.RESERVED_TOKEN)?.splits
+            };
+            return newConfig;
+        } catch (e) {
+            console.debug('JBETHPaymentTerminalV3.interface.parse >', e);
         }
     }
 }
