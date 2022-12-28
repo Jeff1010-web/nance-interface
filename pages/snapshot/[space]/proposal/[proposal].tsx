@@ -106,14 +106,15 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                 <div className="mx-auto max-w-3xl px-4 sm:px-6 md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl lg:px-8">
                     <div className="flex items-center space-x-5">
                     <div className="flex-shrink-0">
-                        <div className="relative">
-                        <img
-                            className="h-16 w-16 rounded-full"
-                            src={`https://cdn.stamp.fyi/space/${space}?s=160`}
-                            alt=""
-                        />
-                        <span className="absolute inset-0 rounded-full shadow-inner" aria-hidden="true" />
-                        </div>
+                        <Link href={`/snapshot/${space}`}>
+                            <a>
+                                <img
+                                    className="h-16 w-16 rounded-full"
+                                    src={`https://cdn.stamp.fyi/space/${space}?s=160`}
+                                    alt=""
+                                />
+                            </a>
+                        </Link>
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">{proposalInfo.title}</h1>
