@@ -5,7 +5,7 @@ import useCurrentFundingCycle, { useCurrentFundingCycleV2 } from '../hooks/juice
 import { useCurrentPayoutMods, useCurrentTicketMods } from '../hooks/juicebox/CurrentMods';
 import { JBConstants, parseV1Metadata, payoutMod2Split, ticketMod2Split, V1FundingCycleMetadata } from '../models/JuiceboxTypes'
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
-import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
+import { AddressMap, SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 import useProjectInfo from '../hooks/juicebox/ProjectInfo';
 import ProjectSearch, { ProjectOption } from "../components/juicebox/ProjectSearch";
 import ResolvedProject from "../components/ResolvedProject";
@@ -40,6 +40,13 @@ function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
 }
 
 const TABS = ["Multisig", "Bookkeeper"]
+
+const CONTRACT_MAP: AddressMap = {
+  "0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98": "JBController_V3",
+  "0x4e3ef8AFCC2B52E4e704f4c8d9B7E7948F651351": "JBController_V2",
+  "0x7Ae63FBa045Fec7CaE1a75cF7Aa14183483b8397": "JBETHPaymentTerminal_V2",
+  "0xd569D3CCE55b71a8a3f3C418c329A66e5f714431": "TerminalV1"
+}
 
 export default function JuiceboxPage() {
     // router
@@ -183,8 +190,8 @@ export default function JuiceboxPage() {
             </div>
             <div id="safetx-loader" className="flex justify-center pt-2 mx-6">
               {role === "Multisig" && (
-                <div className="w-1/4">
-                  <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedTxOption} safeAddress={owner} shouldRun={owner !== undefined} />
+                <div className="w-1/2">
+                  <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedTxOption} safeAddress={owner} shouldRun={owner !== undefined} addressMap={CONTRACT_MAP} />
                 </div>
               )}
 

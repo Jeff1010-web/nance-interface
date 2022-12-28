@@ -10,6 +10,7 @@ export interface Option {
     id: string
     label: string
     status: boolean
+    extraLabel?: string
 }
 
 export default function SearchableComboBox<T extends Option>({val, setVal, options, label}: {val: T, setVal: Dispatch<SetStateAction<T>>, options: T[], label: string}) {
@@ -62,6 +63,7 @@ export default function SearchableComboBox<T extends Option>({val, setVal, optio
                         {option.label}
                         <span className="sr-only"> is {option.status ? 'online' : 'offline'}</span>
                       </span>
+                      {option.extraLabel && (<span className="ml-3 text-gray-500">{option.extraLabel}</span>)}
                     </div>
 
                     {selected && (
