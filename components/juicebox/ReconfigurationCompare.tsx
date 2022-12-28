@@ -199,8 +199,7 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                             <tr key={keyOfSplit(mod)}>
                                 <th className="py-5 px-6 text-left text-sm font-normal text-gray-500" scope="row">
                                     <div className="flex flex-col">
-                                        {mod.projectId.toNumber() != 0 && <ResolvedProject version={currentPayoutMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} projectId={mod.projectId.toNumber()} style="font-semibold" />}
-                                        <FormattedAddress address={mod.beneficiary} style={mod.projectId.toNumber() != 0 ? "text-xs italic" : "font-semibold"} />
+                                        <SplitEntry mod={mod} projectVersion={currentPayoutMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} />
                                     </div>
                                 </th>
 
@@ -239,8 +238,9 @@ export default function ReconfigurationCompare({currentFC, previewFC}: Reconfigu
                         {tickets.map((mod) => (
                             <tr key={keyOfSplit(mod)}>
                                 <th className="py-5 px-6 text-left text-sm font-normal text-gray-500" scope="row">
-                                    {mod.projectId.toNumber() != 0 && <ResolvedProject version={currentTicketMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} projectId={mod.projectId.toNumber()} />}
-                                    <FormattedAddress address={mod.beneficiary} />:&nbsp;
+                                    {/* {mod.projectId.toNumber() != 0 && <ResolvedProject version={currentTicketMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} projectId={mod.projectId.toNumber()} />}
+                                    <FormattedAddress address={mod.beneficiary} />:&nbsp; */}
+                                    <SplitEntry mod={mod} projectVersion={currentTicketMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} />
                                 </th>
 
                                 <CompareCell 
@@ -269,6 +269,42 @@ function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumb
 
     const _amount = version == 1 ? amountSubFee(target, fee) : amountSubFeeV2(target, fee);
     return `${(_percent/_totalPercent*100).toFixed(2)}% (${formatCurrency(currency, _amount.mul(percent).div(_totalPercent))})`
+}
+
+function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersion: number }) {
+    let splitMode = "address";
+    if(mod.allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
+    else if(mod.projectId.toNumber() !== 0) splitMode = "project";
+
+    const mainStyle = "text-sm font-semibold";
+    const subStyle = "text-xs italic";
+
+    return (
+        <>
+        {splitMode === "allocator" && (
+            <>
+                <FormattedAddress address={mod.allocator} style={mainStyle} />
+                <a href="https://info.juicebox.money/dev/learn/glossary/split-allocator/" target="_blank">(Allocator)</a>
+                <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={subStyle} />
+                <FormattedAddress address={mod.beneficiary} style={subStyle} />
+            </>
+        )}
+
+        {splitMode === "project" && (
+            <>
+                <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={mainStyle} />
+                <FormattedAddress address={mod.beneficiary} style={subStyle} />
+            </>
+        )}
+
+        {/* Address mode */}
+        {splitMode === "address" && (
+            <>
+                <FormattedAddress address={mod.beneficiary} style={mainStyle} />
+            </>
+        )}
+        </>
+    )
 }
 
 function CompareCell({ oldVal, newVal, isSame = false }: { oldVal: any, newVal: any, isSame?: boolean }) {

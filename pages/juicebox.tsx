@@ -163,27 +163,30 @@ export default function JuiceboxPage() {
             )}
 
             {/* V2V3 Fc Switcher */}
-            <Switch.Group as="div" className="flex justify-center items-center">
-              <Switch
-                checked={version === 3}
-                onChange={(enabled) => setQuery({ version: enabled ? 3 : 2 })}
-                className={classNames(
-                  version === 3 ? 'bg-indigo-600' : 'bg-gray-200',
-                  'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
-                )}
-              >
-                <span
-                  aria-hidden="true"
+            {(version === 2 || version === 3) && (
+              <Switch.Group as="div" className="flex justify-center items-center">
+                <Switch
+                  checked={version === 3}
+                  onChange={(enabled) => setQuery({ version: enabled ? 3 : 2 })}
                   className={classNames(
-                    version === 3 ? 'translate-x-5' : 'translate-x-0',
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out'
+                    version === 3 ? 'bg-indigo-600' : 'bg-gray-200',
+                    'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
                   )}
-                />
-              </Switch>
-              <Switch.Label as="span" className="ml-3">
-                <span className="text-sm font-medium text-gray-900">Switch to {version === 3 ? "V2" : "V3"}</span>
-              </Switch.Label>
-            </Switch.Group>
+                >
+                  <span
+                    aria-hidden="true"
+                    className={classNames(
+                      version === 3 ? 'translate-x-5' : 'translate-x-0',
+                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out'
+                    )}
+                  />
+                </Switch>
+                <Switch.Label as="span" className="ml-3">
+                  <span className="text-sm font-medium text-gray-900">Switch to {version === 3 ? "V2" : "V3"}</span>
+                </Switch.Label>
+              </Switch.Group>
+            )}
+
             
             <div id="project-selector" className="flex justify-center gap-x-3 pt-2 mx-6">
               <ProjectSearch onProjectOptionSet={onProjectOptionSet} label="Seach project by handle" />
