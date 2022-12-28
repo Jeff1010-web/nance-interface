@@ -35,7 +35,7 @@ const fetcher: Fetcher<ProjectInfo, {version: number, projectId: number}> = ({ve
 
 export default function useProjectInfo(version: number, projectId: number) {
 
-    const { data, error } = useSWR({version, projectId}, fetcher);
+    const { data, error } = useSWR({version: version === 3 ? 2 : version, projectId}, fetcher);
     const loading = !error && !data;
 
     return { data, loading, error }
