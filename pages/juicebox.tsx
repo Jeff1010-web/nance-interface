@@ -22,6 +22,7 @@ import parseSafeJuiceboxTx, { getVersionOfTx } from '../libs/SafeJuiceboxParser'
 import Tabs from '../components/Tabs';
 import { useMultisigTransactionOf } from '../hooks/SafeHooks';
 import { Switch } from '@headlessui/react';
+import fetchMetadata, { consolidateMetadata, ProjectMetadataV4 } from '../libs/projectMetadata';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -45,7 +46,8 @@ const CONTRACT_MAP: AddressMap = {
   "0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98": "JBController_V3",
   "0x4e3ef8AFCC2B52E4e704f4c8d9B7E7948F651351": "JBController_V2",
   "0x7Ae63FBa045Fec7CaE1a75cF7Aa14183483b8397": "JBETHPaymentTerminal_V2",
-  "0xd569D3CCE55b71a8a3f3C418c329A66e5f714431": "TerminalV1"
+  "0xd569D3CCE55b71a8a3f3C418c329A66e5f714431": "TerminalV1",
+  "0xB9E4B658298C7A36BdF4C2832042A5D6700c3Ab8": "ModStore"
 }
 
 export default function JuiceboxPage() {
@@ -61,11 +63,12 @@ export default function JuiceboxPage() {
     const role = query.role;
     // state
     const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined);
+    const [metadata, setMetadata] = useState<ProjectMetadataV4>(undefined);
     // FIXME remove me on endpoint and here
     const [currentTime, setCurrentTime] = useState<string>(undefined);
 
     // external hooks
-    const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, project);
+    const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(version, project);
     const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : undefined;
     const { data: specifiedSafeTx } = useMultisigTransactionOf(owner, query.safeTxHash, query.safeTxHash !== "");
 
@@ -141,6 +144,23 @@ export default function JuiceboxPage() {
         setCurrentTime(new Date().toISOString())
     }, [projectInfo, owner])
 
+    useEffect(() => {
+      if (projectInfo?.metadataUri) {
+        fetchMetadata(projectInfo.metadataUri)
+          .then((metadata) => {
+              setMetadata(consolidateMetadata(metadata));
+          })
+          .catch(e => {
+            console.error('📗 Juicebox.loadMetadata >', {e});
+        })
+      }
+      
+      // cleanup
+      return () => {
+          setMetadata(undefined);
+      }
+    }, [projectInfo]);
+
     const notSupportedByNance = project !== 1 && role === "Bookkeeper";
     
     return (
@@ -148,19 +168,12 @@ export default function JuiceboxPage() {
           <SiteNav pageTitle="Juicebox Reconfiguration Helper" withWallet />
           <Tabs tabs={TABS} currentTab={role} setCurrentTab={(tab) => setQuery({role: tab})} />
           <div className="bg-white">
-            <div id="project-status" className="flex justify-center py-2 mx-6">
-                <ResolvedProject projectId={project} version={version} />
+            <div id="project-info" className="flex flex-col items-center py-2 mx-6">
+              <img className="mx-auto h-32 w-32 flex-shrink-0 rounded-full" src={metadata?.logoUri || '/images/juiceboxdao_logo.gif'} alt="project logo" />
+              <p className="text-base font-medium text-gray-900">{metadata?.name || `Untitled Project (${project})`}</p>
+              <dd className="text-gray-700 break-words line-clamp-3 w-1/3">{metadata?.description || 'Loading metadata...'}</dd>
+              <ResolvedProject projectId={project} version={version} />
             </div>
-
-            {_txForComponent?.safeTxHash && (
-              <div className="flex justify-center py-2 mx-6">
-                <a target="_blank" rel="noopener noreferrer"
-                  className="text-green-500 hover:underline"
-                  href={`https://gnosis-safe.io/app/eth:${owner}/transactions/${_txForComponent?.safeTxHash}`}>
-                  Sign on Gnosis Safe
-                </a>
-              </div>
-            )}
 
             {/* V2V3 Fc Switcher */}
             {(version === 2 || version === 3) && (
@@ -187,7 +200,6 @@ export default function JuiceboxPage() {
               </Switch.Group>
             )}
 
-            
             <div id="project-selector" className="flex justify-center gap-x-3 pt-2 mx-6">
               <ProjectSearch onProjectOptionSet={onProjectOptionSet} label="Seach project by handle" />
             </div>
