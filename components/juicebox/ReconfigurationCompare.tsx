@@ -284,7 +284,7 @@ function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersion: num
         {splitMode === "allocator" && (
             <>
                 <FormattedAddress address={mod.allocator} style={mainStyle} />
-                <a href="https://info.juicebox.money/dev/learn/glossary/split-allocator/" target="_blank">(Allocator)</a>
+                <a href="https://info.juicebox.money/dev/learn/glossary/split-allocator/" target="_blank" rel="noreferrer">(Allocator)</a>
                 <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={subStyle} />
                 <FormattedAddress address={mod.beneficiary} style={subStyle} />
             </>
