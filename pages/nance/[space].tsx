@@ -119,7 +119,7 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
     return (
         <>
             {loading && <p>loading...</p>}
-            {!loading && proposals.length === 0 && <p className="text-center m-2">No proposals found</p>}
+            {!loading && proposals?.length === 0 && <p className="text-center m-2">No proposals found</p>}
             <ul role="list" className="divide-y divide-gray-200">
                 {proposals?.map((proposal, index, arr) => (
                     <li key={proposal.hash}>

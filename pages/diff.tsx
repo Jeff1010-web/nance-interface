@@ -18,7 +18,7 @@ import { StringParam, useQueryParam, withDefault } from 'next-query-params';
 import { useEnsAddress, useAccount, useSigner } from 'wagmi';
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { useReconfigureRequest } from '../hooks/NanceHooks';
-import { IFetchReconfigureResponse } from '../models/NanceTypes';
+import { FetchReconfigureData } from '../models/NanceTypes';
 import { SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 import Tabs from '../components/Tabs';
 
@@ -59,7 +59,7 @@ function NanceDiff() {
     // const [reconfigRequest, setReconfigRequest] = useState<FetchReconfigureRequest>(undefined)
     const [fetchReconfig, setFetchReconfig] = useState(false);
     const [gnosisLoading, setGnosisLoading] = useState(false)
-    const [nanceResponse, setNanceResponse] = useState<IFetchReconfigureResponse>(undefined)
+    const [nanceResponse, setNanceResponse] = useState<FetchReconfigureData>(undefined)
     const [gnosisResponse, setGnosisResponse] = useState({success: undefined, data: undefined})
     const [error, setError] = useState<string>(undefined)
     const [currentTime, setCurrentTime] = useState<string>(undefined)
