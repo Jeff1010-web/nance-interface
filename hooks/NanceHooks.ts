@@ -4,15 +4,14 @@ import { NANCE_API_URL } from "../constants/Nance"
 import {
     APIResponse,
     ProposalsQueryRequest,
-    ProposalsQueryResponse,
     SpaceInfoRequest,
-    SpaceInfoResponse,
     ProposalRequest,
-    ProposalResponse,
     ProposalUploadRequest,
-    ProposalUploadResponse,
     FetchReconfigureRequest,
-    FetchReconfigureResponse
+    SpaceInfo,
+    Proposal,
+    FetchReconfigureData,
+    ProposalUploadPayload
 } from '../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -26,40 +25,31 @@ function jsonFetcher(): Fetcher<APIResponse<any>, string> {
     }
 }
 
-function jsonSpaceInfoFetcher(): Fetcher<SpaceInfoResponse, string> {
-    return jsonFetcher();
-}
-
-function jsonProposalsQueryFetcher(): Fetcher<ProposalsQueryResponse, string> {
-    return jsonFetcher();
-}
-
-function jsonProposalFetcher(): Fetcher<ProposalResponse, string> {
-    return jsonFetcher();
-}
-
-function jsonReconfigurationFetcher(): Fetcher<FetchReconfigureResponse, string> {
-    return jsonFetcher();
-}
-
 export function useSpaceInfo(args: SpaceInfoRequest, shouldFetch: boolean = true) {
-    return useSWR(
+    return useSWR<APIResponse<SpaceInfo>, string>(
         shouldFetch ? `${NANCE_API_URL}/${args.space}` : null,
-        jsonSpaceInfoFetcher()
+        jsonFetcher()
     );
 }
 
 export function useProposalsQuery(args: ProposalsQueryRequest, shouldFetch: boolean = true) {
-    return useSWR(
+    return useSWR<APIResponse<Proposal[]>, string>(
         shouldFetch ? `${NANCE_API_URL}/${args.space}/query/${(args.cycle ? `?cycle=${args.cycle}` : '')}` : null,
-        jsonProposalsQueryFetcher(),
+        jsonFetcher(),
     );
 }
 
 export function useProposalRequest(args: ProposalRequest, shouldFetch: boolean = true) {
-    return useSWR(
+    return useSWR<APIResponse<Proposal>, string>(
         shouldFetch ? `${NANCE_API_URL}/${args.space}/proposal?hash=${args.hash}` : null,
-        jsonProposalFetcher(),
+        jsonFetcher(),
+    );
+}
+
+export function useReconfigureRequest(args: FetchReconfigureRequest, shouldFetch: boolean = true) {
+    return useSWR<APIResponse<FetchReconfigureData>, string>(
+        shouldFetch ? `${NANCE_API_URL}/${args.space}/reconfigure?version=${args.version}&address=${args.address}&datetime=${args.datetime}&network=${args.network}` : null,
+        jsonFetcher(),
     );
 }
 
@@ -71,13 +61,14 @@ async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRe
       },
       body: JSON.stringify(arg)
     })
-    const json: ProposalUploadResponse = await res.json()
+    const json: APIResponse<ProposalUploadPayload> = await res.json()
     if (json.success === false) {
         throw new Error(`An error occurred while uploading the data: ${json?.error}`)
     }
 
     return json
 }
+
 export function useProposalUpload(space: string, shouldFetch: boolean = true) {
     return useSWRMutation(
         shouldFetch ? `${NANCE_API_URL}/${space}/upload` : null,
@@ -87,11 +78,4 @@ export function useProposalUpload(space: string, shouldFetch: boolean = true) {
 
 export function getPath(space: string, command: string) {
     return `${NANCE_API_URL}/${space}/${command}`;
-}
-
-export function useReconfigureRequest(args: FetchReconfigureRequest, shouldFetch: boolean = true) {
-    return useSWR(
-        shouldFetch ? `${NANCE_API_URL}/${args.space}/reconfigure?version=${args.version}&address=${args.address}&datetime=${args.datetime}&network=${args.network}` : null,
-        jsonReconfigurationFetcher(),
-    );
 }

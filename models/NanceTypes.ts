@@ -1,5 +1,3 @@
-import { ContractTransaction } from "ethers";
-
 export interface APIResponse<T> {
   success: boolean;
   error: string;
@@ -11,21 +9,9 @@ export type SpaceInfo = {
   currentCycle: number
 };
 
-export type ProposalUpload = {
+export type ProposalUploadPayload = {
   hash: string;
 }
-
-export type ProposalsQueryResponse = APIResponse<Proposal[]>;
-
-export type ProposalResponse = APIResponse<Proposal>;
-
-export type SpaceInfoResponse = APIResponse<SpaceInfo>;
-
-export type ProposalUploadResponse = APIResponse<ProposalUpload>;
-
-export type FetchReconfigureResponse = APIResponse<IFetchReconfigureResponse>;
-
-export type SubmitTransactionResponse = APIResponse<IFetchReconfigureResponse>;
 
 export type APIErrorResponse = APIResponse<undefined>;
 
@@ -56,7 +42,7 @@ export interface SubmitTransactionRequest extends BaseRequest {
   signature: Signature
 }
 
-export interface IFetchReconfigureResponse {
+export interface FetchReconfigureData {
   transaction: NanceBasicTransaction;
   nonce: string;
   safe: string;
