@@ -17,28 +17,13 @@ export default function SnapshotProposal() {
         <>
             <SiteNav pageTitle={`${proposalData?.title || proposalHash as string} | ${space as string} proposal`} description="Proposal content on Nance." image="/images/unsplash_voting.jpeg" />
 
-            <div className="min-h-full">
+            <div className="min-h-full flex justify-center">
                 <main className="py-10">
                     {/* Page header */}
                     <div className="max-w-3xl px-4 sm:px-6 md:flex md:items-center md:justify-start md:space-x-5 lg:max-w-7xl lg:px-8">
                         <div className="flex items-center space-x-5">
-                            <div className="flex-shrink-0">
-                                <div className="relative">
-                                {/* <img
-                                    className="h-16 w-16 rounded-full"
-                                    src={`https://cdn.stamp.fyi/space/${space}?s=160`}
-                                    alt=""
-                                /> */}
-                                <span className="absolute inset-0 rounded-full shadow-inner" aria-hidden="true" />
-                                </div>
-                            </div>
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900">{proposalData?.proposalId|| '#TBD'} - {proposalData?.title}</h1>
-                                <p className="text-sm font-medium text-gray-500">
-                                {/* By&nbsp; */}
-                                {/* {data?.proposalData.author ? (<FormattedAddress address={data?.proposalData.author} style="text-gray-900" />) : 'Anon'} */}
-                                {/* &nbsp;on <time dateTime={proposalData?.data.created ? fromUnixTime(data?.proposalData.created).toString() : ''}>{data?.proposalData.created && format(fromUnixTime(data?.proposalData.created), 'MMMM d, yyyy')}</time> */}
-                                </p>
                             </div>
                         </div>
                         <div className="justify-stretch mt-6 flex flex-col-reverse space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-y-0 sm:space-x-3 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
@@ -48,25 +33,17 @@ export default function SnapshotProposal() {
                                 </a>
                             </Link>
 
+                            <Link href={proposalData?.url ?? '#'}>
+                                <a target="_blank" className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
+                                    Edit
+                                </a>
+                            </Link>
+
                             <Link href={proposalData?.discussionThreadURL ?? '#'}>
                                 <a target="_blank" className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
                                     Vote
                                 </a>
                             </Link>
-
-                            {/* <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100"
-                                onClick={() => setModalIsOpen(true)}
-                                disabled={data?.proposalData?.state !== 'active' || !address}>
-
-                                {(data?.proposalData?.state !== 'active' || !address) ? (
-                                    <Tooltip trigger="hover" content={data?.proposalData?.state !== 'active' ? "Proposal is not active" : !address ? "You haven't connected wallet" : "Proposal is active and you can vote on it"}>
-                                    <span>{data?.votedData ? "Revote" : "Vote"}</span>
-                                    </Tooltip>
-                                ) : (<span>{data?.votedData ? "Revote" : "Vote"}</span>)}
-                            </button>
-                            {data?.proposalData?.choices && (
-                                <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId={space as string} proposal={data?.proposalData} />
-                            )} */}
                         </div>
                     </div>
 

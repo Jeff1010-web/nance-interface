@@ -344,7 +344,7 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
   
   // sort after query if need reason
   const sortAfterQuery = withField === "reason" || withField === "app";
-  console.debug("🔧 useProposalVotes.args ->", {proposal, skip, orderBy, withField});
+  console.debug("🔧 useProposalVotes.args ->", {proposalId: proposal.id, skip, orderBy, withField});
 
   // Load related votes
   const {
