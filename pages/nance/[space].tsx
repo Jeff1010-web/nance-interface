@@ -1,12 +1,13 @@
 import Link from "next/link"
 import SiteNav from "../../components/SiteNav"
-import { UsersIcon, CalendarIcon, DocumentTextIcon, ChatIcon } from '@heroicons/react/solid'
-import { format, formatDistanceToNowStrict } from "date-fns"
+import { formatDistanceToNowStrict } from "date-fns"
 import { useQueryParam, NumberParam } from "next-query-params"
 import { useRouter } from "next/router"
 import { getLastSlash } from "../../libs/nance"
 import { useProposalsQuery, useSpaceInfo } from "../../hooks/NanceHooks"
 import { Proposal } from "../../models/NanceTypes"
+import useTotalSupplyOfProject from "../../hooks/juicebox/TotalSupplyOfProject"
+import { formatTokenBalance } from "../../libs/NumberFormatter"
 
 export default function NanceProposals() {
     const router = useRouter();
@@ -37,36 +38,7 @@ export default function NanceProposals() {
                         <h1 className="text-4xl font-bold text-gray-900">JuiceboxDAO</h1>
                         <p className="text-sm font-medium text-gray-500 text-right">powered by Nance</p>
                     </div>
-                    <div className="md:ml-20">
-                        <h1 className="text-sm font-semibold text-gray-900">Overview</h1>
-                        <div className="flex justify-between space-x-5">
-                            <div>
-                                <p className="text-xs text-gray-500">Voting Tokens</p>
-                                <p className="text-xs text-gray-500">Elligible Addresses</p>
-                                <p className="text-xs text-gray-500">Snapshot Followers</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-500 text-right">2.1b JBX</p>
-                                <p className="text-xs text-gray-500 text-right">6621</p>
-                                <p className="text-xs text-gray-500 text-right">1324</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="md:ml-10">
-                        <h1 className="text-sm font-semibold text-gray-900">Participation</h1>
-                        <div className="flex justify-between space-x-5">
-                            <div>
-                                <p className="text-xs text-gray-500">Proposals/Cycle</p>
-                                <p className="text-xs text-gray-500">Voting Addresses</p>
-                                <p className="text-xs text-gray-500">Voting/Total Supply</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-500 text-right">14</p>
-                                <p className="text-xs text-gray-500 text-right">132</p>
-                                <p className="text-xs text-gray-500 text-right">5.2%</p>
-                            </div>
-                        </div>
-                    </div>
+                    <SpaceStats />
                 </div>
             </div>
 
@@ -115,10 +87,54 @@ export default function NanceProposals() {
   )
 }
 
+function SpaceStats() {
+    const { value: v1Supply } = useTotalSupplyOfProject({ projectId: 1, version: 1 });
+    const { value: v2Supply } = useTotalSupplyOfProject({ projectId: 1, version: 2 });
+    const { value: v3Supply } = useTotalSupplyOfProject({ projectId: 1, version: 3 });
+
+    console.log("SpaceStats", { v1Supply, v2Supply, v3Supply });
+    const totalSupply = v1Supply?.add(v2Supply ?? 0)?.add(v3Supply ?? 0);
+
+    return (
+        <>
+            <div className="md:ml-20">
+                <h1 className="text-sm font-semibold text-gray-900">Overview</h1>
+                <div className="flex justify-between space-x-5">
+                    <div>
+                        <p className="text-xs text-gray-500">Voting Tokens</p>
+                        <p className="text-xs text-gray-500">Elligible Addresses</p>
+                        <p className="text-xs text-gray-500">Snapshot Followers</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-500 text-right">{totalSupply && formatTokenBalance(totalSupply)}</p>
+                        <p className="text-xs text-gray-500 text-right">-</p>
+                        <p className="text-xs text-gray-500 text-right">-</p>
+                    </div>
+                </div>
+            </div>
+            <div className="md:ml-10">
+                <h1 className="text-sm font-semibold text-gray-900">Participation</h1>
+                <div className="flex justify-between space-x-5">
+                    <div>
+                        <p className="text-xs text-gray-500">Proposals/Cycle</p>
+                        <p className="text-xs text-gray-500">Voting Addresses</p>
+                        <p className="text-xs text-gray-500">Voting/Total Supply</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-500 text-right">-</p>
+                        <p className="text-xs text-gray-500 text-right">-</p>
+                        <p className="text-xs text-gray-500 text-right">-</p>
+                    </div>
+                </div>
+            </div>
+        </>
+    )
+}
+
 function ProposalCards({loading, proposals, space, currentCycle}: {loading: boolean, proposals: Proposal[], space: string, currentCycle: number}) {
     return (
         <>
-            {loading && <p>loading...</p>}
+            {loading && <p className="text-center m-2">loading...</p>}
             {!loading && proposals?.length === 0 && <p className="text-center m-2">No proposals found</p>}
             <ul role="list" className="divide-y divide-gray-200">
                 {proposals?.map((proposal, index, arr) => (

@@ -28,12 +28,12 @@ const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
       content={tooltip}
       trigger="hover"
     >
-      <span className={classNames(
-                        colors,
-                        "flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full"
-                    )}>
-        {label}
-      </span>
+        <span className={classNames(
+            colors,
+            "flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full"
+        )}>
+            {label}
+        </span>
     </Tooltip>
 )
 
