@@ -8,6 +8,7 @@ import { useProposalsQuery, useSpaceInfo } from "../../hooks/NanceHooks"
 import { Proposal } from "../../models/NanceTypes"
 import useTotalSupplyOfProject from "../../hooks/juicebox/TotalSupplyOfProject"
 import { formatTokenBalance } from "../../libs/NumberFormatter"
+import useSnapshotSpaceInfo from "../../hooks/snapshot/SpaceInfo"
 
 export default function NanceProposals() {
     const router = useRouter();
@@ -88,11 +89,13 @@ export default function NanceProposals() {
 }
 
 function SpaceStats() {
+    // JBX total supply across v1, v2 and v3
     const { value: v1Supply } = useTotalSupplyOfProject({ projectId: 1, version: 1 });
     const { value: v2Supply } = useTotalSupplyOfProject({ projectId: 1, version: 2 });
     const { value: v3Supply } = useTotalSupplyOfProject({ projectId: 1, version: 3 });
+    // JuiceboxDAO Snapshot followers
+    const { data: spaceInfo } = useSnapshotSpaceInfo('jbdao.eth');
 
-    console.log("SpaceStats", { v1Supply, v2Supply, v3Supply });
     const totalSupply = v1Supply?.add(v2Supply ?? 0)?.add(v3Supply ?? 0);
 
     return (
@@ -106,9 +109,9 @@ function SpaceStats() {
                         <p className="text-xs text-gray-500">Snapshot Followers</p>
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500 text-right">{totalSupply && formatTokenBalance(totalSupply)}</p>
+                        <p className="text-xs text-gray-500 text-right">{totalSupply ? formatTokenBalance(totalSupply) : '-'}</p>
                         <p className="text-xs text-gray-500 text-right">-</p>
-                        <p className="text-xs text-gray-500 text-right">-</p>
+                        <p className="text-xs text-gray-500 text-right">{spaceInfo?.followersCount ?? '-'}</p>
                     </div>
                 </div>
             </div>
