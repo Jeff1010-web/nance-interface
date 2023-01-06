@@ -94,7 +94,7 @@ function ProposalCardItem({ proposal, setVotingProposal }: {proposal: SnapshotPr
             {proposal.quorum != 0 && totalScore < proposal.quorum && (
               <div className='min-w-fit'>
                 <span className="text-purple-800 bg-purple-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                  Under quorum: {(totalScore*100/proposal.quorum).toFixed()}%
+                  {spaceId === "jbdao.eth" ? "Approval Threshold" : "Under Quorum"}: {(totalScore*100/proposal.quorum).toFixed()}%
                 </span>
               </div>
             )}

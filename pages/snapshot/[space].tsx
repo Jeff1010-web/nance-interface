@@ -80,8 +80,8 @@ export default function SnapshotSpacePage({ spaceInfo }: { spaceInfo: SpaceInfo 
 
     const filterOptions = [
         {id: "active", name: "Active", value: filterByActive, setter: setFilterByActive},
-        {id: "not-voted", name: "Haven't voted", value: filterByNotVoted, setter: setFilterByNotVoted},
-        {id: "under-quorum", name: "Under quorum", value: filterByUnderQuorum, setter: setFilterByUnderQuorum}
+        {id: "not-voted", name: "Haven't Voted", value: filterByNotVoted, setter: setFilterByNotVoted},
+        {id: "under-quorum", name: (space as string) === "jbdao.eth" ? "Under Threshold" : "Under Quorum", value: filterByUnderQuorum, setter: setFilterByUnderQuorum}
     ]
 
     return (

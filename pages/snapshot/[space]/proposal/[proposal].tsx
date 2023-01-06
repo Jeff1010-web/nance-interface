@@ -150,7 +150,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                         {/* Content */}
                         <section aria-labelledby="applicant-information-title">
                             <div className="bg-white shadow sm:rounded-lg">
-                            <div className="px-4 py-5 sm:px-6 flex space-x-3">
+                            <div className="px-4 py-5 sm:px-6 flex space-x-3 flex-wrap">
                                 <h2 id="applicant-information-title" className="text-lg font-medium leading-6 text-gray-900">
                                     Proposal
                                 </h2>
@@ -174,7 +174,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                 {proposalInfo.quorum != 0 && totalScore < proposalInfo.quorum && (
                                     <div className='min-w-fit'>
                                         <span className="text-purple-800 bg-purple-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                                        Under quorum: {(totalScore*100/proposalInfo.quorum).toFixed()}%
+                                        {(space as string) === "jbdao.eth" ? "Approval Threshold" : "Under Quorum"}: {(totalScore*100/proposalInfo.quorum).toFixed()}%
                                         </span>
                                     </div>
                                 )}
