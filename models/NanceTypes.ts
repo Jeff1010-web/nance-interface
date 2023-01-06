@@ -6,7 +6,12 @@ export interface APIResponse<T> {
 
 export type SpaceInfo = {
   name: string,
-  currentCycle: number
+  currentCycle: number,
+  currentEvent: {
+    title: string,
+    start: string,
+    end: string
+  }
 };
 
 export type ProposalUploadPayload = {

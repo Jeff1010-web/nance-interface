@@ -1,6 +1,6 @@
 import Link from "next/link"
 import SiteNav from "../../components/SiteNav"
-import { formatDistanceToNowStrict } from "date-fns"
+import { formatDistanceToNowStrict, parseISO } from "date-fns"
 import { useQueryParam, NumberParam } from "next-query-params"
 import { useRouter } from "next/router"
 import { getLastSlash } from "../../libs/nance"
@@ -26,20 +26,29 @@ export default function NanceProposals() {
         <div className="flex flex-col max-w-7xl w-full">
 
             {/* Page header */}
-            <div className="max-w-3xl px-4 sm:px-6 md:flex md:space-x-5 lg:max-w-7xl lg:px-8">
-                <div className="flex md:items-center flex-col md:flex-row">
-                    <div className="flex-shrink-0">
+            <div className="max-w-7xl md:flex md:space-x-5">
+                <div className="flex flex-col space-y-6 items-center md:flex-row md:justify-between md:space-x-6 w-full">
+                    <div className="flex-shrink-0 md:w-5/12 flex space-x-3">
                         <img
                             className="h-16 w-16 rounded-full"
                             src={`https://cdn.stamp.fyi/space/jbdao.eth?s=160`}
                             alt="JuiceboxDAO Logo"
                         />
+
+                        <div>
+                            <h1 className="text-4xl font-bold text-gray-900">JuiceboxDAO</h1>
+                            <p className="text-sm font-medium text-gray-500 text-right">powered by Nance</p>
+                        </div>
                     </div>
-                    <div className="md:ml-5">
-                        <h1 className="text-4xl font-bold text-gray-900">JuiceboxDAO</h1>
-                        <p className="text-sm font-medium text-gray-500 text-right">powered by Nance</p>
+
+                    <div className="md:w-5/12 flex space-x-4">
+                        <SpaceStats />
                     </div>
-                    <SpaceStats />
+                    
+                    <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-indigo-600 bg-indigo-100">
+                        <p className="text-2xl font-semibold text-gray-900">{infoData?.data?.currentEvent?.title}</p>
+                        <p className="text-sm font-medium text-gray-500">{formatDistanceToNowStrict(parseISO(infoData?.data?.currentEvent?.end))} remaining</p>
+                    </div>
                 </div>
             </div>
 
@@ -58,7 +67,7 @@ export default function NanceProposals() {
                 </Link>
             </div>
 
-            <div className="mt-6 overflow-hidden bg-white shadow sm:rounded-md">
+            <div className="mt-6 overflow-hidden bg-white shadow rounded-md">
                 <ProposalCards loading={infoLoading || proposalsLoading} proposals={proposalData?.data} space={space as string} currentCycle={currentCycle} />
             </div>
 
@@ -100,7 +109,7 @@ function SpaceStats() {
 
     return (
         <>
-            <div className="md:ml-20">
+            <div className="">
                 <h1 className="text-sm font-semibold text-gray-900">Overview</h1>
                 <div className="flex justify-between space-x-5">
                     <div>
@@ -115,7 +124,7 @@ function SpaceStats() {
                     </div>
                 </div>
             </div>
-            <div className="md:ml-10">
+            <div className="">
                 <h1 className="text-sm font-semibold text-gray-900">Participation</h1>
                 <div className="flex justify-between space-x-5">
                     <div>
@@ -143,8 +152,8 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
                 {proposals?.map((proposal, index, arr) => (
                     <li key={proposal.hash}>
                         <div className="px-4 py-4 sm:px-6">
-                            <div className="flex items-center space-x-2">
-                                <div className="flex flex-shrink-0 w-1/12">
+                            <div className="flex items-center md:space-x-2 flex-col md:flex-row ">
+                                <div className="flex flex-shrink-0 md:w-1/12">
                                     {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
                                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                             {proposal.status}
@@ -167,26 +176,26 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
                                     )}
                                 </div>
 
-                                <p className="w-1/12">
+                                <p className="md:w-1/12">
                                     {`GC${currentCycle}`}
                                 </p>
 
-                                <p className="w-1/12">
+                                <p className="md:w-1/12">
                                 {`${(proposal.proposalId !== '') ? proposal.proposalId : '-'}`}
                                 </p>
 
                                 <Link href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : `/nance/${space}/proposal/${proposal.hash}`}>
-                                    <a className="break-words text-sm font-medium text-indigo-500 hover:underline w-1/2">
+                                    <a className="break-words text-sm font-medium text-indigo-500 hover:underline md:w-1/2">
                                         {proposal.title}
                                     </a>
                                 </Link>
 
                                 {/* TODO: 1/6 Votes Stats */}
-                                <div className="w-1/6">
+                                <div className="md:w-1/6">
 
                                 </div>
                             
-                                <p className="w-1/12 text-right">
+                                <p className="md:w-1/12 md:text-right">
                                     {proposal?.date && formatDistanceToNowStrict(new Date(proposal.date), { addSuffix: true })}
                                 </p>
                             </div>
