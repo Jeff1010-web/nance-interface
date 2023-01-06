@@ -19,6 +19,14 @@ export default function NanceProposals() {
     const currentCycle = cycle || infoData?.data?.currentCycle;
     const isLastCycle = !infoLoading && infoData?.data?.currentCycle && currentCycle === infoData?.data?.currentCycle;
 
+    let remainingTime = "-";
+    try {
+        remainingTime = formatDistanceToNowStrict(parseISO(infoData?.data?.currentEvent?.end));
+    } catch (error) {
+        console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
+    }
+    
+
   return (
     <>
       <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" />
@@ -46,8 +54,8 @@ export default function NanceProposals() {
                     </div>
                     
                     <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-indigo-600 bg-indigo-100">
-                        <p className="text-2xl font-semibold text-gray-900">{infoData?.data?.currentEvent?.title}</p>
-                        <p className="text-sm font-medium text-gray-500">{formatDistanceToNowStrict(parseISO(infoData?.data?.currentEvent?.end))} remaining</p>
+                        <p className="text-2xl font-semibold text-gray-900">{infoData?.data?.currentEvent?.title || "Unknown"}</p>
+                        <p className="text-sm font-medium text-gray-500">{remainingTime} remaining</p>
                     </div>
                 </div>
             </div>
