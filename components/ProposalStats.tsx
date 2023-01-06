@@ -1,5 +1,6 @@
 import { SnapshotProposal, SnapshotVote, useProposalVotes } from "../hooks/snapshot/Proposals"
 import { Tooltip } from 'flowbite-react';
+import { useRouter } from "next/router";
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -11,6 +12,10 @@ const SUPPORTED_VOTING_TYPES_FOR_GROUP = ["basic", "single-choice", "approval"]
 export default function ProposalStats({proposal, isOverview = false, hideAbstain = false}: 
     {proposal: SnapshotProposal, isOverview?: boolean, hideAbstain?: boolean}) {
 
+    // router
+    const router = useRouter();
+    const { space: querySpace, proposal: queryProposal } = router.query;
+    const spaceId = querySpace as string;
     const { loading, data, error } = useProposalVotes(proposal, 0, "created", "", isOverview, proposal.votes);
 
     let scores = proposal?.scores
@@ -50,7 +55,7 @@ export default function ProposalStats({proposal, isOverview = false, hideAbstain
                     </div>
 
                     <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
-                        <dt className="text-sm font-medium text-gray-500 truncate">Quorum</dt>
+                        <dt className="text-sm font-medium text-gray-500 break-words">{spaceId === "jbdao.eth" ? "Approval Threshold" : "Quorum"}</dt>
                         <Tooltip
                             content={proposal.quorum>0 && `(${(totalScore*100/proposal.quorum).toFixed()}% of quorum)`}
                             trigger="hover"
