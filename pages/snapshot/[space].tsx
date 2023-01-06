@@ -59,7 +59,14 @@ export default function SnapshotSpacePage({ spaceInfo }: { spaceInfo: SpaceInfo 
 
     // process data
     const votedIds = votedData ? Object.keys(votedData) : [];
-    const underQuorumIds = proposalsData ? proposalsData.filter(proposal => proposal.scores_total < proposal.quorum).map(proposal => proposal.id) : [];
+    
+    const underQuorumIds = proposalsData ? proposalsData.filter(proposal => {
+        const hideAbstain = spaceInfo.voting.hideAbstain && proposal.type === "basic";
+        const totalScore = hideAbstain ? 
+            proposal.scores_total-(proposal?.scores[2]??0)
+                : proposal.scores_total;
+        return totalScore < proposal.quorum
+    }).map(proposal => proposal.id) : [];
     const filteredProposals = proposalsData?.filter(proposal => {
         if (filterByNotVoted && votedIds.includes(proposal.id)) {
             return false;
