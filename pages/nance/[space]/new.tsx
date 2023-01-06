@@ -64,7 +64,7 @@ export default function NanceNewProposal() {
         </p>
         <ResolvedProject version={version} projectId={project} style="text-center" />
         <ProposalMetadataContext.Provider value={{proposalType, setProposalType, version, project}}>
-          {/* <ProposalTypeTabs /> */}
+          <ProposalTypeTabs />
           <Form />
         </ProposalMetadataContext.Provider>
       </div>
