@@ -17,7 +17,7 @@ export default function NanceProposals() {
     const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
     const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposalsQuery({ space: space as string, cycle }, router.isReady);
     const currentCycle = cycle || infoData?.data?.currentCycle;
-    const isLastCycle = !infoLoading && infoData?.data?.currentCycle && currentCycle === infoData?.data?.currentCycle;
+    const noNextCycle = cycle && !infoLoading && infoData?.data?.currentCycle && cycle > infoData?.data?.currentCycle;
 
     let remainingTime = "-";
     try {
@@ -54,7 +54,10 @@ export default function NanceProposals() {
                     </div>
                     
                     <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-indigo-600 bg-indigo-100">
-                        <p className="text-2xl font-semibold text-gray-900">{infoData?.data?.currentEvent?.title || "Unknown"}</p>
+                        <a className="text-2xl font-semibold text-gray-900"
+                            href="https://info.juicebox.money/dao/process/" target="_blank" rel="noopener noreferrer">
+                                {infoData?.data?.currentEvent?.title || "Unknown"} of GC{infoData?.data?.currentCycle}
+                        </a>
                         <p className="text-sm font-medium text-gray-500">{remainingTime} remaining</p>
                     </div>
                 </div>
@@ -88,7 +91,7 @@ export default function NanceProposals() {
                         >
                         Previous
                     </button>
-                    {!isLastCycle && (
+                    {!noNextCycle && (
                         <button
                             onClick={() => setCycle(currentCycle + 1)}
                             className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
