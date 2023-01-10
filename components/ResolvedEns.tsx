@@ -24,28 +24,37 @@ export default function ResolvedEns({ ens, style, hook }: Props) {
                 "mt-2 text-xs text-gray-500",
                 style
             )}>
-                loading...
+                Loading...
             </p>
         )
     }
 
-    if(isError || !address) {
-        return <></>
-    }
-
     if(hook) {
-        hook(address);
+        hook(ens.endsWith('.eth') ? address : ens);
     }
 
-    return (
-        <Tooltip content={address}>
-            <a target="_blank" rel="noopener noreferrer"
-                className={classNames(
-                    "text-xs text-gray-500 hover:underline truncate",
-                    style,
-                )} href={`https://etherscan.io/address/${encodeURIComponent(address)}`}>
-                {shortenAddress(address)}
-            </a>
-        </Tooltip>
-    )
+    if(ens.endsWith('.eth')) {
+        if(isError || !address) {
+            return (
+                <p className={classNames(
+                    "mt-2 text-xs text-red-500",
+                    style
+                )}>
+                    Can&apos;t resolve {ens}
+                </p>
+            )
+        } else {
+            return (
+                <Tooltip content={address}>
+                    <a target="_blank" rel="noopener noreferrer"
+                        className={classNames(
+                            "text-xs text-gray-500 hover:underline truncate",
+                            style,
+                        )} href={`https://etherscan.io/address/${encodeURIComponent(address)}`}>
+                        Resolved to {shortenAddress(address)}
+                    </a>
+                </Tooltip>
+            )
+        }
+    }
 }
