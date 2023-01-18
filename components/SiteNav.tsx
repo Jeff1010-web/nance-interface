@@ -17,10 +17,9 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
     
     const navigation = [
         { name: 'Home', href: '/' },
-        { name: 'Logbook', href: '/logbook' },
-        { name: 'Snapshot Plus', href: '/snapshot' },
-        { name: 'Juicebox Center', href: '/center' },
-        { name: 'Nance Interface', href: '/nance/juicebox' },
+        { name: 'Governance Process', href: 'https://info.juicebox.money/dao/process/' },
+        { name: 'How to Submit a Proposal', href: 'https://info.juicebox.money/dao/proposals/' },
+        { name: 'Discord', href: 'https://discord.gg/juicebox' }
     ]
 
     const meta = {
@@ -36,7 +35,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
                 <title>{meta.title}</title>
                 <meta name="description" content={meta.description} />
                 <meta name="viewport" content="width=device-width" />
-                <link rel="icon" href="/favicon.ico" />
+                <link rel="icon" href="/favicon.svg" />
                 {/* OpenGraph Meta Tags */}
                 <meta property="og:url" content={meta.url} />
                 <meta property="og:type" content="website" />
@@ -63,7 +62,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
                                                 <a>
                                                     <img
                                                         className="block h-8 w-auto"
-                                                        src="/favicon.ico"
+                                                        src="/favicon.svg"
                                                         alt="Juicetool logo"
                                                     />
                                                 </a>

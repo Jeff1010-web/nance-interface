@@ -1,133 +1,237 @@
-import PostCards, { PostCard } from "../components/PostCards"
+import Link from "next/link"
 import SiteNav from "../components/SiteNav"
+import { formatDistanceToNowStrict, parseISO } from "date-fns"
+import { useQueryParam, NumberParam } from "next-query-params"
+import { useRouter } from "next/router"
+import { getLastSlash } from "../libs/nance"
+import { useProposalsQuery, useSpaceInfo } from "../hooks/NanceHooks"
+import { Proposal } from "../models/NanceTypes"
+import useTotalSupplyOfProject from "../hooks/juicebox/TotalSupplyOfProject"
+import { formatTokenBalance } from "../libs/NumberFormatter"
+import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo"
+import { useEffect, useState } from "react"
 
-const posts: PostCard[] = [
-    {
-        title: 'Snapshot voting with search, filter and more stats',
-        href: '/snapshot',
-        category: { name: 'Governance', href: '#' },
-        description:
-            'Have you ever wanted to search for proposals? Or filter by status? Or see more stats? Now you can use Snapshot Plus.',
-        date: 'Sep 15, 2022',
-        datetime: '2022-09-15',
-        imageUrl:
-            '/images/unsplash_voting.jpeg',
-        author: {
-            name: 'twodam.eth',
-            href: 'https://twitter.com/twodam_eth/status/1570426249750925314?s=20&t=EnBSIboDxBraHRRrQth50w',
-            imageUrl:
-                'https://cdn.stamp.fyi/avatar/twodam.eth?s=160',
-        },
-    },
-    {
-        title: 'Automate your governance system',
-        href: '/nance/juicebox',
-        category: { name: 'Governance', href: '#' },
-        description:
-            'Nance is a tool for automating your governance system. It can integrate with Notion, Discord, Snapshot and Juicebox to create a seamless experience for your community. Check repo on https://github.com/jigglyjams/nance-ts.',
-        date: 'May 5, 2022',
-        datetime: '2022-05-05',
-        imageUrl:
-            'https://images.unsplash.com/photo-1586374579358-9d19d632b6df?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=987&q=80',
-        author: {
-            name: 'jigglyjams.eth',
-            href: 'https://twitter.com/jjjjigglyjams',
-            imageUrl:
-                'https://cdn.stamp.fyi/avatar/jigglyjams.eth?s=160',
-        },
-    },
-    {
-        title: 'Visualize the diff of two reconfiguration',
-        href: '/juicebox',
-        category: { name: 'Tool', href: '#' },
-        description:
-            'Ever wanted to see the diff of two reconfiguration for Juicebox project? Now you can with the Reconfiguration Diff tool. Just select/load new reconfiguration and see the diff. In a strucutal&typed way.',
-        date: 'Nov 14, 2022',
-        datetime: '2022-11-14',
-        imageUrl:
-            'https://images.unsplash.com/photo-1591691203197-c00ee071407a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2381&q=80',
-        author: {
-            name: 'twodam.eth',
-            href: 'https://twitter.com/twodam_eth/status/1592161975081267205?s=20&t=9g0PLy2MSviZhk5kiQjQeg',
-            imageUrl:
-                'https://cdn.stamp.fyi/avatar/twodam.eth?s=160',
-        },
-    },
-]
+export default function NanceProposals() {
+    const router = useRouter();
+    const space = "juicebox";
+    const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
+    const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
+    const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposalsQuery({ space: space as string, cycle }, router.isReady);
+    const currentCycle = cycle || infoData?.data?.currentCycle;
+    const noNextCycle = cycle && !infoLoading && infoData?.data?.currentCycle && cycle > infoData?.data?.currentCycle;
 
-export default function Home() {
-    return (
-        <>
-            <SiteNav pageTitle="Home" description="Homebrew docs and tools for Juicebox ecosystems" image="/images/juicetool.png" />
-            <div className="relative bg-gray-50 px-4 pt-4 sm:px-6 lg:px-8">
-                <div className="absolute inset-0">
-                    <div className="h-1/3 bg-white sm:h-2/3" />
-                </div>
-                <div className="relative mx-auto max-w-7xl">
-                    <div className="text-center">
-                        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">JuiceTool</h2>
-                        <p className="mx-auto mt-3 max-w-2xl text-xl text-gray-500 sm:mt-4">
-                            Homebrew docs and tools for Juicebox ecosystems.
-                        </p>
+    let remainingTime = "-";
+    try {
+        remainingTime = formatDistanceToNowStrict(parseISO(infoData?.data?.currentEvent?.end));
+    } catch (error) {
+        console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
+    }
+    
+
+  return (
+    <>
+      <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" withWallet />
+      <div className="m-4 lg:m-6 flex justify-center lg:px-20">
+        <div className="flex flex-col max-w-7xl w-full">
+
+            {/* Page header */}
+            <div className="max-w-7xl md:flex md:space-x-5">
+                <div className="flex flex-col space-y-6 items-center md:flex-row md:justify-between md:space-x-6 w-full">
+                    <div className="flex-shrink-0 md:w-5/12 flex space-x-3">
+                        <img
+                            className="h-16 w-16 rounded-full"
+                            src={`https://cdn.stamp.fyi/space/jbdao.eth?s=160`}
+                            alt="JuiceboxDAO Logo"
+                        />
+
+                        <div>
+                            <h1 className="text-4xl font-bold text-gray-900">JuiceboxDAO</h1>
+                            <p className="text-sm font-medium text-gray-500 text-right">powered by Nance</p>
+                        </div>
                     </div>
-                    <PostCards posts={posts} />
+
+                    <div className="md:w-5/12 flex space-x-4">
+                        <SpaceStats />
+                    </div>
+                    
+                    <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-indigo-600 bg-indigo-100">
+                        <a className="text-2xl font-semibold text-gray-900"
+                            href="https://info.juicebox.money/dao/process/" target="_blank" rel="noopener noreferrer">
+                                {infoData?.data?.currentEvent?.title || "Unknown"} of GC{infoData?.data?.currentCycle}
+                        </a>
+                        <p className="text-sm font-medium text-gray-500">{remainingTime} remaining</p>
+                    </div>
                 </div>
             </div>
-            <footer className="bg-gray-50">
-                <div className="mx-auto max-w-7xl py-6 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
-                <div className="flex justify-center space-x-6 md:order-2">
-                    {navigation.map((item) => (
-                    <a key={item.name} href={item.href} className="text-gray-400 hover:text-gray-500">
-                        <span className="sr-only">{item.name}</span>
-                        <item.icon className="h-6 w-6" aria-hidden="true" />
+
+            <div className="flex justify-end mt-6">
+                <Link
+                    href={{
+                        pathname: `/new`,
+                        query: { type: 'Payout', version: 2, project: 1 },
+                    }}
+                >
+                    <a
+                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                        New Proposal
                     </a>
-                    ))}
+                </Link>
+            </div>
+
+            <div className="mt-6 overflow-hidden bg-white shadow rounded-md">
+                <ProposalCards loading={infoLoading || proposalsLoading} proposals={proposalData?.data} space={space as string} currentCycle={currentCycle} />
+            </div>
+
+            <div className="mt-6">
+                <div className="flex flex-1 justify-end">
+                    <button
+                        disabled={cycle === 1}
+                        onClick={() => setCycle(currentCycle - 1)}
+                        className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                        Previous
+                    </button>
+                    {!noNextCycle && (
+                        <button
+                            onClick={() => setCycle(currentCycle + 1)}
+                            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                            Next
+                        </button>
+                    )}
                 </div>
-                <div className="mt-8 md:order-1 md:mt-0">
-                    <p className="text-center text-base text-gray-400">&copy; 2022</p>
+            </div>
+
+        </div>
+      </div>
+    </>
+  )
+}
+
+function SpaceStats() {
+    // JBX total supply across v1, v2 and v3
+    const { value: v1Supply } = useTotalSupplyOfProject({ projectId: 1, version: 1 });
+    const { value: v2Supply } = useTotalSupplyOfProject({ projectId: 1, version: 2 });
+    const { value: v3Supply } = useTotalSupplyOfProject({ projectId: 1, version: 3 });
+    // JuiceboxDAO Snapshot followers
+    const { data: spaceInfo } = useSnapshotSpaceInfo('jbdao.eth');
+
+    const totalSupply = v1Supply?.add(v2Supply ?? 0)?.add(v3Supply ?? 0);
+
+    return (
+        <>
+            <div className="">
+                <h1 className="text-sm font-semibold text-gray-900">Overview</h1>
+                <div className="flex justify-between space-x-5">
+                    <div>
+                        <p className="text-xs text-gray-500">Voting Tokens</p>
+                        <p className="text-xs text-gray-500">Elligible Addresses</p>
+                        <p className="text-xs text-gray-500">Snapshot Followers</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-500 text-right">{totalSupply ? formatTokenBalance(totalSupply) : '-'}</p>
+                        <p className="text-xs text-gray-500 text-right">-</p>
+                        <p className="text-xs text-gray-500 text-right">{spaceInfo?.followersCount ?? '-'}</p>
+                    </div>
                 </div>
+            </div>
+            <div className="">
+                <h1 className="text-sm font-semibold text-gray-900">Participation</h1>
+                <div className="flex justify-between space-x-5">
+                    <div>
+                        <p className="text-xs text-gray-500">Proposals/Cycle</p>
+                        <p className="text-xs text-gray-500">Voting Addresses</p>
+                        <p className="text-xs text-gray-500">Voting/Total Supply</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-500 text-right">-</p>
+                        <p className="text-xs text-gray-500 text-right">-</p>
+                        <p className="text-xs text-gray-500 text-right">-</p>
+                    </div>
                 </div>
-            </footer>
+            </div>
         </>
     )
 }
 
-/* This example requires Tailwind CSS v2.0+ */
-const navigation = [
-    {
-      name: 'Twitter',
-      href: 'https://twitter.com/twodam_eth',
-      icon: (props) => (
-        <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
-          <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-        </svg>
-      ),
-    },
-    {
-      name: 'GitHub',
-      href: 'https://github.com/jbx-protocol/juicetool',
-      icon: (props) => (
-        <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
-          <path
-            fillRule="evenodd"
-            d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-            clipRule="evenodd"
-          />
-        </svg>
-      ),
-    },
-    {
-      name: 'Juicebox',
-      href: 'https://www.juicebox.money/@twodam',
-      icon: (props) => (
-        <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
-          <path
-            fillRule="evenodd"
-            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c5.51 0 10-4.48 10-10S17.51 2 12 2zm6.605 4.61a8.502 8.502 0 011.93 5.314c-.281-.054-3.101-.629-5.943-.271-.065-.141-.12-.293-.184-.445a25.416 25.416 0 00-.564-1.236c3.145-1.28 4.577-3.124 4.761-3.362zM12 3.475c2.17 0 4.154.813 5.662 2.148-.152.216-1.443 1.941-4.48 3.08-1.399-2.57-2.95-4.675-3.189-5A8.687 8.687 0 0112 3.475zm-3.633.803a53.896 53.896 0 013.167 4.935c-3.992 1.063-7.517 1.04-7.896 1.04a8.581 8.581 0 014.729-5.975zM3.453 12.01v-.26c.37.01 4.512.065 8.775-1.215.25.477.477.965.694 1.453-.109.033-.228.065-.336.098-4.404 1.42-6.747 5.303-6.942 5.629a8.522 8.522 0 01-2.19-5.705zM12 20.547a8.482 8.482 0 01-5.239-1.8c.152-.315 1.888-3.656 6.703-5.337.022-.01.033-.01.054-.022a35.318 35.318 0 011.823 6.475 8.4 8.4 0 01-3.341.684zm4.761-1.465c-.086-.52-.542-3.015-1.659-6.084 2.679-.423 5.022.271 5.314.369a8.468 8.468 0 01-3.655 5.715z"
-            clipRule="evenodd"
-          />
-        </svg>
-      ),
-    },
-  ]
-  
+function ProposalCards({loading, proposals, space, currentCycle}: {loading: boolean, proposals: Proposal[], space: string, currentCycle: number}) {
+    const [infoText, setInfoText] = useState('');
+
+    useEffect(() => {
+        if (loading) {
+            setInfoText('Loading...');
+        } else {
+            if (!proposals) {
+                setInfoText('Error. Please try again later.');
+            } else if (proposals.length === 0) {
+                setInfoText('No proposals found');
+            } else {
+                setInfoText('');
+            }
+        }
+    }, [proposals]);
+
+    return (
+        <>
+            <p className="text-center m-2">
+                {infoText}
+            </p>
+            <ul role="list" className="divide-y divide-gray-200">
+                {proposals?.map((proposal, index, arr) => (
+                    <li key={proposal.hash}>
+                        <div className="px-4 py-4 sm:px-6">
+                            <div className="flex items-center md:space-x-2 flex-col md:flex-row ">
+                                <div className="flex flex-shrink-0 md:w-1/12">
+                                    {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            {proposal.status}
+                                        </span>
+                                    )}
+                                    {proposal.status === 'Approved' && (
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Approved
+                                        </span>
+                                    )}
+                                    {proposal.status === 'Cancelled' && (
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            Cancelled
+                                        </span>
+                                    )}
+                                    {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled' && proposal.status !== 'Draft' && proposal.status !== 'Revoked') && (
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                            {proposal.status}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <p className="md:w-1/12">
+                                    {`GC${currentCycle}`}
+                                </p>
+
+                                <p className="md:w-1/12">
+                                {`${(proposal.proposalId !== '') ? proposal.proposalId : '-'}`}
+                                </p>
+
+                                <Link href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : `/proposal/${proposal.hash}`}>
+                                    <a className="break-words text-sm font-medium text-indigo-500 hover:underline md:w-1/2">
+                                        {proposal.title}
+                                    </a>
+                                </Link>
+
+                                {/* TODO: 1/6 Votes Stats */}
+                                <div className="md:w-1/6">
+
+                                </div>
+                            
+                                <p className="md:w-1/12 md:text-right">
+                                    {proposal?.date && formatDistanceToNowStrict(new Date(proposal.date), { addSuffix: true })}
+                                </p>
+                            </div>
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </>
+    )
+}

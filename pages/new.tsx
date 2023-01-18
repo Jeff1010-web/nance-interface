@@ -1,25 +1,25 @@
 import { SyntheticEvent, useContext, useEffect, useState } from "react";
-import SiteNav from "../../../components/SiteNav";
+import SiteNav from "../components/SiteNav";
 import { useForm, FormProvider, useFormContext, Controller, SubmitHandler } from "react-hook-form";
-import ResolvedEns from "../../../components/ResolvedEns";
-import ResolvedProject from "../../../components/ResolvedProject";
+import ResolvedEns from "../components/ResolvedEns";
+import ResolvedProject from "../components/ResolvedProject";
 import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-query-params";
 import React from "react";
 import { useRouter } from "next/router";
-import Notification from "../../../components/Notification";
-import { useProposalUpload } from "../../../hooks/NanceHooks";
-import { ProposalUploadRequest } from "../../../models/NanceTypes";
-import { NANCE_API_URL } from "../../../constants/Nance";
+import Notification from "../components/Notification";
+import { useProposalUpload } from "../hooks/NanceHooks";
+import { ProposalUploadRequest } from "../models/NanceTypes";
+import { NANCE_API_URL } from "../constants/Nance";
 import Link from "next/link";
 
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import dynamic from "next/dynamic";
-import useLocalStorage from "../../../hooks/LocalStorage";
+import useLocalStorage from "../hooks/LocalStorage";
 import { formatDistanceToNow, fromUnixTime } from "date-fns";
 import { useAccount, useSigner } from "wagmi";
 import { JsonRpcSigner } from "@ethersproject/providers";
-import { signPayload } from "../../../libs/signer";
+import { signPayload } from "../libs/signer";
 
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor"),
@@ -136,7 +136,7 @@ type ProposalFormValues = Omit<ProposalUploadRequest, "type" | "version">
 function Form() {
   // query and context
   const router = useRouter();
-  const { space } = router.query;
+  const space = "juicebox";
   const metadata = useContext(ProposalMetadataContext);
 
   // state
@@ -172,7 +172,7 @@ function Form() {
       console.debug("📗 Nance.newProposal.upload ->", req);
       return trigger(req);
     })
-    .then(res => router.push(`/nance/${space as string}/proposal/${res.data.hash}`))
+    .then(res => router.push(`/proposal/${res.data.hash}`))
     .catch((err) => {
       setSigning(false);
       setSignError(err);
@@ -350,7 +350,7 @@ function Form() {
         </div> */}
 
         <div className="flex justify-end">
-          <Link href={`/nance/${space as string}`}>
+          <Link href={`/`}>
             <a
               className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
