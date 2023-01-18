@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
-import SiteNav from "../../../../components/SiteNav";
+import SiteNav from "../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
-import { useProposalRequest } from "../../../../hooks/NanceHooks";
+import { useProposalRequest } from "../../hooks/NanceHooks";
 import remarkGfm from 'remark-gfm';
 
 export default function SnapshotProposal() {
