@@ -8,7 +8,8 @@ import remarkGfm from 'remark-gfm';
 export default function SnapshotProposal() {
     // router
     const router = useRouter();
-    const { space, proposalHash } = router.query;
+    const space = "juicebox";
+    const { proposalHash } = router.query;
       
     const { data, isLoading, error } = useProposalRequest({ space: space as string, hash: proposalHash as string }, router.isReady);
     const proposalData = data?.data;
