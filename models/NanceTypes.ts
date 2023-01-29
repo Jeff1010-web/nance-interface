@@ -24,8 +24,9 @@ interface BaseRequest {
   space: string;
 }
 
-export interface ProposalsQueryRequest extends BaseRequest {
+export interface ProposalsRequest extends BaseRequest {
   cycle: number | undefined;
+  keyword: string | undefined;
 }
 
 export type SpaceInfoRequest = BaseRequest;

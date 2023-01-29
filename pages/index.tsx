@@ -4,7 +4,7 @@ import { formatDistanceToNowStrict, parseISO } from "date-fns"
 import { useQueryParam, NumberParam } from "next-query-params"
 import { useRouter } from "next/router"
 import { getLastSlash } from "../libs/nance"
-import { useProposalsQuery, useSpaceInfo } from "../hooks/NanceHooks"
+import { useProposals, useSpaceInfo } from "../hooks/NanceHooks"
 import { Proposal } from "../models/NanceTypes"
 import useTotalSupplyOfProject from "../hooks/juicebox/TotalSupplyOfProject"
 import { formatTokenBalance } from "../libs/NumberFormatter"
@@ -16,7 +16,7 @@ export default function NanceProposals() {
     const space = "juicebox";
     const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
     const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
-    const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposalsQuery({ space: space as string, cycle }, router.isReady);
+    const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposals({ space: space as string, cycle, keyword: undefined }, router.isReady);
     const currentCycle = cycle || infoData?.data?.currentCycle;
     const noNextCycle = cycle && !infoLoading && infoData?.data?.currentCycle && cycle > infoData?.data?.currentCycle;
 
