@@ -213,7 +213,7 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
                                 {`${(proposal.proposalId !== '') ? proposal.proposalId : '-'}`}
                                 </p>
 
-                                <Link href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : `/proposal/${proposal.hash}`}>
+                                <Link href={proposal?.voteURL ? `/snapshot/${getLastSlash(proposal.voteURL)}` : `/proposal/${proposal.hash}`}>
                                     <a className="break-words text-sm font-medium text-indigo-500 hover:underline md:w-1/2">
                                         {proposal.title}
                                     </a>
