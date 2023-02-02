@@ -30,7 +30,7 @@ export default function NanceProposals() {
 
   return (
     <>
-      <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" withWallet />
+      <SiteNav pageTitle="Current proposals" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" withWallet />
       <div className="m-4 lg:m-6 flex justify-center lg:px-20">
         <div className="flex flex-col max-w-7xl w-full">
 

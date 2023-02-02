@@ -20,13 +20,14 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
         { name: 'Governance Process', href: 'https://info.juicebox.money/dao/process/' },
         { name: 'How to Submit a Proposal', href: 'https://info.juicebox.money/dao/proposals/' },
         { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
+        { name: 'Reconfiguration', href: '/juicebox' },
         { name: 'Discord', href: 'https://discord.gg/juicebox' }
     ]
 
     const meta = {
-        title: `${pageTitle} | JuiceTool`,
-        description: description || "A bunch of homebrew tools",
-        url: `https://juicetool.xyz${router.asPath}`,
+        title: `${pageTitle} | Nance`,
+        description: description || "Nance platform for automatic governance.",
+        url: `https://jbdao.org${router.asPath}`,
         image: image || "/images/unsplash_application.jpeg",
     }
 
