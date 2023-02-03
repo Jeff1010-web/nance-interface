@@ -1,7 +1,7 @@
 import Link from "next/link"
 import SiteNav from "../components/SiteNav"
 import { formatDistanceToNowStrict, parseISO } from "date-fns"
-import { useQueryParam, NumberParam } from "next-query-params"
+import { useQueryParam, NumberParam, useQueryParams, StringParam } from "next-query-params"
 import { useRouter } from "next/router"
 import { getLastSlash } from "../libs/nance"
 import { useProposals, useSpaceInfo } from "../hooks/NanceHooks"
@@ -10,13 +10,20 @@ import useTotalSupplyOfProject from "../hooks/juicebox/TotalSupplyOfProject"
 import { formatTokenBalance } from "../libs/NumberFormatter"
 import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo"
 import { useEffect, useState } from "react"
+import { DocumentSearchIcon } from '@heroicons/react/solid'
 
 export default function NanceProposals() {
     const router = useRouter();
     const space = "juicebox";
-    const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
+    const [keywordInput, setKeywordInput] = useState(undefined);
+    const [query, setQuery] = useQueryParams({
+        keyword: StringParam,
+        //limit: NumberParam,
+        cycle: NumberParam
+    });
+    const {keyword, cycle} = query;
     const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
-    const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposals({ space: space as string, cycle, keyword: undefined }, router.isReady);
+    const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposals({ space: space as string, cycle, keyword }, router.isReady);
     const currentCycle = cycle || infoData?.data?.currentCycle;
     const noNextCycle = cycle && !infoLoading && infoData?.data?.currentCycle && cycle > infoData?.data?.currentCycle;
 
@@ -35,7 +42,7 @@ export default function NanceProposals() {
         <div className="flex flex-col max-w-7xl w-full">
 
             {/* Page header */}
-            <div className="max-w-7xl md:flex md:space-x-5">
+            <div className="max-w-7xl md:flex md:space-x-5 bg-white p-4 shadow rounded-md">
                 <div className="flex flex-col space-y-6 items-center md:flex-row md:justify-between md:space-x-6 w-full">
                     <div className="flex-shrink-0 md:w-5/12 flex space-x-3">
                         <img
@@ -64,27 +71,78 @@ export default function NanceProposals() {
                 </div>
             </div>
 
-            <div className="flex justify-end mt-6">
-                <Link
-                    href={{
-                        pathname: `/new`,
-                        query: { type: 'Payout', version: 2, project: 1 },
-                    }}
-                >
-                    <a
-                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            <div className="flex justify-between mt-6">
+                {/* Search bar and limit */}
+                <div className="w-4/5">
+                    <label htmlFor="keyword" className="block text-sm font-medium text-gray-700">
+                        Search within cycles
+                    </label>
+                    <div className="mt-1 flex rounded-md shadow-sm">
+                        <div className="relative flex flex-grow items-stretch focus-within:z-10">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <DocumentSearchIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                        </div>
+                        <input
+                            type="text"
+                            name="keyword"
+                            id="keyword"
+                            className="block w-full rounded-none rounded-l-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            placeholder="grant, swap and payout etc."
+                            value={keywordInput !== undefined ? keywordInput : keyword}
+                            onChange={(e) => setKeywordInput(e.target.value)}
+                            onKeyUp={(e) => {
+                                if(e.key == "Enter") {
+                                    setQuery({
+                                        keyword: keywordInput
+                                    })
+                                }
+                            }}
+                        />
+                        </div>
+                        <div>
+                            <label htmlFor="cycle" className="sr-only">
+                                Cycle
+                            </label>
+                            <input
+                                id="cycle"
+                                name="cycle"
+                                type="number"
+                                className="relative rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700 hover:bg-gray-100 bg-gray-50"
+                                value={cycle}
+                                min={1}
+                                placeholder={infoData?.data?.currentCycle ? `${infoData?.data?.currentCycle}` : `GC`}
+                                max={infoData?.data?.currentCycle}
+                                onChange={(e) => setQuery({ cycle: parseInt(e.target.value) })}
+                            >
+                            </input>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="w-1/5 flex items-end">
+                    <Link
+                        href={{
+                            pathname: `/new`,
+                            query: { type: 'Payout', version: 2, project: 1 },
+                        }}
                     >
-                        New Proposal
-                    </a>
-                </Link>
+                        <a
+                            className="ml-3 rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 h-fit w-full text-center"
+                        >
+                            New Proposal
+                        </a>
+                    </Link>
+                </div>
+
             </div>
 
             <div className="mt-6 overflow-hidden bg-white shadow rounded-md">
                 <ProposalCards loading={infoLoading || proposalsLoading} proposals={proposalData?.data} space={space as string} currentCycle={currentCycle} />
             </div>
 
-            <div className="mt-6">
-                <div className="flex flex-1 justify-end">
+            <div className="mt-6 text-center">
+                Total results: { proposalData?.data?.length ?? 0}
+                {/* <div className="flex flex-1 justify-end">
                     <button
                         disabled={cycle === 1}
                         onClick={() => setCycle(currentCycle - 1)}
@@ -100,7 +158,7 @@ export default function NanceProposals() {
                             Next
                         </button>
                     )}
-                </div>
+                </div> */}
             </div>
 
         </div>
@@ -206,7 +264,7 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
                                 </div>
 
                                 <p className="md:w-1/12">
-                                    {`GC${currentCycle}`}
+                                    {`GC${proposal.governanceCycle}`}
                                 </p>
 
                                 <p className="md:w-1/12">
