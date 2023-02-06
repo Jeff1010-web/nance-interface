@@ -1,7 +1,7 @@
 import Link from "next/link"
 import SiteNav from "../components/SiteNav"
 import { formatDistanceToNowStrict, parseISO } from "date-fns"
-import { useQueryParam, NumberParam, useQueryParams, StringParam } from "next-query-params"
+import { NumberParam, useQueryParams, StringParam } from "next-query-params"
 import { useRouter } from "next/router"
 import { getLastSlash } from "../libs/nance"
 import { useProposals, useSpaceInfo } from "../hooks/NanceHooks"
@@ -11,11 +11,15 @@ import { formatTokenBalance } from "../libs/NumberFormatter"
 import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo"
 import { useEffect, useState } from "react"
 import { DocumentSearchIcon } from '@heroicons/react/solid'
+import SearchableComboBox, { Option } from "../components/SearchableComboBox"
 
 export default function NanceProposals() {
     const router = useRouter();
     const space = "juicebox";
-    const [keywordInput, setKeywordInput] = useState(undefined);
+    const [keywordInput, setKeywordInput] = useState<string>(undefined);
+    const [options, setOptions] = useState<Option[]>([{id: "Loading", label: `Loading...`, status: true}]);
+    const [cycleOption, setCycleOption] = useState<Option>(undefined);
+
     const [query, setQuery] = useQueryParams({
         keyword: StringParam,
         //limit: NumberParam,
@@ -25,7 +29,6 @@ export default function NanceProposals() {
     const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
     const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposals({ space: space as string, cycle, keyword }, router.isReady);
     const currentCycle = cycle || infoData?.data?.currentCycle;
-    const noNextCycle = cycle && !infoLoading && infoData?.data?.currentCycle && cycle > infoData?.data?.currentCycle;
 
     let remainingTime = "-";
     try {
@@ -34,6 +37,18 @@ export default function NanceProposals() {
         console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
     }
     
+    useEffect(() => {
+        // if we can retrieve the current cycle from infoData, then we can populate the options
+        const _currentCycle = infoData?.data?.currentCycle;
+        let newOptions: Option[] = [];
+        if (_currentCycle) {
+            newOptions.push({id: "All", label: `All`, status: true});
+            for (let i = _currentCycle; i >= 1; i--) {
+                newOptions.push({id: `${i}`, label: `GC-${i}`, status: i == _currentCycle});
+            }
+        }
+        setOptions(newOptions);
+    }, [infoData]);
 
   return (
     <>
@@ -71,11 +86,22 @@ export default function NanceProposals() {
                 </div>
             </div>
 
-            <div className="flex justify-between mt-6">
+            <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">
+                <div className="md:w-1/5">
+                    <SearchableComboBox val={cycleOption} setVal={(o) => {
+                        let opt = o as Option;
+                        setCycleOption(opt);
+                        // sync with cycle parameter
+                        setQuery({
+                            cycle: parseInt(opt.id)
+                        })
+                    }} options={options} label="Search cycle" />
+                </div>
+
                 {/* Search bar and limit */}
-                <div className="w-4/5">
+                <div className="md:w-3/5">
                     <label htmlFor="keyword" className="block text-sm font-medium text-gray-700">
-                        Search within cycles
+                        Search proposals
                     </label>
                     <div className="mt-1 flex rounded-md shadow-sm">
                         <div className="relative flex flex-grow items-stretch focus-within:z-10">
@@ -86,7 +112,7 @@ export default function NanceProposals() {
                             type="text"
                             name="keyword"
                             id="keyword"
-                            className="block w-full rounded-none rounded-l-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            className="block w-full rounded-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             placeholder="grant, swap and payout etc."
                             value={keywordInput !== undefined ? keywordInput : keyword}
                             onChange={(e) => setKeywordInput(e.target.value)}
@@ -99,27 +125,10 @@ export default function NanceProposals() {
                             }}
                         />
                         </div>
-                        <div>
-                            <label htmlFor="cycle" className="sr-only">
-                                Cycle
-                            </label>
-                            <input
-                                id="cycle"
-                                name="cycle"
-                                type="number"
-                                className="relative rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700 hover:bg-gray-100 bg-gray-50"
-                                value={cycle}
-                                min={1}
-                                placeholder={infoData?.data?.currentCycle ? `${infoData?.data?.currentCycle}` : `GC`}
-                                max={infoData?.data?.currentCycle}
-                                onChange={(e) => setQuery({ cycle: parseInt(e.target.value) })}
-                            >
-                            </input>
-                        </div>
                     </div>
                 </div>
 
-                <div className="w-1/5 flex items-end">
+                <div className="md:w-1/5 flex items-end">
                     <Link
                         href={{
                             pathname: `/new`,
@@ -127,7 +136,7 @@ export default function NanceProposals() {
                         }}
                     >
                         <a
-                            className="ml-3 rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 h-fit w-full text-center"
+                            className="rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 h-fit w-full text-center"
                         >
                             New Proposal
                         </a>
@@ -228,7 +237,7 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
                 setInfoText('');
             }
         }
-    }, [proposals]);
+    }, [proposals, loading]);
 
     return (
         <>
