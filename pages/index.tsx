@@ -15,7 +15,7 @@ import SearchableComboBox, { Option } from "../components/SearchableComboBox"
 
 export default function NanceProposals() {
     const router = useRouter();
-    const space = "juicebox";
+    let space = "juicebox";
     const [keywordInput, setKeywordInput] = useState<string>(undefined);
     const [options, setOptions] = useState<Option[]>([{id: "Loading", label: `Loading...`, status: true}]);
     const [cycleOption, setCycleOption] = useState<Option>(undefined);
@@ -23,9 +23,13 @@ export default function NanceProposals() {
     const [query, setQuery] = useQueryParams({
         keyword: StringParam,
         //limit: NumberParam,
-        cycle: NumberParam
+        cycle: NumberParam,
+        overrideSpace: StringParam
     });
-    const {keyword, cycle} = query;
+    const {keyword, cycle, overrideSpace} = query;
+    if (overrideSpace) {
+        space = overrideSpace;
+    }
     const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
     const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposals({ space: space as string, cycle, keyword }, router.isReady);
     const currentCycle = cycle || infoData?.data?.currentCycle;
@@ -168,7 +172,7 @@ export default function NanceProposals() {
             </div>
 
             <div className="mt-6 overflow-hidden bg-white shadow rounded-md">
-                <ProposalCards loading={infoLoading || proposalsLoading} proposals={proposalData?.data} query={query} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
+                <ProposalCards space={space} loading={infoLoading || proposalsLoading} proposals={proposalData?.data} query={query} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
             </div>
 
             <div className="mt-6 text-center">
@@ -226,7 +230,7 @@ function SpaceStats() {
     )
 }
 
-function ProposalCards({loading, proposals, query, setQuery, maxCycle}: {loading: boolean, proposals: Proposal[], query: {cycle: number, keyword: string}, setQuery: (o: object) => void, maxCycle: number}) {
+function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {space: string, loading: boolean, proposals: Proposal[], query: {cycle: number, keyword: string}, setQuery: (o: object) => void, maxCycle: number}) {
     const router = useRouter();
     const [infoText, setInfoText] = useState('');
 
@@ -243,6 +247,15 @@ function ProposalCards({loading, proposals, query, setQuery, maxCycle}: {loading
             }
         }
     }, [proposals, loading]);
+
+    function getLink(proposal: Proposal) {
+        const uri = proposal?.voteURL ? `/snapshot/${getLastSlash(proposal.voteURL)}` : `/proposal/${proposal.hash}`;
+        if (space !== 'jbdao.eth') {
+            return `${uri}?overrideSpace=${space}`;
+        } else {
+            return uri;
+        }
+    }
 
     return (
         <>
@@ -282,7 +295,7 @@ function ProposalCards({loading, proposals, query, setQuery, maxCycle}: {loading
                                 {`${(proposal.proposalId !== '') ? proposal.proposalId : '-'}`}
                                 </p>
 
-                                <Link href={proposal?.voteURL ? `/snapshot/${getLastSlash(proposal.voteURL)}` : `/proposal/${proposal.hash}`}>
+                                <Link href={getLink(proposal)}>
                                     <a className="break-words text-sm font-medium text-indigo-500 hover:underline md:w-1/2">
                                         {proposal.title}
                                     </a>

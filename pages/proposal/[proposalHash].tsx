@@ -4,12 +4,20 @@ import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { useProposal } from "../../hooks/NanceHooks";
 import remarkGfm from 'remark-gfm';
+import { useQueryParams, StringParam } from "next-query-params";
 
 export default function SnapshotProposal() {
     // router
     const router = useRouter();
-    const space = "juicebox";
+    let space = "juicebox";
     const { proposalHash } = router.query;
+    const [query, setQuery] = useQueryParams({
+        overrideSpace: StringParam
+    });
+    const {overrideSpace} = query;
+    if (overrideSpace) {
+        space = overrideSpace;
+    }
       
     const { data, isLoading, error } = useProposal({ space: space as string, hash: proposalHash as string }, router.isReady);
     const proposalData = data?.data;
