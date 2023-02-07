@@ -43,8 +43,11 @@ export default function NanceProposals() {
         let newOptions: Option[] = [];
         if (_currentCycle) {
             newOptions.push({id: "All", label: `All`, status: true});
-            for (let i = _currentCycle; i >= 1; i--) {
-                newOptions.push({id: `${i}`, label: `GC-${i}`, status: i == _currentCycle});
+            const nextCycle = _currentCycle + 1;
+            newOptions.push({id: `${nextCycle}`, label: `GC-${nextCycle} (Next)`, status: true});
+            newOptions.push({id: `${_currentCycle}`, label: `GC-${_currentCycle} (Current)`, status: true});
+            for (let i = _currentCycle - 1; i >= 1; i--) {
+                newOptions.push({id: `${i}`, label: `GC-${i}`, status: false});
             }
         }
         setOptions(newOptions);
@@ -150,7 +153,7 @@ export default function NanceProposals() {
             </div>
 
             <div className="mt-6 text-center">
-                Total results: { proposalData?.data?.length ?? 0}
+                Total proposals: { proposalData?.data?.length ?? 0}
                 {/* <div className="flex flex-1 justify-end">
                     <button
                         disabled={cycle === 1}
