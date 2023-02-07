@@ -37,7 +37,7 @@ export default function useVote(
                     type: type as ProposalType,
                     choice: choice as number | number[] | string,
                     reason,
-                    app: 'juicetool'
+                    app: 'jbdao.org'
                 }
             );
             setValue(receipt);

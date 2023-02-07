@@ -46,7 +46,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
                 <meta property="og:image" content={meta.image} />
 
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta property="twitter:domain" content="juicetool.xyz" />
+                <meta property="twitter:domain" content="jbdao.org" />
                 <meta property="twitter:url" content={meta.url} />
                 <meta name="twitter:title" content={meta.title} />
                 <meta name="twitter:description" content={meta.description} />
@@ -65,7 +65,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
                                                     <img
                                                         className="block h-8 w-auto"
                                                         src="/favicon.svg"
-                                                        alt="Juicetool logo"
+                                                        alt="JBDAO logo"
                                                     />
                                                 </a>
                                             </Link>

@@ -1,6 +1,6 @@
 // All properties on a domain are optional
 export const DOMAIN = {
-    name: 'Juicetool',
+    name: 'JBDAO',
     version: '1',
     chainId: 1,
     //verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',

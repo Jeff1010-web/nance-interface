@@ -59,8 +59,8 @@ function MyApp({ Component, pageProps }) {
         <RainbowKitProvider
           chains={chains}
           appInfo={{
-            appName: 'JuiceTool',
-            learnMoreUrl: 'https://juicetool.xyz',
+            appName: 'JBDAO',
+            learnMoreUrl: 'https://jbdao.org',
           }}>
           <ClientContext.Provider value={graphqlClient}>
             <NextQueryParamProvider>

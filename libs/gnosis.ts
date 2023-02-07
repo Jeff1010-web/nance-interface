@@ -80,7 +80,7 @@ export class GnosisHandler {
                 contractTransactionHash: txn.transactionHash,
                 sender: txn.address,
                 signature: txn.signature,
-                origin: "Juicetool"
+                origin: "JBDAO"
             }),
         method: "POST"
         }
