@@ -29,6 +29,7 @@ export default function NanceProposals() {
     const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
     const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposals({ space: space as string, cycle, keyword }, router.isReady);
     const currentCycle = cycle || infoData?.data?.currentCycle;
+    const allCycle = {id: "All", label: `All`, status: true};
 
     let remainingTime = "-";
     try {
@@ -40,18 +41,36 @@ export default function NanceProposals() {
     useEffect(() => {
         // if we can retrieve the current cycle from infoData, then we can populate the options
         const _currentCycle = infoData?.data?.currentCycle;
-        let newOptions: Option[] = [];
+        const newOptions: Option[] = [];
         if (_currentCycle) {
-            newOptions.push({id: "All", label: `All`, status: true});
+            newOptions.push(allCycle);
             const nextCycle = _currentCycle + 1;
             newOptions.push({id: `${nextCycle}`, label: `GC-${nextCycle} (Next)`, status: true});
             newOptions.push({id: `${_currentCycle}`, label: `GC-${_currentCycle} (Current)`, status: true});
             for (let i = _currentCycle - 1; i >= 1; i--) {
                 newOptions.push({id: `${i}`, label: `GC-${i}`, status: false});
             }
+
+            setOptions(newOptions);
         }
-        setOptions(newOptions);
     }, [infoData]);
+
+    // sync cycle option with the query params
+    useEffect(() => {
+        if (keyword && !cycle) {
+            // if there is a keyword but no cycle, then we should set the cycle to "All"
+            setCycleOption(allCycle);
+        } else {
+            setCycleOption(options.find(o => o.id === `${currentCycle}`));
+        }
+    }, [keyword, cycle, options]);
+
+    // sync keyword input with the query params
+    useEffect(() => {
+        if (keyword != keywordInput) {
+            setKeywordInput(keyword);
+        }
+    }, [keyword]);
 
   return (
     <>
@@ -149,30 +168,12 @@ export default function NanceProposals() {
             </div>
 
             <div className="mt-6 overflow-hidden bg-white shadow rounded-md">
-                <ProposalCards loading={infoLoading || proposalsLoading} proposals={proposalData?.data} space={space as string} currentCycle={currentCycle} />
+                <ProposalCards loading={infoLoading || proposalsLoading} proposals={proposalData?.data} query={query} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
             </div>
 
             <div className="mt-6 text-center">
                 Total proposals: { proposalData?.data?.length ?? 0}
-                {/* <div className="flex flex-1 justify-end">
-                    <button
-                        disabled={cycle === 1}
-                        onClick={() => setCycle(currentCycle - 1)}
-                        className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        >
-                        Previous
-                    </button>
-                    {!noNextCycle && (
-                        <button
-                            onClick={() => setCycle(currentCycle + 1)}
-                            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                            >
-                            Next
-                        </button>
-                    )}
-                </div> */}
             </div>
-
         </div>
       </div>
     </>
@@ -225,7 +226,8 @@ function SpaceStats() {
     )
 }
 
-function ProposalCards({loading, proposals, space, currentCycle}: {loading: boolean, proposals: Proposal[], space: string, currentCycle: number}) {
+function ProposalCards({loading, proposals, query, setQuery, maxCycle}: {loading: boolean, proposals: Proposal[], query: {cycle: number, keyword: string}, setQuery: (o: object) => void, maxCycle: number}) {
+    const router = useRouter();
     const [infoText, setInfoText] = useState('');
 
     useEffect(() => {
@@ -235,7 +237,7 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
             if (!proposals) {
                 setInfoText('Error. Please try again later.');
             } else if (proposals.length === 0) {
-                setInfoText('No proposals found');
+                setInfoText('No proposals found, try below actions:');
             } else {
                 setInfoText('');
             }
@@ -244,9 +246,6 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
 
     return (
         <>
-            <p className="text-center m-2">
-                {infoText}
-            </p>
             <ul role="list" className="divide-y divide-gray-200">
                 {proposals?.map((proposal, index, arr) => (
                     <li key={proposal.hash}>
@@ -302,6 +301,55 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
                     </li>
                 ))}
             </ul>
+
+            <p className="text-center m-6">
+                {infoText}
+            </p>
+
+            {!loading && proposals?.length === 0 && (
+                <div className="flex flex-col items-center space-y-4 mb-6">
+                    <button type="button" 
+                        className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
+                        onClick={router.back}>
+                        Back to previous page
+                    </button>
+
+                    {
+                        query.keyword && (
+                            <button type="button" 
+                                className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
+                                onClick={() => setQuery({keyword: ''})}>
+                                Clear the keyword
+                            </button>
+                        )
+                    }
+                    
+                    {
+                        query.keyword && query.cycle && (
+                            <button type="button" 
+                                className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
+                                onClick={() => setQuery({cycle: undefined})}>
+                                Search in all cycles
+                            </button>
+                        )
+                    }
+
+                    {
+                        !query.keyword && query.cycle && (
+                            <button type="button" 
+                                className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
+                                onClick={() => setQuery({cycle: getRandomInt(maxCycle) + 1})}>
+                                Check different cycle
+                            </button>
+                        )
+                    }
+                    
+                </div>
+            )}
         </>
     )
+}
+
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max);
 }
