@@ -20,13 +20,14 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
         { name: 'Governance Process', href: 'https://info.juicebox.money/dao/process/' },
         { name: 'How to Submit a Proposal', href: 'https://info.juicebox.money/dao/proposals/' },
         { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
+        { name: 'Reconfiguration', href: '/juicebox' },
         { name: 'Discord', href: 'https://discord.gg/juicebox' }
     ]
 
     const meta = {
-        title: `${pageTitle} | JuiceTool`,
-        description: description || "A bunch of homebrew tools",
-        url: `https://juicetool.xyz${router.asPath}`,
+        title: `${pageTitle} | Nance`,
+        description: description || "Nance platform for automatic governance.",
+        url: `https://jbdao.org${router.asPath}`,
         image: image || "/images/unsplash_application.jpeg",
     }
 
@@ -74,8 +75,6 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
                                                 <a
                                                     key={item.name}
                                                     href={item.href}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
                                                     className='border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium'
                                                 >
                                                     {item.name}
@@ -111,8 +110,6 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
                                             key={item.name}
                                             as="a"
                                             href={item.href}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
                                             className='border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium'
                                         >
                                             {item.name}

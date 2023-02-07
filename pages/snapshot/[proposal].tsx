@@ -1,19 +1,19 @@
 import { useRouter } from "next/router";
-import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE } from "../../../../hooks/snapshot/Proposals";
+import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE } from "../../hooks/snapshot/Proposals";
 import { useAccount } from 'wagmi'
-import SiteNav from "../../../../components/SiteNav";
-import { fetchSpaceInfo, SpaceInfo } from "../../../../hooks/snapshot/SpaceInfo";
+import SiteNav from "../../components/SiteNav";
+import { fetchSpaceInfo, SpaceInfo } from "../../hooks/snapshot/SpaceInfo";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { Tooltip } from 'flowbite-react';
-import FormattedAddress from "../../../../components/FormattedAddress";
+import FormattedAddress from "../../components/FormattedAddress";
 import { fromUnixTime, format, formatDistanceToNowStrict } from "date-fns";
 import { useEffect, useState } from "react";
-import VotingModal from "../../../../components/VotingModal";
+import VotingModal from "../../components/VotingModal";
 import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-query-params";
-import Pagination from "../../../../components/Pagination";
-import { formatChoices } from "../../../../libs/snapshotUtil";
-import ProposalStats from "../../../../components/ProposalStats";
+import Pagination from "../../components/Pagination";
+import { formatChoices } from "../../libs/snapshotUtil";
+import ProposalStats from "../../components/ProposalStats";
 import remarkGfm from 'remark-gfm';
 
 function classNames(...classes) {
@@ -51,7 +51,7 @@ const getColorOfPencentage = (percentage: number) => {
 
 export async function getServerSideProps(context) {
     // Fetch data from external API
-    const spaceInfo = await fetchSpaceInfo(context.params.space);
+    const spaceInfo = await fetchSpaceInfo("jbdao.eth");
     const proposalInfo = await fetchProposalInfo(context.params.proposal);
   
     // Pass data to the page via props
@@ -61,7 +61,8 @@ export async function getServerSideProps(context) {
 export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spaceInfo: SpaceInfo, proposalInfo: SnapshotProposal }) {
     // router
     const router = useRouter();
-    const { space, proposal } = router.query;
+    const space = "jbdao.eth";
+    const { proposal } = router.query;
     // state
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [voteDisabled, setVoteDisabled] = useState(true);
@@ -126,7 +127,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                     </div>
                     </div>
                     <div className="justify-stretch mt-6 flex flex-col-reverse space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-y-0 sm:space-x-3 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
-                        <Link href={`/snapshot/${space}`}>
+                        <Link href={`/`}>
                             <a className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
                                 Back
                             </a>
@@ -264,7 +265,7 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                                     </div>
                                                     <div className="space-y-1 overflow-hidden">
                                                         <div className="text-sm">
-                                                            <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
+                                                            <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
                                                             <span className={classNames(
                                                                 getColorOfPencentage(vote.vp*100/proposalInfo?.scores_total),
                                                                 ''

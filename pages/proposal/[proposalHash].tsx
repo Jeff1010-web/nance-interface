@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import SiteNav from "../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
-import { useProposalRequest } from "../../hooks/NanceHooks";
+import { useProposal } from "../../hooks/NanceHooks";
 import remarkGfm from 'remark-gfm';
 
 export default function SnapshotProposal() {
@@ -11,7 +11,7 @@ export default function SnapshotProposal() {
     const space = "juicebox";
     const { proposalHash } = router.query;
       
-    const { data, isLoading, error } = useProposalRequest({ space: space as string, hash: proposalHash as string }, router.isReady);
+    const { data, isLoading, error } = useProposal({ space: space as string, hash: proposalHash as string }, router.isReady);
     const proposalData = data?.data;
 
     return (

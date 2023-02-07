@@ -1,24 +1,34 @@
 import Link from "next/link"
 import SiteNav from "../components/SiteNav"
 import { formatDistanceToNowStrict, parseISO } from "date-fns"
-import { useQueryParam, NumberParam } from "next-query-params"
+import { NumberParam, useQueryParams, StringParam } from "next-query-params"
 import { useRouter } from "next/router"
 import { getLastSlash } from "../libs/nance"
-import { useProposalsQuery, useSpaceInfo } from "../hooks/NanceHooks"
+import { useProposals, useSpaceInfo } from "../hooks/NanceHooks"
 import { Proposal } from "../models/NanceTypes"
 import useTotalSupplyOfProject from "../hooks/juicebox/TotalSupplyOfProject"
 import { formatTokenBalance } from "../libs/NumberFormatter"
 import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo"
 import { useEffect, useState } from "react"
+import { DocumentSearchIcon } from '@heroicons/react/solid'
+import SearchableComboBox, { Option } from "../components/SearchableComboBox"
 
 export default function NanceProposals() {
     const router = useRouter();
     const space = "juicebox";
-    const [cycle, setCycle] = useQueryParam<number>('cycle', NumberParam);
+    const [keywordInput, setKeywordInput] = useState<string>(undefined);
+    const [options, setOptions] = useState<Option[]>([{id: "Loading", label: `Loading...`, status: true}]);
+    const [cycleOption, setCycleOption] = useState<Option>(undefined);
+
+    const [query, setQuery] = useQueryParams({
+        keyword: StringParam,
+        //limit: NumberParam,
+        cycle: NumberParam
+    });
+    const {keyword, cycle} = query;
     const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
-    const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposalsQuery({ space: space as string, cycle }, router.isReady);
+    const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposals({ space: space as string, cycle, keyword }, router.isReady);
     const currentCycle = cycle || infoData?.data?.currentCycle;
-    const noNextCycle = cycle && !infoLoading && infoData?.data?.currentCycle && cycle > infoData?.data?.currentCycle;
 
     let remainingTime = "-";
     try {
@@ -27,15 +37,30 @@ export default function NanceProposals() {
         console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
     }
     
+    useEffect(() => {
+        // if we can retrieve the current cycle from infoData, then we can populate the options
+        const _currentCycle = infoData?.data?.currentCycle;
+        let newOptions: Option[] = [];
+        if (_currentCycle) {
+            newOptions.push({id: "All", label: `All`, status: true});
+            const nextCycle = _currentCycle + 1;
+            newOptions.push({id: `${nextCycle}`, label: `GC-${nextCycle} (Next)`, status: true});
+            newOptions.push({id: `${_currentCycle}`, label: `GC-${_currentCycle} (Current)`, status: true});
+            for (let i = _currentCycle - 1; i >= 1; i--) {
+                newOptions.push({id: `${i}`, label: `GC-${i}`, status: false});
+            }
+        }
+        setOptions(newOptions);
+    }, [infoData]);
 
   return (
     <>
-      <SiteNav pageTitle="Current proposal on Nance" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" withWallet />
+      <SiteNav pageTitle="Current proposals" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" withWallet />
       <div className="m-4 lg:m-6 flex justify-center lg:px-20">
         <div className="flex flex-col max-w-7xl w-full">
 
             {/* Page header */}
-            <div className="max-w-7xl md:flex md:space-x-5">
+            <div className="max-w-7xl md:flex md:space-x-5 bg-white p-4 shadow rounded-md">
                 <div className="flex flex-col space-y-6 items-center md:flex-row md:justify-between md:space-x-6 w-full">
                     <div className="flex-shrink-0 md:w-5/12 flex space-x-3">
                         <img
@@ -64,27 +89,72 @@ export default function NanceProposals() {
                 </div>
             </div>
 
-            <div className="flex justify-end mt-6">
-                <Link
-                    href={{
-                        pathname: `/new`,
-                        query: { type: 'Payout', version: 2, project: 1 },
-                    }}
-                >
-                    <a
-                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">
+                <div className="md:w-1/5">
+                    <SearchableComboBox val={cycleOption} setVal={(o) => {
+                        let opt = o as Option;
+                        setCycleOption(opt);
+                        // sync with cycle parameter
+                        setQuery({
+                            cycle: parseInt(opt.id)
+                        })
+                    }} options={options} label="Search cycle" />
+                </div>
+
+                {/* Search bar and limit */}
+                <div className="md:w-3/5">
+                    <label htmlFor="keyword" className="block text-sm font-medium text-gray-700">
+                        Search proposals
+                    </label>
+                    <div className="mt-1 flex rounded-md shadow-sm">
+                        <div className="relative flex flex-grow items-stretch focus-within:z-10">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <DocumentSearchIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                        </div>
+                        <input
+                            type="text"
+                            name="keyword"
+                            id="keyword"
+                            className="block w-full rounded-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            placeholder="grant, swap and payout etc."
+                            value={keywordInput !== undefined ? keywordInput : keyword}
+                            onChange={(e) => setKeywordInput(e.target.value)}
+                            onKeyUp={(e) => {
+                                if(e.key == "Enter") {
+                                    setQuery({
+                                        keyword: keywordInput
+                                    })
+                                }
+                            }}
+                        />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="md:w-1/5 flex items-end">
+                    <Link
+                        href={{
+                            pathname: `/new`,
+                            query: { type: 'Payout', version: 2, project: 1 },
+                        }}
                     >
-                        New Proposal
-                    </a>
-                </Link>
+                        <a
+                            className="rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 h-fit w-full text-center"
+                        >
+                            New Proposal
+                        </a>
+                    </Link>
+                </div>
+
             </div>
 
             <div className="mt-6 overflow-hidden bg-white shadow rounded-md">
                 <ProposalCards loading={infoLoading || proposalsLoading} proposals={proposalData?.data} space={space as string} currentCycle={currentCycle} />
             </div>
 
-            <div className="mt-6">
-                <div className="flex flex-1 justify-end">
+            <div className="mt-6 text-center">
+                Total proposals: { proposalData?.data?.length ?? 0}
+                {/* <div className="flex flex-1 justify-end">
                     <button
                         disabled={cycle === 1}
                         onClick={() => setCycle(currentCycle - 1)}
@@ -100,7 +170,7 @@ export default function NanceProposals() {
                             Next
                         </button>
                     )}
-                </div>
+                </div> */}
             </div>
 
         </div>
@@ -170,7 +240,7 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
                 setInfoText('');
             }
         }
-    }, [proposals]);
+    }, [proposals, loading]);
 
     return (
         <>
@@ -206,14 +276,14 @@ function ProposalCards({loading, proposals, space, currentCycle}: {loading: bool
                                 </div>
 
                                 <p className="md:w-1/12">
-                                    {`GC${currentCycle}`}
+                                    {`GC${proposal.governanceCycle}`}
                                 </p>
 
                                 <p className="md:w-1/12">
                                 {`${(proposal.proposalId !== '') ? proposal.proposalId : '-'}`}
                                 </p>
 
-                                <Link href={proposal?.voteURL ? `/snapshot/jbdao.eth/proposal/${getLastSlash(proposal.voteURL)}` : `/proposal/${proposal.hash}`}>
+                                <Link href={proposal?.voteURL ? `/snapshot/${getLastSlash(proposal.voteURL)}` : `/proposal/${proposal.hash}`}>
                                     <a className="break-words text-sm font-medium text-indigo-500 hover:underline md:w-1/2">
                                         {proposal.title}
                                     </a>

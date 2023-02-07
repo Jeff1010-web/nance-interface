@@ -3,7 +3,7 @@ import useSWRMutation from 'swr/mutation'
 import { NANCE_API_URL } from "../constants/Nance"
 import {
     APIResponse,
-    ProposalsQueryRequest,
+    ProposalsRequest,
     SpaceInfoRequest,
     ProposalRequest,
     ProposalUploadRequest,
@@ -32,16 +32,24 @@ export function useSpaceInfo(args: SpaceInfoRequest, shouldFetch: boolean = true
     );
 }
 
-export function useProposalsQuery(args: ProposalsQueryRequest, shouldFetch: boolean = true) {
+export function useProposals(args: ProposalsRequest, shouldFetch: boolean = true) {
+    const url = new URL(`${NANCE_API_URL}/${args.space}/proposals`);
+    if (args.cycle) {
+        url.searchParams.set('cycle', args.cycle.toString());
+    }
+    if (args.keyword) {
+        url.searchParams.set('keyword', args.keyword);
+    }
+
     return useSWR<APIResponse<Proposal[]>, string>(
-        shouldFetch ? `${NANCE_API_URL}/${args.space}/query/${(args.cycle ? `?cycle=${args.cycle}` : '')}` : null,
+        shouldFetch ? url.toString() : null,
         jsonFetcher(),
     );
 }
 
-export function useProposalRequest(args: ProposalRequest, shouldFetch: boolean = true) {
+export function useProposal(args: ProposalRequest, shouldFetch: boolean = true) {
     return useSWR<APIResponse<Proposal>, string>(
-        shouldFetch ? `${NANCE_API_URL}/${args.space}/proposal?hash=${args.hash}` : null,
+        shouldFetch ? `${NANCE_API_URL}/${args.space}/proposal/${args.hash}` : null,
         jsonFetcher(),
     );
 }
@@ -71,7 +79,7 @@ async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRe
 
 export function useProposalUpload(space: string, shouldFetch: boolean = true) {
     return useSWRMutation(
-        shouldFetch ? `${NANCE_API_URL}/${space}/upload` : null,
+        shouldFetch ? `${NANCE_API_URL}/${space}/proposals` : null,
         uploader,
     );
 }
