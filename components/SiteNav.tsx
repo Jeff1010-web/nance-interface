@@ -17,10 +17,10 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
     
     const navigation = [
         { name: 'Home', href: '/' },
-        { name: 'Governance Process', href: 'https://info.juicebox.money/dao/process/' },
-        { name: 'How to Submit a Proposal', href: 'https://info.juicebox.money/dao/proposals/' },
-        { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
+        { name: 'Governance Process', href: '/process' },
+        { name: 'How to Submit a Proposal', href: '/guide' },
         { name: 'Reconfiguration', href: '/juicebox' },
+        { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
         { name: 'Discord', href: 'https://discord.gg/juicebox' }
     ]
 
