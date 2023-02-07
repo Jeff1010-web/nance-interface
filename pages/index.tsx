@@ -176,7 +176,10 @@ export default function NanceProposals() {
             </div>
 
             <div className="mt-6 text-center">
-                Total proposals: { proposalData?.data?.length ?? 0}
+                {proposalData?.data?.length > 0 && `Total Proposals: ${proposalData?.data?.length}`}
+            </div>
+            <div className="mt-2 text-center underline">
+                {overrideSpace ? `Override Space: ${overrideSpace}` : ''}
             </div>
         </div>
       </div>
