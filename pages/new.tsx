@@ -3,7 +3,7 @@ import SiteNav from "../components/SiteNav";
 import { useForm, FormProvider, useFormContext, Controller, SubmitHandler } from "react-hook-form";
 import ResolvedEns from "../components/ResolvedEns";
 import ResolvedProject from "../components/ResolvedProject";
-import { useQueryParam, withDefault, createEnumParam, NumberParam } from "next-query-params";
+import { withDefault, createEnumParam, NumberParam, useQueryParams, StringParam } from "next-query-params";
 import React from "react";
 import { useRouter } from "next/router";
 import Notification from "../components/Notification";
@@ -43,9 +43,18 @@ const ProposalMetadataContext = React.createContext({
 export default function NanceNewProposal() {
   console.debug(`using nance API: ${NANCE_API_URL}`);
   const router = useRouter();
-  const [proposalType, setProposalType] = useQueryParam<ProposalType>('type', withDefault(createEnumParam(["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"]), 'Payout'));
-  const [version, setVersion] = useQueryParam('version', withDefault(NumberParam, 2));
-  const [project, setProject] = useQueryParam('project', withDefault(NumberParam, 1));
+
+  const [query, setQuery] = useQueryParams({
+    type: withDefault(createEnumParam(["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"]), 'Payout'),
+    version: withDefault(NumberParam, 2),
+    project: withDefault(NumberParam, 1),
+    overrideSpace: StringParam
+  });
+  const {type: proposalType, version, project, overrideSpace} = query;
+  let space = "juicebox";
+  if (overrideSpace) {
+      space = overrideSpace;
+  }
 
   if(!router.isReady) {
     return <p className="mt-2 text-xs text-gray-500 text-center">loading...</p>
@@ -63,9 +72,9 @@ export default function NanceNewProposal() {
           New Proposal
         </p>
         <ResolvedProject version={version} projectId={project} style="text-center" />
-        <ProposalMetadataContext.Provider value={{proposalType, setProposalType, version, project}}>
+        <ProposalMetadataContext.Provider value={{proposalType, setProposalType: (t) => setQuery({type: t}), version, project}}>
           <ProposalTypeTabs />
-          <Form />
+          <Form space={space} />
         </ProposalMetadataContext.Provider>
       </div>
     </>
@@ -133,10 +142,9 @@ interface ProposalCache {
 
 type ProposalFormValues = Omit<ProposalUploadRequest, "type" | "version">
 
-function Form() {
+function Form({space}: {space: string}) {
   // query and context
   const router = useRouter();
-  const space = "juicebox";
   const metadata = useContext(ProposalMetadataContext);
 
   // state
@@ -172,7 +180,7 @@ function Form() {
       console.debug("📗 Nance.newProposal.upload ->", req);
       return trigger(req);
     })
-    .then(res => router.push(`/proposal/${res.data.hash}`))
+    .then(res => router.push(`/proposal/${res.data.hash}${space !== "juicebox" ? `?overrideSpace=${space}` : ''}`))
     .catch((err) => {
       setSigning(false);
       setSignError(err);
@@ -350,7 +358,7 @@ function Form() {
         </div> */}
 
         <div className="flex justify-end">
-          <Link href={`/`}>
+          <Link href={`/${space !== "juicebox" ? `?overrideSpace=${space}` : ''}`}>
             <a
               className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >

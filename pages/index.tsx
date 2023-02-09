@@ -16,6 +16,7 @@ import SearchableComboBox, { Option } from "../components/SearchableComboBox"
 export default function NanceProposals() {
     const router = useRouter();
     let space = "juicebox";
+    const newPageQuery: any = { type: 'Payout', version: 2, project: 1 };
     const [keywordInput, setKeywordInput] = useState<string>(undefined);
     const [options, setOptions] = useState<Option[]>([{id: "Loading", label: `Loading...`, status: true}]);
     const [cycleOption, setCycleOption] = useState<Option>(undefined);
@@ -29,6 +30,7 @@ export default function NanceProposals() {
     const {keyword, cycle, overrideSpace} = query;
     if (overrideSpace) {
         space = overrideSpace;
+        newPageQuery.overrideSpace = overrideSpace;
     }
     const { data: infoData, isLoading: infoLoading, error: infoError} =  useSpaceInfo({ space: space as string }, router.isReady);
     const { data: proposalData, isLoading: proposalsLoading, error: proposalError }  = useProposals({ space: space as string, cycle, keyword }, router.isReady);
@@ -157,8 +159,8 @@ export default function NanceProposals() {
                 <div className="md:w-1/5 flex items-end">
                     <Link
                         href={{
-                            pathname: `/new`,
-                            query: { type: 'Payout', version: 2, project: 1 },
+                            pathname: '/new',
+                            query: newPageQuery,
                         }}
                     >
                         <a
