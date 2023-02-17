@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useProposal } from "../../hooks/NanceHooks";
 import remarkGfm from 'remark-gfm';
 import { useQueryParams, StringParam } from "next-query-params";
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 
 export default function SnapshotProposal() {
     // router
@@ -70,7 +72,7 @@ export default function SnapshotProposal() {
                                         <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
                                             {isLoading && 'Loading...'}
                                             {error && 'Error.'}
-                                            {proposalData && <ReactMarkdown remarkPlugins={[remarkGfm]}>{proposalData?.body}</ReactMarkdown>}
+                                            {proposalData && <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>{proposalData?.body}</ReactMarkdown>}
                                         </article>
                                     </div>
                                 </div>
