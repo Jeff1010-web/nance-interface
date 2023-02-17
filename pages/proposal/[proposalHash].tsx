@@ -7,11 +7,12 @@ import remarkGfm from 'remark-gfm';
 import { useQueryParams, StringParam } from "next-query-params";
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
+import { NANCE_DEFAULT_SPACE } from "../../constants/Nance";
 
 export default function SnapshotProposal() {
     // router
     const router = useRouter();
-    let space = "juicebox";
+    let space = NANCE_DEFAULT_SPACE;
     const { proposalHash } = router.query;
     const [query, setQuery] = useQueryParams({
         overrideSpace: StringParam

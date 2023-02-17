@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import Notification from "../components/Notification";
 import { useProposalUpload } from "../hooks/NanceHooks";
 import { ProposalUploadRequest } from "../models/NanceTypes";
-import { NANCE_API_URL } from "../constants/Nance";
+import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Link from "next/link";
 
 import { useAccount, useSigner } from "wagmi";
@@ -38,7 +38,7 @@ export default function NanceNewProposal() {
     overrideSpace: StringParam
   });
   const {type: proposalType, version, project, overrideSpace} = query;
-  let space = "juicebox";
+  let space = NANCE_DEFAULT_SPACE;
   if (overrideSpace) {
       space = overrideSpace;
   }
@@ -109,7 +109,7 @@ function Form({space}: {space: string}) {
       console.debug("📗 Nance.newProposal.upload ->", req);
       return trigger(req);
     })
-    .then(res => router.push(`/proposal/${res.data.hash}${space !== "juicebox" ? `?overrideSpace=${space}` : ''}`))
+    .then(res => router.push(`/proposal/${res.data.hash}${space !== NANCE_DEFAULT_SPACE ? `?overrideSpace=${space}` : ''}`))
     .catch((err) => {
       setSigning(false);
       setSignError(err);
@@ -216,7 +216,7 @@ function Form({space}: {space: string}) {
         </div>
 
         <div className="flex justify-end">
-          <Link href={`/${space !== "juicebox" ? `?overrideSpace=${space}` : ''}`}>
+          <Link href={`/${space !== NANCE_DEFAULT_SPACE ? `?overrideSpace=${space}` : ''}`}>
             <a
               className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >

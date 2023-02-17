@@ -12,10 +12,11 @@ import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo"
 import { useEffect, useState } from "react"
 import { DocumentSearchIcon } from '@heroicons/react/solid'
 import SearchableComboBox, { Option } from "../components/SearchableComboBox"
+import { NANCE_DEFAULT_SPACE } from "../constants/Nance"
 
 export default function NanceProposals() {
     const router = useRouter();
-    let space = "juicebox";
+    let space = NANCE_DEFAULT_SPACE;
     const newPageQuery: any = { type: 'Payout', version: 2, project: 1 };
     const [keywordInput, setKeywordInput] = useState<string>(undefined);
     const [options, setOptions] = useState<Option[]>([{id: "Loading", label: `Loading...`, status: true}]);
@@ -255,7 +256,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
 
     function getLink(proposal: Proposal) {
         const uri = proposal?.voteURL ? `/snapshot/${getLastSlash(proposal.voteURL)}` : `/proposal/${proposal.hash}`;
-        if (space !== 'jbdao.eth') {
+        if (space !== NANCE_DEFAULT_SPACE) {
             return `${uri}?overrideSpace=${space}`;
         } else {
             return uri;
