@@ -13,6 +13,7 @@ import { useEffect, useState } from "react"
 import { DocumentSearchIcon } from '@heroicons/react/solid'
 import SearchableComboBox, { Option } from "../components/SearchableComboBox"
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance"
+import ColorBar from "../components/ColorBar"
 
 export default function NanceProposals() {
     const router = useRouter();
@@ -174,7 +175,7 @@ export default function NanceProposals() {
 
             </div>
 
-            <div className="mt-6 overflow-hidden bg-white shadow rounded-md">
+            <div className="">
                 <ProposalCards space={space} loading={infoLoading || proposalsLoading} proposals={proposalData?.data} query={query} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
             </div>
 
@@ -265,12 +266,50 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
 
     return (
         <>
-            <ul role="list" className="divide-y divide-gray-200">
-                {proposals?.map((proposal, index, arr) => (
-                    <li key={proposal.hash}>
-                        <div className="px-4 py-4 sm:px-6">
-                            <div className="flex items-center md:space-x-2 flex-col md:flex-row ">
-                                <div className="flex flex-shrink-0 md:w-1/12">
+            <div className="mt-6">
+                <div className="-mx-6 mt-10 ring-1 ring-gray-300 sm:mx-0 sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-300">
+                    <thead>
+                        <tr>
+                            <th scope="col" className="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900">
+                                Status
+                            </th>
+                            <th
+                                scope="col"
+                                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
+                                >
+                                Title
+                            </th>
+                            <th
+                                scope="col"
+                                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
+                                >
+                                Approval
+                            </th>
+                            <th
+                                scope="col"
+                                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
+                                >
+                                Participants
+                            </th>
+                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                Cycle
+                            </th>
+                            <th scope="col" className="relative py-3.5 pl-3 pr-6">
+                                <span className="sr-only">Select</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {proposals?.map((proposal, proposalIdx) => (
+                        <tr key={proposal.hash}>
+                            <td
+                                className={classNames(
+                                    proposalIdx === 0 ? '' : 'border-t border-transparent',
+                                'relative py-4 pl-6 pr-3 text-sm'
+                                )}
+                            >
+                                <div className="font-medium text-gray-900">
                                     {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
                                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                             {proposal.status}
@@ -292,34 +331,53 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                         </span>
                                     )}
                                 </div>
-
-                                <p className="md:w-1/12">
-                                    {`GC${proposal.governanceCycle}`}
-                                </p>
-
-                                <p className="md:w-1/12">
-                                {`${(proposal.proposalId !== '') ? proposal.proposalId : '-'}`}
-                                </p>
-
+                                
+                                {proposalIdx !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-gray-200" /> : null}
+                            </td>
+                            <td
+                                className={classNames(
+                                proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                'hidden px-3 py-3.5 text-sm text-gray-500 lg:table-cell'
+                                )}
+                            >
                                 <Link href={getLink(proposal)}>
-                                    <a className="break-words text-sm font-medium text-indigo-500 hover:underline md:w-1/2">
+                                    <a className="break-words text-sm text-black hover:underline md:w-1/2">
                                         {proposal.title}
                                     </a>
                                 </Link>
-
-                                {/* TODO: 1/6 Votes Stats */}
-                                <div className="md:w-1/6">
-
-                                </div>
-                            
-                                <p className="md:w-1/12 md:text-right">
-                                    {proposal?.date && formatDistanceToNowStrict(new Date(proposal.date), { addSuffix: true })}
-                                </p>
-                            </div>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+                            </td>
+                            <td
+                                className={classNames(
+                                    proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                'hidden px-3 py-3.5 text-sm text-gray-500 lg:table-cell'
+                                )}
+                            >
+                                <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} />
+                            </td>
+                            <td
+                                className={classNames(
+                                    proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                    'hidden px-3 py-3.5 text-sm text-black lg:table-cell text-center'
+                                )}
+                            >
+                                {proposal?.voteResults?.votes || '-'}
+                            </td>
+                            <td
+                                className={classNames(
+                                    proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                'px-3 py-3.5 text-sm text-gray-500'
+                                )}
+                            >
+                                {/* <div className="sm:hidden">{plan.price}/mo</div>
+                                <div className="hidden sm:block">{plan.price}/month</div> */}
+                                {`GC${proposal.governanceCycle}`}
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+                </div>
+            </div>
 
             <p className="text-center m-6">
                 {infoText}
@@ -367,6 +425,10 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
             )}
         </>
     )
+}
+
+function classNames(...classes) {
+    return classes.filter(Boolean).join(' ')
 }
 
 function getRandomInt(max) {

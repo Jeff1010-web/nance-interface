@@ -1,4 +1,4 @@
-import { SnapshotProposal, SnapshotVote, useProposalVotes } from "../hooks/snapshot/Proposals"
+import { SnapshotProposal, useProposalVotes } from "../hooks/snapshot/Proposals"
 import { Tooltip } from 'flowbite-react';
 import { useRouter } from "next/router";
 
