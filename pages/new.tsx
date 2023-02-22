@@ -8,6 +8,7 @@ import React from "react";
 import { useRouter } from "next/router";
 import Notification from "../components/Notification";
 import { useProposalUpload } from "../hooks/NanceHooks";
+import { imageUpload } from "../hooks/ImageUpload";
 import { ProposalUploadRequest } from "../models/NanceTypes";
 import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Link from "next/link";
@@ -181,6 +182,7 @@ function Form({space}: {space: string}) {
                           toolbar: 'restoredraft undo redo | template blocks | ' +
                             'image bold italic forecolor | bullist numlist outdent indent | ' +
                             'removeformat | help',
+                          images_upload_handler: imageUpload,
                           content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                           autosave_restore_when_empty: true,
                           template_replace_values: {
