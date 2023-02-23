@@ -51,6 +51,16 @@ const getColorOfPencentage = (percentage: number) => {
     }
 }
 
+const getColorOfChoice = (choice: string) => {
+    if(choice=='For') {
+        return 'text-green-500';
+    } else if(choice=='Against') {
+        return 'text-red-500';
+    } else {
+        return '';
+    }
+}
+
 export async function getServerSideProps(context) {
     // Fetch data from external API
     const spaceInfo = await fetchSpaceInfo("jbdao.eth");
@@ -74,6 +84,14 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
     const { proposal } = router.query;
     const hideAbstain = true;
 
+    const [query, setQuery] = useQueryParams({ 
+        page: withDefault(NumberParam, 1), 
+        sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
+        withField: withDefault(createEnumParam(["reason", "app"]), "")
+    });
+
+    const { loading, data, error } = useProposalVotes(proposalInfo, Math.max((query.page-1)*VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
+
     return (
         <>
             <SiteNav 
@@ -93,26 +111,53 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                 <section aria-labelledby="applicant-information-title">
                                     <ProposalContent proposalSnapshotHash={proposal} />
                                 </section>
-
-                                {/* Votes */}
-                                <section aria-labelledby="votes-title" className={proposalInfo?.state == 'pending' ? 'hidden' : undefined}>
-                                    <ProposalVotes />
-                                </section>
                             </div>
 
                             <section aria-labelledby="stats-title" className="lg:col-span-1 lg:col-start-3">
-                                <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6 sticky top-6 opacity-100">
+                                <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6 sticky top-6 bottom-6 opacity-100 h-[52rem]">
                                     <h2 id="timeline-title" className="text-lg font-medium text-gray-900">
-                                        Results
-                                        {hideAbstain && (
-                                            <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full ml-2">
-                                                HideAbstain
-                                            </span>
-                                        )}
+                                        Stats
                                     </h2>
 
                                     <div className="mt-6 flow-root">
                                         <ProposalStats proposal={proposalInfo} hideAbstain={hideAbstain} />
+                                    </div>
+
+                                    <div className="flex overflow-y-scroll h-[20rem] border-t">
+                                        <ul role="list" className="space-y-2 pt-2">
+                                            {loading && "loading..."}
+                                            {data?.votesData?.map((vote) => (
+                                                <li key={vote.id}>
+                                                    <div className="flex flex-col">
+                                                        <div className="text-sm flex justify-between">
+                                                            <div>
+                                                                <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
+                                                                &nbsp;
+                                                                <span className={classNames(
+                                                                    getColorOfChoice(formatChoices(proposalInfo.type, vote.choice)),
+                                                                    ''
+                                                                )}>
+                                                                    voted {formatChoices(proposalInfo.type, vote.choice)}
+                                                                </span>
+                                                            </div>
+
+                                                            <div>
+                                                                {`${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
+                                                            </div>
+                                                            
+                                                        </div>
+
+                                                        {
+                                                            vote.reason && (
+                                                                <div className="text-sm text-gray-600">
+                                                                    {vote.reason}
+                                                                </div>
+                                                            )
+                                                        }
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
 
                                 </div>
@@ -229,137 +274,6 @@ function ProposalContent({proposalSnapshotHash}) {
                         Read on Snapshot
                     </a>
                 </Link>
-            </div>
-        </div>
-    )
-}
-
-function ProposalVotes() {
-    const { spaceInfo, proposalInfo } = useContext(ProposalContext);
-
-    const [query, setQuery] = useQueryParams({ 
-        page: withDefault(NumberParam, 1), 
-        sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
-        withField: withDefault(createEnumParam(["reason", "app"]), "")
-      });
-
-    const { loading, data, error } = useProposalVotes(proposalInfo, Math.max((query.page-1)*VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
-
-    return (
-        <div className="bg-white shadow sm:overflow-hidden sm:rounded-lg">
-            <div className="divide-y divide-gray-200">
-                <div className="px-4 py-5 sm:px-6 flex flex-col sm:flex-row justify-between">
-                    <h2 id="notes-title" className="text-lg font-medium text-gray-900">
-                        Votes
-                        <span className='bg-indigo-100 text-indigo-600 ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium'>
-                            {data?.totalVotes || 0}
-                        </span>
-                    </h2>
-
-                    <div className="mt-1 flex rounded-md shadow-sm">
-                        <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
-                            SortBy
-                        </span>
-                        <select
-                            id="sortBy"
-                            name="sortBy"
-                            className="block w-full rounded-none border-gray-300 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                            value={query.sortBy}
-                            onChange={(e) => {
-                                setQuery({
-                                    page: 1,
-                                    sortBy: e.target.value,
-                                })
-                                // setPage(1, 'push');
-                                // setSortBy(e.target.value as "created" | "vp", 'push');
-                            }}
-                        >
-                            <option value="created">Time</option>
-                            <option value="vp">Weight</option>
-                        </select>
-                        <span className="inline-flex items-center rounded-none border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
-                            Require
-                        </span>
-                        <select
-                            id="withField"
-                            name="withField"
-                            className="block w-full rounded-none rounded-r-md border-gray-300 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                            value={query.withField}
-                            onChange={(e) => {
-                                setQuery({
-                                    withField: e.target.value,
-                                })
-                            }}
-                        >
-                            <option value="">None</option>
-                            <option value="reason">Reason</option>
-                            <option value="app">App</option>
-                        </select>
-                    </div>
-
-                </div>
-                <div className="px-4 py-6 sm:px-6">
-                    <ul role="list" className="space-y-8">
-                        {loading && "loading..."}
-                        {data?.votesData?.map((vote) => (
-                            <li key={vote.id}>
-                                <div className="flex space-x-3">
-                                    <div className="flex-shrink-0">
-                                        <img className="h-10 w-10 rounded-full"
-                                            src={`https://cdn.stamp.fyi/avatar/${vote.voter}?s=160`}
-                                            alt={`avatar of ${vote.voter}`}
-                                        />
-                                    </div>
-                                    <div className="space-y-1 overflow-hidden">
-                                        <div className="text-sm">
-                                            <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
-                                            <span className={classNames(
-                                                getColorOfPencentage(vote.vp*100/proposalInfo?.scores_total),
-                                                ''
-                                            )}>
-                                                {` - ${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
-                                            </span>
-                                            <div className="line-clamp-1 font-medium ">
-                                                <Tooltip
-                                                    content={formatChoices(proposalInfo.type, vote.choice)}
-                                                    trigger="hover"
-                                                    >
-                                                    <p>{formatChoices(proposalInfo.type, vote.choice)}</p>
-                                                </Tooltip>
-                                            </div>
-                                        </div>
-                                        <div className="text-sm text-gray-800 italic line-clamp-3 lg:line-clamp-5">
-                                            <Tooltip
-                                                content={vote.reason}
-                                                trigger="hover"
-                                                >
-                                                {vote.reason && <p>{vote.reason}</p>}
-                                            </Tooltip>
-                                        </div>
-                                        <div className="space-x-2 text-sm">
-                                            <span className="text-gray-500">
-                                                {formatDistanceToNowStrict(fromUnixTime(vote.created), { addSuffix: true })}
-                                            </span>{' '}
-                                            {vote.app && vote.app!="snapshot" && (
-                                                <>
-                                                    <span className="font-medium text-gray-500">&middot;</span>{' '}
-                                                    <span className="font-medium text-gray-500">
-                                                        {vote.app}
-                                                    </span>
-                                                </>
-                                            )}
-                                            
-                                            {/* <a href={`https://snapshot.mypinata.cloud/ipfs/${vote.id}`} target="_blank" rel="noopener noreferrer" className="font-medium text-gray-900">
-                                                IPFS
-                                            </a> */}
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                    <Pagination page={query.page} setPage={(page) => setQuery({page})} total={data?.totalVotes || 0} limit={VOTES_PER_PAGE} />
-                </div>
             </div>
         </div>
     )

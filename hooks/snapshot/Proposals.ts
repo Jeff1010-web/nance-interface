@@ -331,7 +331,7 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
   return ret;
 }
 
-export const VOTES_PER_PAGE = 15;
+export const VOTES_PER_PAGE = 150;
 
 export function useProposalVotes(proposal: SnapshotProposal, skip: number, orderBy: 'created' | 'vp' = 'created', withField: "" | "reason" | "app", skipThisHook: boolean = false, overrideLimit: number = 0): {
   loading: boolean,
