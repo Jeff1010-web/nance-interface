@@ -8,13 +8,15 @@ import Link from "next/link";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../components/FormattedAddress";
 import { fromUnixTime, format, formatDistanceToNowStrict } from "date-fns";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import VotingModal from "../../components/VotingModal";
 import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-query-params";
 import Pagination from "../../components/Pagination";
 import { formatChoices } from "../../libs/snapshotUtil";
 import ProposalStats from "../../components/ProposalStats";
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -58,29 +60,77 @@ export async function getServerSideProps(context) {
     return { props: { spaceInfo, proposalInfo } }
 }
 
+interface ProposalContextType {
+    spaceInfo: SpaceInfo,
+    proposalInfo: SnapshotProposal
+}
+
+const ProposalContext = createContext<ProposalContextType>(undefined);
+
 export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spaceInfo: SpaceInfo, proposalInfo: SnapshotProposal }) {
     // router
     const router = useRouter();
     const space = "jbdao.eth";
     const { proposal } = router.query;
-    // state
+    const hideAbstain = true;
+
+    return (
+        <>
+            <SiteNav 
+                pageTitle={`${proposalInfo.title} - ${spaceInfo?.name || (space as string) || ''}`} 
+                description={proposalInfo.body?.slice(0, 140) || 'No content'} 
+                image={`https://cdn.stamp.fyi/space/${space as string}?w=1200&h=630`}
+                withWallet />
+
+            <div className="min-h-full">
+                <main className="py-10">
+                    <ProposalContext.Provider value={{spaceInfo, proposalInfo}}>
+                        <ProposalHeader />
+
+                        <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
+                            <div className="space-y-6 lg:col-span-2 lg:col-start-1">
+                                {/* Content */}
+                                <section aria-labelledby="applicant-information-title">
+                                    <ProposalContent proposalSnapshotHash={proposal} />
+                                </section>
+
+                                {/* Votes */}
+                                <section aria-labelledby="votes-title" className={proposalInfo?.state == 'pending' ? 'hidden' : undefined}>
+                                    <ProposalVotes />
+                                </section>
+                            </div>
+
+                            <section aria-labelledby="stats-title" className="lg:col-span-1 lg:col-start-3">
+                                <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6 sticky top-6 opacity-100">
+                                    <h2 id="timeline-title" className="text-lg font-medium text-gray-900">
+                                        Results
+                                        {hideAbstain && (
+                                            <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full ml-2">
+                                                HideAbstain
+                                            </span>
+                                        )}
+                                    </h2>
+
+                                    <div className="mt-6 flow-root">
+                                        <ProposalStats proposal={proposalInfo} hideAbstain={hideAbstain} />
+                                    </div>
+
+                                </div>
+                            </section>
+                        </div>
+                    </ProposalContext.Provider>
+                </main>
+            </div>
+        </>
+    )
+}
+
+function ProposalHeader() {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [voteDisabled, setVoteDisabled] = useState(true);
     const [voteTip, setVoteTip] = useState("Proposal is not active");
-    const [query, setQuery] = useQueryParams({ 
-        page: withDefault(NumberParam, 1), 
-        sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
-        withField: withDefault(createEnumParam(["reason", "app"]), "")
-      });
-    // external hook
     const { address, isConnected } = useAccount();
-    // load data
-    const { loading, data, error } = useProposalVotes(proposalInfo, Math.max((query.page-1)*VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
-
-    const hideAbstain = spaceInfo.voting.hideAbstain && proposalInfo.type === "basic";
-    const totalScore = hideAbstain ? 
-        proposalInfo.scores_total-(proposalInfo?.scores[2]??0)
-        : proposalInfo.scores_total;
+    const { spaceInfo, proposalInfo } = useContext(ProposalContext);
 
     useEffect(() => {
         if(proposalInfo?.state === 'active') {
@@ -94,250 +144,223 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
     }, [isConnected, proposalInfo]);
 
     return (
-        <>
-            <SiteNav 
-                pageTitle={`${proposalInfo.title} - ${spaceInfo?.name || (space as string) || ''}`} 
-                description={proposalInfo.body?.slice(0, 140) || 'No content'} 
-                image={`https://cdn.stamp.fyi/space/${space as string}?w=1200&h=630`}
-                withWallet />
-
-            <div className="min-h-full">
-                <main className="py-10">
-                {/* Page header */}
-                <div className="mx-auto max-w-3xl px-4 sm:px-6 md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl lg:px-8">
-                    <div className="flex items-center space-x-5">
-                    <div className="flex-shrink-0">
-                        <Link href={`/snapshot/${space}`}>
-                            <a>
-                                <img
-                                    className="h-16 w-16 rounded-full"
-                                    src={`https://cdn.stamp.fyi/space/${space}?s=160`}
-                                    alt=""
-                                />
-                            </a>
-                        </Link>
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{proposalInfo.title}</h1>
-                        <p className="text-sm font-medium text-gray-500">
-                        By&nbsp;
-                        <FormattedAddress address={proposalInfo.author} style="text-gray-900" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
-                        &nbsp;on <time dateTime={proposalInfo.created ? fromUnixTime(proposalInfo.created).toString() : ''}>{proposalInfo.created && format(fromUnixTime(proposalInfo.created), 'MMMM d, yyyy')}</time>
-                        </p>
-                    </div>
-                    </div>
-                    <div className="justify-stretch mt-6 flex flex-col-reverse space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-y-0 sm:space-x-3 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
-                        <Link href={`/`}>
-                            <a className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
-                                Back
-                            </a>
-                        </Link>
-                        <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={() => setModalIsOpen(true)}
-                            disabled={voteDisabled}>
-
-                            <Tooltip trigger="hover" content={voteTip}>
-                                <span>Vote</span>
-                            </Tooltip>
-                        </button>
-                        {proposalInfo?.choices && (
-                            <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId={space as string} proposal={proposalInfo} spaceHideAbstain={spaceInfo.voting.hideAbstain} />
-                        )}
-                    </div>
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl lg:px-8">
+            <div className="flex items-center space-x-5">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">{proposalInfo.title}</h1>
+                    <p className="text-sm font-medium text-gray-500">
+                    By&nbsp;
+                    <FormattedAddress address={proposalInfo.author} style="text-gray-900" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
+                    &nbsp;on <time dateTime={proposalInfo.created ? fromUnixTime(proposalInfo.created).toString() : ''}>{proposalInfo.created && format(fromUnixTime(proposalInfo.created), 'MMMM d, yyyy')}</time>
+                    </p>
                 </div>
-
-                <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
-                    <div className="space-y-6 lg:col-span-2 lg:col-start-1">
-                        {/* Content */}
-                        <section aria-labelledby="applicant-information-title">
-                            <div className="bg-white shadow sm:rounded-lg">
-                            <div className="px-4 py-5 sm:px-6 flex space-x-3 flex-wrap">
-                                <h2 id="applicant-information-title" className="text-lg font-medium leading-6 text-gray-900">
-                                    Proposal
-                                </h2>
-
-                                {/* Proposal status */}
-                                <div className='min-w-fit'>
-                                    {proposalInfo.state === 'active' && (
-                                        <span className="text-green-800 bg-green-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                                            Active for {formatDistanceToNowStrict(fromUnixTime(proposalInfo.end))}
-                                        </span>
-                                    )}
-                                    {proposalInfo.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
-                                    {proposalInfo.state === 'closed' && (
-                                        <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                                            Closed {formatDistanceToNowStrict(fromUnixTime(proposalInfo.end), { addSuffix: true })}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Under quorum status */}
-                                {proposalInfo.quorum != 0 && totalScore < proposalInfo.quorum && (
-                                    <div className='min-w-fit'>
-                                        <span className="text-purple-800 bg-purple-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                                        {(space as string) === "jbdao.eth" ? "Approval Threshold" : "Under Quorum"}: {(totalScore*100/proposalInfo.quorum).toFixed()}%
-                                        </span>
-                                    </div>
-                                )}
-
-                                {/* <p className="mt-1 max-w-2xl text-sm text-gray-500">Proposal details.</p> */}
-                            </div>
-                            <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
-                                <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{proposalInfo.body}</ReactMarkdown>
-                                </article>
-                            </div>
-                            <div>
-                                <Link href={`https://snapshot.org/#/${space}/proposal/${proposal}`}>
-                                    <a target="_blank" rel="noopener noreferrer" className="block bg-gray-50 px-4 py-4 text-center text-sm font-medium text-gray-500 hover:text-gray-700 sm:rounded-b-lg">
-                                        Read on Snapshot
-                                    </a>
-                                </Link>
-                            </div>
-                            </div>
-                        </section>
-
-                        {/* Votes */}
-                        <section aria-labelledby="votes-title" className={proposalInfo?.state == 'pending' ? 'hidden' : undefined}>
-                            <div className="bg-white shadow sm:overflow-hidden sm:rounded-lg">
-                            <div className="divide-y divide-gray-200">
-                                <div className="px-4 py-5 sm:px-6 flex flex-col sm:flex-row justify-between">
-                                    <h2 id="notes-title" className="text-lg font-medium text-gray-900">
-                                        Votes
-                                        <span className='bg-indigo-100 text-indigo-600 ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium'>
-                                            {data?.totalVotes || 0}
-                                        </span>
-                                    </h2>
-
-                                    <div className="mt-1 flex rounded-md shadow-sm">
-                                        <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
-                                            SortBy
-                                        </span>
-                                        <select
-                                            id="sortBy"
-                                            name="sortBy"
-                                            className="block w-full rounded-none border-gray-300 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                                            value={query.sortBy}
-                                            onChange={(e) => {
-                                                setQuery({
-                                                    page: 1,
-                                                    sortBy: e.target.value,
-                                                })
-                                                // setPage(1, 'push');
-                                                // setSortBy(e.target.value as "created" | "vp", 'push');
-                                            }}
-                                        >
-                                            <option value="created">Time</option>
-                                            <option value="vp">Weight</option>
-                                        </select>
-                                        <span className="inline-flex items-center rounded-none border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
-                                            Require
-                                        </span>
-                                        <select
-                                            id="withField"
-                                            name="withField"
-                                            className="block w-full rounded-none rounded-r-md border-gray-300 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                                            value={query.withField}
-                                            onChange={(e) => {
-                                                setQuery({
-                                                    withField: e.target.value,
-                                                })
-                                            }}
-                                        >
-                                            <option value="">None</option>
-                                            <option value="reason">Reason</option>
-                                            <option value="app">App</option>
-                                        </select>
-                                    </div>
-
-                                </div>
-                                <div className="px-4 py-6 sm:px-6">
-                                    <ul role="list" className="space-y-8">
-                                        {loading && "loading..."}
-                                        {data?.votesData?.map((vote) => (
-                                            <li key={vote.id}>
-                                                <div className="flex space-x-3">
-                                                    <div className="flex-shrink-0">
-                                                        <img className="h-10 w-10 rounded-full"
-                                                            src={`https://cdn.stamp.fyi/avatar/${vote.voter}?s=160`}
-                                                            alt={`avatar of ${vote.voter}`}
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1 overflow-hidden">
-                                                        <div className="text-sm">
-                                                            <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
-                                                            <span className={classNames(
-                                                                getColorOfPencentage(vote.vp*100/proposalInfo?.scores_total),
-                                                                ''
-                                                            )}>
-                                                                {` - ${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
-                                                            </span>
-                                                            <div className="line-clamp-1 font-medium ">
-                                                                <Tooltip
-                                                                    content={formatChoices(proposalInfo.type, vote.choice)}
-                                                                    trigger="hover"
-                                                                    >
-                                                                    <p>{formatChoices(proposalInfo.type, vote.choice)}</p>
-                                                                </Tooltip>
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-sm text-gray-800 italic line-clamp-3 lg:line-clamp-5">
-                                                            <Tooltip
-                                                                content={vote.reason}
-                                                                trigger="hover"
-                                                                >
-                                                                {vote.reason && <p>{vote.reason}</p>}
-                                                            </Tooltip>
-                                                        </div>
-                                                        <div className="space-x-2 text-sm">
-                                                            <span className="text-gray-500">
-                                                                {formatDistanceToNowStrict(fromUnixTime(vote.created), { addSuffix: true })}
-                                                            </span>{' '}
-                                                            {vote.app && vote.app!="snapshot" && (
-                                                                <>
-                                                                    <span className="font-medium text-gray-500">&middot;</span>{' '}
-                                                                    <span className="font-medium text-gray-500">
-                                                                        {vote.app}
-                                                                    </span>
-                                                                </>
-                                                            )}
-                                                            
-                                                            {/* <a href={`https://snapshot.mypinata.cloud/ipfs/${vote.id}`} target="_blank" rel="noopener noreferrer" className="font-medium text-gray-900">
-                                                                IPFS
-                                                            </a> */}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <Pagination page={query.page} setPage={(page) => setQuery({page})} total={data?.totalVotes || 0} limit={VOTES_PER_PAGE} />
-                                </div>
-                            </div>
-                            </div>
-                        </section>
-                    </div>
-
-                    <section aria-labelledby="stats-title" className="lg:col-span-1 lg:col-start-3">
-                        <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6">
-                            <h2 id="timeline-title" className="text-lg font-medium text-gray-900">
-                                Results
-                                {hideAbstain && (
-                                    <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full ml-2">
-                                        HideAbstain
-                                    </span>
-                                )}
-                            </h2>
-
-                            <div className="mt-6 flow-root">
-                                <ProposalStats proposal={proposalInfo} hideAbstain={hideAbstain} />
-                            </div>
-
-                        </div>
-                    </section>
-                </div>
-                </main>
             </div>
-        </>
+            <div className="justify-stretch mt-6 flex flex-col-reverse space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-y-0 sm:space-x-3 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
+                <Link href={`/`}>
+                    <a className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
+                        Back
+                    </a>
+                </Link>
+                <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setModalIsOpen(true)}
+                    disabled={voteDisabled}>
+
+                    <Tooltip trigger="hover" content={voteTip}>
+                        <span>Vote</span>
+                    </Tooltip>
+                </button>
+                {proposalInfo?.choices && (
+                    <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId="jbdao.eth" proposal={proposalInfo} spaceHideAbstain={spaceInfo.voting.hideAbstain} />
+                )}
+            </div>
+        </div>
+    )
+}
+
+function ProposalContent({proposalSnapshotHash}) {
+    const { spaceInfo, proposalInfo } = useContext(ProposalContext);
+
+    const hideAbstain = spaceInfo.voting.hideAbstain && proposalInfo.type === "basic";
+    const totalScore = hideAbstain ? 
+        proposalInfo.scores_total-(proposalInfo?.scores[2]??0)
+        : proposalInfo.scores_total;
+
+    return (
+        <div className="bg-white shadow sm:rounded-lg">
+            <div className="px-4 py-5 sm:px-6 flex space-x-3 flex-wrap">
+                <h2 id="applicant-information-title" className="text-lg font-medium leading-6 text-gray-900">
+                    Proposal
+                </h2>
+
+                {/* Proposal status */}
+                <div className='min-w-fit'>
+                    {proposalInfo.state === 'active' && (
+                        <span className="text-green-800 bg-green-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
+                            Active for {formatDistanceToNowStrict(fromUnixTime(proposalInfo.end))}
+                        </span>
+                    )}
+                    {proposalInfo.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
+                    {proposalInfo.state === 'closed' && (
+                        <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
+                            Closed {formatDistanceToNowStrict(fromUnixTime(proposalInfo.end), { addSuffix: true })}
+                        </span>
+                    )}
+                </div>
+
+                {/* Under quorum status */}
+                {proposalInfo.quorum != 0 && totalScore < proposalInfo.quorum && (
+                    <div className='min-w-fit'>
+                        <span className="text-purple-800 bg-purple-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
+                            Approval Threshold: {(totalScore*100/proposalInfo.quorum).toFixed()}%
+                        </span>
+                    </div>
+                )}
+
+                {/* <p className="mt-1 max-w-2xl text-sm text-gray-500">Proposal details.</p> */}
+            </div>
+            <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+                <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>{proposalInfo.body}</ReactMarkdown>
+                </article>
+            </div>
+            <div>
+                <Link href={`https://snapshot.org/#/jbdao.eth/proposal/${proposalSnapshotHash}`}>
+                    <a target="_blank" rel="noopener noreferrer" className="block bg-gray-50 px-4 py-4 text-center text-sm font-medium text-gray-500 hover:text-gray-700 sm:rounded-b-lg">
+                        Read on Snapshot
+                    </a>
+                </Link>
+            </div>
+        </div>
+    )
+}
+
+function ProposalVotes() {
+    const { spaceInfo, proposalInfo } = useContext(ProposalContext);
+
+    const [query, setQuery] = useQueryParams({ 
+        page: withDefault(NumberParam, 1), 
+        sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
+        withField: withDefault(createEnumParam(["reason", "app"]), "")
+      });
+
+    const { loading, data, error } = useProposalVotes(proposalInfo, Math.max((query.page-1)*VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
+
+    return (
+        <div className="bg-white shadow sm:overflow-hidden sm:rounded-lg">
+            <div className="divide-y divide-gray-200">
+                <div className="px-4 py-5 sm:px-6 flex flex-col sm:flex-row justify-between">
+                    <h2 id="notes-title" className="text-lg font-medium text-gray-900">
+                        Votes
+                        <span className='bg-indigo-100 text-indigo-600 ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium'>
+                            {data?.totalVotes || 0}
+                        </span>
+                    </h2>
+
+                    <div className="mt-1 flex rounded-md shadow-sm">
+                        <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
+                            SortBy
+                        </span>
+                        <select
+                            id="sortBy"
+                            name="sortBy"
+                            className="block w-full rounded-none border-gray-300 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                            value={query.sortBy}
+                            onChange={(e) => {
+                                setQuery({
+                                    page: 1,
+                                    sortBy: e.target.value,
+                                })
+                                // setPage(1, 'push');
+                                // setSortBy(e.target.value as "created" | "vp", 'push');
+                            }}
+                        >
+                            <option value="created">Time</option>
+                            <option value="vp">Weight</option>
+                        </select>
+                        <span className="inline-flex items-center rounded-none border border-r-0 border-gray-300 bg-gray-50 px-3 text-xs sm:text-sm text-gray-500">
+                            Require
+                        </span>
+                        <select
+                            id="withField"
+                            name="withField"
+                            className="block w-full rounded-none rounded-r-md border-gray-300 text-xs focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                            value={query.withField}
+                            onChange={(e) => {
+                                setQuery({
+                                    withField: e.target.value,
+                                })
+                            }}
+                        >
+                            <option value="">None</option>
+                            <option value="reason">Reason</option>
+                            <option value="app">App</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div className="px-4 py-6 sm:px-6">
+                    <ul role="list" className="space-y-8">
+                        {loading && "loading..."}
+                        {data?.votesData?.map((vote) => (
+                            <li key={vote.id}>
+                                <div className="flex space-x-3">
+                                    <div className="flex-shrink-0">
+                                        <img className="h-10 w-10 rounded-full"
+                                            src={`https://cdn.stamp.fyi/avatar/${vote.voter}?s=160`}
+                                            alt={`avatar of ${vote.voter}`}
+                                        />
+                                    </div>
+                                    <div className="space-y-1 overflow-hidden">
+                                        <div className="text-sm">
+                                            <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
+                                            <span className={classNames(
+                                                getColorOfPencentage(vote.vp*100/proposalInfo?.scores_total),
+                                                ''
+                                            )}>
+                                                {` - ${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
+                                            </span>
+                                            <div className="line-clamp-1 font-medium ">
+                                                <Tooltip
+                                                    content={formatChoices(proposalInfo.type, vote.choice)}
+                                                    trigger="hover"
+                                                    >
+                                                    <p>{formatChoices(proposalInfo.type, vote.choice)}</p>
+                                                </Tooltip>
+                                            </div>
+                                        </div>
+                                        <div className="text-sm text-gray-800 italic line-clamp-3 lg:line-clamp-5">
+                                            <Tooltip
+                                                content={vote.reason}
+                                                trigger="hover"
+                                                >
+                                                {vote.reason && <p>{vote.reason}</p>}
+                                            </Tooltip>
+                                        </div>
+                                        <div className="space-x-2 text-sm">
+                                            <span className="text-gray-500">
+                                                {formatDistanceToNowStrict(fromUnixTime(vote.created), { addSuffix: true })}
+                                            </span>{' '}
+                                            {vote.app && vote.app!="snapshot" && (
+                                                <>
+                                                    <span className="font-medium text-gray-500">&middot;</span>{' '}
+                                                    <span className="font-medium text-gray-500">
+                                                        {vote.app}
+                                                    </span>
+                                                </>
+                                            )}
+                                            
+                                            {/* <a href={`https://snapshot.mypinata.cloud/ipfs/${vote.id}`} target="_blank" rel="noopener noreferrer" className="font-medium text-gray-900">
+                                                IPFS
+                                            </a> */}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                    <Pagination page={query.page} setPage={(page) => setQuery({page})} total={data?.totalVotes || 0} limit={VOTES_PER_PAGE} />
+                </div>
+            </div>
+        </div>
     )
 }

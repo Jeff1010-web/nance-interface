@@ -266,7 +266,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
 
     return (
         <>
-            <div className="mt-6">
+            <div className="mt-6 bg-white">
                 <div className="-mx-6 mt-10 ring-1 ring-gray-300 sm:mx-0 sm:rounded-lg">
                 <table className="min-w-full divide-y divide-gray-300">
                     <thead>
