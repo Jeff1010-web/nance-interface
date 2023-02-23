@@ -34,7 +34,7 @@ function ColorDiv({color, width}) {
     if (width === 0) return null;
 
     return (
-        <div className={classNames(COLOR_VARIANTS[color], WIDTH_VARIANTS[width], 'h-2.5 first:rounded-l-full last:rounded-r-full')}/>
+        <div className={classNames(COLOR_VARIANTS[color], WIDTH_VARIANTS[width], 'h-3 first:rounded-l-full last:rounded-r-full')}/>
     )
 }
 
@@ -51,7 +51,7 @@ export default function ColorBar({greenScore, redScore, threshold = JB_THRESHOLD
             content={`For ${formatNumber(greenScore)}, Against ${formatNumber(redScore)}, Threshold ${formatNumber(threshold)}`}
             trigger="hover"
         >
-            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 flex flex-row">
+            <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 flex flex-row">
                 <ColorDiv color="green" width={greenWidth}/>
                 <ColorDiv color="red" width={redWidth}/>
                 <ColorDiv color="gray" width={grayWidth}/>
