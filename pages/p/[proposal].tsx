@@ -103,8 +103,8 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
     return (
         <>
             <SiteNav 
-                pageTitle={`${proposal.title}`} 
-                description={proposal.body?.slice(0, 140) || 'No content'} 
+                pageTitle={`${commonProps.title}`} 
+                description={commonProps.body?.slice(0, 140) || 'No content'} 
                 image={`https://cdn.stamp.fyi/space/jbdao.eth?w=1200&h=630`}
                 withWallet />
 
@@ -354,8 +354,8 @@ function ProposalVotes() {
                                     </div>
                                     
                                     <div className="text-sm text-gray-600 py-2">
-                                        {(processChoices(proposalInfo.type, vote.choice) as string[]).map((choice) => (
-                                            <p>{choice}</p>
+                                        {(processChoices(proposalInfo.type, vote.choice) as string[]).map((choice, idx) => (
+                                            <p key={`${vote.id} - ${idx}`}>{choice}</p>
                                         ))}
                                     </div>
                                 </div>

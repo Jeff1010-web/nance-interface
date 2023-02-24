@@ -52,8 +52,7 @@ export default function NanceNewProposal() {
     <>
       <SiteNav 
         pageTitle="New Proposal" 
-        description="Create new proposal on Nance." 
-        image="/images/opengraph/nance_current_demo.png"
+        description="Create new proposal on Nance."
         withWallet />
       <div className="m-4 lg:m-6 flex flex-col justify-center">
         <p className="text-center text-xl font-bold text-gray-600">

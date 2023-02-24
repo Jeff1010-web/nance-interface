@@ -83,7 +83,7 @@ export default function NanceProposals() {
 
   return (
     <>
-      <SiteNav pageTitle="Current proposals" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" withWallet />
+      <SiteNav pageTitle="JuiceboxDAO Governance" description="JuiceboxDAO Governance Platform" image="/images/opengraph/homepage.png" withWallet />
       <div className="m-4 lg:m-6 flex justify-center lg:px-20">
         <div className="flex flex-col max-w-7xl w-full">
 
@@ -307,83 +307,83 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                     </thead>
                     <tbody>
                     {proposals?.sort((a, b) => b.governanceCycle - a.governanceCycle).map((proposal, proposalIdx) => (
-                        <Link href={getLink(proposal)}>
-                        <tr key={proposal.hash} className="hover:bg-slate-100 hover:cursor-pointer">
-                            <td
-                                className={classNames(
-                                    proposalIdx === 0 ? '' : 'border-t border-transparent',
-                                'relative py-4 pl-6 pr-3 text-sm hidden lg:table-cell'
-                                )}
-                            >
-                                <div className="font-medium text-gray-900">
-                                    {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            {proposal.status}
-                                        </span>
+                        <Link href={getLink(proposal)} key={proposal.hash}>
+                            <tr  className="hover:bg-slate-100 hover:cursor-pointer">
+                                <td
+                                    className={classNames(
+                                        proposalIdx === 0 ? '' : 'border-t border-transparent',
+                                    'relative py-4 pl-6 pr-3 text-sm hidden lg:table-cell'
                                     )}
-                                    {proposal.status === 'Approved' && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Approved
-                                        </span>
-                                    )}
-                                    {proposal.status === 'Cancelled' && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                            Cancelled
-                                        </span>
-                                    )}
-                                    {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled' && proposal.status !== 'Draft' && proposal.status !== 'Revoked') && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                            {proposal.status}
-                                        </span>
-                                    )}
-                                </div>
-                                
-                                {proposalIdx !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-gray-200" /> : null}
-                            </td>
-                            <td
-                                className={classNames(
-                                proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                                'px-3 py-3.5 text-sm text-gray-500'
-                                )}
-                            >
-                                <div className="flex flex-col">
-                                    <span>
-                                        {`${proposal.proposalId || "TBD"} - by `} 
-                                        <FormattedAddress address={proposal.authorAddress} noLink />
-                                    </span>
-                                    <a className="break-words text-sm text-black">
-                                        {proposal.title}
-                                    </a>
-                                </div>
-                                
-                            </td>
-                            <td
-                                className={classNames(
+                                >
+                                    <div className="font-medium text-gray-900">
+                                        {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
+                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                {proposal.status}
+                                            </span>
+                                        )}
+                                        {proposal.status === 'Approved' && (
+                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Approved
+                                            </span>
+                                        )}
+                                        {proposal.status === 'Cancelled' && (
+                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                Cancelled
+                                            </span>
+                                        )}
+                                        {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled' && proposal.status !== 'Draft' && proposal.status !== 'Revoked') && (
+                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                {proposal.status}
+                                            </span>
+                                        )}
+                                    </div>
+                                    
+                                    {proposalIdx !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-gray-200" /> : null}
+                                </td>
+                                <td
+                                    className={classNames(
                                     proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                                'px-3 py-3.5 text-sm text-gray-500'
-                                )}
-                            >
-                                <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} />
-                            </td>
-                            <td
-                                className={classNames(
-                                    proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                                    'hidden px-3 py-3.5 text-sm text-black lg:table-cell text-center'
-                                )}
-                            >
-                                {proposal?.voteResults?.votes || '-'}
-                            </td>
-                            <td
-                                className={classNames(
-                                    proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                                'px-3 py-3.5 text-sm text-gray-500 hidden lg:table-cell'
-                                )}
-                            >
-                                {/* <div className="sm:hidden">{plan.price}/mo</div>
-                                <div className="hidden sm:block">{plan.price}/month</div> */}
-                                {`GC${proposal.governanceCycle}`}
-                            </td>
-                        </tr>
+                                    'px-3 py-3.5 text-sm text-gray-500'
+                                    )}
+                                >
+                                    <div className="flex flex-col">
+                                        <span>
+                                            {`${proposal.proposalId || "TBD"} - by `} 
+                                            <FormattedAddress address={proposal.authorAddress} noLink />
+                                        </span>
+                                        <a className="break-words text-sm text-black">
+                                            {proposal.title}
+                                        </a>
+                                    </div>
+                                    
+                                </td>
+                                <td
+                                    className={classNames(
+                                        proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                    'px-3 py-3.5 text-sm text-gray-500'
+                                    )}
+                                >
+                                    <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} />
+                                </td>
+                                <td
+                                    className={classNames(
+                                        proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                        'hidden px-3 py-3.5 text-sm text-black lg:table-cell text-center'
+                                    )}
+                                >
+                                    {proposal?.voteResults?.votes || '-'}
+                                </td>
+                                <td
+                                    className={classNames(
+                                        proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                    'px-3 py-3.5 text-sm text-gray-500 hidden lg:table-cell'
+                                    )}
+                                >
+                                    {/* <div className="sm:hidden">{plan.price}/mo</div>
+                                    <div className="hidden sm:block">{plan.price}/month</div> */}
+                                    {`GC${proposal.governanceCycle}`}
+                                </td>
+                            </tr>
                         </Link>
                     ))}
                     </tbody>
