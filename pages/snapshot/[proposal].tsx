@@ -11,12 +11,11 @@ import { fromUnixTime, format, formatDistanceToNowStrict } from "date-fns";
 import { createContext, useContext, useEffect, useState } from "react";
 import VotingModal from "../../components/VotingModal";
 import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-query-params";
-import Pagination from "../../components/Pagination";
-import { formatChoices } from "../../libs/snapshotUtil";
-import ProposalStats from "../../components/ProposalStats";
+import { processChoices } from "../../libs/snapshotUtil";
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
+import ColorBar from "../../components/ColorBar";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -84,14 +83,6 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
     const { proposal } = router.query;
     const hideAbstain = true;
 
-    const [query, setQuery] = useQueryParams({ 
-        page: withDefault(NumberParam, 1), 
-        sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
-        withField: withDefault(createEnumParam(["reason", "app"]), "")
-    });
-
-    const { loading, data, error } = useProposalVotes(proposalInfo, Math.max((query.page-1)*VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
-
     return (
         <>
             <SiteNav 
@@ -119,45 +110,12 @@ export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spac
                                         Stats
                                     </h2>
 
-                                    <div className="mt-6 flow-root">
+                                    <div className="mt-6 flow-root overflow-y-scroll h-[8rem]">
                                         <ProposalStats proposal={proposalInfo} hideAbstain={hideAbstain} />
                                     </div>
 
-                                    <div className="flex overflow-y-scroll h-[20rem] border-t">
-                                        <ul role="list" className="space-y-2 pt-2">
-                                            {loading && "loading..."}
-                                            {data?.votesData?.map((vote) => (
-                                                <li key={vote.id}>
-                                                    <div className="flex flex-col">
-                                                        <div className="text-sm flex justify-between">
-                                                            <div>
-                                                                <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
-                                                                &nbsp;
-                                                                <span className={classNames(
-                                                                    getColorOfChoice(formatChoices(proposalInfo.type, vote.choice)),
-                                                                    ''
-                                                                )}>
-                                                                    voted {formatChoices(proposalInfo.type, vote.choice)}
-                                                                </span>
-                                                            </div>
-
-                                                            <div>
-                                                                {`${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
-                                                            </div>
-                                                            
-                                                        </div>
-
-                                                        {
-                                                            vote.reason && (
-                                                                <div className="text-sm text-gray-600">
-                                                                    {vote.reason}
-                                                                </div>
-                                                            )
-                                                        }
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
+                                    <div className="overflow-y-scroll h-[36rem] border-t">
+                                        <ProposalVotes />
                                     </div>
 
                                 </div>
@@ -276,5 +234,199 @@ function ProposalContent({proposalSnapshotHash}) {
                 </Link>
             </div>
         </div>
+    )
+}
+
+// BasicVoting: For Against Abstain
+const ABSTAIN_INDEX = 2;
+const SUPPORTED_VOTING_TYPES_FOR_GROUP = ["basic", "single-choice", "approval"]
+
+function ProposalStats({proposal, isOverview = false, hideAbstain = false}: 
+    {proposal: SnapshotProposal, isOverview?: boolean, hideAbstain?: boolean}) {
+
+    // router
+    const router = useRouter();
+    const { space: querySpace, proposal: queryProposal } = router.query;
+    const spaceId = querySpace as string;
+    const { loading, data, error } = useProposalVotes(proposal, 0, "created", "", isOverview, proposal.votes);
+
+    let scores = proposal?.scores
+      ?.map((score, index) => {return { score, index }})
+      .filter((o) => o.score>0)
+      // sort by score desc
+      .sort((a, b) => b.score - a.score)
+
+    const totalScore = hideAbstain ? 
+        proposal.scores_total-(proposal?.scores[ABSTAIN_INDEX]??0)
+        : proposal.scores_total;
+
+    const displayVotesByGroup = SUPPORTED_VOTING_TYPES_FOR_GROUP.includes(proposal.type);
+    let votesGroupByChoice: { [choice: string]: number } = {};
+    if(!isOverview && displayVotesByGroup) {
+        // iterate votesData and group by choice
+        votesGroupByChoice = data?.votesData.reduce((acc, vote) => {
+            const choice = vote.choice;
+            if(!acc[choice]) {
+                acc[choice] = 0;
+            }
+            acc[choice]++;
+            return acc;
+        }, {});
+    }
+
+    return (
+        <dl className="m-2 grid grid-cols-2 gap-5">
+            {/* Vote choice data */}
+            {!isOverview && proposal.scores_total > 0 && 
+                scores.map(({ score, index }) => (
+                    <div key={index} className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+                        <Tooltip
+                            content={proposal?.choices[index]}
+                            trigger="hover"
+                        >
+                            <dt className="text-sm font-medium text-gray-500 truncate">{proposal?.choices[index]}</dt>
+                        </Tooltip>
+                        <Tooltip
+                            content={`${(score*100/proposal.scores_total).toFixed(2)}%`}
+                            trigger="hover"
+                        >
+                            {/* <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">{(proposal.voteByChoice[choice]*100/proposal.scores_total).toFixed(2)}%</dd> */}
+                            <dd className="mt-1 text-3xl tracking-tight font-semibold text-gray-900">
+                                {formatNumber(score)}
+                            </dd>
+                            {displayVotesByGroup && (
+                                <span className="text-sm font-medium text-gray-500">
+                                    {votesGroupByChoice?.[proposal?.choices[index]] ?? 0} votes
+                                </span>
+                            )}
+                            {!displayVotesByGroup && (
+                                <span className="text-sm font-medium text-gray-500">
+                                    {(score*100/proposal.scores_total).toFixed()}%
+                                </span>
+                            )}
+                            
+                        </Tooltip>
+                    </div>
+            ))}
+        </dl>
+    )
+}
+
+function ProposalVotes() {
+    const {proposalInfo} = useContext(ProposalContext);
+    const [query, setQuery] = useQueryParams({ 
+        page: withDefault(NumberParam, 1), 
+        sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
+        withField: withDefault(createEnumParam(["reason", "app"]), "")
+    });
+
+    const { loading, data, error } = useProposalVotes(proposalInfo, Math.max((query.page-1)*VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
+
+    const proposalType = proposalInfo.type;
+
+    if (['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(proposalType)) {
+        return (
+            <>
+                <div className="border-t border-gray-200 py-6">
+                    <div className="flex justify-between">
+                        <p className="text-green-500 text-sm">VOTES {formatNumber(proposalInfo.scores_total || 0)}</p>
+                    </div>
+                    <div className='p-3 text-sm text-gray-500'>
+                        <ColorBar greenScore={proposalInfo.scores_total || 0} redScore={0} noTooltip />
+                    </div>
+                    <div className="flex justify-between">
+                        <p className="text-sm">QUORUM {formatNumber(proposalInfo.quorum || 0)}</p>
+                        <p className="text-sm">VOTER {formatNumber(proposalInfo.votes || 0)}</p>
+                    </div>
+                </div>
+
+                <ul role="list" className="space-y-2 pt-2">
+                    {loading && "loading..."}
+                    {data?.votesData?.map((vote) => (
+                        <li key={vote.id}>
+                            <div className="flex flex-col">
+                                <div className="text-sm">
+                                    <div>
+                                        <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
+                                    </div>
+
+                                    <div className="text-xs text-slate-700 font-semibold">
+                                        {`${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`} total
+                                    </div>
+                                    
+                                    <div className="text-sm text-gray-600 py-2">
+                                        {(processChoices(proposalInfo.type, vote.choice) as string[]).map((choice) => (
+                                            <p>{choice}</p>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {
+                                    vote.reason && (
+                                        <div className="text-sm text-gray-600">
+                                            {vote.reason}
+                                        </div>
+                                    )
+                                }
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </>
+        )
+    }
+
+    return (
+        <>
+            <div className="border-t border-gray-200 py-6">
+                <div className="flex justify-between">
+                    <p className="text-green-500 text-sm">FOR {formatNumber(proposalInfo.scores[0] || 0)}</p>
+                    <p className="text-red-500 text-sm">AGAINST {formatNumber(proposalInfo.scores[1] || 0)}</p>
+                </div>
+                <div className='p-3 text-sm text-gray-500'>
+                    <ColorBar greenScore={proposalInfo.scores[0] || 0} redScore={proposalInfo.scores[1] || 0} noTooltip />
+                </div>
+                <div className="flex justify-between">
+                    <p className="text-sm">QUORUM {formatNumber(proposalInfo.quorum || 0)}</p>
+                    <p className="text-sm">VOTER {formatNumber(proposalInfo.votes || 0)}</p>
+                </div>
+            </div>
+            
+        
+            <ul role="list" className="space-y-2 pt-2">
+                {loading && "loading..."}
+                {data?.votesData?.map((vote) => (
+                    <li key={vote.id}>
+                        <div className="flex flex-col">
+                            <div className="text-sm flex justify-between">
+                                <div>
+                                    <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
+                                    &nbsp;
+                                    <span className={classNames(
+                                        getColorOfChoice(processChoices(proposalInfo.type, vote.choice) as string),
+                                        ''
+                                    )}>
+                                        voted {processChoices(proposalInfo.type, vote.choice) as string}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    {`${formatNumber(vote.vp)} (${(vote.vp*100/proposalInfo?.scores_total).toFixed()}%)`}
+                                </div>
+                                
+                            </div>
+
+                            {
+                                vote.reason && (
+                                    <div className="text-sm text-gray-600">
+                                        {vote.reason}
+                                    </div>
+                                )
+                            }
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </>
     )
 }

@@ -38,13 +38,23 @@ function ColorDiv({color, width}) {
     )
 }
 
-export default function ColorBar({greenScore, redScore, threshold = JB_THRESHOLD}: {greenScore: number, redScore: number, threshold?: number}) {
+export default function ColorBar({greenScore, redScore, noTooltip = false, threshold = JB_THRESHOLD}: {greenScore: number, redScore: number, noTooltip?: boolean, threshold?: number}) {
     const totalScore = greenScore + redScore;
     const totalAllocation = Math.max(totalScore, threshold);
 
     const greenWidth = Math.round(greenScore / totalAllocation * TOTAL_WIDGTH);
     const redWidth = Math.round(redScore / totalAllocation * TOTAL_WIDGTH);
     const grayWidth = Math.round((totalAllocation - totalScore) / totalAllocation * TOTAL_WIDGTH);
+
+    if (noTooltip) {
+        return (
+            <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 flex flex-row">
+                <ColorDiv color="green" width={greenWidth}/>
+                <ColorDiv color="red" width={redWidth}/>
+                <ColorDiv color="gray" width={grayWidth}/>
+            </div>
+        )
+    }
 
     return (
         <Tooltip
