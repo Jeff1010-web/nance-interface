@@ -1,8 +1,6 @@
-import { useRouter } from "next/router";
 import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE } from "../../hooks/snapshot/Proposals";
 import { useAccount } from 'wagmi'
 import SiteNav from "../../components/SiteNav";
-import { fetchSpaceInfo, SpaceInfo } from "../../hooks/snapshot/SpaceInfo";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { Tooltip } from 'flowbite-react';
@@ -38,23 +36,13 @@ const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
     </Tooltip>
 )
 
-const getColorOfPencentage = (percentage: number) => {
-    if(percentage>33) {
-        return 'text-red-600';
-    } else if(percentage>20) {
-        return 'text-orange-600';
-    } else if(percentage>11) {
-        return 'text-amber-600';
-    } else {
-        return '';
-    }
-}
-
 const getColorOfChoice = (choice: string) => {
     if(choice=='For') {
         return 'text-green-500';
     } else if(choice=='Against') {
         return 'text-red-500';
+    } else if(choice=='Abstain') {
+        return 'text-gray-500';
     } else {
         return '';
     }
@@ -62,56 +50,45 @@ const getColorOfChoice = (choice: string) => {
 
 export async function getServerSideProps(context) {
     // Fetch data from external API
-    const spaceInfo = await fetchSpaceInfo("jbdao.eth");
     const proposalInfo = await fetchProposalInfo(context.params.proposal);
   
     // Pass data to the page via props
-    return { props: { spaceInfo, proposalInfo } }
+    return { props: { proposalInfo } }
 }
 
-interface ProposalContextType {
-    spaceInfo: SpaceInfo,
-    proposalInfo: SnapshotProposal
-}
+const ProposalContext = createContext<SnapshotProposal>(undefined);
 
-const ProposalContext = createContext<ProposalContextType>(undefined);
-
-export default function SnapshotProposalPage({ spaceInfo, proposalInfo }: { spaceInfo: SpaceInfo, proposalInfo: SnapshotProposal }) {
-    // router
-    const router = useRouter();
-    const space = "jbdao.eth";
-    const { proposal } = router.query;
-    const hideAbstain = true;
+export default function SnapshotProposalPage({ proposalInfo }: { proposalInfo: SnapshotProposal }) {
 
     return (
         <>
             <SiteNav 
-                pageTitle={`${proposalInfo.title} - ${spaceInfo?.name || (space as string) || ''}`} 
+                pageTitle={`${proposalInfo.title}`} 
                 description={proposalInfo.body?.slice(0, 140) || 'No content'} 
-                image={`https://cdn.stamp.fyi/space/${space as string}?w=1200&h=630`}
+                image={`https://cdn.stamp.fyi/space/jbdao.eth?w=1200&h=630`}
                 withWallet />
 
             <div className="min-h-full">
                 <main className="py-10">
-                    <ProposalContext.Provider value={{spaceInfo, proposalInfo}}>
+                    <ProposalContext.Provider value={proposalInfo}>
                         <ProposalHeader />
 
                         <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
                             <div className="space-y-6 lg:col-span-2 lg:col-start-1">
                                 {/* Content */}
                                 <section aria-labelledby="applicant-information-title">
-                                    <ProposalContent proposalSnapshotHash={proposal} />
+                                    <ProposalContent status={proposalInfo.state} body={proposalInfo.body} end={proposalInfo.end} />
                                 </section>
                             </div>
 
                             <section aria-labelledby="stats-title" className="lg:col-span-1 lg:col-start-3">
                                 <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6 sticky top-6 bottom-6 opacity-100 h-[52rem]">
                                     <h2 id="timeline-title" className="text-lg font-medium text-gray-900">
-                                        Stats
+                                        Votes
                                     </h2>
 
                                     <div className="mt-6 flow-root overflow-y-scroll h-[8rem]">
-                                        <ProposalStats proposal={proposalInfo} hideAbstain={hideAbstain} />
+                                        <ProposalStats proposal={proposalInfo} />
                                     </div>
 
                                     <div className="overflow-y-scroll h-[36rem] border-t">
@@ -133,7 +110,7 @@ function ProposalHeader() {
     const [voteDisabled, setVoteDisabled] = useState(true);
     const [voteTip, setVoteTip] = useState("Proposal is not active");
     const { address, isConnected } = useAccount();
-    const { spaceInfo, proposalInfo } = useContext(ProposalContext);
+    const proposalInfo = useContext(ProposalContext);
 
     useEffect(() => {
         if(proposalInfo?.state === 'active') {
@@ -173,20 +150,14 @@ function ProposalHeader() {
                     </Tooltip>
                 </button>
                 {proposalInfo?.choices && (
-                    <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId="jbdao.eth" proposal={proposalInfo} spaceHideAbstain={spaceInfo.voting.hideAbstain} />
+                    <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId="jbdao.eth" proposal={proposalInfo} spaceHideAbstain />
                 )}
             </div>
         </div>
     )
 }
 
-function ProposalContent({proposalSnapshotHash}) {
-    const { spaceInfo, proposalInfo } = useContext(ProposalContext);
-
-    const hideAbstain = spaceInfo.voting.hideAbstain && proposalInfo.type === "basic";
-    const totalScore = hideAbstain ? 
-        proposalInfo.scores_total-(proposalInfo?.scores[2]??0)
-        : proposalInfo.scores_total;
+function ProposalContent({status, body, end = 0}: {status: string, body: string, end?: number}) {
 
     return (
         <div className="bg-white shadow sm:rounded-lg">
@@ -197,41 +168,25 @@ function ProposalContent({proposalSnapshotHash}) {
 
                 {/* Proposal status */}
                 <div className='min-w-fit'>
-                    {proposalInfo.state === 'active' && (
+                    {status === 'active' && (
                         <span className="text-green-800 bg-green-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                            Active for {formatDistanceToNowStrict(fromUnixTime(proposalInfo.end))}
+                            Active for {formatDistanceToNowStrict(fromUnixTime(end))}
                         </span>
                     )}
-                    {proposalInfo.state === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
-                    {proposalInfo.state === 'closed' && (
+                    {status === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
+                    {status === 'closed' && (
                         <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                            Closed {formatDistanceToNowStrict(fromUnixTime(proposalInfo.end), { addSuffix: true })}
+                            Closed {formatDistanceToNowStrict(fromUnixTime(end), { addSuffix: true })}
                         </span>
                     )}
                 </div>
-
-                {/* Under quorum status */}
-                {proposalInfo.quorum != 0 && totalScore < proposalInfo.quorum && (
-                    <div className='min-w-fit'>
-                        <span className="text-purple-800 bg-purple-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                            Approval Threshold: {(totalScore*100/proposalInfo.quorum).toFixed()}%
-                        </span>
-                    </div>
-                )}
 
                 {/* <p className="mt-1 max-w-2xl text-sm text-gray-500">Proposal details.</p> */}
             </div>
             <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
                 <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>{proposalInfo.body}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>{body}</ReactMarkdown>
                 </article>
-            </div>
-            <div>
-                <Link href={`https://snapshot.org/#/jbdao.eth/proposal/${proposalSnapshotHash}`}>
-                    <a target="_blank" rel="noopener noreferrer" className="block bg-gray-50 px-4 py-4 text-center text-sm font-medium text-gray-500 hover:text-gray-700 sm:rounded-b-lg">
-                        Read on Snapshot
-                    </a>
-                </Link>
             </div>
         </div>
     )
@@ -241,13 +196,9 @@ function ProposalContent({proposalSnapshotHash}) {
 const ABSTAIN_INDEX = 2;
 const SUPPORTED_VOTING_TYPES_FOR_GROUP = ["basic", "single-choice", "approval"]
 
-function ProposalStats({proposal, isOverview = false, hideAbstain = false}: 
-    {proposal: SnapshotProposal, isOverview?: boolean, hideAbstain?: boolean}) {
+function ProposalStats({proposal, isOverview = false}: 
+    {proposal: SnapshotProposal, isOverview?: boolean}) {
 
-    // router
-    const router = useRouter();
-    const { space: querySpace, proposal: queryProposal } = router.query;
-    const spaceId = querySpace as string;
     const { loading, data, error } = useProposalVotes(proposal, 0, "created", "", isOverview, proposal.votes);
 
     let scores = proposal?.scores
@@ -255,10 +206,6 @@ function ProposalStats({proposal, isOverview = false, hideAbstain = false}:
       .filter((o) => o.score>0)
       // sort by score desc
       .sort((a, b) => b.score - a.score)
-
-    const totalScore = hideAbstain ? 
-        proposal.scores_total-(proposal?.scores[ABSTAIN_INDEX]??0)
-        : proposal.scores_total;
 
     const displayVotesByGroup = SUPPORTED_VOTING_TYPES_FOR_GROUP.includes(proposal.type);
     let votesGroupByChoice: { [choice: string]: number } = {};
@@ -313,7 +260,7 @@ function ProposalStats({proposal, isOverview = false, hideAbstain = false}:
 }
 
 function ProposalVotes() {
-    const {proposalInfo} = useContext(ProposalContext);
+    const proposalInfo = useContext(ProposalContext);
     const [query, setQuery] = useQueryParams({ 
         page: withDefault(NumberParam, 1), 
         sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
