@@ -116,8 +116,17 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
                         <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
                             <div className="space-y-6 lg:col-span-2 lg:col-start-1">
                                 {/* Content */}
-                                <section aria-labelledby="applicant-information-title">
+                                <section aria-labelledby="proposal-title">
                                     <ProposalContent status={snapshotProposal?.state || proposal.status} body={snapshotProposal?.body || proposal.body} end={snapshotProposal?.end} />
+                                </section>
+
+                                {/* Display Options if not basic (For Against) */}
+                                <section aria-labelledby="options-title">
+                                    {snapshotProposal && ['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(snapshotProposal.type) && (
+                                        <div className="mt-6 flow-root">
+                                            <ProposalOptions proposal={snapshotProposal} />
+                                        </div>
+                                    )}
                                 </section>
                             </div>
 
@@ -134,18 +143,10 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
                                     )}
 
                                     {snapshotProposal && (
-                                        <>
-                                            <div className="mt-6 flow-root overflow-y-scroll h-[8rem]">
-                                                <ProposalStats proposal={snapshotProposal} />
-                                            </div>
-
-                                            <div className="overflow-y-scroll h-[36rem] border-t">
-                                                <ProposalVotes />
-                                            </div>
-                                        </>
+                                        <div className="overflow-y-scroll h-[48rem] pt-5">
+                                            <ProposalVotes />
+                                        </div>
                                     )}
-                                    
-
                                 </div>
                             </section>
                         </div>
@@ -247,7 +248,7 @@ function ProposalContent({status, body, end = 0}: {status: string, body: string,
 const ABSTAIN_INDEX = 2;
 const SUPPORTED_VOTING_TYPES_FOR_GROUP = ["basic", "single-choice", "approval"]
 
-function ProposalStats({proposal, isOverview = false}: 
+function ProposalOptions({proposal, isOverview = false}: 
     {proposal: SnapshotProposal, isOverview?: boolean}) {
 
     const { loading, data, error } = useProposalVotes(proposal, 0, "created", "", isOverview, proposal.votes);
@@ -273,7 +274,7 @@ function ProposalStats({proposal, isOverview = false}:
     }
 
     return (
-        <dl className="m-2 grid grid-cols-2 gap-5">
+        <dl className="m-2 grid grid-cols-1 gap-5">
             {/* Vote choice data */}
             {!isOverview && proposal.scores_total > 0 && 
                 scores.map(({ score, index }) => (
@@ -376,7 +377,7 @@ function ProposalVotes() {
 
     return (
         <>
-            <div className="border-t border-gray-200 py-6">
+            <div className="">
                 <div className="flex justify-between">
                     <p className="text-green-500 text-sm">FOR {formatNumber(proposalInfo.scores[0] || 0)}</p>
                     <p className="text-red-500 text-sm">AGAINST {formatNumber(proposalInfo.scores[1] || 0)}</p>
