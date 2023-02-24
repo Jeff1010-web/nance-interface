@@ -318,9 +318,9 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                     </thead>
                     <tbody>
                     {proposals
-                        ?.sort((a, b) => b.governanceCycle - a.governanceCycle)
-                        .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
+                        ?.sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
                         .sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
+                        .sort((a, b) => b.governanceCycle - a.governanceCycle)
                         .map((proposal, proposalIdx) => (
 
                         <Link href={getLink(proposal)} key={proposal.hash}>
