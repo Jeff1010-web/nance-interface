@@ -312,7 +312,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                             <td
                                 className={classNames(
                                     proposalIdx === 0 ? '' : 'border-t border-transparent',
-                                'relative py-4 pl-6 pr-3 text-sm'
+                                'relative py-4 pl-6 pr-3 text-sm hidden lg:table-cell'
                                 )}
                             >
                                 <div className="font-medium text-gray-900">
@@ -343,7 +343,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                             <td
                                 className={classNames(
                                 proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                                'hidden px-3 py-3.5 text-sm text-gray-500 lg:table-cell'
+                                'px-3 py-3.5 text-sm text-gray-500'
                                 )}
                             >
                                 <div className="flex flex-col">
@@ -360,7 +360,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                             <td
                                 className={classNames(
                                     proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                                'hidden px-3 py-3.5 text-sm text-gray-500 lg:table-cell'
+                                'px-3 py-3.5 text-sm text-gray-500'
                                 )}
                             >
                                 <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} />
@@ -376,7 +376,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                             <td
                                 className={classNames(
                                     proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                                'px-3 py-3.5 text-sm text-gray-500'
+                                'px-3 py-3.5 text-sm text-gray-500 hidden lg:table-cell'
                                 )}
                             >
                                 {/* <div className="sm:hidden">{plan.price}/mo</div>
