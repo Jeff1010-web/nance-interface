@@ -3,7 +3,6 @@ import SiteNav from "../components/SiteNav"
 import { formatDistanceToNowStrict, parseISO } from "date-fns"
 import { NumberParam, useQueryParams, StringParam } from "next-query-params"
 import { useRouter } from "next/router"
-import { getLastSlash } from "../libs/nance"
 import { useProposals, useSpaceInfo } from "../hooks/NanceHooks"
 import { Proposal } from "../models/NanceTypes"
 import useTotalSupplyOfProject from "../hooks/juicebox/TotalSupplyOfProject"
@@ -238,6 +237,20 @@ function SpaceStats() {
     )
 }
 
+const StatusValue = {
+    'Cancelled': 0,
+    'Revoked': 1,
+    'Draft': 2,
+    'Discussion': 2,
+    'Voting': 3,
+    'Approved': 4,
+    'Implementation': 5,
+    'Finished': 6
+}
+function getValueOfStatus(status: string) {
+    return StatusValue[status] ?? -1;
+}
+
 function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {space: string, loading: boolean, proposals: Proposal[], query: {cycle: number, keyword: string}, setQuery: (o: object) => void, maxCycle: number}) {
     const router = useRouter();
     const [infoText, setInfoText] = useState('');
@@ -304,7 +317,12 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                         </tr>
                     </thead>
                     <tbody>
-                    {proposals?.sort((a, b) => b.governanceCycle - a.governanceCycle).map((proposal, proposalIdx) => (
+                    {proposals
+                        ?.sort((a, b) => b.governanceCycle - a.governanceCycle)
+                        .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
+                        .sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
+                        .map((proposal, proposalIdx) => (
+
                         <Link href={getLink(proposal)} key={proposal.hash}>
                             <tr  className="hover:bg-slate-100 hover:cursor-pointer">
                                 <td
