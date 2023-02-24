@@ -2,10 +2,9 @@ import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE }
 import { useAccount } from 'wagmi'
 import SiteNav from "../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
-import Link from "next/link";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../components/FormattedAddress";
-import { fromUnixTime, format, formatDistanceToNowStrict } from "date-fns";
+import { fromUnixTime, format } from "date-fns";
 import { createContext, useContext, useEffect, useState } from "react";
 import VotingModal from "../../components/VotingModal";
 import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-query-params";
@@ -17,6 +16,7 @@ import ColorBar from "../../components/ColorBar";
 import { fetchProposal } from "../../hooks/NanceHooks";
 import { getLastSlash } from "../../libs/nance";
 import { Proposal } from "../../models/NanceTypes";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -24,20 +24,6 @@ function classNames(...classes) {
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
-
-const labelWithTooltip = (label: string, tooltip: string, colors: string) => (
-    <Tooltip
-      content={tooltip}
-      trigger="hover"
-    >
-        <span className={classNames(
-            colors,
-            "flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full"
-        )}>
-            {label}
-        </span>
-    </Tooltip>
-)
 
 const getColorOfChoice = (choice: string) => {
     if(choice=='For') {
@@ -109,15 +95,14 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
                 withWallet />
 
             <div className="min-h-full">
-                <main className="py-10">
+                <main className="py-2">
                     <ProposalContext.Provider value={{commonProps, proposalInfo: snapshotProposal}}>
-                        <ProposalHeader />
-
+                        
                         <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
                             <div className="space-y-6 lg:col-span-2 lg:col-start-1">
                                 {/* Content */}
                                 <section aria-labelledby="proposal-title">
-                                    <ProposalContent status={snapshotProposal?.state || proposal.status} body={snapshotProposal?.body || proposal.body} end={snapshotProposal?.end} />
+                                    <ProposalContent body={snapshotProposal?.body || proposal.body} />
                                 </section>
 
                                 {/* Display Options if not basic (For Against) */}
@@ -131,7 +116,7 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
                             </div>
 
                             <section aria-labelledby="stats-title" className="lg:col-span-1 lg:col-start-3">
-                                <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6 sticky top-6 bottom-6 opacity-100 h-[52rem]">
+                                <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6 sticky top-6 bottom-6 opacity-100 h-[60rem]">
                                     <h2 id="timeline-title" className="text-lg font-medium text-gray-900">
                                         Votes
                                     </h2>
@@ -143,8 +128,11 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
                                     )}
 
                                     {snapshotProposal && (
-                                        <div className="overflow-y-scroll h-[48rem] pt-5">
-                                            <ProposalVotes />
+                                        <div>
+                                            <div className="overflow-y-scroll h-[52rem] pt-5">
+                                                <ProposalVotes />
+                                            </div>
+                                            <NewVote />
                                         </div>
                                     )}
                                 </div>
@@ -157,83 +145,26 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
     )
 }
 
-function ProposalHeader() {
-    const [modalIsOpen, setModalIsOpen] = useState(false);
-    const [voteDisabled, setVoteDisabled] = useState(true);
-    const [voteTip, setVoteTip] = useState("Proposal is not active");
-    const { address, isConnected } = useAccount();
+function ProposalContent({body}: {body: string}) {
     const {commonProps} = useContext(ProposalContext);
-
-    useEffect(() => {
-        if(commonProps.status === 'active') {
-            if(isConnected) {
-                setVoteTip("Proposal is active and you can vote on it");
-                setVoteDisabled(false);
-            } else {
-                setVoteTip("You haven't connected wallet");
-            }
-        }
-    }, [isConnected, commonProps]);
-
-    return (
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl lg:px-8">
-            <div className="flex items-center space-x-5">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{commonProps.title}</h1>
-                    <p className="text-sm font-medium text-gray-500">
-                    By&nbsp;
-                    <FormattedAddress address={commonProps.author} style="text-gray-900" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
-                    &nbsp;on <time dateTime={commonProps.created ? fromUnixTime(commonProps.created).toString() : ''}>{commonProps.created && format(fromUnixTime(commonProps.created), 'MMMM d, yyyy')}</time>
-                    </p>
-                </div>
-            </div>
-            <div className="justify-stretch mt-6 flex flex-col-reverse space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-y-0 sm:space-x-3 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
-                <Link href={`/`}>
-                    <a className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100">
-                        Back
-                    </a>
-                </Link>
-                {/* <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => setModalIsOpen(true)}
-                    disabled={voteDisabled}>
-
-                    <Tooltip trigger="hover" content={voteTip}>
-                        <span>Vote</span>
-                    </Tooltip>
-                </button>
-                {proposalInfo?.choices && (
-                    <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId="jbdao.eth" proposal={proposalInfo} spaceHideAbstain />
-                )} */}
-            </div>
-        </div>
-    )
-}
-
-function ProposalContent({status, body, end = 0}: {status: string, body: string, end?: number}) {
 
     return (
         <div className="bg-white shadow sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6 flex space-x-3 flex-wrap">
-                <h2 id="applicant-information-title" className="text-lg font-medium leading-6 text-gray-900">
-                    Proposal
-                </h2>
+            <div className="px-4 py-5 sm:px-6 flex space-x-3 justify-between">
+                <h1 id="applicant-information-title" className="text-3xl font-medium">
+                    {commonProps.title}
+                </h1>
 
-                {/* Proposal status */}
-                <div className='min-w-fit'>
-                    {status === 'active' && (
-                        <span className="text-green-800 bg-green-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                            Active for {formatDistanceToNowStrict(fromUnixTime(end))}
-                        </span>
-                    )}
-                    {status === 'pending' && labelWithTooltip('Pending', 'This proposal is currently pending and not open for votes.', 'text-yellow-800 bg-yellow-100')}
-                    {status === 'closed' && (
-                        <span className="text-gray-800 bg-gray-100 flex-shrink-0 inline-block px-2 py-0.5 text-xs font-medium rounded-full">
-                            Closed {formatDistanceToNowStrict(fromUnixTime(end), { addSuffix: true })}
-                        </span>
-                    )}
+                <div>
+                    <p className="text-sm text-gray-500">
+                        by&nbsp;
+                        <FormattedAddress address={commonProps.author} style="text-gray-500" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
+                    </p>
+                    <p className="text-sm text-gray-500 italic">
+                        <time dateTime={commonProps.created ? fromUnixTime(commonProps.created).toString() : ''}>{commonProps.created && format(fromUnixTime(commonProps.created), 'MMMM d, yyyy')}</time>
+                    </p>
                 </div>
-
-                {/* <p className="mt-1 max-w-2xl text-sm text-gray-500">Proposal details.</p> */}
+                
             </div>
             <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
                 <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
@@ -245,7 +176,6 @@ function ProposalContent({status, body, end = 0}: {status: string, body: string,
 }
 
 // BasicVoting: For Against Abstain
-const ABSTAIN_INDEX = 2;
 const SUPPORTED_VOTING_TYPES_FOR_GROUP = ["basic", "single-choice", "approval"]
 
 function ProposalOptions({proposal, isOverview = false}: 
@@ -427,5 +357,38 @@ function ProposalVotes() {
                 ))}
             </ul>
         </>
+    )
+}
+
+function NewVote() {
+    const {proposalInfo} = useContext(ProposalContext);
+    // state
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    // external hook
+    const { address, isConnected } = useAccount();
+    const { openConnectModal } = useConnectModal();
+
+    return (
+        <div className="mt-4">
+            <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full"
+                onClick={() => {
+                    if(isConnected) {
+                        setModalIsOpen(true);
+                    } else {
+                        openConnectModal();
+                    }
+                }}
+                disabled={proposalInfo?.state !== 'active'}>
+
+                <span>
+                    {proposalInfo?.state !== 'active' ? "Voting Closed" : 
+                        (isConnected ? "Vote" : "Connect Wallet")}
+                </span>
+            </button>
+
+            {proposalInfo?.choices && (
+                <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId='jbdao.eth' proposal={proposalInfo} spaceHideAbstain={true} />
+            )}
+        </div>
     )
 }

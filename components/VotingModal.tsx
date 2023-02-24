@@ -194,7 +194,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                                 maxLength={140}
                                 name="reason"
                                 id="reason"
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="resize-none block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
                               />
