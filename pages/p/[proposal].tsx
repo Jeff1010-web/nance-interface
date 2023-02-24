@@ -96,7 +96,7 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
         title: snapshotProposal?.title || proposal.title,
         author: snapshotProposal?.author || proposal.author,
         body: snapshotProposal?.body || proposal.body,
-        created: snapshotProposal?.start || 0,
+        created: snapshotProposal?.start || Math.floor(new Date(proposal.date).getTime() / 1000),
         end: snapshotProposal?.end || 0
     }
 

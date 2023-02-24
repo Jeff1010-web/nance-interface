@@ -14,6 +14,7 @@ import { DocumentSearchIcon } from '@heroicons/react/solid'
 import SearchableComboBox, { Option } from "../components/SearchableComboBox"
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance"
 import ColorBar from "../components/ColorBar"
+import FormattedAddress from "../components/FormattedAddress"
 
 export default function NanceProposals() {
     const router = useRouter();
@@ -305,8 +306,9 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                         </tr>
                     </thead>
                     <tbody>
-                    {proposals?.map((proposal, proposalIdx) => (
-                        <tr key={proposal.hash}>
+                    {proposals?.sort((a, b) => b.governanceCycle - a.governanceCycle).map((proposal, proposalIdx) => (
+                        <Link href={getLink(proposal)}>
+                        <tr key={proposal.hash} className="hover:bg-slate-100 hover:cursor-pointer">
                             <td
                                 className={classNames(
                                     proposalIdx === 0 ? '' : 'border-t border-transparent',
@@ -344,11 +346,16 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                 'hidden px-3 py-3.5 text-sm text-gray-500 lg:table-cell'
                                 )}
                             >
-                                <Link href={getLink(proposal)}>
-                                    <a className="break-words text-sm text-black hover:underline md:w-1/2">
+                                <div className="flex flex-col">
+                                    <span>
+                                        {`${proposal.proposalId || "TBD"} - by `} 
+                                        <FormattedAddress address={proposal.authorAddress} noLink />
+                                    </span>
+                                    <a className="break-words text-sm text-black">
                                         {proposal.title}
                                     </a>
-                                </Link>
+                                </div>
+                                
                             </td>
                             <td
                                 className={classNames(
@@ -377,6 +384,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                 {`GC${proposal.governanceCycle}`}
                             </td>
                         </tr>
+                        </Link>
                     ))}
                     </tbody>
                 </table>
