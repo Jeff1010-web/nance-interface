@@ -256,7 +256,11 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
     }, [proposals, loading]);
 
     function getLink(proposal: Proposal) {
-        const uri = proposal?.voteURL ? `/snapshot/${getLastSlash(proposal.voteURL)}` : `/proposal/${proposal.hash}`;
+        const hash = proposal.hash;
+        //const pid = proposal.proposalId?.split('-')[1]; // JBP-123
+        const pid = undefined;
+        const uri = `/p/${pid ||hash}`;
+        
         if (space !== NANCE_DEFAULT_SPACE) {
             return `${uri}?overrideSpace=${space}`;
         } else {

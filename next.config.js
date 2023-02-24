@@ -7,6 +7,20 @@ const nextConfig = {
     images: {
       unoptimized: true,
     },
+  },
+  async redirects() {
+    return [
+      {
+        source: '/proposal/:slug',
+        destination: '/p/:slug',
+        permanent: true,
+      },
+      {
+        source: '/snapshot/:slug',
+        destination: '/p/:slug',
+        permanent: true,
+      },
+    ]
   }
 }
 

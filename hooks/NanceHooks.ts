@@ -54,6 +54,10 @@ export function useProposal(args: ProposalRequest, shouldFetch: boolean = true) 
     );
 }
 
+export async function fetchProposal(space: string, idOrHash: string): Promise<APIResponse<Proposal>> {
+    return fetch(`${NANCE_API_URL}/${space}/proposal/${idOrHash}`).then(res => res.json())
+}
+
 export function useReconfigureRequest(args: FetchReconfigureRequest, shouldFetch: boolean = true) {
     return useSWR<APIResponse<FetchReconfigureData>, string>(
         shouldFetch ? `${NANCE_API_URL}/${args.space}/reconfigure?version=${args.version}&address=${args.address}&datetime=${args.datetime}&network=${args.network}` : null,

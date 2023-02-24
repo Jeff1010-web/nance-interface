@@ -14,6 +14,9 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../components/ColorBar";
+import { fetchProposal } from "../../hooks/NanceHooks";
+import { getLastSlash } from "../../libs/nance";
+import { Proposal } from "../../models/NanceTypes";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -49,35 +52,72 @@ const getColorOfChoice = (choice: string) => {
 }
 
 export async function getServerSideProps(context) {
-    // Fetch data from external API
-    const proposalInfo = await fetchProposalInfo(context.params.proposal);
+    let snapshotProposal;
+    let proposal;
+
+    // check proposal parameter type
+    const proposalParam: string = context.params.proposal;
+    const spaceParam: string = context.params.overrideSpace || 'juicebox';
+    console.log('proposalParam', proposalParam);
+    if(proposalParam.startsWith('0x')) 
+    {
+        // it's snapshot proposal hash
+        snapshotProposal = await fetchProposalInfo(proposalParam);
+        // try to extract JBP proposal number from snapshot proposal title, format: JBP-123 - Proposal title
+        const proposalNumber = snapshotProposal.title.match(/JBP-(\d+)/)[1];
+        const proposalResponse = await fetchProposal(spaceParam, proposalNumber);
+        proposal = proposalResponse.data;
+        console.log('snapshot', snapshotProposal, proposalNumber, proposalResponse);
+    } else //if(proposalParam.length == 32) // TODO it's nance proposal hash, if we can find a proposal number, redirect to that url
+    {
+        const proposalResponse = await fetchProposal(spaceParam, proposalParam);
+        proposal = proposalResponse.data;
+        snapshotProposal = await fetchProposalInfo(getLastSlash(proposal.voteURL));
+        console.log('nance', snapshotProposal, proposalResponse);
+    }
   
     // Pass data to the page via props
-    return { props: { proposalInfo } }
+    return { props: { proposal, snapshotProposal } }
 }
 
-const ProposalContext = createContext<SnapshotProposal>(undefined);
+interface ProposalCommonProps {
+    status: string;
+    title: string;
+    author: string;
+    body: string;
+    created: number;
+    end: number;
+}
+const ProposalContext = createContext<{commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal}>(undefined);
 
-export default function SnapshotProposalPage({ proposalInfo }: { proposalInfo: SnapshotProposal }) {
+export default function SnapshotProposalPage({ proposal, snapshotProposal }: { proposal: Proposal, snapshotProposal: SnapshotProposal }) {
+    const commonProps: ProposalCommonProps = {
+        status: snapshotProposal?.state || proposal.status,
+        title: snapshotProposal?.title || proposal.title,
+        author: snapshotProposal?.author || proposal.author,
+        body: snapshotProposal?.body || proposal.body,
+        created: snapshotProposal?.start || 0,
+        end: snapshotProposal?.end || 0
+    }
 
     return (
         <>
             <SiteNav 
-                pageTitle={`${proposalInfo.title}`} 
-                description={proposalInfo.body?.slice(0, 140) || 'No content'} 
+                pageTitle={`${proposal.title}`} 
+                description={proposal.body?.slice(0, 140) || 'No content'} 
                 image={`https://cdn.stamp.fyi/space/jbdao.eth?w=1200&h=630`}
                 withWallet />
 
             <div className="min-h-full">
                 <main className="py-10">
-                    <ProposalContext.Provider value={proposalInfo}>
+                    <ProposalContext.Provider value={{commonProps, proposalInfo: snapshotProposal}}>
                         <ProposalHeader />
 
                         <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
                             <div className="space-y-6 lg:col-span-2 lg:col-start-1">
                                 {/* Content */}
                                 <section aria-labelledby="applicant-information-title">
-                                    <ProposalContent status={proposalInfo.state} body={proposalInfo.body} end={proposalInfo.end} />
+                                    <ProposalContent status={snapshotProposal?.state || proposal.status} body={snapshotProposal?.body || proposal.body} end={snapshotProposal?.end} />
                                 </section>
                             </div>
 
@@ -87,13 +127,24 @@ export default function SnapshotProposalPage({ proposalInfo }: { proposalInfo: S
                                         Votes
                                     </h2>
 
-                                    <div className="mt-6 flow-root overflow-y-scroll h-[8rem]">
-                                        <ProposalStats proposal={proposalInfo} />
-                                    </div>
+                                    {!snapshotProposal && (
+                                        <div className="mt-6">
+                                            Snapshot voting not started.
+                                        </div>
+                                    )}
 
-                                    <div className="overflow-y-scroll h-[36rem] border-t">
-                                        <ProposalVotes />
-                                    </div>
+                                    {snapshotProposal && (
+                                        <>
+                                            <div className="mt-6 flow-root overflow-y-scroll h-[8rem]">
+                                                <ProposalStats proposal={snapshotProposal} />
+                                            </div>
+
+                                            <div className="overflow-y-scroll h-[36rem] border-t">
+                                                <ProposalVotes />
+                                            </div>
+                                        </>
+                                    )}
+                                    
 
                                 </div>
                             </section>
@@ -110,10 +161,10 @@ function ProposalHeader() {
     const [voteDisabled, setVoteDisabled] = useState(true);
     const [voteTip, setVoteTip] = useState("Proposal is not active");
     const { address, isConnected } = useAccount();
-    const proposalInfo = useContext(ProposalContext);
+    const {commonProps} = useContext(ProposalContext);
 
     useEffect(() => {
-        if(proposalInfo?.state === 'active') {
+        if(commonProps.status === 'active') {
             if(isConnected) {
                 setVoteTip("Proposal is active and you can vote on it");
                 setVoteDisabled(false);
@@ -121,17 +172,17 @@ function ProposalHeader() {
                 setVoteTip("You haven't connected wallet");
             }
         }
-    }, [isConnected, proposalInfo]);
+    }, [isConnected, commonProps]);
 
     return (
         <div className="mx-auto max-w-3xl px-4 sm:px-6 md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl lg:px-8">
             <div className="flex items-center space-x-5">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{proposalInfo.title}</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">{commonProps.title}</h1>
                     <p className="text-sm font-medium text-gray-500">
                     By&nbsp;
-                    <FormattedAddress address={proposalInfo.author} style="text-gray-900" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
-                    &nbsp;on <time dateTime={proposalInfo.created ? fromUnixTime(proposalInfo.created).toString() : ''}>{proposalInfo.created && format(fromUnixTime(proposalInfo.created), 'MMMM d, yyyy')}</time>
+                    <FormattedAddress address={commonProps.author} style="text-gray-900" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
+                    &nbsp;on <time dateTime={commonProps.created ? fromUnixTime(commonProps.created).toString() : ''}>{commonProps.created && format(fromUnixTime(commonProps.created), 'MMMM d, yyyy')}</time>
                     </p>
                 </div>
             </div>
@@ -141,7 +192,7 @@ function ProposalHeader() {
                         Back
                     </a>
                 </Link>
-                <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                {/* <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => setModalIsOpen(true)}
                     disabled={voteDisabled}>
 
@@ -151,7 +202,7 @@ function ProposalHeader() {
                 </button>
                 {proposalInfo?.choices && (
                     <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId="jbdao.eth" proposal={proposalInfo} spaceHideAbstain />
-                )}
+                )} */}
             </div>
         </div>
     )
@@ -260,7 +311,7 @@ function ProposalStats({proposal, isOverview = false}:
 }
 
 function ProposalVotes() {
-    const proposalInfo = useContext(ProposalContext);
+    const {proposalInfo} = useContext(ProposalContext);
     const [query, setQuery] = useQueryParams({ 
         page: withDefault(NumberParam, 1), 
         sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
