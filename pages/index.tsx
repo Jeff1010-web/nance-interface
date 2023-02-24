@@ -258,9 +258,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
 
     function getLink(proposal: Proposal) {
         const hash = proposal.hash;
-        //const pid = proposal.proposalId?.split('-')[1]; // JBP-123
-        const pid = undefined;
-        const uri = `/p/${pid ||hash}`;
+        const uri = `/p/${proposal.proposalId ||hash}`;
         
         if (space !== NANCE_DEFAULT_SPACE) {
             return `${uri}?overrideSpace=${space}`;
@@ -348,7 +346,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                 >
                                     <div className="flex flex-col">
                                         <span>
-                                            {`${proposal.proposalId || "TBD"} - by `} 
+                                            {`JBP ${proposal.proposalId || "tbd"} - by `} 
                                             <FormattedAddress address={proposal.authorAddress} noLink />
                                         </span>
                                         <a className="break-words text-sm text-black">
