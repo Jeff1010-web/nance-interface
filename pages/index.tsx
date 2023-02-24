@@ -44,7 +44,7 @@ export default function NanceProposals() {
     try {
         remainingTime = formatDistanceToNowStrict(parseISO(infoData?.data?.currentEvent?.end));
     } catch (error) {
-        console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
+        //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
     }
     
     useEffect(() => {
@@ -107,7 +107,7 @@ export default function NanceProposals() {
                         <SpaceStats />
                     </div>
                     
-                    <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-indigo-600 bg-indigo-100">
+                    <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-blue-600 bg-indigo-100">
                         <a className="text-2xl font-semibold text-gray-900"
                             href="https://info.juicebox.money/dao/process/" target="_blank" rel="noopener noreferrer">
                                 {infoData?.data?.currentEvent?.title || "Unknown"} of GC{infoData?.data?.currentCycle}
@@ -167,7 +167,7 @@ export default function NanceProposals() {
                         }}
                     >
                         <a
-                            className="rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 h-fit w-full text-center"
+                            className="rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 h-fit w-full text-center"
                         >
                             New Proposal
                         </a>
