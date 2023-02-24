@@ -4,7 +4,8 @@
   "funding": "https://www.juicebox.money/@twodam",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--inspect' next dev -p 3001",
+    "remotedev": "NODE_OPTIONS='--inspect' next dev -p 3001",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "export": "next export",
     "start": "next start",
