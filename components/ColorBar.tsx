@@ -12,6 +12,7 @@ const COLOR_VARIANTS = {
     gray: 'bg-gray-200'
 }
 const WIDTH_VARIANTS = {
+    0: 'w-0',
     1: 'w-1/12',
     2: 'w-2/12',
     3: 'w-3/12',
@@ -25,7 +26,7 @@ const WIDTH_VARIANTS = {
     11: 'w-11/12',
     12: 'w-full',
 }
-const TOTAL_WIDGTH = 12;
+const TOTAL_WIDTH = 12;
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -38,13 +39,18 @@ function ColorDiv({color, width}) {
     )
 }
 
+// Proposals which receive at least 80,000,000 affirmative JBX votes amounting to at least 66% of total votes are queued for execution. "Abstain" votes are not included in these counts.
+// case 1: full green
+// case 2: full red
+// case 3: full gray
+// case 4: green + red, green
 export default function ColorBar({greenScore, redScore, noTooltip = false, threshold = JB_THRESHOLD}: {greenScore: number, redScore: number, noTooltip?: boolean, threshold?: number}) {
     const totalScore = greenScore + redScore;
-    const totalAllocation = Math.max(totalScore, threshold);
+    const colorWidth = Math.min(TOTAL_WIDTH, Math.round(greenScore / threshold * TOTAL_WIDTH));
+    const grayWidth = TOTAL_WIDTH - colorWidth;
 
-    const greenWidth = Math.round(greenScore / totalAllocation * TOTAL_WIDGTH);
-    const redWidth = Math.round(redScore / totalAllocation * TOTAL_WIDGTH);
-    const grayWidth = Math.round((totalAllocation - totalScore) / totalAllocation * TOTAL_WIDGTH);
+    const greenWidth = Math.round(greenScore / totalScore * colorWidth);
+    const redWidth = Math.round(redScore / totalScore * colorWidth);
 
     if (noTooltip) {
         return (
@@ -58,7 +64,7 @@ export default function ColorBar({greenScore, redScore, noTooltip = false, thres
 
     return (
         <Tooltip
-            content={`For ${formatNumber(greenScore)}, Against ${formatNumber(redScore)}, Threshold ${formatNumber(threshold)}`}
+            content={`For ${formatNumber(greenScore)}, Against ${formatNumber(redScore)}, ApprovalThreshold ${formatNumber(threshold)}`}
             trigger="hover"
         >
             <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 flex flex-row">
