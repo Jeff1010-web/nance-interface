@@ -401,11 +401,11 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                     )}
                                 >
                                     <div className="flex flex-col">
-                                        <span>
-                                            {`JBP-${proposal.proposalId || "tbd"} of GC-${proposal.governanceCycle} - by `} 
+                                        <span className="text-xs">
+                                            {`GC-${proposal.governanceCycle}, JBP-${proposal.proposalId || "tbd"} - by `} 
                                             <FormattedAddress address={proposal.authorAddress} noLink />
                                         </span>
-                                        <a className="break-words text-sm text-black">
+                                        <a className="break-words text-base text-black">
                                             {proposal.title}
                                         </a>
                                     </div>
