@@ -20,6 +20,11 @@ const nextConfig = {
         destination: '/p/:slug',
         permanent: true,
       },
+      {
+        source: '/snapshot/jbdao.eth/proposal/:slug',
+        destination: '/p/:slug',
+        permanent: true,
+      },
     ]
   }
 }
