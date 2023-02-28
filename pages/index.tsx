@@ -331,18 +331,18 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                 <table className="min-w-full divide-y divide-gray-300">
                     <thead>
                         <tr>
-                            <th scope="col" className="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900">
+                            <th scope="col" className="hidden py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 lg:table-cell">
                                 Status
                             </th>
                             <th
                                 scope="col"
-                                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                                 >
                                 Title
                             </th>
                             <th
                                 scope="col"
-                                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                                 >
                                 Approval
                             </th>
@@ -352,7 +352,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                 >
                                 Participants
                             </th>
-                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            <th scope="col" className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell">
                                 Voted
                             </th>
                         </tr>
