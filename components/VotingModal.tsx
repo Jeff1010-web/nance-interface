@@ -19,6 +19,7 @@ interface VotingProps {
     spaceId: string
     spaceHideAbstain: boolean
     proposal: SnapshotProposal
+    refetch: (option?: any) => void
 }
 
 function classNames(...classes) {
@@ -27,7 +28,7 @@ function classNames(...classes) {
 
 const SUPPORTED_VOTING_TYPES = ['single-choice', 'basic', 'weighted']
 
-export default function VotingModal({modalIsOpen, closeModal, address, spaceId, spaceHideAbstain, proposal}: VotingProps) {
+export default function VotingModal({modalIsOpen, closeModal, address, spaceId, spaceHideAbstain, proposal, refetch}: VotingProps) {
   // state
   const [choice, setChoice] = useState(undefined);
   const [reason, setReason] = useState('');
@@ -39,7 +40,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
   // shorthand functions
   const submitVote = () => {
     setNotificationEnabled(true);
-    trigger();
+    trigger().then(() => refetch());
   }
   const close = () => {
     setNotificationEnabled(false);

@@ -340,7 +340,8 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
   data: {
     votesData: SnapshotVote[],
     totalVotes: number
-  }
+  },
+  refetch: (options?: any) => void
 } {
   
   // sort after query if need reason
@@ -351,7 +352,8 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
   const {
     loading: voteLoading,
     data: voteData,
-    error: voteError
+    error: voteError,
+    refetch
   } = useQuery<{ votes: SnapshotVote[] }>(VOTES_OF_PROPOSAL_QUERY, {
     variables: {
       // Snapshot API Limit: The `first` argument must not be greater than 1000
@@ -400,7 +402,8 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
       totalVotes
     }, 
     loading: voteLoading, 
-    error: voteError 
+    error: voteError,
+    refetch 
   };
   console.debug("🔧 useProposalVotes.return ->", {ret});
   return ret;
