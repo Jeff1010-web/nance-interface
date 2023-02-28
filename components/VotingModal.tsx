@@ -39,8 +39,8 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
 
   // shorthand functions
   const submitVote = () => {
-    setNotificationEnabled(true);
-    trigger().then(() => refetch());
+    //setNotificationEnabled(true);
+    trigger().then(close).then(refetch);
   }
   const close = () => {
     setNotificationEnabled(false);
