@@ -14,7 +14,7 @@ import SearchableComboBox, { Option } from "../components/SearchableComboBox"
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance"
 import ColorBar from "../components/ColorBar"
 import FormattedAddress from "../components/FormattedAddress"
-import { useProposalsByID } from "../hooks/snapshot/Proposals"
+import { SnapshotProposal, useProposalsByID } from "../hooks/snapshot/Proposals"
 import { getLastSlash } from "../libs/nance"
 import { useAccount } from "wagmi"
 import { Tooltip } from "flowbite-react"
@@ -281,9 +281,12 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
     // for those proposals with no results cached by nance, we need to fetch them from snapshot
     const snapshotProposalIds: string[] = proposals?.filter(p => p.voteURL).map(p => getLastSlash(p.voteURL)) || [];
     const {data, loading: snapshotLoading, error} = useProposalsByID(snapshotProposalIds, address, snapshotProposalIds.length === 0);
-    // merge the snapshot proposal vote results into proposals.voteResults
+    // convert proposalsData to dict with proposal id as key
+    const snapshotProposalDict: {[id: string]: SnapshotProposal} = {};
+    data?.proposalsData?.forEach(p => snapshotProposalDict[p.id] = p);
+    // override the snapshot proposal vote results into proposals.voteResults
     const mergedProposals: Proposal[] = proposals?.map(p => {
-        const snapshotProposal = data?.proposalsData?.find(s => getLastSlash(p.voteURL) === s.id);
+        const snapshotProposal = snapshotProposalDict[getLastSlash(p.voteURL)];
         if (snapshotProposal) {
             return {...p, voteResults: {
                 choices: snapshotProposal.choices,
@@ -417,7 +420,13 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                     'px-3 py-3.5 text-sm text-gray-500'
                                     )}
                                 >
-                                    <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} />
+                                    {['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(snapshotProposalDict[getLastSlash(proposal.voteURL)]?.type) ? (
+                                        // sum all scores to get the total score
+                                        <ColorBar greenScore={snapshotProposalDict[getLastSlash(proposal.voteURL)].scores_total || 0} redScore={0} />
+                                    ) : (
+                                        <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} />
+                                    )
+                                    }
                                 </td>
                                 <td
                                     className={classNames(
