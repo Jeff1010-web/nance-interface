@@ -32,7 +32,7 @@ const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compact
 const formatNumber = (num) => formatter.format(num);
 
 function ColorDiv({color, width}) {
-    if (width === 0) return null;
+    if (!width) return null;
 
     return (
         <div className={classNames(COLOR_VARIANTS[color], WIDTH_VARIANTS[width], 'h-3 first:rounded-l-full last:rounded-r-full')}/>
@@ -46,20 +46,26 @@ function ColorDiv({color, width}) {
 // case 4: green + red, green
 export default function ColorBar({greenScore, redScore, noTooltip = false, threshold = JB_THRESHOLD}: {greenScore: number, redScore: number, noTooltip?: boolean, threshold?: number}) {
     const totalScore = greenScore + redScore;
+    const shouldDisplayVerticalLine = greenScore >= threshold && greenScore / totalScore < 0.66;
     const colorWidth = Math.min(TOTAL_WIDTH, Math.round(greenScore / threshold * TOTAL_WIDTH));
     const grayWidth = TOTAL_WIDTH - colorWidth;
 
     const greenWidth = Math.round(greenScore / totalScore * colorWidth);
     const redWidth = Math.round(redScore / totalScore * colorWidth);
 
-    if (noTooltip) {
-        return (
+    const renderBar = () => (
+        <>
             <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 flex flex-row">
                 <ColorDiv color="green" width={greenWidth}/>
                 <ColorDiv color="red" width={redWidth}/>
                 <ColorDiv color="gray" width={grayWidth}/>
             </div>
-        )
+            {shouldDisplayVerticalLine && <div className='relative h-3 border-r-2 w-8/12 z-10 -mt-3' />}
+        </>
+    );
+
+    if (noTooltip) {
+        return renderBar();
     }
 
     return (
@@ -67,11 +73,7 @@ export default function ColorBar({greenScore, redScore, noTooltip = false, thres
             content={`For ${formatNumber(greenScore)}, Against ${formatNumber(redScore)}, ApprovalThreshold ${formatNumber(threshold)}`}
             trigger="hover"
         >
-            <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 flex flex-row">
-                <ColorDiv color="green" width={greenWidth}/>
-                <ColorDiv color="red" width={redWidth}/>
-                <ColorDiv color="gray" width={grayWidth}/>
-            </div>
+            {renderBar()}
         </Tooltip>
     )
 }
