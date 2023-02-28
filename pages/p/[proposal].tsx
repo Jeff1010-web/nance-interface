@@ -367,9 +367,20 @@ function NewVote({refetch}: {refetch: (option?: any) => void}) {
     const {proposalInfo} = useContext(ProposalContext);
     // state
     const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [buttonLabel, setButtonLabel] = useState('Vote');
     // external hook
     const { address, isConnected } = useAccount();
     const { openConnectModal } = useConnectModal();
+
+    useEffect(() => {
+        if (proposalInfo?.state !== 'active') {
+            setButtonLabel('Voting Closed');
+        } else if (isConnected) {
+            setButtonLabel('Vote');
+        } else {
+            setButtonLabel('Connect Wallet');
+        }
+    }, [isConnected, proposalInfo?.state]);
 
     return (
         <div className="mt-4">
@@ -384,8 +395,7 @@ function NewVote({refetch}: {refetch: (option?: any) => void}) {
                 disabled={proposalInfo?.state !== 'active'}>
 
                 <span>
-                    {proposalInfo?.state !== 'active' ? "Voting Closed" : 
-                        (isConnected ? "Vote" : "Connect Wallet")}
+                    {buttonLabel}
                 </span>
             </button>
 
