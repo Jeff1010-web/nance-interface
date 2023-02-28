@@ -9,14 +9,15 @@ import useTotalSupplyOfProject from "../hooks/juicebox/TotalSupplyOfProject"
 import { formatTokenBalance } from "../libs/NumberFormatter"
 import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo"
 import { useEffect, useState } from "react"
-import { DocumentSearchIcon } from '@heroicons/react/solid'
+import { CheckIcon, DocumentSearchIcon, InformationCircleIcon, XIcon } from '@heroicons/react/solid'
 import SearchableComboBox, { Option } from "../components/SearchableComboBox"
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance"
 import ColorBar from "../components/ColorBar"
 import FormattedAddress from "../components/FormattedAddress"
-import { SnapshotProposal, useProposalsByID } from "../hooks/snapshot/Proposals"
+import { useProposalsByID } from "../hooks/snapshot/Proposals"
 import { getLastSlash } from "../libs/nance"
 import { useAccount } from "wagmi"
+import { Tooltip } from "flowbite-react"
 
 export default function NanceProposals() {
     const router = useRouter();
@@ -254,31 +255,46 @@ function getValueOfStatus(status: string) {
     return StatusValue[status] ?? -1;
 }
 
+function getVotedIcon(choice) {
+    if(choice === undefined) {
+        return null
+    } else if(typeof choice === 'string') {
+        if(choice === 'For' || choice === 'Yes') {
+            return <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
+        } else if(choice === 'Against' || choice === 'No') {
+            return <XIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
+        } 
+    }
+
+    return (
+        <Tooltip content={JSON.stringify(choice)}>
+            <InformationCircleIcon className="h-5 w-5 text-gray-500" aria-hidden="true" />
+        </Tooltip>
+    )
+}
+
 function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {space: string, loading: boolean, proposals: Proposal[], query: {cycle: number, keyword: string}, setQuery: (o: object) => void, maxCycle: number}) {
     const router = useRouter();
     const [infoText, setInfoText] = useState('');
     const { address, isConnected } = useAccount();
 
     // for those proposals with no results cached by nance, we need to fetch them from snapshot
-    const snapshotProposalIds: string[] = proposals?.filter(p => !p.voteResults && p.voteURL).map(p => getLastSlash(p.voteURL)) || [];
+    const snapshotProposalIds: string[] = proposals?.filter(p => p.voteURL).map(p => getLastSlash(p.voteURL)) || [];
     const {data, loading: snapshotLoading, error} = useProposalsByID(snapshotProposalIds, address, snapshotProposalIds.length === 0);
     // merge the snapshot proposal vote results into proposals.voteResults
     const mergedProposals: Proposal[] = proposals?.map(p => {
-        if (p.voteResults) {
-            return p;
+        const snapshotProposal = data?.proposalsData?.find(s => getLastSlash(p.voteURL) === s.id);
+        if (snapshotProposal) {
+            return {...p, voteResults: {
+                choices: snapshotProposal.choices,
+                scores: snapshotProposal.scores,
+                votes: snapshotProposal.votes
+            }};
         } else {
-            const snapshotProposal = data?.proposalsData?.find(s => getLastSlash(p.voteURL) === s.id);
-            if (snapshotProposal) {
-                return {...p, voteResults: {
-                    choices: snapshotProposal.choices,
-                    scores: snapshotProposal.scores,
-                    votes: snapshotProposal.votes
-                }};
-            } else {
-                return p;
-            }
+            return p;
         }
     });
+    const votedData = data?.votedData;
 
     useEffect(() => {
         if (loading) {
@@ -334,10 +350,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                 Participants
                             </th>
                             <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                Cycle
-                            </th>
-                            <th scope="col" className="relative py-3.5 pl-3 pr-6">
-                                <span className="sr-only">Select</span>
+                                Voted
                             </th>
                         </tr>
                     </thead>
@@ -389,7 +402,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                 >
                                     <div className="flex flex-col">
                                         <span>
-                                            {`JBP ${proposal.proposalId || "tbd"} - by `} 
+                                            {`JBP-${proposal.proposalId || "tbd"} of GC-${proposal.governanceCycle} - by `} 
                                             <FormattedAddress address={proposal.authorAddress} noLink />
                                         </span>
                                         <a className="break-words text-sm text-black">
@@ -420,9 +433,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                     'px-3 py-3.5 text-sm text-gray-500 hidden lg:table-cell'
                                     )}
                                 >
-                                    {/* <div className="sm:hidden">{plan.price}/mo</div>
-                                    <div className="hidden sm:block">{plan.price}/month</div> */}
-                                    {`GC${proposal.governanceCycle}`}
+                                    {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
                                 </td>
                             </tr>
                         </Link>
