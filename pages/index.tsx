@@ -14,6 +14,9 @@ import SearchableComboBox, { Option } from "../components/SearchableComboBox"
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance"
 import ColorBar from "../components/ColorBar"
 import FormattedAddress from "../components/FormattedAddress"
+import { SnapshotProposal, useProposalsByID } from "../hooks/snapshot/Proposals"
+import { getLastSlash } from "../libs/nance"
+import { useAccount } from "wagmi"
 
 export default function NanceProposals() {
     const router = useRouter();
@@ -254,6 +257,28 @@ function getValueOfStatus(status: string) {
 function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {space: string, loading: boolean, proposals: Proposal[], query: {cycle: number, keyword: string}, setQuery: (o: object) => void, maxCycle: number}) {
     const router = useRouter();
     const [infoText, setInfoText] = useState('');
+    const { address, isConnected } = useAccount();
+
+    // for those proposals with no results cached by nance, we need to fetch them from snapshot
+    const snapshotProposalIds: string[] = proposals?.filter(p => !p.voteResults && p.voteURL).map(p => getLastSlash(p.voteURL)) || [];
+    const {data, loading: snapshotLoading, error} = useProposalsByID(snapshotProposalIds, address, snapshotProposalIds.length === 0);
+    // merge the snapshot proposal vote results into proposals.voteResults
+    const mergedProposals: Proposal[] = proposals?.map(p => {
+        if (p.voteResults) {
+            return p;
+        } else {
+            const snapshotProposal = data?.proposalsData?.find(s => getLastSlash(p.voteURL) === s.id);
+            if (snapshotProposal) {
+                return {...p, voteResults: {
+                    choices: snapshotProposal.choices,
+                    scores: snapshotProposal.scores,
+                    votes: snapshotProposal.votes
+                }};
+            } else {
+                return p;
+            }
+        }
+    });
 
     useEffect(() => {
         if (loading) {
@@ -317,7 +342,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                         </tr>
                     </thead>
                     <tbody>
-                    {proposals
+                    {mergedProposals
                         ?.sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
                         .sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
                         .sort((a, b) => b.governanceCycle - a.governanceCycle)

@@ -197,11 +197,11 @@ export async function fetchProposalInfo(proposalId: string): Promise<SnapshotPro
   }).then(res => res.json()).then(json => json.data.proposal)
 }
 
-export function useProposalsByID(proposalIds: string[], address: string) {
+export function useProposalsByID(proposalIds: string[], address: string, skip: boolean = false) {
   return useProposalsWithCustomQuery(PROPOSALS_BY_ID_QUERY, {
     first: proposalIds.length,
     proposalIds
-  }, address);
+  }, address, skip);
 }
 
 export function useProposalsWithFilter(space: string, active: boolean, keyword: string, address: string, first: number, skip: number) {
@@ -214,7 +214,7 @@ export function useProposalsWithFilter(space: string, active: boolean, keyword: 
   }, address);
 }
 
-export function useProposalsWithCustomQuery(query: string, variables: object, address: string): {
+export function useProposalsWithCustomQuery(query: string, variables: object, address: string, skip: boolean = false): {
   loading: boolean,
   error: APIError<object>,
   data: {
@@ -223,14 +223,14 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
   }
 } {
 
-  console.debug("🔧 useProposalsWithCustomQuery.args ->", {query, variables});
+  console.debug("🔧 useProposalsWithCustomQuery.args ->", {query, variables, skip});
 
   // Load proposals
   const {
     loading: proposalsLoading,
     data: proposalsData,
     error: proposalsError
-  } = useQuery<{ proposals: SnapshotProposal[] }>(query, { variables });
+  } = useQuery<{ proposals: SnapshotProposal[] }>(query, { variables, skip });
   // Load voted proposals
   const {
     loading: votedLoading,
@@ -241,7 +241,8 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
       voter: address,
       proposalIds: proposalsData?.proposals.map(proposal => proposal.id),
       first: Math.min(proposalsData?.proposals.length || 0, 1000)
-    }
+    },
+    skip
   });
 
   // Find voted proposals
