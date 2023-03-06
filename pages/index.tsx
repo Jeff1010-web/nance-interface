@@ -22,7 +22,7 @@ import { Tooltip } from "flowbite-react"
 export default function NanceProposals() {
     const router = useRouter();
     let space = NANCE_DEFAULT_SPACE;
-    const newPageQuery: any = { type: 'Payout', version: 2, project: 1 };
+    const newPageQuery: any = { version: 2, project: 1 };
     const [keywordInput, setKeywordInput] = useState<string>(undefined);
     const [options, setOptions] = useState<Option[]>([{id: "Loading", label: `Loading...`, status: true}]);
     const [cycleOption, setCycleOption] = useState<Option>(undefined);
@@ -165,7 +165,7 @@ export default function NanceProposals() {
                 <div className="md:w-1/5 flex items-end">
                     <Link
                         href={{
-                            pathname: '/new',
+                            pathname: '/edit',
                             query: newPageQuery,
                         }}
                     >

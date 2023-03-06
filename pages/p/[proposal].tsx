@@ -17,6 +17,7 @@ import { fetchProposal } from "../../hooks/NanceHooks";
 import { getLastSlash } from "../../libs/nance";
 import { Proposal } from "../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
+import Link from "next/link";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -124,8 +125,24 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
                                     </h2>
 
                                     {!snapshotProposal && (
-                                        <div className="mt-6">
+                                        <div className="my-2">
                                             Snapshot voting not started.
+
+                                            <Link
+                                                href={{
+                                                    pathname: '/edit',
+                                                    query: { 
+                                                        proposalId: proposal.hash,
+                                                        version: 2, 
+                                                        project: 1 
+                                                    },
+                                                }}
+                                            >
+                                                <a className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full mt-2">
+                                                    Edit Proposal
+                                                </a>
+                                            </Link>
+                                            
                                         </div>
                                     )}
 

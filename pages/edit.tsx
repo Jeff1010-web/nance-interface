@@ -3,13 +3,13 @@ import SiteNav from "../components/SiteNav";
 import { useForm, FormProvider, useFormContext, Controller, SubmitHandler } from "react-hook-form";
 import ResolvedEns from "../components/ResolvedEns";
 import ResolvedProject from "../components/ResolvedProject";
-import { withDefault, createEnumParam, NumberParam, useQueryParams, StringParam } from "next-query-params";
+import { withDefault, NumberParam, useQueryParams, StringParam } from "next-query-params";
 import React from "react";
 import { useRouter } from "next/router";
 import Notification from "../components/Notification";
-import { useProposalUpload } from "../hooks/NanceHooks";
+import { fetchProposal, useProposalUpload } from "../hooks/NanceHooks";
 import { imageUpload } from "../hooks/ImageUpload";
-import { ProposalUploadRequest } from "../models/NanceTypes";
+import { Proposal, ProposalUploadRequest } from "../models/NanceTypes";
 import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Link from "next/link";
 
@@ -19,26 +19,37 @@ import { signPayload } from "../libs/signer";
 
 import { Editor } from '@tinymce/tinymce-react';
 
-type ProposalType = "Payout" | "ReservedToken" | "ParameterUpdate" | "ProcessUpdate" | "CustomTransaction";
-
 const ProposalMetadataContext = React.createContext({
-  proposalType: "Payout",
-  setProposalType: undefined,
+  loadedProposal: null as Proposal | null,
   version: 2,
   project: 1
 });
 
-export default function NanceNewProposal() {
+export async function getServerSideProps(context) {
+  // check proposal parameter type
+  console.debug(context.query);
+  const proposalParam: string = context.query.proposalId;
+  const spaceParam: string = context.query.overrideSpace || 'juicebox';
+  let proposalResponse = null;
+  if (proposalParam) {
+    proposalResponse = await fetchProposal(spaceParam, proposalParam);
+  }
+
+  // Pass data to the page via props
+  return { props: { loadedProposal: proposalResponse?.data || null } }
+}
+
+export default function NanceEditProposal({loadedProposal}: {loadedProposal: Proposal}) {
   console.debug(`using nance API: ${NANCE_API_URL}`);
   const router = useRouter();
 
   const [query, setQuery] = useQueryParams({
-    type: withDefault(createEnumParam(["Payout", "ReservedToken", "ParameterUpdate", "ProcessUpdate", "CustomTransaction"]), 'Payout'),
+    proposalId: StringParam,
     version: withDefault(NumberParam, 2),
     project: withDefault(NumberParam, 1),
     overrideSpace: StringParam
   });
-  const {type: proposalType, version, project, overrideSpace} = query;
+  const {proposalId, version, project, overrideSpace} = query;
   let space = NANCE_DEFAULT_SPACE;
   if (overrideSpace) {
       space = overrideSpace;
@@ -51,15 +62,15 @@ export default function NanceNewProposal() {
   return (
     <>
       <SiteNav 
-        pageTitle="New Proposal" 
-        description="Create new proposal on Nance."
+        pageTitle="Edit Proposal" 
+        description="Create or edit proposal on Nance."
         withWallet />
       <div className="m-4 lg:m-6 flex flex-col justify-center">
         <p className="text-center text-xl font-bold text-gray-600">
-          New Proposal
+          {proposalId ? "Edit" : "New"} Proposal
         </p>
         <ResolvedProject version={version} projectId={project} style="text-center" />
-        <ProposalMetadataContext.Provider value={{proposalType, setProposalType: (t) => setQuery({type: t}), version, project}}>
+        <ProposalMetadataContext.Provider value={{loadedProposal, version, project}}>
           <Form space={space} />
         </ProposalMetadataContext.Provider>
       </div>
@@ -74,30 +85,37 @@ function Form({space}: {space: string}) {
   const router = useRouter();
   const metadata = useContext(ProposalMetadataContext);
 
-  const editorRef = useRef(null);
-
   // state
   const [signing, setSigning] = useState(false);
   const [signError, setSignError] = useState(undefined);
 
   // hooks
-  const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space as string, router.isReady);
+  const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space as string, metadata.loadedProposal?.hash, router.isReady);
   const { data: signer, isError, isLoading } = useSigner()
   const jrpcSigner = signer as JsonRpcSigner;
   const { address, isConnected } = useAccount();
 
+  const isNew = metadata.loadedProposal === null;
+  const hasVoting = metadata.loadedProposal?.voteURL?.length > 0;
+
   // form
   const methods = useForm<ProposalFormValues>();
-  const { register, handleSubmit, control, setValue, getValues, formState: { errors } } = methods;
+  const { register, handleSubmit, control, formState: { errors } } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = (formData) => {
+    console.log("📗 Nance.editProposal.onSubmit ->", formData)
+
     const payload = {
       ...formData.proposal,
-      type: metadata.proposalType as ProposalType,
+      type: "Payout",
       version: String(metadata.version)
     };
     setSigning(true);
 
-    signPayload(jrpcSigner, space as string, 'upload', payload).then((signature) => {
+    signPayload(
+      jrpcSigner, space as string, 
+      isNew ? "upload" : "edit", 
+      payload
+    ).then((signature) => {
 
       setSigning(false);
       // send to API endpoint
@@ -106,14 +124,14 @@ function Form({space}: {space: string}) {
         signature,
         proposal: payload
       }
-      console.debug("📗 Nance.newProposal.upload ->", req);
+      console.debug("📗 Nance.editProposal.submit ->", req);
       return trigger(req);
     })
-    .then(res => router.push(`/proposal/${res.data.hash}${space !== NANCE_DEFAULT_SPACE ? `?overrideSpace=${space}` : ''}`))
+    .then(res => router.push(`/p/${res.data.hash}${space !== NANCE_DEFAULT_SPACE ? `?overrideSpace=${space}` : ''}`))
     .catch((err) => {
       setSigning(false);
       setSignError(err);
-      console.warn("📗 Nance.newProposal.onSignError ->", err);
+      console.warn("📗 Nance.editProposal.onSignError ->", err);
     });
   }
 
@@ -127,7 +145,7 @@ function Form({space}: {space: string}) {
 
   return (
     <FormProvider {...methods} >
-      <Notification title="Success" description={`Created proposal ${data?.data.hash}`} show={data !== undefined} close={resetSignAndUpload} checked={true} />
+      <Notification title="Success" description={`${isNew ? "Created" : "Updated"} proposal ${data?.data.hash}`} show={data !== undefined} close={resetSignAndUpload} checked={true} />
       {(signError || uploadError) && 
         <Notification title="Error" description={error.error_description || error.message || error} show={true} close={resetSignAndUpload} checked={false} />
       }
@@ -147,7 +165,7 @@ function Form({space}: {space: string}) {
                   </label>
                   <input
                     type="text"
-                    {...register("proposal.title", { required: true })}
+                    {...register("proposal.title", { value: metadata.loadedProposal?.title || "" })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                 </div>
@@ -162,12 +180,11 @@ function Form({space}: {space: string}) {
                   <Controller
                     name="proposal.body"
                     control={control}
-                    rules={{ required: true }}
                     render={({ field: { onChange, onBlur, value, ref } }) => 
                       <Editor
                         apiKey={process.env.NEXT_PUBLIC_TINY_KEY || 'no-api-key'}
                         onInit={(evt, editor) => console.log(editor.getBody())}
-                        initialValue=""
+                        initialValue={metadata.loadedProposal?.body || ""}
                         value={value}
                         onEditorChange={(newValue, editor) => onChange(newValue)}
                         init={{
@@ -181,6 +198,7 @@ function Form({space}: {space: string}) {
                           toolbar: 'restoredraft undo redo | template blocks | ' +
                             'image bold italic forecolor | bullist numlist outdent indent | ' +
                             'removeformat | help',
+                          menubar: false,
                           images_upload_handler: imageUpload,
                           content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                           autosave_restore_when_empty: true,
@@ -226,7 +244,10 @@ function Form({space}: {space: string}) {
           </Link>
           <button
             type="submit"
-            disabled={!jrpcSigner || isSubmitting}
+            disabled={
+              !jrpcSigner || isSubmitting 
+              || (!isNew && hasVoting)
+            }
             className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
           >
             {signing ? (isMutating ? "Submitting..." : "Signing...") : "Submit"}
@@ -264,7 +285,8 @@ function PayoutMetadataForm() {
           Receiver Type
         </label>
         <select
-          {...register("proposal.payout.type", { shouldUnregister: true })}
+          {...register("proposal.payout.type", 
+            { shouldUnregister: true, value: metadata.loadedProposal?.payout?.project ? "project" : "address" })}
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
         >
           <option value="address">Address</option>
@@ -280,7 +302,7 @@ function PayoutMetadataForm() {
             type="number"
             step={1}
             min={1}
-            {...register("proposal.payout.count", { required: true, valueAsNumber: true, shouldUnregister: true })}
+            {...register("proposal.payout.count", { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.count || 1 })}
             className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="1"
           />
@@ -298,7 +320,7 @@ function PayoutMetadataForm() {
             type="number"
             step={1}
             min={1}
-            {...register("proposal.payout.amountUSD", { required: true, valueAsNumber: true, shouldUnregister: true })}
+            {...register("proposal.payout.amountUSD", { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.amountUSD || 0 })}
             className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="1500"
           />
@@ -314,7 +336,7 @@ function PayoutMetadataForm() {
             <div className="mt-1 flex rounded-md shadow-sm">
               <input
                 type="text"
-                {...register("proposal.payout.project", { required: true, valueAsNumber: true, shouldUnregister: true })}
+                {...register("proposal.payout.project", { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.project || 1 })}
                 className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 placeholder="1"
               />
@@ -331,13 +353,14 @@ function PayoutMetadataForm() {
           <input
             type="text"
             id="payoutAddressInput"
+            defaultValue={metadata.loadedProposal?.payout?.address || "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"}
             onChange={(e) => setInputEns(e.target.value)}
             className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="dao.jbx.eth / 0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"
           />
           <input
             type="text"
-            {...register("proposal.payout.address", { required: true, shouldUnregister: true })}
+            {...register("proposal.payout.address", { shouldUnregister: true })}
             className="hidden w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
