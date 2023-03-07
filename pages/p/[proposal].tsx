@@ -18,6 +18,8 @@ import { getLastSlash } from "../../libs/nance";
 import { Proposal } from "../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import Custom404 from "../404";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -39,32 +41,25 @@ const getColorOfChoice = (choice: string) => {
 }
 
 export async function getServerSideProps(context) {
-    let snapshotProposal;
-    let proposal;
+    let snapshotProposal: SnapshotProposal;
+    let proposal: Proposal;
 
     // check proposal parameter type
     const proposalParam: string = context.params.proposal;
     const spaceParam: string = context.query.overrideSpace || 'juicebox';
-    console.log('proposalParam', proposalParam);
-    if(proposalParam.startsWith('0x')) 
-    {
-        // it's snapshot proposal hash
-        snapshotProposal = await fetchProposalInfo(proposalParam);
-        // try to extract JBP proposal number from snapshot proposal title, format: JBP-123 - Proposal title
-        const proposalNumber = snapshotProposal.title.match(/JBP-(\d+)/)[1];
-        const proposalResponse = await fetchProposal(spaceParam, proposalNumber);
-        proposal = proposalResponse.data;
-        console.debug('snapshot', snapshotProposal, proposalNumber, proposalResponse);
-    } else //if(proposalParam.length == 32) // TODO it's nance proposal hash, if we can find a proposal number, redirect to that url
-    {
-        const proposalResponse = await fetchProposal(spaceParam, proposalParam);
-        proposal = proposalResponse.data;
-        snapshotProposal = await fetchProposalInfo(getLastSlash(proposal.voteURL));
-        console.debug('nance', snapshotProposal, proposalResponse);
+    
+    const proposalResponse = await fetchProposal(spaceParam, proposalParam);
+    proposal = proposalResponse.data;
+    const proposalHash = getLastSlash(proposal?.voteURL);
+    if (proposalHash) {
+        snapshotProposal = await fetchProposalInfo(proposalHash);
     }
   
     // Pass data to the page via props
-    return { props: { proposal, snapshotProposal } }
+    return { props: {
+        proposal: proposal || null, 
+        snapshotProposal: snapshotProposal || null 
+    } }
 }
 
 interface ProposalCommonProps {
@@ -77,7 +72,12 @@ interface ProposalCommonProps {
 }
 const ProposalContext = createContext<{commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal}>(undefined);
 
-export default function SnapshotProposalPage({ proposal, snapshotProposal }: { proposal: Proposal, snapshotProposal: SnapshotProposal }) {
+export default function NanceProposalPage({ proposal, snapshotProposal }: { proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }) {
+    // this page need proposal to work    
+    if(!proposal) {
+        return <Custom404 errMsg="Proposal not found on Nance platform, you can reach out in Discord or explore on the home page." />
+    }
+
     const commonProps: ProposalCommonProps = {
         status: snapshotProposal?.state || proposal.status,
         title: snapshotProposal?.title || proposal.title,
@@ -86,6 +86,7 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
         created: snapshotProposal?.start || Math.floor(new Date(proposal.date).getTime() / 1000),
         end: snapshotProposal?.end || 0
     }
+    console.debug("📚NanceProposalPage.begin", commonProps, proposal, snapshotProposal);
 
     const [overrideSpace, setOverrideSpace] = useQueryParam('overrideSpace');
     const editPageQuery = { 
@@ -113,7 +114,7 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
                             <div className="space-y-6 lg:col-span-2 lg:col-start-1">
                                 {/* Content */}
                                 <section aria-labelledby="proposal-title">
-                                    <ProposalContent body={snapshotProposal?.body || proposal.body} />
+                                    <ProposalContent body={commonProps.body} />
                                 </section>
 
                                 {/* Display Options if not basic (For Against) */}

@@ -63,7 +63,6 @@ export async function getServerSideProps(context) {
 }
 
 export default function NanceEditProposal({loadedProposal}: {loadedProposal: Proposal}) {
-  console.debug(`using nance API: ${NANCE_API_URL}`);
   const router = useRouter();
 
   const [query, setQuery] = useQueryParams({
@@ -77,6 +76,8 @@ export default function NanceEditProposal({loadedProposal}: {loadedProposal: Pro
   if (overrideSpace) {
       space = overrideSpace;
   }
+
+  console.debug("📚NanceEditProposal.begin", commonProps, proposal, snapshotProposal);
 
   if(!router.isReady) {
     return <p className="mt-2 text-xs text-gray-500 text-center">loading...</p>
