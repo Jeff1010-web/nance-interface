@@ -73,6 +73,16 @@ interface ProposalCommonProps {
 const ProposalContext = createContext<{commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal}>(undefined);
 
 export default function NanceProposalPage({ proposal, snapshotProposal }: { proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }) {
+    const [overrideSpace, setOverrideSpace] = useQueryParam('overrideSpace');
+    const editPageQuery = { 
+        proposalId: proposal?.hash,
+        version: 2, 
+        project: 1 
+    };
+    if (overrideSpace) {
+        editPageQuery['overrideSpace'] = overrideSpace;
+    }
+
     // this page need proposal to work    
     if(!proposal) {
         return <Custom404 errMsg="Proposal not found on Nance platform, you can reach out in Discord or explore on the home page." />
@@ -87,16 +97,6 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
         end: snapshotProposal?.end || 0
     }
     console.debug("📚NanceProposalPage.begin", commonProps, proposal, snapshotProposal);
-
-    const [overrideSpace, setOverrideSpace] = useQueryParam('overrideSpace');
-    const editPageQuery = { 
-        proposalId: proposal.hash,
-        version: 2, 
-        project: 1 
-    };
-    if (overrideSpace) {
-        editPageQuery['overrideSpace'] = overrideSpace;
-    }
 
     return (
         <>

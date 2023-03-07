@@ -77,8 +77,6 @@ export default function NanceEditProposal({loadedProposal}: {loadedProposal: Pro
       space = overrideSpace;
   }
 
-  console.debug("📚NanceEditProposal.begin", commonProps, proposal, snapshotProposal);
-
   if(!router.isReady) {
     return <p className="mt-2 text-xs text-gray-500 text-center">loading...</p>
   }
