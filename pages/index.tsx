@@ -336,19 +336,19 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                             </th>
                             <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
                                 >
                                 Title
                             </th>
                             <th
                                 scope="col"
-                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
                                 >
                                 Approval
                             </th>
                             <th
                                 scope="col"
-                                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
+                                className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 lg:table-cell"
                                 >
                                 Participants
                             </th>
@@ -439,7 +439,7 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
                                 <td
                                     className={classNames(
                                         proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                                    'px-3 py-3.5 text-sm text-gray-500 hidden lg:table-cell'
+                                    'px-3 py-3.5 text-sm text-gray-500 hidden lg:table-cell text-center'
                                     )}
                                 >
                                     {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
