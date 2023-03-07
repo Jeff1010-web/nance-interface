@@ -95,24 +95,32 @@ export interface Proposal {
   governanceCycle?: number;
   date?: string,
   translationURL?: string;
-  type?: ProposalType;
+  type?: string;
   status: string;
-  proposalId: string;
+  proposalId: number | null;
   author?: string;
   discussionThreadURL: string;
   ipfsURL: string;
   voteURL: string;
   voteSetup?: SnapshotVoteOptions;
+  internalVoteResults?: InternalVoteResults;
   voteResults?: VoteResults;
   version?: string;
+  authorAddress?: string;
+  authorDiscordId?: string;
+  temperatureCheckVotes?: number[];
+  createdTime?: Date;
+  lastEditedTime?: Date;
 }
 
 export type Payout = {
-  type?: 'address' | 'project';
+  type?: 'address' | 'project' | 'allocator';
   address: string;
   project?: number;
   amountUSD: number;
   count: number;
+  payName: string;
+  uuid?: string;
 };
 
 type Notification = {
@@ -134,7 +142,7 @@ export type ParameterUpdate = {
   redemptionPercentage: number;
 };
 
-export type VoteResults = {
+export type InternalVoteResults = {
   voteProposalId: string;
   totalVotes: number;
   scoresState: string;
@@ -142,6 +150,12 @@ export type VoteResults = {
   percentages: Record<string, number>;
   outcomePercentage: string;
   outcomeEmoji: string;
+};
+
+export type VoteResults = {
+  choices: string[];
+  scores: number[];
+  votes: number;
 };
 
 export type GnosisTransaction = {

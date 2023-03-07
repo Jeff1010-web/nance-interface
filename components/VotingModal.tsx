@@ -19,6 +19,7 @@ interface VotingProps {
     spaceId: string
     spaceHideAbstain: boolean
     proposal: SnapshotProposal
+    refetch: (option?: any) => void
 }
 
 function classNames(...classes) {
@@ -27,7 +28,7 @@ function classNames(...classes) {
 
 const SUPPORTED_VOTING_TYPES = ['single-choice', 'basic', 'weighted']
 
-export default function VotingModal({modalIsOpen, closeModal, address, spaceId, spaceHideAbstain, proposal}: VotingProps) {
+export default function VotingModal({modalIsOpen, closeModal, address, spaceId, spaceHideAbstain, proposal, refetch}: VotingProps) {
   // state
   const [choice, setChoice] = useState(undefined);
   const [reason, setReason] = useState('');
@@ -38,8 +39,8 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
 
   // shorthand functions
   const submitVote = () => {
-    setNotificationEnabled(true);
-    trigger();
+    //setNotificationEnabled(true);
+    trigger().then(close).then(refetch);
   }
   const close = () => {
     setNotificationEnabled(false);
@@ -194,7 +195,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                                 maxLength={140}
                                 name="reason"
                                 id="reason"
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="resize-none block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
                               />

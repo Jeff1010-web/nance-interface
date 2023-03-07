@@ -3,20 +3,26 @@ import SiteNav from "../components/SiteNav"
 import { formatDistanceToNowStrict, parseISO } from "date-fns"
 import { NumberParam, useQueryParams, StringParam } from "next-query-params"
 import { useRouter } from "next/router"
-import { getLastSlash } from "../libs/nance"
 import { useProposals, useSpaceInfo } from "../hooks/NanceHooks"
 import { Proposal } from "../models/NanceTypes"
 import useTotalSupplyOfProject from "../hooks/juicebox/TotalSupplyOfProject"
 import { formatTokenBalance } from "../libs/NumberFormatter"
 import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo"
 import { useEffect, useState } from "react"
-import { DocumentSearchIcon } from '@heroicons/react/solid'
+import { CheckIcon, DocumentSearchIcon, InformationCircleIcon, XIcon } from '@heroicons/react/solid'
 import SearchableComboBox, { Option } from "../components/SearchableComboBox"
+import { NANCE_DEFAULT_SPACE } from "../constants/Nance"
+import ColorBar from "../components/ColorBar"
+import FormattedAddress from "../components/FormattedAddress"
+import { SnapshotProposal, useProposalsByID } from "../hooks/snapshot/Proposals"
+import { getLastSlash } from "../libs/nance"
+import { useAccount } from "wagmi"
+import { Tooltip } from "flowbite-react"
 
 export default function NanceProposals() {
     const router = useRouter();
-    let space = "juicebox";
-    const newPageQuery: any = { type: 'Payout', version: 2, project: 1 };
+    let space = NANCE_DEFAULT_SPACE;
+    const newPageQuery: any = { version: 2, project: 1 };
     const [keywordInput, setKeywordInput] = useState<string>(undefined);
     const [options, setOptions] = useState<Option[]>([{id: "Loading", label: `Loading...`, status: true}]);
     const [cycleOption, setCycleOption] = useState<Option>(undefined);
@@ -41,7 +47,7 @@ export default function NanceProposals() {
     try {
         remainingTime = formatDistanceToNowStrict(parseISO(infoData?.data?.currentEvent?.end));
     } catch (error) {
-        console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
+        //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
     }
     
     useEffect(() => {
@@ -80,7 +86,7 @@ export default function NanceProposals() {
 
   return (
     <>
-      <SiteNav pageTitle="Current proposals" description="Display info of current proposals on Nance." image="/images/opengraph/nance_current_demo.png" withWallet />
+      <SiteNav pageTitle="JuiceboxDAO Governance" description="JuiceboxDAO Governance Platform" image="/images/opengraph/homepage.png" withWallet />
       <div className="m-4 lg:m-6 flex justify-center lg:px-20">
         <div className="flex flex-col max-w-7xl w-full">
 
@@ -104,7 +110,7 @@ export default function NanceProposals() {
                         <SpaceStats />
                     </div>
                     
-                    <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-indigo-600 bg-indigo-100">
+                    <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-blue-600 bg-indigo-100">
                         <a className="text-2xl font-semibold text-gray-900"
                             href="https://info.juicebox.money/dao/process/" target="_blank" rel="noopener noreferrer">
                                 {infoData?.data?.currentEvent?.title || "Unknown"} of GC{infoData?.data?.currentCycle}
@@ -159,12 +165,12 @@ export default function NanceProposals() {
                 <div className="md:w-1/5 flex items-end">
                     <Link
                         href={{
-                            pathname: '/new',
+                            pathname: '/edit',
                             query: newPageQuery,
                         }}
                     >
                         <a
-                            className="rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 h-fit w-full text-center"
+                            className="rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 h-fit w-full text-center"
                         >
                             New Proposal
                         </a>
@@ -173,7 +179,7 @@ export default function NanceProposals() {
 
             </div>
 
-            <div className="mt-6 overflow-hidden bg-white shadow rounded-md">
+            <div className="">
                 <ProposalCards space={space} loading={infoLoading || proposalsLoading} proposals={proposalData?.data} query={query} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
             </div>
 
@@ -235,9 +241,63 @@ function SpaceStats() {
     )
 }
 
+const StatusValue = {
+    'Cancelled': 0,
+    'Revoked': 1,
+    'Draft': 2,
+    'Discussion': 2,
+    'Voting': 3,
+    'Approved': 4,
+    'Implementation': 5,
+    'Finished': 6
+}
+function getValueOfStatus(status: string) {
+    return StatusValue[status] ?? -1;
+}
+
+function getVotedIcon(choice) {
+    if(choice === undefined) {
+        return null
+    } else if(typeof choice === 'string') {
+        if(choice === 'For' || choice === 'Yes') {
+            return <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
+        } else if(choice === 'Against' || choice === 'No') {
+            return <XIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
+        } 
+    }
+
+    return (
+        <Tooltip content={JSON.stringify(choice)}>
+            <InformationCircleIcon className="h-5 w-5 text-gray-500" aria-hidden="true" />
+        </Tooltip>
+    )
+}
+
 function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {space: string, loading: boolean, proposals: Proposal[], query: {cycle: number, keyword: string}, setQuery: (o: object) => void, maxCycle: number}) {
     const router = useRouter();
     const [infoText, setInfoText] = useState('');
+    const { address, isConnected } = useAccount();
+
+    // for those proposals with no results cached by nance, we need to fetch them from snapshot
+    const snapshotProposalIds: string[] = proposals?.filter(p => p.voteURL).map(p => getLastSlash(p.voteURL)) || [];
+    const {data, loading: snapshotLoading, error} = useProposalsByID(snapshotProposalIds, address, snapshotProposalIds.length === 0);
+    // convert proposalsData to dict with proposal id as key
+    const snapshotProposalDict: {[id: string]: SnapshotProposal} = {};
+    data?.proposalsData?.forEach(p => snapshotProposalDict[p.id] = p);
+    // override the snapshot proposal vote results into proposals.voteResults
+    const mergedProposals: Proposal[] = proposals?.map(p => {
+        const snapshotProposal = snapshotProposalDict[getLastSlash(p.voteURL)];
+        if (snapshotProposal) {
+            return {...p, voteResults: {
+                choices: snapshotProposal.choices,
+                scores: snapshotProposal.scores,
+                votes: snapshotProposal.votes
+            }};
+        } else {
+            return p;
+        }
+    });
+    const votedData = data?.votedData;
 
     useEffect(() => {
         if (loading) {
@@ -254,8 +314,10 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
     }, [proposals, loading]);
 
     function getLink(proposal: Proposal) {
-        const uri = proposal?.voteURL ? `/snapshot/${getLastSlash(proposal.voteURL)}` : `/proposal/${proposal.hash}`;
-        if (space !== 'jbdao.eth') {
+        const hash = proposal.hash;
+        const uri = `/p/${proposal.proposalId ||hash}`;
+        
+        if (space !== NANCE_DEFAULT_SPACE) {
             return `${uri}?overrideSpace=${space}`;
         } else {
             return uri;
@@ -264,61 +326,131 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
 
     return (
         <>
-            <ul role="list" className="divide-y divide-gray-200">
-                {proposals?.map((proposal, index, arr) => (
-                    <li key={proposal.hash}>
-                        <div className="px-4 py-4 sm:px-6">
-                            <div className="flex items-center md:space-x-2 flex-col md:flex-row ">
-                                <div className="flex flex-shrink-0 md:w-1/12">
-                                    {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            {proposal.status}
-                                        </span>
+            <div className="mt-6 bg-white">
+                <div className="-mx-6 mt-10 ring-1 ring-gray-300 sm:mx-0 sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-300">
+                    <thead>
+                        <tr>
+                            <th scope="col" className="hidden py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 lg:table-cell">
+                                Status
+                            </th>
+                            <th
+                                scope="col"
+                                className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
+                                >
+                                Title
+                            </th>
+                            <th
+                                scope="col"
+                                className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
+                                >
+                                Approval
+                            </th>
+                            <th
+                                scope="col"
+                                className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 lg:table-cell"
+                                >
+                                Participants
+                            </th>
+                            <th scope="col" className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell">
+                                Voted
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {mergedProposals
+                        ?.sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
+                        .sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
+                        .sort((a, b) => b.governanceCycle - a.governanceCycle)
+                        .map((proposal, proposalIdx) => (
+
+                        <Link href={getLink(proposal)} key={proposal.hash}>
+                            <tr  className="hover:bg-slate-100 hover:cursor-pointer">
+                                <td
+                                    className={classNames(
+                                        proposalIdx === 0 ? '' : 'border-t border-transparent',
+                                    'relative py-4 pl-6 pr-3 text-sm hidden lg:table-cell'
                                     )}
-                                    {proposal.status === 'Approved' && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Approved
-                                        </span>
+                                >
+                                    <div className="font-medium text-gray-900">
+                                        {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
+                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                {proposal.status}
+                                            </span>
+                                        )}
+                                        {proposal.status === 'Approved' && (
+                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Approved
+                                            </span>
+                                        )}
+                                        {proposal.status === 'Cancelled' && (
+                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                Cancelled
+                                            </span>
+                                        )}
+                                        {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled' && proposal.status !== 'Draft' && proposal.status !== 'Revoked') && (
+                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                {proposal.status}
+                                            </span>
+                                        )}
+                                    </div>
+                                    
+                                    {proposalIdx !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-gray-200" /> : null}
+                                </td>
+                                <td
+                                    className={classNames(
+                                    proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                    'px-3 py-3.5 text-sm text-gray-500'
                                     )}
-                                    {proposal.status === 'Cancelled' && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                            Cancelled
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-xs">
+                                            {`GC-${proposal.governanceCycle}, JBP-${proposal.proposalId || "tbd"} - by `} 
+                                            <FormattedAddress address={proposal.authorAddress} noLink />
                                         </span>
+                                        <a className="break-words text-base text-black">
+                                            {proposal.title}
+                                        </a>
+                                    </div>
+                                    
+                                </td>
+                                <td
+                                    className={classNames(
+                                        proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                    'px-3 py-3.5 text-sm text-gray-500'
                                     )}
-                                    {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled' && proposal.status !== 'Draft' && proposal.status !== 'Revoked') && (
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                            {proposal.status}
-                                        </span>
+                                >
+                                    {['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(snapshotProposalDict[getLastSlash(proposal.voteURL)]?.type) ? (
+                                        // sum all scores to get the total score
+                                        <ColorBar greenScore={snapshotProposalDict[getLastSlash(proposal.voteURL)].scores_total || 0} redScore={0} />
+                                    ) : (
+                                        <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} />
+                                    )
+                                    }
+                                </td>
+                                <td
+                                    className={classNames(
+                                        proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                        'hidden px-3 py-3.5 text-sm text-black lg:table-cell text-center'
                                     )}
-                                </div>
-
-                                <p className="md:w-1/12">
-                                    {`GC${proposal.governanceCycle}`}
-                                </p>
-
-                                <p className="md:w-1/12">
-                                {`${(proposal.proposalId !== '') ? proposal.proposalId : '-'}`}
-                                </p>
-
-                                <Link href={getLink(proposal)}>
-                                    <a className="break-words text-sm font-medium text-indigo-500 hover:underline md:w-1/2">
-                                        {proposal.title}
-                                    </a>
-                                </Link>
-
-                                {/* TODO: 1/6 Votes Stats */}
-                                <div className="md:w-1/6">
-
-                                </div>
-                            
-                                <p className="md:w-1/12 md:text-right">
-                                    {proposal?.date && formatDistanceToNowStrict(new Date(proposal.date), { addSuffix: true })}
-                                </p>
-                            </div>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+                                >
+                                    {proposal?.voteResults?.votes || '-'}
+                                </td>
+                                <td
+                                    className={classNames(
+                                        proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                                    'px-3 py-3.5 text-sm text-gray-500 hidden lg:table-cell text-center'
+                                    )}
+                                >
+                                    {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
+                                </td>
+                            </tr>
+                        </Link>
+                    ))}
+                    </tbody>
+                </table>
+                </div>
+            </div>
 
             <p className="text-center m-6">
                 {infoText}
@@ -366,6 +498,10 @@ function ProposalCards({space, loading, proposals, query, setQuery, maxCycle}: {
             )}
         </>
     )
+}
+
+function classNames(...classes) {
+    return classes.filter(Boolean).join(' ')
 }
 
 function getRandomInt(max) {

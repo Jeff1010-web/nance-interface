@@ -22,25 +22,19 @@ export function mapChoiceIndex (type: string, choices: string[], choice: any) {
     }
   }
 
-export function formatChoices(type: string, choice: any): string {
-  let ret: string;
-
+export function processChoices(type: string, choice: any): string | string[] {
   if (!choice || !type) return '';
 
   if(type == 'approval') {
-      const arr = choice as string[];
-      ret = arr.join(', ');
+      return choice as string[];
   } else if (type == 'ranked-choice') {
       const arr = choice as string[];
-      ret = arr.map((v, i) => `(${i+1}th) ${v}`).join(', ');
+      return arr.map((v, i) => `(${i+1}th) ${v}`);
   } else if (type == 'quadratic' || type == 'weighted') {
       const obj = choice as { [key: string]: number };
       const totalUnits = Object.values(obj).reduce((a, b) => a + b, 0);
-      ret = Object.entries(obj).map(([key, value]) => `${Math.round(value/totalUnits*100)}% for ${key}`).join(', ');
+      return Object.entries(obj).map(([key, value]) => `${Math.round(value/totalUnits*100)}% for ${key}`);
   } else {
-      const str = choice as string;
-      ret = str;
+      return choice as string;
   }
-
-  return ret;
 }

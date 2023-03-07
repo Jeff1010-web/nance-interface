@@ -54,6 +54,10 @@ export function useProposal(args: ProposalRequest, shouldFetch: boolean = true) 
     );
 }
 
+export async function fetchProposal(space: string, idOrHash: string): Promise<APIResponse<Proposal>> {
+    return fetch(`${NANCE_API_URL}/${space}/proposal/${idOrHash}`).then(res => res.json())
+}
+
 export function useReconfigureRequest(args: FetchReconfigureRequest, shouldFetch: boolean = true) {
     return useSWR<APIResponse<FetchReconfigureData>, string>(
         shouldFetch ? `${NANCE_API_URL}/${args.space}/reconfigure?version=${args.version}&address=${args.address}&datetime=${args.datetime}&network=${args.network}` : null,
@@ -77,11 +81,33 @@ async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRe
     return json
 }
 
-export function useProposalUpload(space: string, shouldFetch: boolean = true) {
+export function useProposalUpload(space: string, proposalId: string, shouldFetch: boolean = true) {
+    let url = `${NANCE_API_URL}/${space}/proposals`
+    let fetcher = uploader
+    if(proposalId) {
+        url = `${NANCE_API_URL}/${space}/proposal/${proposalId}`
+        fetcher = editor
+    }
     return useSWRMutation(
-        shouldFetch ? `${NANCE_API_URL}/${space}/proposals` : null,
-        uploader,
+        shouldFetch ? url : null,
+        fetcher,
     );
+}
+
+async function editor(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRequest }) {
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(arg)
+    })
+    const json: APIResponse<ProposalUploadPayload> = await res.json()
+    if (json.success === false) {
+        throw new Error(`An error occurred while uploading the data: ${json?.error}`)
+    }
+
+    return json
 }
 
 export function getPath(space: string, command: string) {
