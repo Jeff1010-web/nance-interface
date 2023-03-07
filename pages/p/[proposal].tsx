@@ -7,7 +7,7 @@ import FormattedAddress from "../../components/FormattedAddress";
 import { fromUnixTime, format } from "date-fns";
 import { createContext, useContext, useEffect, useState } from "react";
 import VotingModal from "../../components/VotingModal";
-import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-query-params";
+import { withDefault, NumberParam, createEnumParam, useQueryParams, useQueryParam } from "next-query-params";
 import { processChoices } from "../../libs/snapshotUtil";
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -44,7 +44,7 @@ export async function getServerSideProps(context) {
 
     // check proposal parameter type
     const proposalParam: string = context.params.proposal;
-    const spaceParam: string = context.params.overrideSpace || 'juicebox';
+    const spaceParam: string = context.query.overrideSpace || 'juicebox';
     console.log('proposalParam', proposalParam);
     if(proposalParam.startsWith('0x')) 
     {
@@ -54,13 +54,13 @@ export async function getServerSideProps(context) {
         const proposalNumber = snapshotProposal.title.match(/JBP-(\d+)/)[1];
         const proposalResponse = await fetchProposal(spaceParam, proposalNumber);
         proposal = proposalResponse.data;
-        console.log('snapshot', snapshotProposal, proposalNumber, proposalResponse);
+        console.debug('snapshot', snapshotProposal, proposalNumber, proposalResponse);
     } else //if(proposalParam.length == 32) // TODO it's nance proposal hash, if we can find a proposal number, redirect to that url
     {
         const proposalResponse = await fetchProposal(spaceParam, proposalParam);
         proposal = proposalResponse.data;
         snapshotProposal = await fetchProposalInfo(getLastSlash(proposal.voteURL));
-        console.log('nance', snapshotProposal, proposalResponse);
+        console.debug('nance', snapshotProposal, proposalResponse);
     }
   
     // Pass data to the page via props
@@ -85,6 +85,16 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
         body: snapshotProposal?.body || proposal.body,
         created: snapshotProposal?.start || Math.floor(new Date(proposal.date).getTime() / 1000),
         end: snapshotProposal?.end || 0
+    }
+
+    const [overrideSpace, setOverrideSpace] = useQueryParam('overrideSpace');
+    const editPageQuery = { 
+        proposalId: proposal.hash,
+        version: 2, 
+        project: 1 
+    };
+    if (overrideSpace) {
+        editPageQuery['overrideSpace'] = overrideSpace;
     }
 
     return (
@@ -131,11 +141,7 @@ export default function SnapshotProposalPage({ proposal, snapshotProposal }: { p
                                             <Link
                                                 href={{
                                                     pathname: '/edit',
-                                                    query: { 
-                                                        proposalId: proposal.hash,
-                                                        version: 2, 
-                                                        project: 1 
-                                                    },
+                                                    query: editPageQuery,
                                                 }}
                                             >
                                                 <a className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full mt-2">

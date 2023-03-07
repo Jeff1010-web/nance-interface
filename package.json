@@ -40,9 +40,13 @@
     "recharts": "^2.1.12",
     "rehype-raw": "^6.1.1",
     "rehype-sanitize": "^5.0.1",
+    "rehype-stringify": "^9.0.3",
     "remark-gfm": "^3.0.1",
+    "remark-parse": "^10.0.1",
+    "remark-rehype": "^10.1.0",
     "seedrandom": "^3.0.5",
     "swr": "2.0.0-beta.7",
+    "unified": "^10.1.2",
     "use-deep-compare-effect": "^1.8.1",
     "wagmi": "^0.7.8"
   },

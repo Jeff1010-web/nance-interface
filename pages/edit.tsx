@@ -19,6 +19,13 @@ import { signPayload } from "../libs/signer";
 
 import { Editor } from '@tinymce/tinymce-react';
 
+import {unified} from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
+import remarkRehype from 'remark-rehype';
+import rehypeSanitize from 'rehype-sanitize';
+import rehypeStringify from 'rehype-stringify';
+
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
   version: 2,
@@ -33,6 +40,22 @@ export async function getServerSideProps(context) {
   let proposalResponse = null;
   if (proposalParam) {
     proposalResponse = await fetchProposal(spaceParam, proposalParam);
+    if (proposalResponse?.data) {
+      const converted = (await unified()
+        .use(remarkParse)
+        .use(remarkGfm)
+        .use(remarkRehype)
+        .use(rehypeSanitize)
+        .use(rehypeStringify)
+        .process(proposalResponse.data.body))
+        .toString();
+      if (converted) {
+        proposalResponse.data.body = converted;
+        console.debug("Converted markdown to html")
+      } else {
+        console.debug("Failed to convert markdown to html, preserve original content.")
+      }
+    }
   }
 
   // Pass data to the page via props
@@ -319,7 +342,7 @@ function PayoutMetadataForm() {
           <input
             type="number"
             step={1}
-            min={1}
+            min={0}
             {...register("proposal.payout.amountUSD", { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.amountUSD || 0 })}
             className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="1500"
