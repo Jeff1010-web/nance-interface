@@ -18,7 +18,6 @@ import { getLastSlash } from "../../libs/nance";
 import { Proposal } from "../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import Custom404 from "../404";
 
 function classNames(...classes) {
@@ -37,6 +36,17 @@ const getColorOfChoice = (choice: string) => {
         return 'text-gray-500';
     } else {
         return '';
+    }
+}
+
+function openInDiscord(url) {
+    try {
+        // use URL object to replace https:// with discord://
+        const discordUrl = new URL(url);
+        discordUrl.protocol = 'discord:';
+        return discordUrl.toString();
+    } catch (error) {
+        return url;
     }
 }
 
@@ -137,7 +147,11 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
 
                                     {!snapshotProposal && (
                                         <div className="my-2">
-                                            Snapshot voting not started.
+                                            <p>Temp check voting open on Discord now.</p>
+
+                                            <a href={openInDiscord(proposal.discussionThreadURL) || '#'} className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full mt-2">
+                                                Vote on Discord
+                                            </a>
 
                                             <Link
                                                 href={{
@@ -145,7 +159,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
                                                     query: editPageQuery,
                                                 }}
                                             >
-                                                <a className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full mt-2">
+                                                <a className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full mt-4">
                                                     Edit Proposal
                                                 </a>
                                             </Link>
