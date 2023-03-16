@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import SiteNav from "../components/SiteNav";
 import { useForm, FormProvider, useFormContext, Controller, SubmitHandler } from "react-hook-form";
 import ResolvedEns from "../components/ResolvedEns";
@@ -10,7 +10,7 @@ import Notification from "../components/Notification";
 import { fetchProposal, useProposalUpload } from "../hooks/NanceHooks";
 import { imageUpload } from "../hooks/ImageUpload";
 import { Proposal, ProposalUploadRequest } from "../models/NanceTypes";
-import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../constants/Nance";
+import { NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Link from "next/link";
 
 import { useAccount, useSigner } from "wagmi";
@@ -197,14 +197,14 @@ function Form({ space }: { space: string }) {
                         init={{
                           height: 500,
                           plugins: [
-                            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                            'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount',
+                            'advlist', 'autolink', 'lists', 'link', 'image', 'preview',
+                            'anchor', 'searchreplace', 'code', 'fullscreen',
+                            'insertdatetime', 'table', 'code', 'help', 'wordcount',
                             'image', 'autosave', 'template'
                           ],
                           toolbar: 'restoredraft undo redo | template blocks | ' +
-                            'image bold italic forecolor | bullist numlist outdent indent | ' +
-                            'table removeformat | help',
+                            'image link table | bold italic forecolor | bullist numlist outdent indent | ' +
+                            'preview removeformat | help',
                           menubar: false,
                           images_upload_handler: imageUpload,
                           content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
@@ -215,7 +215,8 @@ function Form({ space }: { space: string }) {
                           template_cdate_format: '%Y-%m-%d',
                           templates: [
                             { title: 'Proposal template', description: 'Author and date will be replaced automatically', content: TEMPLATE }
-                          ]
+                          ],
+                          relative_urls: false
                         }}
                       />
                     }
