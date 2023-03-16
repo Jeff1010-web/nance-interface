@@ -204,7 +204,7 @@ function Form({ space }: { space: string }) {
                           ],
                           toolbar: 'restoredraft undo redo | template blocks | ' +
                             'image bold italic forecolor | bullist numlist outdent indent | ' +
-                            'removeformat | help',
+                            'table removeformat | help',
                           menubar: false,
                           images_upload_handler: imageUpload,
                           content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',

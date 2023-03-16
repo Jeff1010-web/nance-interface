@@ -30,6 +30,7 @@ export async function htmlToMarkdown(raw: string, failSilently: boolean = false)
           },
         }
       }) // Turn HTML syntax tree to markdown syntax tree
+      .use(remarkGfm)
       .use(remarkStringify) // Serialize HTML syntax tree
       .process(raw)).toString()
     console.debug('📚htmlToMarkdown', { raw, converted, failSilently })
