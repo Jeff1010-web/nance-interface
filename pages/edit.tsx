@@ -19,7 +19,7 @@ import { signPayload } from "../libs/signer";
 
 import { Editor } from '@tinymce/tinymce-react';
 
-import { markdownToHtml, htmlToMarkdown } from '../libs/markdown.ts';
+import { markdownToHtml, htmlToMarkdown } from '../libs/markdown';
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 const ProposalMetadataContext = React.createContext({
