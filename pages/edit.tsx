@@ -19,12 +19,8 @@ import { signPayload } from "../libs/signer";
 
 import { Editor } from '@tinymce/tinymce-react';
 
-import {unified} from 'unified';
-import remarkParse from 'remark-parse';
-import remarkGfm from 'remark-gfm';
-import remarkRehype from 'remark-rehype';
-import rehypeSanitize from 'rehype-sanitize';
-import rehypeStringify from 'rehype-stringify';
+import { markdownToHtml, htmlToMarkdown } from '../libs/markdown.ts';
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -41,20 +37,7 @@ export async function getServerSideProps(context) {
   if (proposalParam) {
     proposalResponse = await fetchProposal(spaceParam, proposalParam);
     if (proposalResponse?.data) {
-      const converted = (await unified()
-        .use(remarkParse)
-        .use(remarkGfm)
-        .use(remarkRehype)
-        .use(rehypeSanitize)
-        .use(rehypeStringify)
-        .process(proposalResponse.data.body))
-        .toString();
-      if (converted) {
-        proposalResponse.data.body = converted;
-        console.debug("Converted markdown to html")
-      } else {
-        console.debug("Failed to convert markdown to html, preserve original content.")
-      }
+      proposalResponse.data.body = await markdownToHtml(proposalResponse.data.body)
     }
   }
 
@@ -62,7 +45,7 @@ export async function getServerSideProps(context) {
   return { props: { loadedProposal: proposalResponse?.data || null } }
 }
 
-export default function NanceEditProposal({loadedProposal}: {loadedProposal: Proposal}) {
+export default function NanceEditProposal({ loadedProposal }: { loadedProposal: Proposal }) {
   const router = useRouter();
 
   const [query, setQuery] = useQueryParams({
@@ -71,20 +54,20 @@ export default function NanceEditProposal({loadedProposal}: {loadedProposal: Pro
     project: withDefault(NumberParam, 1),
     overrideSpace: StringParam
   });
-  const {proposalId, version, project, overrideSpace} = query;
+  const { proposalId, version, project, overrideSpace } = query;
   let space = NANCE_DEFAULT_SPACE;
   if (overrideSpace) {
-      space = overrideSpace;
+    space = overrideSpace;
   }
 
-  if(!router.isReady) {
+  if (!router.isReady) {
     return <p className="mt-2 text-xs text-gray-500 text-center">loading...</p>
   }
 
   return (
     <>
-      <SiteNav 
-        pageTitle="Edit Proposal" 
+      <SiteNav
+        pageTitle="Edit Proposal"
         description="Create or edit proposal on Nance."
         withWallet />
       <div className="m-4 lg:m-6 flex flex-col justify-center">
@@ -92,7 +75,7 @@ export default function NanceEditProposal({loadedProposal}: {loadedProposal: Pro
           {proposalId ? "Edit" : "New"} Proposal
         </p>
         <ResolvedProject version={version} projectId={project} style="text-center" />
-        <ProposalMetadataContext.Provider value={{loadedProposal, version, project}}>
+        <ProposalMetadataContext.Provider value={{ loadedProposal, version, project }}>
           <Form space={space} />
         </ProposalMetadataContext.Provider>
       </div>
@@ -102,7 +85,7 @@ export default function NanceEditProposal({loadedProposal}: {loadedProposal: Pro
 
 type ProposalFormValues = Omit<ProposalUploadRequest, "type" | "version">
 
-function Form({space}: {space: string}) {
+function Form({ space }: { space: string }) {
   // query and context
   const router = useRouter();
   const metadata = useContext(ProposalMetadataContext);
@@ -116,6 +99,7 @@ function Form({space}: {space: string}) {
   const { data: signer, isError, isLoading } = useSigner()
   const jrpcSigner = signer as JsonRpcSigner;
   const { address, isConnected } = useAccount();
+  const { openConnectModal } = useConnectModal();
 
   const isNew = metadata.loadedProposal === null;
   const hasVoting = metadata.loadedProposal?.voteURL?.length > 0;
@@ -123,19 +107,20 @@ function Form({space}: {space: string}) {
   // form
   const methods = useForm<ProposalFormValues>();
   const { register, handleSubmit, control, formState: { errors } } = methods;
-  const onSubmit: SubmitHandler<ProposalFormValues> = (formData) => {
-    console.log("📗 Nance.editProposal.onSubmit ->", formData)
-
+  const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
     const payload = {
       ...formData.proposal,
+      body: await htmlToMarkdown(formData.proposal.body),
       type: "Payout",
       version: String(metadata.version)
     };
+    console.debug("📚 Nance.editProposal.onSubmit ->", { formData, payload })
+
     setSigning(true);
 
     signPayload(
-      jrpcSigner, space as string, 
-      isNew ? "upload" : "edit", 
+      jrpcSigner, space as string,
+      isNew ? "upload" : "edit",
       payload
     ).then((signature) => {
 
@@ -149,12 +134,12 @@ function Form({space}: {space: string}) {
       console.debug("📗 Nance.editProposal.submit ->", req);
       return trigger(req);
     })
-    .then(res => router.push(`/p/${res.data.hash}${space !== NANCE_DEFAULT_SPACE ? `?overrideSpace=${space}` : ''}`))
-    .catch((err) => {
-      setSigning(false);
-      setSignError(err);
-      console.warn("📗 Nance.editProposal.onSignError ->", err);
-    });
+      .then(res => router.push(`/p/${res.data.hash}${space !== NANCE_DEFAULT_SPACE ? `?overrideSpace=${space}` : ''}`))
+      .catch((err) => {
+        setSigning(false);
+        setSignError(err);
+        console.warn("📗 Nance.editProposal.onSignError ->", err);
+      });
   }
 
   // shortcut
@@ -168,11 +153,11 @@ function Form({space}: {space: string}) {
   return (
     <FormProvider {...methods} >
       <Notification title="Success" description={`${isNew ? "Created" : "Updated"} proposal ${data?.data.hash}`} show={data !== undefined} close={resetSignAndUpload} checked={true} />
-      {(signError || uploadError) && 
+      {(signError || uploadError) &&
         <Notification title="Error" description={error.error_description || error.message || error} show={true} close={resetSignAndUpload} checked={false} />
       }
       <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
-        
+
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
           <div className="md:grid md:grid-cols-3 md:gap-6">
             <div className="md:col-span-1">
@@ -197,16 +182,16 @@ function Form({space}: {space: string}) {
                 <label htmlFor="about" className="mt-6 block text-sm font-medium text-gray-700">
                   Body
                 </label>
-                
+
                 <div className="mt-1">
                   <Controller
                     name="proposal.body"
                     control={control}
-                    render={({ field: { onChange, onBlur, value, ref } }) => 
+                    render={({ field: { onChange, onBlur, value, ref } }) =>
                       <Editor
                         apiKey={process.env.NEXT_PUBLIC_TINY_KEY || 'no-api-key'}
                         onInit={(evt, editor) => console.log(editor.getBody())}
-                        initialValue={metadata.loadedProposal?.body || ""}
+                        initialValue={metadata.loadedProposal?.body || TEMPLATE}
                         value={value}
                         onEditorChange={(newValue, editor) => onChange(newValue)}
                         init={{
@@ -214,7 +199,7 @@ function Form({space}: {space: string}) {
                           plugins: [
                             'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
                             'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                            'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount', 
+                            'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount',
                             'image', 'autosave', 'template'
                           ],
                           toolbar: 'restoredraft undo redo | template blocks | ' +
@@ -264,16 +249,27 @@ function Form({space}: {space: string}) {
               Cancel
             </a>
           </Link>
-          <button
-            type="submit"
-            disabled={
-              !jrpcSigner || isSubmitting 
-              || (!isNew && hasVoting)
-            }
-            className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-          >
-            {signing ? (isMutating ? "Submitting..." : "Signing...") : "Submit"}
-          </button>
+
+          {!jrpcSigner && (
+            <button onClick={() => openConnectModal()}
+              className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+            >
+              Connect Wallet
+            </button>
+          )}
+
+          {jrpcSigner && (
+            <button
+              type="submit"
+              disabled={
+                isSubmitting
+                //|| (!isNew && hasVoting)
+              }
+              className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+            >
+              {signing ? (isMutating ? "Submitting..." : "Signing...") : "Submit"}
+            </button>
+          )}
         </div>
       </form>
     </FormProvider>
@@ -287,8 +283,8 @@ function PayoutMetadataForm() {
 
   useEffect(() => {
     const subscription = watch((value, { name, type }) => {
-      if(name === "proposal.payout.type" && type === "change") {
-        if(value.proposal.payout.type == "project") {
+      if (name === "proposal.payout.type" && type === "change") {
+        if (value.proposal.payout.type == "project") {
           (document.getElementById("payoutAddressInput") as HTMLInputElement).value = "dao.jbx.eth";
           setInputEns("dao.jbx.eth");
         } else {
@@ -307,7 +303,7 @@ function PayoutMetadataForm() {
           Receiver Type
         </label>
         <select
-          {...register("proposal.payout.type", 
+          {...register("proposal.payout.type",
             { shouldUnregister: true, value: metadata.loadedProposal?.payout?.project ? "project" : "address" })}
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
         >
