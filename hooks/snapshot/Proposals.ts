@@ -311,6 +311,23 @@ export function useAllVotesOfAddress(address: string, limit: number, spaceFilter
   return { loading, error, data: data?.votes.length }
 }
 
+export async function fetchAllVotesOfAddress(address: string, limit: number, spaceFilter: string = ""): Promise<{ id: string }[]> {
+  return fetch('https://hub.snapshot.org/graphql', {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query: ALL_VOTES_OF_USER,
+      variables: {
+        voter: address,
+        first: Math.min(limit, 1000),
+        space: spaceFilter
+      }
+    }),
+  }).then(res => res.json()).then(json => json.data.votes)
+}
+
 export function useVotesOfAddress(address: string, skip: number, limit: number, spaceFilter: string = ""): {
   loading: boolean,
   error: APIError<object>,
