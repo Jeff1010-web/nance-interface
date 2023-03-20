@@ -314,10 +314,12 @@ function ProposalVotes({ selectedVoter, setSelectedVoter }) {
           </div>
 
           <ul role="list" className="space-y-2 pt-2">
+            <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={selectedVoter} />
+
             {loading && "loading..."}
             {data?.votesData?.map((vote) => (
               <li key={vote.id}>
-                <div className="flex flex-col">
+                <div className="flex flex-col" onMouseEnter={() => setSelectedVoter(vote.voter)}>
                   <div className="text-sm">
                     <div>
                       <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
@@ -377,12 +379,11 @@ function ProposalVotes({ selectedVoter, setSelectedVoter }) {
           {loading && "loading..."}
           {data?.votesData?.map((vote) => (
             <li key={vote.id}>
-              <div className="flex flex-col">
+              <div className="flex flex-col" onMouseEnter={() => setSelectedVoter(vote.voter)}>
                 <div className="text-sm flex justify-between">
                   <div>
-                    <div className="inline"
-                      onMouseEnter={() => setSelectedVoter(vote.voter)}>
-                      <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
+                    <div className="inline">
+                      <FormattedAddress address={vote.voter} style="text-gray-900" noLink={true} />
                     </div>
 
                     &nbsp;
