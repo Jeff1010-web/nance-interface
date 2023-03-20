@@ -108,11 +108,13 @@ function Form({ space }: { space: string }) {
   const methods = useForm<ProposalFormValues>();
   const { register, handleSubmit, control, formState: { errors } } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
+    const { body, title, payout, ...restOfProposal } = metadata?.loadedProposal ?? { }; // send back all values except ones in form
     const payload = {
       ...formData.proposal,
       body: await htmlToMarkdown(formData.proposal.body),
       type: "Payout",
-      version: String(metadata.version)
+      version: String(metadata.version),
+      ...restOfProposal
     };
     console.debug("📚 Nance.editProposal.onSubmit ->", { formData, payload })
 
