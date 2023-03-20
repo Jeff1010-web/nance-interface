@@ -3991,6 +3991,13 @@ graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0:
   resolved "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.10.tgz"
   integrity sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA==
 
+graphql-hooks-memcache@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/graphql-hooks-memcache/-/graphql-hooks-memcache-3.1.0.tgz#c606d084290849af6d023381d3d3cdcf99d62cd0"
+  integrity sha512-2Q6WzhHr7osTAs4edcti0CIkOohkIbxVD8CRKz3QvCZKsa46VsMkGK02N6gG78k7pibokDYgJd5Q6aZVQj2b7Q==
+  dependencies:
+    tiny-lru "^10.0.1"
+
 graphql-hooks@^6.2.1:
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/graphql-hooks/-/graphql-hooks-6.2.1.tgz#54abb0560ff8032470e97d5a802e5d9a548c8fe4"
@@ -7033,6 +7040,11 @@ text-table@^0.2.0:
   version "2.3.8"
   resolved "https://registry.npmjs.org/through/-/through-2.3.8.tgz"
   integrity sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==
+
+tiny-lru@^10.0.1:
+  version "10.2.2"
+  resolved "https://registry.yarnpkg.com/tiny-lru/-/tiny-lru-10.2.2.tgz#dba7e921a9f940e841a7f4e5aef1cb478ecdb07f"
+  integrity sha512-yx+e2W/6E0SBEuXG+3M1fibQyyMDbz3jd/8EPyodw+LQVcUXA6tfNGUzktEy1PgZlresc6PiC4HQiyeZM2lGzA==
 
 tinymce@^6.3.1:
   version "6.3.1"

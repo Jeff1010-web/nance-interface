@@ -2,6 +2,7 @@ import '../styles/globals.css'
 import '@rainbow-me/rainbowkit/styles.css';
 
 import { GraphQLClient, ClientContext } from 'graphql-hooks'
+import memCache from 'graphql-hooks-memcache'
 
 import {
   getDefaultWallets,
@@ -13,15 +14,16 @@ import {
 } from 'wagmi'
 import { infuraProvider } from 'wagmi/providers/infura'
 
-import {NextQueryParamProvider} from 'next-query-params';
+import { NextQueryParamProvider } from 'next-query-params';
 
-import {JuiceProvider} from 'juice-hooks'
+import { JuiceProvider } from 'juice-hooks'
 import { Flowbite } from 'flowbite-react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
 
 const graphqlClient = new GraphQLClient({
-  url: 'https://hub.snapshot.org/graphql'
+  url: 'https://hub.snapshot.org/graphql',
+  cache: memCache({ size: 200 })
 })
 
 // WAGMI and RainbowKit configuration
