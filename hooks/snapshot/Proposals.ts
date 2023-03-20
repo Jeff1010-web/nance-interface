@@ -137,6 +137,22 @@ query VotedProposals($first: Int, $skip: Int, $voter: String, $proposalIds: [Str
 }
 `
 
+const ALL_VOTES_OF_USER = `
+query AllVotesOfUser($first: Int, $voter: String, $space: String) {
+  votes (
+    first: $first,
+    where: {
+      voter: $voter,
+      space: $space
+    }
+    orderBy: "created",
+    orderDirection: desc
+  ) {
+    id
+  }
+}
+`
+
 // Model for a single proposal
 export interface SnapshotProposal {
   id: string;
@@ -190,9 +206,9 @@ export async function fetchProposalInfo(proposalId: string): Promise<SnapshotPro
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ 
-      query: SINGLE_PROPOSAL_QUERY, 
-      variables: { id: proposalId } 
+    body: JSON.stringify({
+      query: SINGLE_PROPOSAL_QUERY,
+      variables: { id: proposalId }
     }),
   }).then(res => res.json()).then(json => json.data.proposal)
 }
@@ -218,18 +234,19 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
   loading: boolean,
   error: APIError<object>,
   data: {
-    proposalsData: SnapshotProposal[], 
-    votedData: { [id: string]: SnapshotVotedData}
+    proposalsData: SnapshotProposal[],
+    votedData: { [id: string]: SnapshotVotedData }
   }
 } {
 
-  console.debug("🔧 useProposalsWithCustomQuery.args ->", {query, variables, skip});
+  console.debug("🔧 useProposalsWithCustomQuery.args ->", { query, variables, skip });
 
   // Load proposals
   const {
     loading: proposalsLoading,
     data: proposalsData,
-    error: proposalsError
+    error: proposalsError,
+    cacheHit
   } = useQuery<{ proposals: SnapshotProposal[] }>(query, { variables, skip });
   // Load voted proposals
   const {
@@ -244,9 +261,10 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
     },
     skip
   });
+  console.debug("🔧 useProposalsWithCustomQuery.cacheHit", cacheHit);
 
   // Find voted proposals
-  let votedData: { [id: string]: SnapshotVotedData} = {};
+  let votedData: { [id: string]: SnapshotVotedData } = {};
   if (address) {
     votedRawData?.votes.forEach(vote => {
       votedData[vote.proposal.id] = {
@@ -256,15 +274,15 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
     });
   }
 
-  const ret = { 
+  const ret = {
     data: {
-      proposalsData: proposalsData?.proposals, 
+      proposalsData: proposalsData?.proposals,
       votedData
-    }, 
-    loading: proposalsLoading || votedLoading, 
-    error: proposalsError || votedError 
+    },
+    loading: proposalsLoading || votedLoading,
+    error: proposalsError || votedError
   };
-  console.debug("🔧 useProposalsWithCustomQuery.return ->", {ret});
+  console.debug("🔧 useProposalsWithCustomQuery.return ->", { ret });
   return ret;
 }
 
@@ -272,6 +290,25 @@ export interface SnapshotSpaceWithVotesCount {
   id: string;
   name: string;
   votes: number;
+}
+
+export function useAllVotesOfAddress(address: string, limit: number, spaceFilter: string = ""): {
+  loading: boolean,
+  error: APIError<object>,
+  data: number
+} {
+  // Load voted proposals
+  const { loading, data, error, cacheHit } = useQuery<{ votes: { id: string }[] }>(ALL_VOTES_OF_USER, {
+    variables: {
+      voter: address,
+      first: Math.min(limit, 1000),
+      space: spaceFilter
+    },
+    skip: !(address && address.length == 42)
+  });
+  console.debug("🔧 useAllVotesOfAddress.cacheHit", cacheHit)
+
+  return { loading, error, data: data?.votes.length }
 }
 
 export function useVotesOfAddress(address: string, skip: number, limit: number, spaceFilter: string = ""): {
@@ -305,7 +342,7 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
   let spaces: { [id: string]: SnapshotSpaceWithVotesCount } = {};
   if (address) {
     votedData = votedRawData?.votes.map(vote => {
-      if(!spaces[vote.space.id]) {
+      if (!spaces[vote.space.id]) {
         spaces[vote.space.id] = {
           id: vote.space.id,
           name: vote.space.name,
@@ -321,14 +358,14 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
     });
   }
 
-  const ret = { 
+  const ret = {
     data: {
       votedData, spaces: Object.values(spaces).sort((a, b) => b.votes - a.votes)
-    }, 
-    loading: votedLoading, 
-    error: votedError 
+    },
+    loading: votedLoading,
+    error: votedError
   };
-  console.debug("🔧 useVotesOfAddress.return ->", {ret});
+  console.debug("🔧 useVotesOfAddress.return ->", { ret });
   return ret;
 }
 
@@ -343,17 +380,18 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
   },
   refetch: (options?: any) => void
 } {
-  
+
   // sort after query if need reason
   const sortAfterQuery = withField === "reason" || withField === "app";
-  console.debug("🔧 useProposalVotes.args ->", {proposalId: proposal.id, skip, orderBy, withField});
+  console.debug("🔧 useProposalVotes.args ->", { proposalId: proposal.id, skip, orderBy, withField });
 
   // Load related votes
   const {
     loading: voteLoading,
     data: voteData,
     error: voteError,
-    refetch
+    refetch,
+    cacheHit
   } = useQuery<{ votes: SnapshotVote[] }>(VOTES_OF_PROPOSAL_QUERY, {
     variables: {
       // Snapshot API Limit: The `first` argument must not be greater than 1000
@@ -361,19 +399,20 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
       skip: sortAfterQuery ? 0 : skip,
       orderBy: orderBy,
       id: proposal.id
-    }, 
+    },
     skip: skipThisHook
   });
+  console.debug("🔧 useProposalVotes.cacheHit", cacheHit)
 
   let totalVotes = proposal?.votes || 0;
   let votes = voteData?.votes || [];
 
-  if(sortAfterQuery) {
+  if (sortAfterQuery) {
     const allVotes = voteData?.votes
       .filter((vote) => {
-        if(withField === "reason") {
+        if (withField === "reason") {
           return vote.reason && vote.reason !== "";
-        } else if(withField === "app") {
+        } else if (withField === "app") {
           return vote.app && vote.app !== "" && vote.app !== "snapshot";
         } else {
           return true;
@@ -396,15 +435,15 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
     }
   })
 
-  const ret = { 
+  const ret = {
     data: {
       votesData,
       totalVotes
-    }, 
-    loading: voteLoading, 
+    },
+    loading: voteLoading,
     error: voteError,
-    refetch 
+    refetch
   };
-  console.debug("🔧 useProposalVotes.return ->", {ret});
+  console.debug("🔧 useProposalVotes.return ->", { ret });
   return ret;
 }

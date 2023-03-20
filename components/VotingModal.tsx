@@ -8,18 +8,17 @@ import Notification from "./Notification"
 import useVote from "../hooks/snapshot/Vote"
 import { useForm } from "react-hook-form"
 
-const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
+const formatter = new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
 
-
 interface VotingProps {
-    modalIsOpen: boolean
-    closeModal: () => void
-    address: string
-    spaceId: string
-    spaceHideAbstain: boolean
-    proposal: SnapshotProposal
-    refetch: (option?: any) => void
+  modalIsOpen: boolean
+  closeModal: () => void
+  address: string
+  spaceId: string
+  spaceHideAbstain: boolean
+  proposal: SnapshotProposal
+  refetch: (option?: any) => void
 }
 
 function classNames(...classes) {
@@ -28,7 +27,7 @@ function classNames(...classes) {
 
 const SUPPORTED_VOTING_TYPES = ['single-choice', 'basic', 'weighted']
 
-export default function VotingModal({modalIsOpen, closeModal, address, spaceId, spaceHideAbstain, proposal, refetch}: VotingProps) {
+export default function VotingModal({ modalIsOpen, closeModal, address, spaceId, spaceHideAbstain, proposal, refetch }: VotingProps) {
   // state
   const [choice, setChoice] = useState(undefined);
   const [reason, setReason] = useState('');
@@ -48,28 +47,28 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
     closeModal();
   }
 
-  if(proposal === undefined) {
+  if (proposal === undefined) {
     return <div className="hidden">Proposal not selected</div>
   }
 
   const hideAbstain = spaceHideAbstain && proposal.type === "basic";
-  const totalScore = hideAbstain ? 
-    proposal.scores_total-(proposal?.scores[2]??0)
-      : proposal.scores_total;
+  const totalScore = hideAbstain ?
+    proposal.scores_total - (proposal?.scores[2] ?? 0)
+    : proposal.scores_total;
 
   const renderVoteButton = () => {
     let canVote = false;
     let label = "Close";
 
-    if(address=='') {
+    if (address == '') {
       label = "Wallet not connected";
-    } else if(loading) {
+    } else if (loading) {
       label = "Loading...";
-    } else if(!SUPPORTED_VOTING_TYPES.includes(proposal.type)) {
+    } else if (!SUPPORTED_VOTING_TYPES.includes(proposal.type)) {
       label = "Not supported"
-    } else if(choice === undefined) {
+    } else if (choice === undefined) {
       label = "You need to select a choice";
-    } else if(vp > 0) {
+    } else if (vp > 0) {
       label = "Submit vote";
       canVote = true;
     } else {
@@ -126,10 +125,10 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                   </button>
 
                   <div className="w-full grid grid-cols-1 gap-y-8 gap-x-6 items-start sm:grid-cols-12 lg:gap-x-8">
-                    {value && 
+                    {value &&
                       <Notification title="Vote result" description="Success!" show={notificationEnabled} close={close} checked={true} autoClose={true} />
                     }
-                    {error && 
+                    {error &&
                       <Notification title="Vote result" description={error.error_description || error.message} show={notificationEnabled} close={() => {
                         setNotificationEnabled(false);
                         reset();
@@ -150,7 +149,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                             <h4 className="sr-only">Scores</h4>
                             <div className="flex items-center">
                               <div className="flex items-center">
-                                Scores: {formatNumber(totalScore)}&nbsp;{proposal.quorum>0 && `(${(totalScore*100/proposal.quorum).toFixed()}% of quorum)`}
+                                Scores: {formatNumber(totalScore)}&nbsp;{proposal.quorum > 0 && `(${(totalScore * 100 / proposal.quorum).toFixed()}% of quorum)`}
                               </div>
                               <p className="sr-only">{totalScore} out of {proposal.quorum} quorum</p>
                             </div>
@@ -178,7 +177,7 @@ export default function VotingModal({modalIsOpen, closeModal, address, spaceId, 
                         <form>
                           <div className="sm:flex sm:justify-between">
                             {/* Option selector */}
-                            {(proposal.type == 'single-choice' || proposal.type =="basic") && (
+                            {(proposal.type == 'single-choice' || proposal.type == "basic") && (
                               <BasicChoiceSelector value={choice} setValue={setChoice} choices={proposal.choices} />
                             )}
                             {proposal.type == 'weighted' && (
@@ -235,7 +234,7 @@ interface SelectorProps {
   choices: string[]
 }
 
-function BasicChoiceSelector({value, setValue, choices}: SelectorProps) {
+function BasicChoiceSelector({ value, setValue, choices }: SelectorProps) {
   return (
     <RadioGroup value={value} onChange={setValue}>
       <RadioGroup.Label className="block text-sm font-medium text-gray-700">
@@ -246,7 +245,7 @@ function BasicChoiceSelector({value, setValue, choices}: SelectorProps) {
           <RadioGroup.Option
             as="div"
             key={choice}
-            value={index+1}
+            value={index + 1}
             className={({ active }) =>
               classNames(
                 active ? 'ring-2 ring-indigo-500' : '',
@@ -279,7 +278,7 @@ function BasicChoiceSelector({value, setValue, choices}: SelectorProps) {
   )
 }
 
-function WeightedChoiceSelector({value, setValue, choices}: Omit<SelectorProps, 'value'> & { value: {[key: string]: number}}) {
+function WeightedChoiceSelector({ value, setValue, choices }: Omit<SelectorProps, 'value'> & { value: { [key: string]: number } }) {
   const { register, getValues, watch } = useForm();
 
   useEffect(() => {
@@ -296,7 +295,7 @@ function WeightedChoiceSelector({value, setValue, choices}: Omit<SelectorProps, 
       }
       setValue(newValue);
     });
-    
+
     return () => subscription.unsubscribe();
   }, [watch]);
 
@@ -307,11 +306,11 @@ function WeightedChoiceSelector({value, setValue, choices}: Omit<SelectorProps, 
       {choices.map((choice, index) => (
         <div key={choice} className="flex gap-2 rounded-lg border-1 p-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
           <label className="w-3/5">{choice}</label>
-          <input className="w-1/5 rounded-lg" type="number" placeholder="0" min={0} step={1} {...register((index+1).toString(), {shouldUnregister: true, valueAsNumber: true})} />
+          <input className="w-1/5 rounded-lg" type="number" placeholder="0" min={0} step={1} {...register((index + 1).toString(), { shouldUnregister: true, valueAsNumber: true })} />
           <span className="italic w-1/5">
-            {(isNaN(getValues((index+1).toString())) || totalUnits==0) ?
+            {(isNaN(getValues((index + 1).toString())) || totalUnits == 0) ?
               "0%" :
-              `${Math.round(getValues((index+1).toString())/totalUnits*100)}%`}
+              `${Math.round(getValues((index + 1).toString()) / totalUnits * 100)}%`}
           </span>
         </div>
       ))}

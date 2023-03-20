@@ -70,10 +70,10 @@ export interface SignatureRequest {
 }
 
 export interface ProposalUploadRequest extends SignatureRequest {
-  proposal: Pick<Proposal, 
+  proposal: Pick<Proposal,
     "type" | "version" |
     "title" | "body" |
-    "payout" | "reserve" | 
+    "payout" | "reserve" |
     "notification">;
 }
 
