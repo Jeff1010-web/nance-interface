@@ -10,14 +10,10 @@ export interface ProfileResponse {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=86400, stale-while-revalidate=172800'
-  )
-
   const voter = req.query.voter as string
   const space = req.query.space as string
   const proposal = req.query.proposal as string
+  console.debug('api.profile', { query: req.query })
 
   try {
     const vp = await fetchVotingPower(voter, space, proposal)
@@ -29,8 +25,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       votes: votes?.length ?? 0,
       delegators: delegators?.map(o => o.delegator) ?? []
     }
+
+    res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=86400, stale-while-revalidate=172800'
+    )
     res.status(200).json(response)
   } catch (err) {
-    res.status(500).json({ err })
+    res.status(500).json({ err: JSON.stringify(err) })
   }
 }

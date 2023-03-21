@@ -11,20 +11,32 @@ interface VoterProfileProps {
   proposal: string
 }
 
-const fetcher: Fetcher<ProfileResponse, VoterProfileProps & { url: string }> = ({ url, voter, space, proposal }) =>
-  fetch(url + new URLSearchParams({ voter, space, proposal }))
-    .then(res => res.json())
+const fetcher: Fetcher<ProfileResponse, VoterProfileProps & { url: string }> = async ({ url, voter, space, proposal }) => {
+  const res = await fetch(url + new URLSearchParams({ voter, space, proposal }))
+  const json = await res.json()
+  if (res.status !== 200) {
+    throw new Error(`An error occurred while fetching the data: ${json?.err}`)
+  }
+  return json
+}
 
 // avatar, voting power, votes cast, delegate function
 export default function VoterProfile({ voter, space, proposal }: VoterProfileProps) {
   const { data, error, isLoading } = useSWR({ url: '/api/profile?', voter, space, proposal }, fetcher)
 
-  if (voter && data) {
+  if (error) {
+    console.debug("❎VoterProfile.api", { voter, space, proposal, error })
+    return (
+      <div />
+    )
+  } else if (voter && data) {
     return (
       <div className="absolute z-10 -left-80 bg-white rounded-lg shadow p-5 flex flex-col space-y-5">
         {/* Avatar */}
         <div className='flex justify-center'>
           <img src={`https://cdn.stamp.fyi/avatar/${voter}`} className="rounded-full p-3" />
+
+          {data.delegators.slice(0, 2).map(d => <img key={d} src={`https://cdn.stamp.fyi/avatar/${d}`} className="rounded-full p-3" />)}
         </div>
 
         {/* Stats */}

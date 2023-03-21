@@ -37,3 +37,7 @@ export async function fetchDelegators(voter: string, space: string): Promise<{ d
     }),
   }).then(res => res.json()).then(json => json.data.delegations)
 }
+
+export function useDelegate() {
+
+}
