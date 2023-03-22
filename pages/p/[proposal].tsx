@@ -105,7 +105,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
   const commonProps: ProposalCommonProps = {
     status: snapshotProposal?.state || proposal.status,
     title: snapshotProposal?.title || proposal.title,
-    author: snapshotProposal?.author || proposal.author,
+    author: snapshotProposal?.author || proposal.authorAddress,
     body: snapshotProposal?.body || proposal.body,
     created: snapshotProposal?.start || Math.floor(new Date(proposal.date).getTime() / 1000),
     end: snapshotProposal?.end || 0
