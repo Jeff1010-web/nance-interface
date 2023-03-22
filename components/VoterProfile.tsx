@@ -41,7 +41,7 @@ export default function VoterProfile({ voter, space, proposal }: VoterProfilePro
     return (
       <div />
     )
-  } else if (isLoading) {
+  } else if (voter && isLoading) {
     // skeleton loader
     return (
       <div className="absolute z-10 -left-80 bg-white rounded-lg shadow p-5 flex flex-col space-y-5 animate-pulse">
