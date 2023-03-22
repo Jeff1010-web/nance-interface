@@ -86,6 +86,7 @@ interface ProposalCommonProps {
 const ProposalContext = createContext<{ commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal }>(undefined);
 
 export default function NanceProposalPage({ proposal, snapshotProposal }: { proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }) {
+  const [selectedVoter, setSelectedVoter] = useState<string>('');
   const [overrideSpace, setOverrideSpace] = useQueryParam('overrideSpace');
   const editPageQuery = {
     proposalId: proposal?.hash,
@@ -111,8 +112,6 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
   }
   console.debug("📚NanceProposalPage.begin", commonProps, proposal, snapshotProposal);
 
-  const [selectedVoter, setSelectedVoter] = useState<string>('');
-
   return (
     <>
       <SiteNav
@@ -121,14 +120,14 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
         image={`https://cdn.stamp.fyi/space/jbdao.eth?w=1200&h=630`}
         withWallet />
 
-      <div className="min-h-full" onMouseDown={() => setSelectedVoter('')}>
+      <div className="min-h-full">
         <main className="py-2">
           <ProposalContext.Provider value={{ commonProps, proposalInfo: snapshotProposal }}>
 
             <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
               <div className="space-y-6 lg:col-span-2 lg:col-start-1">
                 {/* Content */}
-                <section aria-labelledby="proposal-title">
+                <section aria-labelledby="proposal-title" onMouseDown={() => setSelectedVoter('')}>
                   <ProposalContent body={commonProps.body} />
                 </section>
 

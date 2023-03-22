@@ -2,6 +2,9 @@ import useSWR, { Fetcher } from 'swr'
 import { ProfileResponse } from '../pages/api/profile';
 import FormattedAddress from './FormattedAddress';
 import { useEffect, useState } from 'react';
+import { useAccount } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { useClearDelegate, useDelegated, useSetDelegate } from '../hooks/snapshot/Delegations';
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -118,9 +121,7 @@ export default function VoterProfile({ voter, space, proposal }: VoterProfilePro
         </div>
 
         {/* Delegate */}
-        <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 mt-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
-          Delegate
-        </button>
+        <DelegateActions delegate={voter} />
       </div>
     )
   } else {
@@ -128,4 +129,76 @@ export default function VoterProfile({ voter, space, proposal }: VoterProfilePro
       <div />
     )
   }
+}
+
+function DelegateActions({ delegate }: { delegate: string }) {
+  const { address, isConnecting, isDisconnected } = useAccount()
+  const { openConnectModal } = useConnectModal()
+  const { data: delegatedAddress } = useDelegated('jbdao.eth', address)
+
+  // Wallet: connecting / not connected
+  // Delegate: delegate / undelegate
+  if (isConnecting) {
+    return (
+      <button disabled className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 mt-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
+        Connecting
+      </button>
+    )
+  } else if (!address) {
+    return (
+      <button onClick={() => openConnectModal()}
+        className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 mt-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
+        Connect Wallet
+      </button>
+    )
+  } else if (delegatedAddress === delegate) {
+    return <ClearDelegateButton />
+  } else {
+    return <SetDelegateButton delegate={delegate} />
+  }
+
+}
+
+function SetDelegateButton({ delegate }: { delegate: string }) {
+  const { data, isLoading, isSuccess, write, error } = useSetDelegate('jbdao.eth', delegate)
+
+  console.debug("SetButton", { data, isLoading, write, error })
+
+  let label = "Delegate"
+  if (error) {
+    label = "Error"
+    console.debug("SetDelegate", { error })
+  } else if (isLoading) {
+    label = "Check Wallet"
+  } else if (!write) {
+    label = "Preparing"
+  }
+
+  return (
+    <button disabled={!write || error !== null || isLoading} onClick={() => write?.()}
+      className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 mt-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
+      {label}
+    </button>
+  )
+}
+
+function ClearDelegateButton() {
+  const { data, isLoading, isSuccess, write, error } = useClearDelegate('jbdao.eth')
+
+  let label = "Undelegate"
+  if (error) {
+    label = "Error"
+    console.debug("SetDelegate", { error })
+  } else if (isLoading) {
+    label = "Check Wallet"
+  } else if (!write) {
+    label = "Preparing"
+  }
+
+  return (
+    <button disabled={!write || error !== null || isLoading} onClick={() => write?.()}
+      className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 mt-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
+      {label}
+    </button>
+  )
 }
