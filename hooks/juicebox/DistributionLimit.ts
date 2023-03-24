@@ -2,8 +2,8 @@ import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
 import { useProvider, useContract } from "wagmi";
 import { getJBController, getJBETHPaymentTerminal } from "juice-sdk";
 import { useContractReadValue } from "./ContractReadValue";
-import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController.json';
-import JBETHPaymentTerminalV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal.json';
+import JBFundAccessConstraintsStore from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBFundAccessConstraintsStore.json';
+import JBETHPaymentTerminalV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal3_1.json';
 
 const ETH_TOKEN_ADDRESS = '0x000000000000000000000000000000000000eeee'
 
@@ -14,7 +14,7 @@ export function useDistributionLimit(
 )  {
     const provider = useProvider();
     const contract = isV3 ? 
-        useContract({address: JBControllerV3.address, abi: JBControllerV3.abi, signerOrProvider: provider}) 
+        useContract({address: JBFundAccessConstraintsStore.address, abi: JBFundAccessConstraintsStore.abi, signerOrProvider: provider})
         : getJBController(provider);
     const terminal = isV3 ?
         useContract({address: JBETHPaymentTerminalV3.address, abi: JBETHPaymentTerminalV3.abi, signerOrProvider: provider})

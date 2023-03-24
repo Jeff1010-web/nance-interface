@@ -6,8 +6,8 @@ import { TerminalV1Contract } from "./contractsV1";
 import JBControllerV2 from '@jbx-protocol/contracts-v2/deployments/mainnet/JBController.json';
 import JBETHPaymentTerminal from '@jbx-protocol/contracts-v2/deployments/mainnet/JBETHPaymentTerminal.json';
 import { SafeMultisigTransaction } from "../models/SafeTypes";
-import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController.json';
-import JBETHPaymentTerminalV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal.json';
+import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController3_1.json';
+import JBETHPaymentTerminalV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal3_1.json';
 
 function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
     if (!m) return undefined;
