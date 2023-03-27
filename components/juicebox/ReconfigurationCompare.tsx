@@ -267,7 +267,7 @@ function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumb
     return `${(_percent / _totalPercent * 100).toFixed(2)}%`
   }
 
-  const _amount = version == 1 ? amountSubFee(target, fee) : amountSubFeeV2(target, fee);
+  const _amount = target; //version == 1 ? amountSubFee(target, fee) : amountSubFeeV2(target, fee);
   return `${(_percent / _totalPercent * 100).toFixed(2)}% (${formatCurrency(currency, _amount.mul(percent).div(_totalPercent))})`
 }
 
