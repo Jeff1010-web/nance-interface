@@ -51,222 +51,197 @@ const CONTRACT_MAP: AddressMap = {
 }
 
 export default function JuiceboxPage() {
-    // router
-    const [query, setQuery] = useQueryParams({ 
-      project: withDefault(NumberParam, 1), 
-      version: withDefault(NumberParam, 3),
-      role: withDefault(StringParam, "Multisig"),
-      safeTxHash: withDefault(StringParam, "") 
-    });
-    const project = query.project;
-    const version = query.version;
-    const role = query.role;
-    // state
-    const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined);
-    const [metadata, setMetadata] = useState<ProjectMetadataV4>(undefined);
-    // FIXME remove me on endpoint and here
-    const [currentTime, setCurrentTime] = useState<string>(undefined);
+  // router
+  const [query, setQuery] = useQueryParams({
+    project: withDefault(NumberParam, 1),
+    version: withDefault(NumberParam, 3),
+    role: withDefault(StringParam, "Multisig"),
+    safeTxHash: withDefault(StringParam, "")
+  });
+  const project = query.project;
+  const version = query.version;
+  const role = query.role;
+  // state
+  const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined);
+  const [metadata, setMetadata] = useState<ProjectMetadataV4>(undefined);
+  // FIXME remove me on endpoint and here
+  const [currentTime, setCurrentTime] = useState<string>(undefined);
 
-    // external hooks
-    const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(version, project);
-    const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : undefined;
-    const { data: specifiedSafeTx } = useMultisigTransactionOf(owner, query.safeTxHash, query.safeTxHash !== "");
+  // external hooks
+  const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(version, project);
+  const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : undefined;
+  const { data: specifiedSafeTx } = useMultisigTransactionOf(owner, query.safeTxHash, query.safeTxHash !== "");
 
-    const setSelectedTxOption = (tx: TxOption) => {
-      setSelectedSafeTx(tx);
-      setQuery({ safeTxHash: tx?.tx?.safeTxHash });
-    }
-
-    // nance
-    const { address } = useAccount();
-    const { data: signer, isError, isLoading: signerLoading } = useSigner()
-    const jrpcSigner = signer as JsonRpcSigner;
-    const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest({
-        space: "juicebox",
-        version: `V${version}`,
-        address: address || '0x0000000000000000000000000000000000000000',
-        datetime: currentTime,
-        network: 'mainnet'
-    }, currentTime !== undefined && project === 1);
-    const reconfigData = reconfig?.data
-
-    // this will override selectedSafeTx from options
-    const rawData = reconfig?.data?.transaction?.bytes
-    let _txForComponent = selectedSafeTx?.tx
-    if (role === "Multisig" && specifiedSafeTx?.results?.[0]) {
-      _txForComponent = selectedSafeTx?.tx || specifiedSafeTx?.results?.[0]
-    }
-
-    // nance post safe transaction
-    const [nonce, setNonce] = useState<string>(undefined);
-    const [error, setError] = useState<string>(undefined)
-    const [gnosisLoading, setGnosisLoading] = useState(false)
-    const [gnosisResponse, setGnosisResponse] = useState({success: undefined, data: undefined})
-    const postTransaction = async () => {
-      setGnosisLoading(true);
-      const gnosis = new GnosisHandler(owner, 'mainnet');
-      const txnPartial = {
-          to: reconfigData?.transaction?.address,
-          value: 0,
-          data: reconfigData?.transaction?.bytes,
-          nonce: nonce || reconfigData?.nonce
-      };
-      const { safeTxGas } = await gnosis.getEstimate(txnPartial);
-      const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
-      const signature = await signer.signMessage(message).then((sig) => {
-          return sig.replace(/1b$/, '1f').replace(/1c$/, '20')
-      }).catch(() => {
-          setGnosisLoading(false)
-          setError('signature rejected');
-          return 'signature rejected'
-      })
-      if (signature === 'signature rejected') { return }
-      const txn: QueueSafeTransaction = {
-          ...txnPartial,
-          address,
-          safeTxGas,
-          transactionHash,
-          signature
-      };
-      const res = await gnosis.queueTransaction(txn)
-      setGnosisLoading(false);
-      setGnosisResponse(res)
+  const setSelectedTxOption = (tx: TxOption) => {
+    setSelectedSafeTx(tx);
+    setQuery({ safeTxHash: tx?.tx?.safeTxHash });
   }
 
-    const onProjectOptionSet = (option: ProjectOption) => {
-      setQuery({
-        project: option.projectId, 
-        version: parseInt(option.version[0] ?? "1")
-      });
+  // nance
+  const { address } = useAccount();
+  const { data: signer, isError, isLoading: signerLoading } = useSigner()
+  const jrpcSigner = signer as JsonRpcSigner;
+  const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest({
+    space: "juicebox",
+    version: `V${version}`,
+    address: address || '0x0000000000000000000000000000000000000000',
+    datetime: currentTime,
+    network: 'mainnet'
+  }, currentTime !== undefined && project === 1);
+  const reconfigData = reconfig?.data
+
+  // this will override selectedSafeTx from options
+  const rawData = reconfig?.data?.transaction?.bytes
+  let _txForComponent = selectedSafeTx?.tx
+  if (role === "Multisig" && specifiedSafeTx?.results?.[0]) {
+    _txForComponent = selectedSafeTx?.tx || specifiedSafeTx?.results?.[0]
+  }
+
+  // nance post safe transaction
+  const [nonce, setNonce] = useState<string>(undefined);
+  const [error, setError] = useState<string>(undefined)
+  const [gnosisLoading, setGnosisLoading] = useState(false)
+  const [gnosisResponse, setGnosisResponse] = useState({ success: undefined, data: undefined })
+  const postTransaction = async () => {
+    setGnosisLoading(true);
+    const gnosis = new GnosisHandler(owner, 'mainnet');
+    const txnPartial = {
+      to: reconfigData?.transaction?.address,
+      value: 0,
+      data: reconfigData?.transaction?.bytes,
+      nonce: nonce || reconfigData?.nonce
+    };
+    const { safeTxGas } = await gnosis.getEstimate(txnPartial);
+    const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
+    const signature = await signer.signMessage(message).then((sig) => {
+      return sig.replace(/1b$/, '1f').replace(/1c$/, '20')
+    }).catch(() => {
+      setGnosisLoading(false)
+      setError('signature rejected');
+      return 'signature rejected'
+    })
+    if (signature === 'signature rejected') { return }
+    const txn: QueueSafeTransaction = {
+      ...txnPartial,
+      address,
+      safeTxGas,
+      transactionHash,
+      signature
+    };
+    const res = await gnosis.queueTransaction(txn)
+    setGnosisLoading(false);
+    setGnosisResponse(res)
+  }
+
+  const onProjectOptionSet = (option: ProjectOption) => {
+    setQuery({
+      project: option.projectId,
+      version: parseInt(option.version[0] ?? "1")
+    });
+  }
+
+  useEffect(() => {
+    setCurrentTime(new Date().toISOString())
+  }, [projectInfo, owner])
+
+  useEffect(() => {
+    if (projectInfo?.metadataUri) {
+      fetchMetadata(projectInfo.metadataUri)
+        .then((metadata) => {
+          setMetadata(consolidateMetadata(metadata));
+        })
+        .catch(e => {
+          console.error('📗 Juicebox.loadMetadata >', { e });
+        })
     }
 
-    useEffect(() => {
-        setCurrentTime(new Date().toISOString())
-    }, [projectInfo, owner])
+    // cleanup
+    return () => {
+      setMetadata(undefined);
+    }
+  }, [projectInfo]);
 
-    useEffect(() => {
-      if (projectInfo?.metadataUri) {
-        fetchMetadata(projectInfo.metadataUri)
-          .then((metadata) => {
-              setMetadata(consolidateMetadata(metadata));
-          })
-          .catch(e => {
-            console.error('📗 Juicebox.loadMetadata >', {e});
-        })
-      }
-      
-      // cleanup
-      return () => {
-          setMetadata(undefined);
-      }
-    }, [projectInfo]);
+  const notSupportedByNance = project !== 1 && role === "Bookkeeper";
 
-    const notSupportedByNance = project !== 1 && role === "Bookkeeper";
-    
-    return (
-        <>
-          <SiteNav pageTitle="Juicebox Reconfiguration Helper" withWallet />
-          <Tabs tabs={TABS} currentTab={role} setCurrentTab={(tab) => setQuery({role: tab})} />
-          <div className="bg-white">
-            <div id="project-info" className="flex flex-col items-center py-2 mx-6">
-              <img className="mx-auto h-32 w-32 flex-shrink-0 rounded-full" src={metadata?.logoUri || '/images/juiceboxdao_logo.gif'} alt="project logo" />
-              <p className="text-base font-medium text-gray-900">{metadata?.name || `Untitled Project (${project})`}</p>
-              <dd className="text-gray-700 break-words line-clamp-3 w-1/3">{metadata?.description || 'Loading metadata...'}</dd>
-              <ResolvedProject projectId={project} version={version} />
+  return (
+    <>
+      <SiteNav pageTitle="Juicebox Reconfiguration Helper" withWallet />
+      <Tabs tabs={TABS} currentTab={role} setCurrentTab={(tab) => setQuery({ role: tab })} />
+      <div className="bg-white">
+        <div id="project-info" className="flex flex-col items-center py-2 mx-6">
+          <img className="mx-auto h-32 w-32 flex-shrink-0 rounded-full" src={metadata?.logoUri || '/images/juiceboxdao_logo.gif'} alt="project logo" />
+          <p className="text-base font-medium text-gray-900">{metadata?.name || `Untitled Project (${project})`}</p>
+          <dd className="text-gray-700 break-words line-clamp-3 w-1/3">{metadata?.description || 'Loading metadata...'}</dd>
+          <ResolvedProject projectId={project} version={version} />
+        </div>
+
+        <div id="project-selector" className="flex justify-center gap-x-3 pt-2 mx-6">
+          <ProjectSearch onProjectOptionSet={onProjectOptionSet} label="Seach project by handle" />
+        </div>
+        <div id="safetx-loader" className="flex justify-center pt-2 mx-6">
+          {role === "Multisig" && (
+            <div className="w-1/2">
+              <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedTxOption} safeAddress={owner} shouldRun={owner !== undefined} addressMap={CONTRACT_MAP} />
             </div>
+          )}
 
-            {/* V2V3 Fc Switcher */}
-            {(version === 2 || version === 3) && (
-              <Switch.Group as="div" className="flex justify-center items-center">
-                <Switch
-                  checked={version === 3}
-                  onChange={(enabled) => setQuery({ version: enabled ? 3 : 2 })}
-                  className={classNames(
-                    version === 3 ? 'bg-indigo-600' : 'bg-gray-200',
-                    'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
-                  )}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={classNames(
-                      version === 3 ? 'translate-x-5' : 'translate-x-0',
-                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out'
-                    )}
-                  />
-                </Switch>
-                <Switch.Label as="span" className="ml-3">
-                  <span className="text-sm font-medium text-gray-900">Switch to {version === 3 ? "V2" : "V3"}</span>
-                </Switch.Label>
-              </Switch.Group>
-            )}
-
-            <div id="project-selector" className="flex justify-center gap-x-3 pt-2 mx-6">
-              <ProjectSearch onProjectOptionSet={onProjectOptionSet} label="Seach project by handle" />
+          {project !== 1 && role === "Bookkeeper" && (
+            <div className="">
+              <span>Not supported by Nance, you can reach out on <a href="https://discord.com/channels/775859454780244028/955977240787685416" className="underline">Discord</a></span>
             </div>
-            <div id="safetx-loader" className="flex justify-center pt-2 mx-6">
-              {role === "Multisig" && (
-                <div className="w-1/2">
-                  <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedTxOption} safeAddress={owner} shouldRun={owner !== undefined} addressMap={CONTRACT_MAP} />
-                </div>
-              )}
+          )}
 
-              {project !== 1 && role === "Bookkeeper" && (
-                <div className="">
-                  <span>Not supported by Nance, you can reach out on <a href="https://discord.com/channels/775859454780244028/955977240787685416" className="underline">Discord</a></span>
-                </div>
-              )}
-              
-              {project === 1 && role === "Bookkeeper" && (
-                <div className="w-1/4 space-y-2">
-                  <button
-                    disabled={rawData === undefined || selectedSafeTx === undefined}
-                    className="ml-3 inline-flex content-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-                    onClick={() => setSelectedSafeTx(undefined)}
-                  >
-                    {reconfigLoading ? 
-                      "Nance loading..." 
-                      : selectedSafeTx === undefined ? 
-                          rawData !== undefined ? "Nance loaded" : "Nance error"
-                      : "Use nance"}
-                  </button>
+          {project === 1 && role === "Bookkeeper" && (
+            <div className="w-1/4 space-y-2">
+              <button
+                disabled={rawData === undefined || selectedSafeTx === undefined}
+                className="ml-3 inline-flex content-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                onClick={() => setSelectedSafeTx(undefined)}
+              >
+                {reconfigLoading ?
+                  "Nance loading..."
+                  : selectedSafeTx === undefined ?
+                    rawData !== undefined ? "Nance loaded" : "Nance error"
+                    : "Use nance"}
+              </button>
 
-                  <div className="flex space-x-2">
-                    <button
-                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-                        disabled={!jrpcSigner || !rawData}
-                        onClick={postTransaction}
-                    >{(gnosisLoading) ? 'Signing...' : 'Queue'}</button>
-                    <input
-                        type="number"
-                        placeholder="custom nonce"
-                        defaultValue={reconfigData?.nonce}
-                        onChange={(e) => setNonce(e.target.value)}
-                        className="inline-flex rounded rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
-                    />
-                  </div>
-                </div>
-              )}
-              
-              {/* <textarea rows={3} className="w-full rounded-xl" id="raw-data" placeholder="Paste raw data here" value={rawData} onChange={(e) => setRawData(e.target.value)} /> */}
-            </div>
-            <br />
-
-            {version == 1 && !notSupportedByNance && <V1Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
-            {version == 2 && !notSupportedByNance && <V2Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
-            {version == 3 && !notSupportedByNance && <V3Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
-
-            {_txForComponent?.safeTxHash && (
-              <div className="flex justify-center pt-2 pb-10 mx-6">
-                <a target="_blank" rel="noopener noreferrer"
-                  className="text-green-500 hover:underline text-lg"
-                  href={`https://gnosis-safe.io/app/eth:${owner}/transactions/${_txForComponent?.safeTxHash}`}>
-                  Sign on Gnosis Safe
-                </a>
+              <div className="flex space-x-2">
+                <button
+                  className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+                  disabled={!jrpcSigner || !rawData}
+                  onClick={postTransaction}
+                >{(gnosisLoading) ? 'Signing...' : 'Queue'}</button>
+                <input
+                  type="number"
+                  placeholder="custom nonce"
+                  defaultValue={reconfigData?.nonce}
+                  onChange={(e) => setNonce(e.target.value)}
+                  className="inline-flex rounded rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
               </div>
-            )}
+            </div>
+          )}
+
+          {/* <textarea rows={3} className="w-full rounded-xl" id="raw-data" placeholder="Paste raw data here" value={rawData} onChange={(e) => setRawData(e.target.value)} /> */}
+        </div>
+        <br />
+
+        {version == 1 && !notSupportedByNance && <V1Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
+        {version == 2 && !notSupportedByNance && <V2Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
+        {version == 3 && !notSupportedByNance && <V3Compare projectId={project} tx={_txForComponent} rawData={rawData} />}
+
+        {_txForComponent?.safeTxHash && (
+          <div className="flex justify-center pt-2 pb-10 mx-6">
+            <a target="_blank" rel="noopener noreferrer"
+              className="text-green-500 hover:underline text-lg"
+              href={`https://gnosis-safe.io/app/eth:${owner}/transactions/${_txForComponent?.safeTxHash}`}>
+              Sign on Gnosis Safe
+            </a>
           </div>
-        </>
-    )
+        )}
+      </div>
+    </>
+  )
 }
 
 function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
@@ -274,7 +249,7 @@ function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
 
   // for compare
-  const { value: fc, loading: fcIsLoading } = useCurrentFundingCycle({projectId});
+  const { value: fc, loading: fcIsLoading } = useCurrentFundingCycle({ projectId });
   const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentPayoutMods(projectId, fc?.configured);
   const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentTicketMods(projectId, fc?.configured);
   const metadata = parseV1Metadata(fc?.metadata);
@@ -311,7 +286,7 @@ function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
 
   // for compare
-  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({projectId});
+  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId });
   const [fc, metadata] = _fc || [];
   const { value: fee, loading: feeIsLoading } = useTerminalFee({ version: "2" });
   const { value: _limit, loading: targetIsLoading } = useDistributionLimit(projectId, fc?.configuration);
@@ -356,7 +331,7 @@ function V3Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
 
   // for compare
-  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({projectId, isV3});
+  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId, isV3 });
   const [fc, metadata] = _fc || [];
   const { value: fee, loading: feeIsLoading } = useTerminalFee({ version: "3" });
   const { value: _limit, loading: targetIsLoading } = useDistributionLimit(projectId, fc?.configuration, isV3);
