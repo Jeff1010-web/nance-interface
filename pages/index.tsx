@@ -5,7 +5,7 @@ import { NumberParam, useQueryParams, StringParam, BooleanParam, withDefault } f
 import { useRouter } from "next/router"
 import { useProposals, useSpaceInfo } from "../hooks/NanceHooks"
 import { Proposal } from "../models/NanceTypes"
-import useTotalSupplyOfProject from "../hooks/juicebox/TotalSupplyOfProject"
+import { useTotalSupplyOfProject } from "../hooks/juicebox/TotalSupplyOfProject"
 import { formatTokenBalance } from "../libs/NumberFormatter"
 import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo"
 import { useEffect, useState } from "react"
