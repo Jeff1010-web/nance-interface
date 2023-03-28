@@ -20,7 +20,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Custom404 from "../404";
 import VoterProfile from "../../components/VoterProfile";
-import { ChevronDownIcon } from "@heroicons/react/solid";
+import ScrollToBottom from "../../components/ScrollToBottom";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -196,6 +196,8 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
                 </div>
               </section>
             </div>
+
+            <ScrollToBottom />
           </ProposalContext.Provider>
         </main>
       </div>
@@ -458,7 +460,7 @@ function NewVote({ refetch }: { refetch: (option?: any) => void }) {
 
   return (
     <div className="my-4">
-      <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full"
+      <button id="vote" className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full"
         onClick={() => {
           if (isConnected) {
             setModalIsOpen(true);
