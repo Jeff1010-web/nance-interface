@@ -7,7 +7,7 @@ import FormattedAddress from "../../components/FormattedAddress";
 import { fromUnixTime, format } from "date-fns";
 import { createContext, useContext, useEffect, useState } from "react";
 import VotingModal from "../../components/VotingModal";
-import { withDefault, NumberParam, createEnumParam, useQueryParams, useQueryParam } from "next-query-params";
+import { withDefault, NumberParam, createEnumParam, useQueryParams, useQueryParam, StringParam } from "next-query-params";
 import { processChoices } from "../../libs/snapshotUtil";
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -20,6 +20,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Custom404 from "../404";
 import VoterProfile from "../../components/VoterProfile";
+import { ChevronDownIcon } from "@heroicons/react/solid";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -87,14 +88,19 @@ const ProposalContext = createContext<{ commonProps: ProposalCommonProps, propos
 
 export default function NanceProposalPage({ proposal, snapshotProposal }: { proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }) {
   const [selectedVoter, setSelectedVoter] = useState<string>('');
-  const [overrideSpace, setOverrideSpace] = useQueryParam('overrideSpace');
+  const [query, setQuery] = useQueryParams({
+    page: withDefault(NumberParam, 1),
+    sortBy: withDefault(createEnumParam(["time", "vp"]), "time"),
+    withField: withDefault(createEnumParam(["reason", "app"]), ""),
+    overrideSpace: StringParam
+  });
   const editPageQuery = {
     proposalId: proposal?.hash,
     version: 2,
     project: 1
   };
-  if (overrideSpace) {
-    editPageQuery['overrideSpace'] = overrideSpace;
+  if (query.overrideSpace) {
+    editPageQuery['overrideSpace'] = query.overrideSpace;
   }
 
   // this page need proposal to work
@@ -145,9 +151,22 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
                 <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6 sticky top-6 bottom-6 opacity-100" style={{
                   maxHeight: 'calc(100vh - 9rem)'
                 }}>
-                  <h2 id="timeline-title" className="text-lg font-medium text-gray-900">
+
+
+                  <button onClick={() => {
+                    if (query.sortBy === "time") {
+                      setQuery({ sortBy: "vp" })
+                    } else {
+                      setQuery({ sortBy: "time" })
+                    }
+                  }} className="text-lg font-medium">
+
                     Votes
-                  </h2>
+                    <span className="ml-2 text-center text-gray-300 text-xs">
+                      sort by {query.sortBy}
+                    </span>
+
+                  </button>
 
                   {!snapshotProposal && (
                     <div className="my-2">
@@ -285,7 +304,7 @@ function ProposalVotes({ selectedVoter, setSelectedVoter }) {
   const { proposalInfo } = useContext(ProposalContext);
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
-    sortBy: withDefault(createEnumParam(["created", "vp"]), "created"),
+    sortBy: withDefault(createEnumParam(["time", "vp"]), "time"),
     withField: withDefault(createEnumParam(["reason", "app"]), "")
   });
 
