@@ -18,6 +18,7 @@ import { SnapshotProposal, useProposalsByID } from "../hooks/snapshot/Proposals"
 import { getLastSlash } from "../libs/nance"
 import { useAccount } from "wagmi"
 import { Tooltip } from "flowbite-react"
+import ScrollToBottom from "../components/ScrollToBottom"
 
 export default function NanceProposals() {
   const router = useRouter();
@@ -108,7 +109,7 @@ export default function NanceProposals() {
                 </div>
               </div>
 
-              <div className="md:w-5/12 flex space-x-4">
+              <div className="md:w-5/12 flex space-x-4 hidden md:block">
                 <SpaceStats />
               </div>
 
@@ -131,7 +132,7 @@ export default function NanceProposals() {
                 setQuery({
                   cycle: parseInt(opt.id)
                 })
-              }} options={options} label="Search cycle" />
+              }} options={options} label="Select cycle" />
             </div>
 
             {/* Search bar and limit */}
@@ -191,6 +192,8 @@ export default function NanceProposals() {
           <div className="mt-2 text-center underline">
             {overrideSpace ? `Override Space: ${overrideSpace}` : ''}
           </div>
+
+          <ScrollToBottom />
         </div>
       </div>
     </>
@@ -391,11 +394,11 @@ function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
   return (
     <>
       <div className="mt-6 bg-white">
-        <div className="-mx-6 mt-10 ring-1 ring-gray-300 sm:mx-0 sm:rounded-lg">
+        <div className="mt-10 ring-1 ring-gray-300 sm:mx-0 rounded-lg">
           <table className="min-w-full divide-y divide-gray-300">
             <thead>
               <tr>
-                <th scope="col" className="hidden py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 lg:table-cell">
+                <th scope="col" className="hidden py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 md:table-cell">
                   <SortableTableHeader val="status" label="Status" />
                 </th>
                 <th
@@ -406,17 +409,17 @@ function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
+                  className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 md:table-cell"
                 >
                   <SortableTableHeader val="approval" label="Approval" />
                 </th>
                 <th
                   scope="col"
-                  className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 lg:table-cell"
+                  className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 md:table-cell"
                 >
                   <SortableTableHeader val="participants" label="Participants" />
                 </th>
-                <th scope="col" className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell">
+                <th scope="col" className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 md:table-cell">
                   <SortableTableHeader val="voted" label="Voted" />
                 </th>
               </tr>
@@ -429,7 +432,7 @@ function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
                     <td
                       className={classNames(
                         proposalIdx === 0 ? '' : 'border-t border-transparent',
-                        'relative py-4 pl-6 pr-3 text-sm hidden lg:table-cell'
+                        'relative py-4 pl-6 pr-3 text-sm hidden md:table-cell'
                       )}
                     >
                       <div className="font-medium text-gray-900">
@@ -463,7 +466,29 @@ function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
                         'px-3 py-3.5 text-sm text-gray-500'
                       )}
                     >
-                      <div className="flex flex-col">
+                      <div className="flex flex-col space-y-1">
+                        <div className="text-gray-900 block md:hidden">
+                          {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                              {proposal.status}
+                            </span>
+                          )}
+                          {proposal.status === 'Approved' && (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              Approved
+                            </span>
+                          )}
+                          {proposal.status === 'Cancelled' && (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                              Cancelled
+                            </span>
+                          )}
+                          {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled' && proposal.status !== 'Draft' && proposal.status !== 'Revoked') && (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                              {proposal.status}
+                            </span>
+                          )}
+                        </div>
                         <span className="text-xs">
                           {`GC-${proposal.governanceCycle}, JBP-${proposal.proposalId || "tbd"} - by `}
                           <FormattedAddress address={proposal.authorAddress} noLink />
@@ -477,7 +502,7 @@ function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
                     <td
                       className={classNames(
                         proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                        'px-3 py-3.5 text-sm text-gray-500'
+                        'hidden px-3 py-3.5 text-sm text-gray-500 md:table-cell'
                       )}
                     >
                       {['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(snapshotProposalDict[getLastSlash(proposal.voteURL)]?.type) ? (
@@ -491,7 +516,7 @@ function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
                     <td
                       className={classNames(
                         proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                        'hidden px-3 py-3.5 text-sm text-black lg:table-cell text-center'
+                        'hidden px-3 py-3.5 text-sm text-black md:table-cell text-center'
                       )}
                     >
                       {proposal?.voteResults?.votes || '-'}
@@ -499,7 +524,7 @@ function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
                     <td
                       className={classNames(
                         proposalIdx === 0 ? '' : 'border-t border-gray-200',
-                        'px-3 py-3.5 text-sm text-gray-500 hidden lg:table-cell text-center'
+                        'px-3 py-3.5 text-sm text-gray-500 hidden md:table-cell text-center'
                       )}
                     >
                       {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
