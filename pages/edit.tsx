@@ -108,7 +108,7 @@ function Form({ space }: { space: string }) {
   const methods = useForm<ProposalFormValues>();
   const { register, handleSubmit, control, formState: { errors } } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
-    const { body, title, payout, ...restOfProposal } = metadata?.loadedProposal ?? { }; // send back all values except ones in form
+    const { body, title, payout, ...restOfProposal } = metadata?.loadedProposal ?? {}; // send back all values except ones in form
     const payload = {
       ...formData.proposal,
       body: await htmlToMarkdown(formData.proposal.body),
@@ -211,12 +211,8 @@ function Form({ space }: { space: string }) {
                           images_upload_handler: imageUpload,
                           content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                           autosave_restore_when_empty: true,
-                          template_replace_values: {
-                            username: isConnected ? address : "Wallet not connected"
-                          },
-                          template_cdate_format: '%Y-%m-%d',
                           templates: [
-                            { title: 'Proposal template', description: 'Author and date will be replaced automatically', content: TEMPLATE }
+                            { title: 'Proposal template', description: 'Default for most proposal', content: TEMPLATE }
                           ],
                           relative_urls: false
                         }}
@@ -391,6 +387,4 @@ function PayoutMetadataForm() {
   )
 }
 
-const TEMPLATE = `<h1>Proposal Template</h1><pre><code>Author: {$username}
-Date: <span class="cdate">(YYYY-MM-DD)</span>
-</code></pre><h2>Synopsis</h2><p><em>State what the proposal does in one sentence.</em></p><p></p><h2>Motivation</h2><p><em>What problem does this solve? Why now?</em></p><p></p><h2>Specification</h2><p><em>How exactly will this be executed? Be specific and leave no ambiguity.</em></p><p></p><h2>Rationale</h2><p><em>Why is this specification appropriate?</em></p><p></p><h2>Risks</h2><p><em>What might go wrong?</em></p><p></p><h2>Timeline</h2><p><em>When exactly should this proposal take effect? When exactly should this proposal end?</em></p>`
+const TEMPLATE = `<h1>Proposal Template</h1><h2>Synopsis</h2><p><em>State what the proposal does in one sentence.</em></p><p></p><h2>Motivation</h2><p><em>What problem does this solve? Why now?</em></p><p></p><h2>Specification</h2><p><em>How exactly will this be executed? Be specific and leave no ambiguity.</em></p><p></p><h2>Rationale</h2><p><em>Why is this specification appropriate?</em></p><p></p><h2>Risks</h2><p><em>What might go wrong?</em></p><p></p><h2>Timeline</h2><p><em>When exactly should this proposal take effect? When exactly should this proposal end?</em></p>`
