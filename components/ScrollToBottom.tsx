@@ -48,12 +48,12 @@ export default function JumpToTopOrBottom() {
   return (
     <div className="z-50 fixed bottom-0 opacity-50">
       {showTopButton && (
-        <button className="fixed bottom-3 left-3 h-8 w-8 rounded-full bg-white border" onClick={handleTopClick}>
+        <button className="fixed bottom-2 left-2 h-10 w-10 md:bottom-6 md:left-6 md:h-15 md:w-15 rounded-full bg-white border" onClick={handleTopClick}>
           <ChevronUpIcon />
         </button>
       )}
       {showBottomButton && (
-        <button className="fixed bottom-3 right-3 h-8 w-8 rounded-full bg-white border" onClick={handleBottomClick}>
+        <button className="fixed bottom-2 right-2 h-10 w-10 md:bottom-6 md:right-6 md:h-15 md:w-15 rounded-full bg-white border" onClick={handleBottomClick}>
           <ChevronDownIcon />
         </button>
       )}

@@ -4,7 +4,7 @@ import SiteNav from "../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../components/FormattedAddress";
-import { fromUnixTime, format } from "date-fns";
+import { fromUnixTime, format, toDate } from "date-fns";
 import { createContext, useContext, useEffect, useState } from "react";
 import VotingModal from "../../components/VotingModal";
 import { withDefault, NumberParam, createEnumParam, useQueryParams, useQueryParam, StringParam } from "next-query-params";
@@ -15,12 +15,14 @@ import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../components/ColorBar";
 import { fetchProposal } from "../../hooks/NanceHooks";
 import { getLastSlash } from "../../libs/nance";
-import { Proposal } from "../../models/NanceTypes";
+import { Proposal, Payout } from "../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Custom404 from "../404";
 import VoterProfile from "../../components/VoterProfile";
 import ScrollToBottom from "../../components/ScrollToBottom";
+import { ExternalLinkIcon } from "@heroicons/react/solid";
+import ResolvedProject from "../../components/ResolvedProject";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -83,7 +85,11 @@ interface ProposalCommonProps {
   body: string;
   created: number;
   end: number;
+  snapshot: string,
+  ipfs: string,
+  payout: Payout
 }
+
 const ProposalContext = createContext<{ commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal }>(undefined);
 
 export default function NanceProposalPage({ proposal, snapshotProposal }: { proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }) {
@@ -114,7 +120,10 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
     author: snapshotProposal?.author || proposal.authorAddress,
     body: snapshotProposal?.body || proposal.body,
     created: snapshotProposal?.start || Math.floor(new Date(proposal.date).getTime() / 1000),
-    end: snapshotProposal?.end || 0
+    end: snapshotProposal?.end || 0,
+    snapshot: snapshotProposal?.snapshot || "",
+    ipfs: snapshotProposal?.ipfs || "",
+    payout: proposal.payout
   }
   console.debug("📚NanceProposalPage.begin", commonProps, proposal, snapshotProposal);
 
@@ -210,24 +219,70 @@ function ProposalContent({ body }: { body: string }) {
 
   return (
     <div className="">
-      <div className="px-4 py-5 sm:px-6 flex space-x-3 justify-between">
+      <div className="px-4 py-5 sm:px-6 flex flex-col">
         <h1 id="applicant-information-title" className="text-3xl font-medium">
           {commonProps.title}
         </h1>
 
-        <div>
-          <p className="text-sm text-gray-500">
-            by&nbsp;
-            <FormattedAddress address={commonProps.author} style="text-gray-500" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
-          </p>
-          <p className="text-sm text-gray-500 italic">
-            <time dateTime={commonProps.created ? fromUnixTime(commonProps.created).toString() : ''}>{commonProps.created && format(fromUnixTime(commonProps.created), 'MMMM d, yyyy')}</time>
-          </p>
-        </div>
+        <p className="text-sm text-gray-500 text-right">
+          by&nbsp;
+          <FormattedAddress address={commonProps.author} style="text-gray-500" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
+        </p>
 
+        {/* Metadata */}
+        <div className="my-4 border bg-gray-100 rounded-md px-4 py-5 sm:px-6">
+          <h2 className="text-gray-500 mb-3">Metadata</h2>
+
+          <div className="grid grid-cols-2 gaps-4">
+            {commonProps.ipfs && (
+              <>
+                <span className="font-medium">IPFS:</span>
+                <a target="_blank" rel="noreferrer" href={`https://snapshot.mypinata.cloud/ipfs/${commonProps.ipfs}`}>#bafkrei<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+              </>
+            )}
+
+            <span className="font-medium">Start date:</span>
+            <span>{format(toDate(commonProps.created * 1000), "LLL dd, u KK:mm a")}</span>
+
+            {commonProps.end > 0 && (
+              <>
+                <span className="font-medium">End date:</span>
+                <span>{format(toDate(commonProps.end * 1000), "LLL dd, u KK:mm a")}</span>
+              </>
+            )}
+
+            {commonProps.snapshot && (
+              <>
+                <span className="font-medium">Snapshot:</span>
+                <a target="_blank" rel="noreferrer" href={`https://etherscan.io/block/${commonProps.snapshot}`}>{commonProps.snapshot}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+              </>
+            )}
+
+            {commonProps.payout && (
+              <>
+                <span className="font-medium">Payout:</span>
+
+                {commonProps.payout.project && (
+                  <span>
+                    Pay&nbsp;<ResolvedProject version={2} projectId={commonProps.payout.project} />{` $${commonProps.payout.amountUSD} for ${commonProps.payout.count} cycles`}
+                  </span>
+                )}
+
+                {commonProps.payout.address && (
+                  <span>
+                    Pay&nbsp;<FormattedAddress address={commonProps.payout.address} />{` $${commonProps.payout.amountUSD} for ${commonProps.payout.count} cycles`}
+                  </span>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       </div>
-      <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
-        <article className="prose prose-lg prose-indigo mx-auto mt-6 text-gray-500 break-words">
+
+
+
+      <div className="px-4 py-5 sm:px-6">
+        <article className="prose prose-lg prose-indigo mx-auto text-gray-500 break-words">
           <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>{body}</ReactMarkdown>
         </article>
       </div>

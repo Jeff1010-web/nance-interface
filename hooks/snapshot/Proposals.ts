@@ -27,7 +27,9 @@ query Proposals($first: Int, $skip: Int, $space: String, $state: String, $keywor
     scores,
     votes,
     quorum,
-    scores_total
+    scores_total,
+    ipfs,
+    snapshot
   }
 }
 `
@@ -56,7 +58,9 @@ query ProposalsByID($first: Int, $proposalIds: [String]) {
     scores,
     votes,
     quorum,
-    scores_total
+    scores_total,
+    ipfs,
+    snapshot
   }
 }
 `
@@ -77,7 +81,9 @@ query Proposals($id: String) {
     scores
     votes,
     quorum,
-    scores_total
+    scores_total,
+    ipfs,
+    snapshot
   }
 }
 `
@@ -166,6 +172,8 @@ export interface SnapshotProposal {
   created: number;
   start: number;
   end: number;
+  ipfs: string;     // bafkreiete6tryrhksyt5gowckreabilu57zl4shjrl6kptkfy7oiowqd44
+  snapshot: string  // 16922147
   // voting
   choices: string[];
   scores: number[];
