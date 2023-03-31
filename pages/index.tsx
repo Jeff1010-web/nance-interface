@@ -281,19 +281,6 @@ function getVotedIcon(choice) {
 type SortOptions = "" | "status" | "title" | "approval" | "participants" | "voted"
 const SortOptionsArr = ["status", "title", "approval", "participants", "voted"]
 
-function getVotingTimeLabel(p: SnapshotProposal) {
-  if (!p) return ""
-
-  const currentTime = Math.floor(Date.now() / 1000)
-  if (currentTime < p.start) {
-    return `Voting starts ${formatDistanceToNow(toDate(p.start * 1000), { addSuffix: true })}`
-  } else if (currentTime >= p.start && currentTime <= p.end) {
-    return `Voting ends ${formatDistanceToNow(toDate(p.end * 1000), { addSuffix: true })}`
-  } else {
-    return `Voting ended ${formatDistanceToNow(toDate(p.end * 1000), { addSuffix: true })}`
-  }
-}
-
 function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
   {
     space: string, loading: boolean, proposals: Proposal[],
@@ -519,19 +506,7 @@ function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
                         'hidden px-3 py-3.5 text-sm text-gray-500 md:table-cell'
                       )}
                     >
-                      <div className="flex flex-col space-y-1">
-                        <span className="text-xs">
-                          {getVotingTimeLabel(snapshotProposalDict[getLastSlash(proposal.voteURL)])}
-                        </span>
-
-                        {['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(snapshotProposalDict[getLastSlash(proposal.voteURL)]?.type) ? (
-                          // sum all scores to get the total score
-                          <ColorBar greenScore={snapshotProposalDict[getLastSlash(proposal.voteURL)].scores_total || 0} redScore={0} />
-                        ) : (
-                          <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} />
-                        )
-                        }
-                      </div>
+                      <VotesBar proposal={proposal} snapshotProposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} />
                     </td>
                     <td
                       className={classNames(
@@ -603,6 +578,59 @@ function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
       )}
     </>
   )
+}
+
+function getVotingTimeLabel(p: SnapshotProposal) {
+  if (!p) return ""
+
+  const currentTime = Math.floor(Date.now() / 1000)
+  if (currentTime < p.start) {
+    return `Voting starts ${formatDistanceToNow(toDate(p.start * 1000), { addSuffix: true })}`
+  } else if (currentTime >= p.start && currentTime <= p.end) {
+    return `Voting ends ${formatDistanceToNow(toDate(p.end * 1000), { addSuffix: true })}`
+  } else {
+    return `Voting ended ${formatDistanceToNow(toDate(p.end * 1000), { addSuffix: true })}`
+  }
+}
+
+function VotesBar({ snapshotProposal, proposal }: { snapshotProposal: SnapshotProposal, proposal: Proposal }) {
+  const hasSnapshotVoting = snapshotProposal !== undefined
+
+  if (hasSnapshotVoting) {
+    return (
+      <div className="flex flex-col space-y-1">
+        <span className="text-xs">
+          {getVotingTimeLabel(snapshotProposal)}
+        </span>
+
+        {['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(snapshotProposal?.type) ? (
+          // sum all scores to get the total score
+          <ColorBar greenScore={snapshotProposal.scores_total || 0} redScore={0} />
+        ) : (
+          <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} />
+        )
+        }
+      </div>
+    )
+  } else {
+    return (
+      <div className="flex flex-col space-y-1">
+        {proposal.status === "Cancelled" && (
+          <span className="text-xs">
+            Temp check failed
+          </span>
+        )}
+        {proposal.status !== "Cancelled" && (
+          <span className="text-xs">
+            Temp check
+          </span>
+        )}
+
+
+        <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
+      </div>
+    )
+  }
 }
 
 function classNames(...classes) {
