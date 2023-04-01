@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useClearDelegate, useDelegated, useSetDelegate } from '../hooks/snapshot/Delegations';
+import { XCircleIcon } from '@heroicons/react/solid';
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "short" });
 const formatNumber = (num) => formatter.format(num);
@@ -13,6 +14,7 @@ interface VoterProfileProps {
   voter: string
   space: string
   proposal: string
+  close: () => void
 }
 
 const fetcher: Fetcher<ProfileResponse, VoterProfileProps & { url: string }> = async ({ url, voter, space, proposal }) => {
@@ -25,7 +27,7 @@ const fetcher: Fetcher<ProfileResponse, VoterProfileProps & { url: string }> = a
 }
 
 // avatar, voting power, votes cast, delegate function
-export default function VoterProfile({ voter, space, proposal }: VoterProfileProps) {
+export default function VoterProfile({ voter, space, proposal, close }: VoterProfileProps) {
   const [shouldFetch, setShouldFetch] = useState<boolean>(false)
   const { data, error, isLoading } = useSWR(shouldFetch ? { url: '/api/profile?', voter, space, proposal } : null, fetcher)
 
@@ -47,14 +49,14 @@ export default function VoterProfile({ voter, space, proposal }: VoterProfilePro
   } else if (voter && isLoading) {
     // skeleton loader
     return (
-      <div className="absolute z-10 -left-80 bg-white rounded-lg shadow p-5 flex flex-col space-y-5 animate-pulse">
+      <div className="absolute z-10 -top-10 right-3 lg:-left-80 lg:top-auto lg:right-auto bg-white rounded-lg shadow p-5 flex flex-col space-y-2 animate-pulse">
         {/* Avatar */}
-        <div className='flex justify-center'>
+        <div className='justify-center hidden lg:flex'>
           <img className="rounded-full bg-slate-200 h-20 w-20 p-3" />
         </div>
 
         {/* Stats */}
-        <div className='flex justify-between space-x-10'>
+        <div className='flex justify-between space-x-2 lg:space-x-10'>
           <FormattedAddress address={voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
           <div className="rounded-full bg-slate-200 h-2"></div>
 
@@ -84,16 +86,22 @@ export default function VoterProfile({ voter, space, proposal }: VoterProfilePro
     )
   } else if (voter && data) {
     return (
-      <div className="absolute z-10 -left-80 bg-white rounded-lg shadow p-5 flex flex-col space-y-5 ease-in duration-100">
+      <div className="absolute z-10 -top-10 right-3 lg:-left-80 lg:top-auto lg:right-auto bg-white rounded-lg shadow p-5 flex flex-col space-y-2 ease-in duration-100">
+        <div className='flex justify-end'>
+          <div onClick={() => close()}>
+            <XCircleIcon className='h-5 w-5' />
+          </div>
+        </div>
+
         {/* Avatar */}
-        <div className='flex justify-center'>
+        <div className='justify-center hidden lg:flex'>
           <img src={`https://cdn.stamp.fyi/avatar/${voter}`} className="rounded-full h-20 w-20 p-3" />
 
           {data.delegators.slice(0, 2).map(d => <img key={d} src={`https://cdn.stamp.fyi/avatar/${d}`} className="rounded-full h-20 w-20 p-3" />)}
         </div>
 
         {/* Stats */}
-        <div className='flex justify-between space-x-10'>
+        <div className='flex justify-between space-x-2 lg:space-x-10'>
           <FormattedAddress address={voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
 
           <div className='flex space-x-1'>
@@ -151,6 +159,8 @@ function DelegateActions({ delegate }: { delegate: string }) {
         Connect Wallet
       </button>
     )
+  } else if (address === delegate) {
+    return null
   } else if (delegatedAddress === delegate) {
     return <ClearDelegateButton />
   } else {
