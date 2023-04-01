@@ -407,7 +407,7 @@ function ProposalVotes({ selectedVoter, setSelectedVoter }) {
           </div>
 
           <ul role="list" className="space-y-2 pt-2">
-            <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={selectedVoter} />
+            <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={selectedVoter} close={() => setSelectedVoter('')} />
 
             {loading && "loading..."}
             {data?.votesData?.map((vote) => (
@@ -467,7 +467,7 @@ function ProposalVotes({ selectedVoter, setSelectedVoter }) {
         </div>
 
         <ul role="list" className="space-y-2 pt-2">
-          <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={selectedVoter} />
+          <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={selectedVoter} close={() => setSelectedVoter('')} />
 
           {loading && "loading..."}
           {data?.votesData?.map((vote) => (
