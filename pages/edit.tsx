@@ -214,7 +214,8 @@ function Form({ space }: { space: string }) {
                           templates: [
                             { title: 'Proposal template', description: 'Default for most proposal', content: TEMPLATE }
                           ],
-                          relative_urls: false
+                          relative_urls: false,
+                          browser_spellcheck: true,
                         }}
                       />
                     }
