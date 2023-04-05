@@ -1,22 +1,27 @@
 import axios from 'axios';
+import FormData from 'form-data';
 
-const API = 'https://api.nft.storage';
-const gateway = 'ipfs.nftstorage.link';
-const key = process.env.NEXT_PUBLIC_STORAGE_KEY
+const API = 'https://ipfs.infura.io:5001/api/v0';
+const gateway = 'nance.infura-ipfs.io/ipfs';
+const AUTH_HEADER = `Basic ${Buffer.from(
+  `${process.env.NEXT_PUBLIC_INFURA_IPFS_ID}:${process.env.NEXT_PUBLIC_INFURA_IPFS_SECRET}`,
+).toString('base64')}`;
 
+// https://github.com/jbx-protocol/juice-interface/blob/main/src/lib/infura/ipfs.ts
 export async function imageUpload(blobInfo: any) {
-  const data = Buffer.from(blobInfo.base64(), 'base64');
+  const formData = new FormData();
+  formData.append('file', blobInfo.blob());
   return axios({
     method: 'post',
-    url: `${API}/upload`,
+    url: `${API}/add`,
     headers: {
-      'Authorization': `Bearer ${key}`,
-      'Content-Type': '*/*',
+      'Authorization': AUTH_HEADER,
+      'Content-Type': 'multipart/form-data',
     },
-    data
+    data: formData
   }).then((res) => {
-    const cid = res.data.value.cid;
-    return `https://${cid}.${gateway}`
+    const cid = res.data.Hash;
+    return `https://${gateway}/${cid}`
   }).catch((e) => {
     return Promise.reject(e);
   });

@@ -16,7 +16,8 @@ You should set these env variables accordingly for the app to work.
 * `NEXT_PUBLIC_SNAPSHOT_SUBGRAPH_ID` Subgraph Deployment ID of [Snapshot](https://thegraph.com/hosted-service/subgraph/snapshot-labs/snapshot)
 * `NEXT_PUBLIC_TINY_KEY` API Key of [TinyMCE, WYSIWYG Editor](https://www.tiny.cloud/)
 * `NEXT_PUBLIC_OVERRIDE_SPACE` By default, the space is `juicebox`, you can use this to override.
-* `NEXT_PUBLIC_STORAGE_KEY` API Key of [NFT.storage](https://nft.storage/), used by proposal editor to upload attached images on IPFS.
+* `NEXT_PUBLIC_INFURA_IPFS_ID` Infura IPFS PROJECT ID, used by proposal editor to upload attached images on IPFS
+* `NEXT_PUBLIC_INFURA_IPFS_SECRET` Infura IPFS API Key Secret, used by proposal editor to upload attached images on IPFS.
 
 ### Framework & Library
 
