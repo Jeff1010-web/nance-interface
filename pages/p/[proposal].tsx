@@ -93,7 +93,6 @@ interface ProposalCommonProps {
 const ProposalContext = createContext<{ commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal }>(undefined);
 
 export default function NanceProposalPage({ proposal, snapshotProposal }: { proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }) {
-  const [selectedVoter, setSelectedVoter] = useState<string>('');
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
     sortBy: withDefault(createEnumParam(["time", "vp"]), "time"),
@@ -142,7 +141,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
             <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
               <div className="space-y-6 lg:col-span-2 lg:col-start-1">
                 {/* Content */}
-                <section aria-labelledby="proposal-title" onMouseDown={() => setSelectedVoter('')}>
+                <section aria-labelledby="proposal-title">
                   <ProposalContent body={commonProps.body} />
                 </section>
 
@@ -218,7 +217,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
                   )}
 
                   {snapshotProposal && (
-                    <ProposalVotes selectedVoter={selectedVoter} setSelectedVoter={setSelectedVoter} />
+                    <ProposalVotes />
                   )}
                 </div>
               </section>
@@ -374,9 +373,10 @@ function ProposalOptions({ proposal, isOverview = false }:
   )
 }
 
-function ProposalVotes({ selectedVoter, setSelectedVoter }) {
+function ProposalVotes() {
 
   const { proposalInfo } = useContext(ProposalContext);
+  const [selectedVoter, setSelectedVoter] = useState<string>('');
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
     sortBy: withDefault(createEnumParam(["time", "vp"]), "time"),
@@ -407,35 +407,37 @@ function ProposalVotes({ selectedVoter, setSelectedVoter }) {
           </div>
 
           <ul role="list" className="space-y-2 pt-2">
-            <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={selectedVoter} close={() => setSelectedVoter('')} />
-
             {loading && "loading..."}
             {data?.votesData?.map((vote) => (
               <li key={vote.id}>
-                <div className="flex flex-col" onMouseEnter={() => setSelectedVoter(vote.voter)}>
-                  <div className="text-sm">
-                    <div>
-                      <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
+                <div className="flex flex-col">
+                  <div onClick={() => vote.voter === selectedVoter ? setSelectedVoter('') : setSelectedVoter(vote.voter)}>
+                    <div className="text-sm">
+                      <div>
+                        <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
+                      </div>
+
+                      <div className="text-xs text-slate-700 font-semibold">
+                        {`${formatNumber(vote.vp)} (${(vote.vp * 100 / proposalInfo?.scores_total).toFixed()}%)`} total
+                      </div>
+
+                      <div className="text-sm text-gray-600 py-2">
+                        {(processChoices(proposalInfo.type, vote.choice) as string[]).map((choice, idx) => (
+                          <p key={`${vote.id} - ${idx}`}>{choice}</p>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="text-xs text-slate-700 font-semibold">
-                      {`${formatNumber(vote.vp)} (${(vote.vp * 100 / proposalInfo?.scores_total).toFixed()}%)`} total
-                    </div>
-
-                    <div className="text-sm text-gray-600 py-2">
-                      {(processChoices(proposalInfo.type, vote.choice) as string[]).map((choice, idx) => (
-                        <p key={`${vote.id} - ${idx}`}>{choice}</p>
-                      ))}
-                    </div>
+                    {
+                      vote.reason && (
+                        <div className="text-sm text-gray-600">
+                          {vote.reason}
+                        </div>
+                      )
+                    }
                   </div>
 
-                  {
-                    vote.reason && (
-                      <div className="text-sm text-gray-600">
-                        {vote.reason}
-                      </div>
-                    )
-                  }
+                  <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={vote.voter} isOpen={vote.voter === selectedVoter} />
                 </div>
               </li>
             ))}
@@ -467,40 +469,45 @@ function ProposalVotes({ selectedVoter, setSelectedVoter }) {
         </div>
 
         <ul role="list" className="space-y-2 pt-2">
-          <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={selectedVoter} close={() => setSelectedVoter('')} />
-
           {loading && "loading..."}
           {data?.votesData?.map((vote) => (
             <li key={vote.id}>
-              <div className="flex flex-col" onMouseEnter={() => setSelectedVoter(vote.voter)}>
-                <div className="text-sm flex justify-between">
-                  <div>
-                    <div className="inline">
-                      <FormattedAddress address={vote.voter} style="text-gray-900" noLink={true} />
+              <div className={classNames(
+                "flex flex-col",
+                vote.voter === selectedVoter ? "bg-blue-100 rounded-lg shadow p-4" : ""
+              )}>
+                <div onMouseEnter={() => vote.voter === selectedVoter ? setSelectedVoter('') : setSelectedVoter(vote.voter)}>
+                  <div className="text-sm flex justify-between">
+                    <div>
+                      <div className="inline">
+                        <FormattedAddress address={vote.voter} style="text-gray-900" noLink={true} />
+                      </div>
+
+                      &nbsp;
+                      <span className={classNames(
+                        getColorOfChoice(processChoices(proposalInfo.type, vote.choice) as string),
+                        ''
+                      )}>
+                        voted {processChoices(proposalInfo.type, vote.choice) as string}
+                      </span>
                     </div>
 
-                    &nbsp;
-                    <span className={classNames(
-                      getColorOfChoice(processChoices(proposalInfo.type, vote.choice) as string),
-                      ''
-                    )}>
-                      voted {processChoices(proposalInfo.type, vote.choice) as string}
-                    </span>
+                    <div>
+                      {`${formatNumber(vote.vp)} (${(vote.vp * 100 / proposalInfo?.scores_total).toFixed()}%)`}
+                    </div>
+
                   </div>
 
-                  <div>
-                    {`${formatNumber(vote.vp)} (${(vote.vp * 100 / proposalInfo?.scores_total).toFixed()}%)`}
-                  </div>
-
+                  {
+                    vote.reason && (
+                      <div className="text-sm text-gray-600">
+                        {vote.reason}
+                      </div>
+                    )
+                  }
                 </div>
 
-                {
-                  vote.reason && (
-                    <div className="text-sm text-gray-600">
-                      {vote.reason}
-                    </div>
-                  )
-                }
+                <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={vote.voter} isOpen={vote.voter === selectedVoter} />
               </div>
             </li>
           ))}
