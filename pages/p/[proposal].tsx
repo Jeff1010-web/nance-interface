@@ -386,68 +386,7 @@ function ProposalVotes() {
   const { loading, data, error, refetch } = useProposalVotes(proposalInfo, Math.max((query.page - 1) * VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
 
   const proposalType = proposalInfo.type;
-
-  if (['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(proposalType)) {
-    return (
-      <div className="flex flex-col" style={{
-        height: 'calc(100vh - 12rem)'
-      }}>
-        <div className="overflow-y-scroll pt-5 grow">
-          <div className="border-t border-gray-200 py-6">
-            <div className="flex justify-between">
-              <p className="text-green-500 text-sm">VOTES {formatNumber(proposalInfo.scores_total || 0)}</p>
-            </div>
-            <div className='p-3 text-sm text-gray-500'>
-              <ColorBar greenScore={proposalInfo.scores_total || 0} redScore={0} noTooltip />
-            </div>
-            <div className="flex justify-between">
-              <p className="text-sm">QUORUM {formatNumber(proposalInfo.quorum || 0)}</p>
-              <p className="text-sm">VOTER {formatNumber(proposalInfo.votes || 0)}</p>
-            </div>
-          </div>
-
-          <ul role="list" className="space-y-2 pt-2">
-            {loading && "loading..."}
-            {data?.votesData?.map((vote) => (
-              <li key={vote.id}>
-                <div className="flex flex-col">
-                  <div onClick={() => vote.voter === selectedVoter ? setSelectedVoter('') : setSelectedVoter(vote.voter)}>
-                    <div className="text-sm">
-                      <div>
-                        <FormattedAddress address={vote.voter} style="text-gray-900" overrideURLPrefix="https://juicetool.xyz/snapshot/profile/" openInNewWindow={true} />
-                      </div>
-
-                      <div className="text-xs text-slate-700 font-semibold">
-                        {`${formatNumber(vote.vp)} (${(vote.vp * 100 / proposalInfo?.scores_total).toFixed()}%)`} total
-                      </div>
-
-                      <div className="text-sm text-gray-600 py-2">
-                        {(processChoices(proposalInfo.type, vote.choice) as string[]).map((choice, idx) => (
-                          <p key={`${vote.id} - ${idx}`}>{choice}</p>
-                        ))}
-                      </div>
-                    </div>
-
-                    {
-                      vote.reason && (
-                        <div className="text-sm text-gray-600">
-                          {vote.reason}
-                        </div>
-                      )
-                    }
-                  </div>
-
-                  <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={vote.voter} isOpen={vote.voter === selectedVoter} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <NewVote refetch={refetch} />
-      </div>
-    )
-  }
+  const isSimpleVoting = !['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(proposalType);
 
   return (
     <div className="flex flex-col" style={{
@@ -455,13 +394,31 @@ function ProposalVotes() {
     }}>
       <div className="overflow-y-scroll pt-5 grow">
         <div className="">
-          <div className="flex justify-between">
-            <p className="text-green-500 text-sm">FOR {formatNumber(proposalInfo.scores[0] || 0)}</p>
-            <p className="text-red-500 text-sm">AGAINST {formatNumber(proposalInfo.scores[1] || 0)}</p>
-          </div>
-          <div className='p-3 text-sm text-gray-500'>
-            <ColorBar greenScore={proposalInfo.scores[0] || 0} redScore={proposalInfo.scores[1] || 0} noTooltip />
-          </div>
+          {isSimpleVoting && (
+            <>
+              <div className="flex justify-between">
+                <p className="text-green-500 text-sm">FOR {formatNumber(proposalInfo.scores[0] || 0)}</p>
+                <p className="text-red-500 text-sm">AGAINST {formatNumber(proposalInfo.scores[1] || 0)}</p>
+              </div>
+
+              <div className='p-3 text-sm text-gray-500'>
+                <ColorBar greenScore={proposalInfo.scores[0] || 0} redScore={proposalInfo.scores[1] || 0} noTooltip />
+              </div>
+            </>
+          )}
+
+          {!isSimpleVoting && (
+            <>
+              <div className="flex justify-between">
+                <p className="text-green-500 text-sm">VOTES {formatNumber(proposalInfo.scores_total || 0)}</p>
+              </div>
+
+              <div className='p-3 text-sm text-gray-500'>
+                <ColorBar greenScore={proposalInfo.scores_total || 0} redScore={0} noTooltip />
+              </div>
+            </>
+          )}
+
           <div className="flex justify-between">
             <p className="text-sm">QUORUM {formatNumber(proposalInfo.quorum || 0)}</p>
             <p className="text-sm">VOTER {formatNumber(proposalInfo.votes || 0)}</p>
@@ -476,27 +433,48 @@ function ProposalVotes() {
                 "flex flex-col",
                 vote.voter === selectedVoter ? "bg-blue-100 rounded-lg shadow p-4" : ""
               )}>
-                <div onMouseEnter={() => vote.voter === selectedVoter ? setSelectedVoter('') : setSelectedVoter(vote.voter)}>
-                  <div className="text-sm flex justify-between">
-                    <div>
-                      <div className="inline">
+                <div onMouseEnter={() => setSelectedVoter(vote.voter)}>
+                  {isSimpleVoting && (
+                    <div className="text-sm flex justify-between">
+                      <div>
+                        <div className="inline">
+                          <FormattedAddress address={vote.voter} style="text-gray-900" noLink={true} />
+                        </div>
+
+                        &nbsp;
+                        <span className={classNames(
+                          getColorOfChoice(processChoices(proposalInfo.type, vote.choice) as string),
+                          ''
+                        )}>
+                          voted {processChoices(proposalInfo.type, vote.choice) as string}
+                        </span>
+                      </div>
+
+                      <div>
+                        {`${formatNumber(vote.vp)} (${(vote.vp * 100 / proposalInfo?.scores_total).toFixed()}%)`}
+                      </div>
+
+                    </div>
+                  )}
+
+                  {!isSimpleVoting && (
+                    <div className="text-sm flex flex-col">
+                      <div>
                         <FormattedAddress address={vote.voter} style="text-gray-900" noLink={true} />
                       </div>
 
-                      &nbsp;
-                      <span className={classNames(
-                        getColorOfChoice(processChoices(proposalInfo.type, vote.choice) as string),
-                        ''
-                      )}>
-                        voted {processChoices(proposalInfo.type, vote.choice) as string}
-                      </span>
-                    </div>
+                      <div className="text-xs text-slate-700 font-semibold">
+                        {`${formatNumber(vote.vp)} (${(vote.vp * 100 / proposalInfo?.scores_total).toFixed()}%)`} total
+                      </div>
 
-                    <div>
-                      {`${formatNumber(vote.vp)} (${(vote.vp * 100 / proposalInfo?.scores_total).toFixed()}%)`}
+                      <div className="text-sm text-gray-600 py-2">
+                        {(processChoices(proposalInfo.type, vote.choice) as string[]).map((choice, idx) => (
+                          <p key={`${vote.id} - ${idx}`}>{choice}</p>
+                        ))}
+                      </div>
                     </div>
+                  )}
 
-                  </div>
 
                   {
                     vote.reason && (
