@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, Fragment } from "react";
 import SiteNav from "../components/SiteNav";
 import { useForm, FormProvider, useFormContext, Controller, SubmitHandler } from "react-hook-form";
 import ResolvedEns from "../components/ResolvedEns";
@@ -7,6 +7,7 @@ import { withDefault, NumberParam, useQueryParams, StringParam } from "next-quer
 import React from "react";
 import { useRouter } from "next/router";
 import Notification from "../components/Notification";
+import GenericButton from "../components/GenericButton";
 import { fetchProposal, useProposalUpload } from "../hooks/NanceHooks";
 import { imageUpload } from "../hooks/ImageUpload";
 import { Proposal, ProposalUploadRequest } from "../models/NanceTypes";
@@ -21,6 +22,8 @@ import { Editor } from '@tinymce/tinymce-react';
 
 import { markdownToHtml, htmlToMarkdown } from '../libs/markdown';
 import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { CurrencyDollarIcon, LightningBoltIcon, PlusIcon, SwitchVerticalIcon, UserGroupIcon, XIcon } from "@heroicons/react/solid";
+import { Combobox, Dialog, Transition } from '@headlessui/react'
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -70,11 +73,10 @@ export default function NanceEditProposal({ loadedProposal }: { loadedProposal: 
         pageTitle="Edit Proposal"
         description="Create or edit proposal on Nance."
         withWallet />
-      <div className="m-4 lg:m-6 flex flex-col justify-center">
-        <p className="text-center text-xl font-bold text-gray-600">
+      <div className="m-4 lg:m-6 flex flex-col">
+        <p className="text-2xl font-bold">
           {proposalId ? "Edit" : "New"} Proposal
         </p>
-        <ResolvedProject version={version} projectId={project} style="text-center" />
         <ProposalMetadataContext.Provider value={{ loadedProposal, version, project }}>
           <Form space={space} />
         </ProposalMetadataContext.Provider>
@@ -83,7 +85,7 @@ export default function NanceEditProposal({ loadedProposal }: { loadedProposal: 
   )
 }
 
-type ProposalFormValues = Omit<ProposalUploadRequest, "type" | "version">
+type ProposalFormValues = Omit<ProposalUploadRequest, "signature">
 
 function Form({ space }: { space: string }) {
   // query and context
@@ -110,11 +112,14 @@ function Form({ space }: { space: string }) {
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
     const { body, title, payout, ...restOfProposal } = metadata?.loadedProposal ?? {}; // send back all values except ones in form
     const payload = {
-      ...formData.proposal,
-      body: await htmlToMarkdown(formData.proposal.body),
-      type: "Payout",
-      version: String(metadata.version),
-      ...restOfProposal
+      proposal: {
+        ...formData.proposal,
+        body: await htmlToMarkdown(formData.proposal.body),
+        type: "Payout",
+        version: String(metadata.version),
+        ...restOfProposal
+      },
+      actions: formData.actions
     };
     console.debug("📚 Nance.editProposal.onSubmit ->", { formData, payload })
 
@@ -131,7 +136,7 @@ function Form({ space }: { space: string }) {
       reset();
       const req: ProposalUploadRequest = {
         signature,
-        proposal: payload
+        ...payload
       }
       console.debug("📗 Nance.editProposal.submit ->", req);
       return trigger(req);
@@ -161,31 +166,20 @@ function Form({ space }: { space: string }) {
       <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
 
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
-          <div className="md:grid md:grid-cols-3 md:gap-6">
-            <div className="md:col-span-1">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">Proposal</h3>
-              <p className="mt-1 text-sm text-gray-500">Detailed content of your proposal.</p>
-            </div>
-            <div className="mt-5 md:col-span-2 md:mt-0">
-              <div className="grid grid-cols-6 gap-6">
-                <div className="col-span-6 sm:col-span-3">
-                  <label htmlFor="first-name" className="block text-sm font-medium text-gray-700">
-                    Title
-                  </label>
+          <div>
+            <div className="mt-5 md:mt-0">
+              <div className=" gap-6">
+                <div className="">
                   <input
                     type="text"
-                    {...register("proposal.title", { value: metadata.loadedProposal?.title || "" })}
+                    {...register("proposal.title", { value: metadata.loadedProposal?.title || "Title" })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="about" className="mt-6 block text-sm font-medium text-gray-700">
-                  Body
-                </label>
-
-                <div className="mt-1">
+                <div className="mt-4">
                   <Controller
                     name="proposal.body"
                     control={control}
@@ -227,19 +221,7 @@ function Form({ space }: { space: string }) {
           </div>
         </div>
 
-        <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
-          <div className="md:grid md:grid-cols-3 md:gap-6">
-            <div className="md:col-span-1">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">Metadata</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                This information will be used by Nance to automate governance.
-              </p>
-            </div>
-            <div className="mt-5 space-y-6 md:col-span-2 md:mt-0">
-              <PayoutMetadataForm />
-            </div>
-          </div>
-        </div>
+        <Actions />
 
         <div className="flex justify-end">
           <Link href={`/${space !== NANCE_DEFAULT_SPACE ? `?overrideSpace=${space}` : ''}`}>
@@ -276,14 +258,183 @@ function Form({ space }: { space: string }) {
   )
 }
 
-function PayoutMetadataForm() {
+function Actions() {
+  const [open, setOpen] = useState(false)
+  const [selectedAction, setSelectedAction] = useState<ActionItem>()
+  const [actions, setActions] = useState<string[]>([])
+
+  const newAction = (a: ActionItem) => {
+    setOpen(false)
+    actions.push(a.name)
+    setActions(actions)
+  }
+
+  return (
+    <div>
+      <p className="text-2xl font-bold">Proposed Actions</p>
+
+      <GenericButton onClick={() => setOpen(true)} className="mt-6">
+        <PlusIcon className="w-5 h-5" />
+        <p className="ml-1">Add an action</p>
+      </GenericButton>
+
+      {actions.map((a, i) => {
+        if (a === "Payout") {
+          return (
+            <div key={`actions.${i}`} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
+              <div className="flex justify-between mb-2">
+                <h3 className="font-semibold text-xl">Payout</h3>
+                <XIcon className="w-5 h-5" />
+              </div>
+              <PayoutMetadataForm actionIndex={i} />
+            </div>
+          )
+        } else {
+          return null
+        }
+      })}
+
+      <ActionPalettes open={open} setOpen={setOpen} selectedAction={selectedAction} setSelectedAction={newAction} />
+    </div>
+  )
+}
+
+interface ActionItem {
+  id: number;
+  name: string;
+  description: string;
+  url: string;
+  color: string;
+  icon: any
+}
+
+const items: ActionItem[] = [
+  {
+    id: 1,
+    name: 'Payout',
+    description: 'Apply payouts from Juicebox treasury.',
+    url: '#',
+    color: 'bg-blue-500',
+    icon: CurrencyDollarIcon,
+  },
+  {
+    id: 2,
+    name: 'Reserve',
+    description: 'Apply to be added in reserved token list.',
+    url: '#',
+    color: 'bg-blue-500',
+    icon: UserGroupIcon,
+  },
+  {
+    id: 3,
+    name: 'Transfer',
+    description: 'Transfer tokens from Safe.',
+    url: '#',
+    color: 'bg-blue-500',
+    icon: SwitchVerticalIcon,
+  },
+  {
+    id: 4,
+    name: 'Custom Transaction',
+    description: 'Execute custom transaction with Safe.',
+    url: '#',
+    color: 'bg-blue-500',
+    icon: LightningBoltIcon,
+  },
+  // More items...
+]
+
+function classNames(...classes) {
+  return classes.filter(Boolean).join(' ')
+}
+
+function ActionPalettes({ open, setOpen, selectedAction, setSelectedAction }) {
+
+  return (
+    <Transition.Root show={open} as={Fragment}>
+      <Dialog as="div" className="relative z-10" onClose={setOpen}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-25 transition-opacity" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 md:p-20">
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <Dialog.Panel className="mx-auto max-w-xl transform divide-y divide-gray-100 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 transition-all">
+              <Combobox value={selectedAction} onChange={setSelectedAction}>
+                <Combobox.Options static className="max-h-96 scroll-py-3 overflow-y-auto p-3">
+                  {items.map((item) => (
+                    <Combobox.Option
+                      key={item.id}
+                      value={item}
+                      className={({ active }) =>
+                        classNames('flex cursor-default select-none rounded-xl p-3', active && 'bg-gray-100')
+                      }
+                    >
+                      {({ active }) => (
+                        <>
+                          <div
+                            className={classNames(
+                              'flex h-10 w-10 flex-none items-center justify-center rounded-lg',
+                              item.color
+                            )}
+                          >
+                            <item.icon className="h-6 w-6 text-white" aria-hidden="true" />
+                          </div>
+                          <div className="ml-4 flex-auto">
+                            <p
+                              className={classNames(
+                                'text-sm font-medium',
+                                active ? 'text-gray-900' : 'text-gray-700'
+                              )}
+                            >
+                              {item.name}
+                            </p>
+                            <p className={classNames('text-sm', active ? 'text-gray-700' : 'text-gray-500')}>
+                              {item.description}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </Combobox.Option>
+                  ))}
+                </Combobox.Options>
+              </Combobox>
+            </Dialog.Panel>
+          </Transition.Child>
+        </div>
+      </Dialog>
+    </Transition.Root>
+  )
+}
+
+function PayoutMetadataForm({ actionIndex }: { actionIndex: number }) {
   const metadata = useContext(ProposalMetadataContext);
   const { register, setValue, watch, formState: { errors } } = useFormContext();
   const [inputEns, setInputEns] = useState<string>("");
 
+  function genName(field: string) {
+    return `actions.${actionIndex}.payload.payout.${field}`
+  }
+
   useEffect(() => {
     const subscription = watch((value, { name, type }) => {
-      if (name === "proposal.payout.type" && type === "change") {
+      if (name === genName("type") && type === "change") {
         if (value.proposal.payout.type == "project") {
           (document.getElementById("payoutAddressInput") as HTMLInputElement).value = "dao.jbx.eth";
           setInputEns("dao.jbx.eth");
@@ -299,11 +450,13 @@ function PayoutMetadataForm() {
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-1">
-        <label htmlFor="proposal.payout.type" className="block text-sm font-medium text-gray-700">
+        <input type="text" hidden {...register(`actions.${actionIndex}.type`, { shouldUnregister: true, value: "payout" })}></input>
+
+        <label className="block text-sm font-medium text-gray-700">
           Receiver Type
         </label>
         <select
-          {...register("proposal.payout.type",
+          {...register(genName("type"),
             { shouldUnregister: true, value: metadata.loadedProposal?.payout?.project ? "project" : "address" })}
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
         >
@@ -312,7 +465,7 @@ function PayoutMetadataForm() {
         </select>
       </div>
       <div className="col-span-4 sm:col-span-1">
-        <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-700">
           Duration(Cycles)
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
@@ -320,14 +473,14 @@ function PayoutMetadataForm() {
             type="number"
             step={1}
             min={1}
-            {...register("proposal.payout.count", { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.count || 1 })}
+            {...register(genName("count"), { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.count || 1 })}
             className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="1"
           />
         </div>
       </div>
       <div className="col-span-4 sm:col-span-2">
-        <label htmlFor="proposal.payout.amountUSD" className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-700">
           Amount
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
@@ -338,7 +491,7 @@ function PayoutMetadataForm() {
             type="number"
             step={1}
             min={0}
-            {...register("proposal.payout.amountUSD", { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.amountUSD || 0 })}
+            {...register(genName("amountUSD"), { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.amountUSD || 0 })}
             className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="1500"
           />
@@ -346,15 +499,15 @@ function PayoutMetadataForm() {
       </div>
 
       {
-        watch("proposal.payout.type") === "project" && (
+        watch(genName("type")) === "project" && (
           <div className="col-span-4 sm:col-span-2">
-            <label htmlFor="proposal.payout.project" className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700">
               Project Receiver
             </label>
             <div className="mt-1 flex rounded-md shadow-sm">
               <input
                 type="text"
-                {...register("proposal.payout.project", { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.project || 1 })}
+                {...register(genName("project"), { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.project || 1 })}
                 className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 placeholder="1"
               />
@@ -364,8 +517,8 @@ function PayoutMetadataForm() {
         )
       }
       <div className="col-span-4 sm:col-span-2">
-        <label htmlFor="payout.address" className="block text-sm font-medium text-gray-700">
-          {watch("proposal.payout.type") === "project" ? "Token Beneficiary" : "Receiver Address"}
+        <label className="block text-sm font-medium text-gray-700">
+          {watch(genName("type")) === "project" ? "Token Beneficiary" : "Receiver Address"}
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
           <input
@@ -378,14 +531,14 @@ function PayoutMetadataForm() {
           />
           <input
             type="text"
-            {...register("proposal.payout.address", { shouldUnregister: true })}
+            {...register(genName("address"), { shouldUnregister: true })}
             className="hidden w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
-        <ResolvedEns ens={inputEns} hook={(address) => setValue("proposal.payout.address", address)} />
+        <ResolvedEns ens={inputEns} hook={(address) => setValue(genName("address"), address)} />
       </div>
     </div>
   )
 }
 
-const TEMPLATE = `<h1>Proposal Template</h1><h2>Synopsis</h2><p><em>State what the proposal does in one sentence.</em></p><p></p><h2>Motivation</h2><p><em>What problem does this solve? Why now?</em></p><p></p><h2>Specification</h2><p><em>How exactly will this be executed? Be specific and leave no ambiguity.</em></p><p></p><h2>Rationale</h2><p><em>Why is this specification appropriate?</em></p><p></p><h2>Risks</h2><p><em>What might go wrong?</em></p><p></p><h2>Timeline</h2><p><em>When exactly should this proposal take effect? When exactly should this proposal end?</em></p>`
+const TEMPLATE = `<h2>Synopsis</h2><p><em>State what the proposal does in one sentence.</em></p><p></p><h2>Motivation</h2><p><em>What problem does this solve? Why now?</em></p><p></p><h2>Specification</h2><p><em>How exactly will this be executed? Be specific and leave no ambiguity.</em></p><p></p><h2>Rationale</h2><p><em>Why is this specification appropriate?</em></p><p></p><h2>Risks</h2><p><em>What might go wrong?</em></p><p></p><h2>Timeline</h2><p><em>When exactly should this proposal take effect? When exactly should this proposal end?</em></p>`

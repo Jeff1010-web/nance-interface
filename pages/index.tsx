@@ -136,7 +136,7 @@ export default function NanceProposals() {
             </div>
 
             {/* Search bar and limit */}
-            <div className="md:w-3/5">
+            <div className="md:w-4/5">
               <label htmlFor="keyword" className="block text-sm font-medium text-gray-700">
                 Search proposals
               </label>
@@ -163,21 +163,6 @@ export default function NanceProposals() {
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="md:w-1/5 flex items-end">
-              <Link
-                href={{
-                  pathname: '/edit',
-                  query: newPageQuery,
-                }}
-              >
-                <a
-                  className="rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 h-fit w-full text-center"
-                >
-                  New Proposal
-                </a>
-              </Link>
             </div>
 
           </div>

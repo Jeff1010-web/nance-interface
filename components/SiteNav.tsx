@@ -18,7 +18,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
   const navigation = [
     { name: 'Home', href: '/' },
     { name: 'Governance Process', href: '/process' },
-    { name: 'How to Submit a Proposal', href: '/guide' },
+    { name: 'New proposal', href: '/edit' },
     { name: 'Treasury', href: '/treasury' },
     { name: 'Reconfiguration', href: '/juicebox' },
     { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
