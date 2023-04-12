@@ -1,3 +1,5 @@
+import { BigNumber } from "ethers";
+
 export interface APIResponse<T> {
   success: boolean;
   error: string;
@@ -71,10 +73,10 @@ export interface SignatureRequest {
 
 export interface ProposalUploadRequest extends SignatureRequest {
   proposal: Pick<Proposal,
-    "type" | "version" |
+    "version" |
     "title" | "body" |
-    "payout" | "reserve" |
     "notification">;
+  actions: Action[];
 }
 
 // from https://github.com/jigglyjams/nance-ts/blob/main/src/types.ts
@@ -113,6 +115,11 @@ export interface Proposal {
   lastEditedTime?: Date;
 }
 
+export type Action = {
+  type: 'payout' | 'reserve' | 'transfer' | 'custom-transaction';
+  payload: Payout | Reserve | Transfer | CustomTransaction;
+}
+
 export type Payout = {
   type?: 'address' | 'project' | 'allocator';
   address: string;
@@ -134,6 +141,20 @@ export type Reserve = {
   address: string;
   percentage: number;
 };
+
+export type Transfer = {
+  contract: string;
+  to: string;
+  value: BigNumber;
+}
+
+export type CustomTransaction = {
+  contract: string;
+  value: BigNumber;
+  abi: any[];
+  functionName: string;
+  args: any[];
+}
 
 export type ParameterUpdate = {
   durationDays: number;
