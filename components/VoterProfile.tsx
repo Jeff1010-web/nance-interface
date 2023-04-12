@@ -80,7 +80,9 @@ export default function VoterProfile({ voter, space, proposal, isOpen }: VoterPr
       <div className="mt-1 flex justify-between items-center space-x-2">
         {/* Avatar */}
         <div className='justify-center hidden lg:flex'>
-          <img src={`https://cdn.stamp.fyi/avatar/${voter}`} className="rounded-full h-10 w-10 p-1" />
+          <a href={`https://snapshot.org/#/profile/${voter}`} target="_blank">
+            <img src={`https://cdn.stamp.fyi/avatar/${voter}`} className="rounded-full h-10 w-10 p-1" />
+          </a>
         </div>
 
         {/* Stats */}

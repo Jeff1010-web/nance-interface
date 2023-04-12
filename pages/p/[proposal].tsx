@@ -433,7 +433,7 @@ function ProposalVotes() {
                 "flex flex-col",
                 vote.voter === selectedVoter ? "bg-blue-100 rounded-lg shadow p-4" : ""
               )}>
-                <div onMouseEnter={() => setSelectedVoter(vote.voter)}>
+                <div className="cursor-pointer" onClick={() => vote.voter === selectedVoter ? setSelectedVoter("") : setSelectedVoter(vote.voter)}>
                   {isSimpleVoting && (
                     <div className="text-sm flex justify-between">
                       <div>
