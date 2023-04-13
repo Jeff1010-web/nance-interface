@@ -72,11 +72,9 @@ export interface SignatureRequest {
 }
 
 export interface ProposalUploadRequest extends SignatureRequest {
-  proposal: Pick<Proposal,
-    "version" |
-    "title" | "body" |
-    "notification">;
-  actions: Action[];
+  // presented when editting proposal
+  hash?: string
+  proposal: Pick<Proposal, "title" | "body" | "notification" | "actions">;
 }
 
 // from https://github.com/jigglyjams/nance-ts/blob/main/src/types.ts
@@ -90,14 +88,11 @@ export interface Proposal {
     body?: string;
     language?: string;
   },
-  payout?: Payout;
   notification?: Notification;
-  reserve?: Reserve;
   url: string;
   governanceCycle?: number;
   date?: string,
   translationURL?: string;
-  type?: string;
   status: string;
   proposalId: number | null;
   author?: string;
@@ -107,16 +102,16 @@ export interface Proposal {
   voteSetup?: SnapshotVoteOptions;
   internalVoteResults?: InternalVoteResults;
   voteResults?: VoteResults;
-  version?: string;
   authorAddress?: string;
   authorDiscordId?: string;
   temperatureCheckVotes?: number[];
   createdTime?: Date;
   lastEditedTime?: Date;
+  actions: Action[];
 }
 
 export type Action = {
-  type: 'payout' | 'reserve' | 'transfer' | 'custom-transaction';
+  type: 'Payout' | 'Reserve' | 'Transfer' | 'Custom Transaction';
   payload: Payout | Reserve | Transfer | CustomTransaction;
 }
 

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState, Fragment } from "react";
 import SiteNav from "../components/SiteNav";
-import { useForm, FormProvider, useFormContext, Controller, SubmitHandler } from "react-hook-form";
+import { useForm, FormProvider, useFormContext, Controller, SubmitHandler, useFieldArray } from "react-hook-form";
 import ResolvedEns from "../components/ResolvedEns";
 import ResolvedProject from "../components/ResolvedProject";
 import { withDefault, NumberParam, useQueryParams, StringParam } from "next-query-params";
@@ -10,7 +10,7 @@ import Notification from "../components/Notification";
 import GenericButton from "../components/GenericButton";
 import { fetchProposal, useProposalUpload } from "../hooks/NanceHooks";
 import { imageUpload } from "../hooks/ImageUpload";
-import { Proposal, ProposalUploadRequest } from "../models/NanceTypes";
+import { Proposal, ProposalUploadRequest, Action, Payout } from "../models/NanceTypes";
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Link from "next/link";
 
@@ -110,16 +110,11 @@ function Form({ space }: { space: string }) {
   const methods = useForm<ProposalFormValues>();
   const { register, handleSubmit, control, formState: { errors } } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
-    const { body, title, payout, ...restOfProposal } = metadata?.loadedProposal ?? {}; // send back all values except ones in form
+    const { body, title, hash } = metadata?.loadedProposal ?? {}; // send back all values except ones in form
     const payload = {
-      proposal: {
-        ...formData.proposal,
-        body: await htmlToMarkdown(formData.proposal.body),
-        type: "Payout",
-        version: String(metadata.version),
-        ...restOfProposal
-      },
-      actions: formData.actions
+      ...formData.proposal,
+      body: await htmlToMarkdown(formData.proposal.body),
+      hash
     };
     console.debug("📚 Nance.editProposal.onSubmit ->", { formData, payload })
 
@@ -136,7 +131,7 @@ function Form({ space }: { space: string }) {
       reset();
       const req: ProposalUploadRequest = {
         signature,
-        ...payload
+        proposal: payload
       }
       console.debug("📗 Nance.editProposal.submit ->", req);
       return trigger(req);
@@ -261,12 +256,19 @@ function Form({ space }: { space: string }) {
 function Actions() {
   const [open, setOpen] = useState(false)
   const [selectedAction, setSelectedAction] = useState<ActionItem>()
-  const [actions, setActions] = useState<string[]>([])
+
+  const { fields, append, remove } = useFieldArray<{
+    actions: Action[];
+    [key: string]: any;
+  }>({ name: "actions" });
 
   const newAction = (a: ActionItem) => {
     setOpen(false)
-    actions.push(a.name)
-    setActions(actions)
+    append({ type: a.name, payload: {} })
+  }
+
+  const genFieldName = (index: number) => {
+    return (field: string) => `proposal.actions.${index}.payload.${field}` as const
   }
 
   return (
@@ -278,19 +280,26 @@ function Actions() {
         <p className="ml-1">Add an action</p>
       </GenericButton>
 
-      {actions.map((a, i) => {
-        if (a === "Payout") {
+      {fields.map((field: any, index) => {
+        if (field.type === "Payout") {
           return (
-            <div key={`actions.${i}`} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
+            <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold text-xl">Payout</h3>
-                <XIcon className="w-5 h-5" />
+                <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
               </div>
-              <PayoutMetadataForm actionIndex={i} />
+              <PayoutMetadataForm genFieldName={genFieldName(index)} remove={remove} />
             </div>
           )
         } else {
-          return null
+          return (
+            <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
+              <div className="flex justify-between mb-2">
+                <h3 className="font-semibold text-xl">{field.type}</h3>
+                <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
+              </div>
+            </div>
+          )
         }
       })}
 
@@ -423,41 +432,20 @@ function ActionPalettes({ open, setOpen, selectedAction, setSelectedAction }) {
   )
 }
 
-function PayoutMetadataForm({ actionIndex }: { actionIndex: number }) {
-  const metadata = useContext(ProposalMetadataContext);
+function PayoutMetadataForm({ genFieldName, remove, loadedPayout = undefined }:
+  { genFieldName: (field: string) => any, remove: (i: number) => void, loadedPayout?: Payout }) {
   const { register, setValue, watch, formState: { errors } } = useFormContext();
   const [inputEns, setInputEns] = useState<string>("");
-
-  function genName(field: string) {
-    return `actions.${actionIndex}.payload.payout.${field}`
-  }
-
-  useEffect(() => {
-    const subscription = watch((value, { name, type }) => {
-      if (name === genName("type") && type === "change") {
-        if (value.proposal.payout.type == "project") {
-          (document.getElementById("payoutAddressInput") as HTMLInputElement).value = "dao.jbx.eth";
-          setInputEns("dao.jbx.eth");
-        } else {
-          (document.getElementById("payoutAddressInput") as HTMLInputElement).value = "";
-          setInputEns("");
-        }
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch]);
 
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-1">
-        <input type="text" hidden {...register(`actions.${actionIndex}.type`, { shouldUnregister: true, value: "payout" })}></input>
-
         <label className="block text-sm font-medium text-gray-700">
           Receiver Type
         </label>
         <select
-          {...register(genName("type"),
-            { shouldUnregister: true, value: metadata.loadedProposal?.payout?.project ? "project" : "address" })}
+          {...register(genFieldName("type"),
+            { shouldUnregister: true, value: loadedPayout?.project ? "project" : "address" })}
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
         >
           <option value="address">Address</option>
@@ -473,7 +461,7 @@ function PayoutMetadataForm({ actionIndex }: { actionIndex: number }) {
             type="number"
             step={1}
             min={1}
-            {...register(genName("count"), { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.count || 1 })}
+            {...register(genFieldName("count"), { valueAsNumber: true, shouldUnregister: true, value: loadedPayout?.count || 1 })}
             className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="1"
           />
@@ -491,7 +479,7 @@ function PayoutMetadataForm({ actionIndex }: { actionIndex: number }) {
             type="number"
             step={1}
             min={0}
-            {...register(genName("amountUSD"), { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.amountUSD || 0 })}
+            {...register(genFieldName("amountUSD"), { valueAsNumber: true, shouldUnregister: true, value: loadedPayout?.amountUSD || 0 })}
             className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="1500"
           />
@@ -499,7 +487,7 @@ function PayoutMetadataForm({ actionIndex }: { actionIndex: number }) {
       </div>
 
       {
-        watch(genName("type")) === "project" && (
+        watch(genFieldName("type")) === "project" && (
           <div className="col-span-4 sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700">
               Project Receiver
@@ -507,35 +495,35 @@ function PayoutMetadataForm({ actionIndex }: { actionIndex: number }) {
             <div className="mt-1 flex rounded-md shadow-sm">
               <input
                 type="text"
-                {...register(genName("project"), { valueAsNumber: true, shouldUnregister: true, value: metadata.loadedProposal?.payout?.project || 1 })}
+                {...register(genFieldName("project"), { valueAsNumber: true, shouldUnregister: true, value: loadedPayout?.project || 1 })}
                 className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 placeholder="1"
               />
             </div>
-            <ResolvedProject version={metadata.version} projectId={watch("proposal.payout.project")} />
+            <ResolvedProject version={2} projectId={watch(genFieldName("project"))} />
           </div>
         )
       }
       <div className="col-span-4 sm:col-span-2">
         <label className="block text-sm font-medium text-gray-700">
-          {watch(genName("type")) === "project" ? "Token Beneficiary" : "Receiver Address"}
+          {watch(genFieldName("type")) === "project" ? "Token Beneficiary" : "Receiver Address"}
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
           <input
             type="text"
             id="payoutAddressInput"
-            defaultValue={metadata.loadedProposal?.payout?.address || "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"}
+            value={loadedPayout?.address || "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"}
             onChange={(e) => setInputEns(e.target.value)}
             className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             placeholder="dao.jbx.eth / 0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"
           />
           <input
             type="text"
-            {...register(genName("address"), { shouldUnregister: true })}
+            {...register(genFieldName("address"), { shouldUnregister: true })}
             className="hidden w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
-        <ResolvedEns ens={inputEns} hook={(address) => setValue(genName("address"), address)} />
+        <ResolvedEns ens={inputEns} hook={(address) => setValue(genFieldName("address"), address)} />
       </div>
     </div>
   )
