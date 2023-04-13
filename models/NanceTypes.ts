@@ -95,6 +95,7 @@ export interface Proposal {
   translationURL?: string;
   status: string;
   proposalId: number | null;
+  payout: Payout;
   author?: string;
   discussionThreadURL: string;
   ipfsURL: string;
