@@ -26,6 +26,7 @@ import { CurrencyDollarIcon, LightningBoltIcon, PlusIcon, SwitchVerticalIcon, Us
 import { Combobox, Dialog, Transition } from '@headlessui/react'
 import ENSAddressInput from "../components/ENSAddressInput";
 import { ErrorMessage } from "@hookform/error-message";
+import ProjectSearch from "../components/juicebox/ProjectSearch";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -122,6 +123,7 @@ function Form({ space }: { space: string }) {
 
     setSigning(true);
 
+    // TODO combo box for project search
     signPayload(
       jrpcSigner, space as string,
       isNew ? "upload" : "edit",
@@ -494,15 +496,24 @@ function PayoutMetadataForm({ genFieldName, remove, loadedPayout = undefined }:
             <label className="block text-sm font-medium text-gray-700">
               Project Receiver
             </label>
-            <div className="mt-1 flex rounded-md shadow-sm">
-              <input
-                type="text"
-                {...register(genFieldName("project"), { valueAsNumber: true, shouldUnregister: true, value: loadedPayout?.project || 1 })}
-                className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                placeholder="1"
-              />
-            </div>
-            <ResolvedProject version={2} projectId={watch(genFieldName("project"))} />
+            <Controller
+              name={genFieldName("project")}
+              control={control}
+              rules={{
+                required: "Can't be empty",
+                validate: {
+                  positive: (v) => parseInt(v) > 0 || "Not a positive number"
+                }
+              }}
+              render={({ field: { onChange, onBlur, value, ref } }) =>
+                <ProjectSearch val={value} setVal={onChange} />
+              }
+            />
+            <ErrorMessage
+              errors={errors}
+              name={genFieldName("project")}
+              render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
+            />
           </div>
         )
       }
