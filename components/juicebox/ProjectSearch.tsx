@@ -2,19 +2,21 @@ import { useState } from 'react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/solid'
 import { Combobox } from '@headlessui/react'
 import useProjectSearch from '../../hooks/juicebox/ProjectSearch'
+import useProjectMetadata from '../../hooks/juicebox/ProjectMetadata'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
 export interface ProjectOption {
-    id: string
-    version: string
-    handle: string
-    projectId: number
+  id: string
+  version: string
+  handle: string
+  projectId: number
+  metadataUri: string
 }
 
-export default function ProjectSearch({onProjectOptionSet, label}: {onProjectOptionSet: (option: ProjectOption) => void, label: string}) {
+export default function ProjectSearch({ onProjectOptionSet, label }: { onProjectOptionSet: (option: ProjectOption) => void, label: string }) {
   const [query, setQuery] = useState('')
   const [val, setVal] = useState<ProjectOption>()
 
@@ -22,17 +24,18 @@ export default function ProjectSearch({onProjectOptionSet, label}: {onProjectOpt
 
   const options: ProjectOption[] = projects?.map((project) => {
     return {
-        id: project.id,
-        version: project.pv,
-        handle: project.handle,
-        projectId: project.projectId
+      id: project.id,
+      version: project.pv,
+      handle: project.handle,
+      projectId: project.projectId,
+      metadataUri: project.metadataUri
     }
   }) || []
 
   const updateVal = (option: ProjectOption) => {
     setVal(option)
     onProjectOptionSet(option)
-}
+  }
 
   return (
     <Combobox as="div" value={val} onChange={updateVal}>
@@ -63,19 +66,7 @@ export default function ProjectSearch({onProjectOptionSet, label}: {onProjectOpt
               >
                 {({ active, selected }) => (
                   <>
-                    <div className="flex items-center">
-                      <span
-                        className={classNames(
-                          'inline-block h-2 w-2 flex-shrink-0 rounded-full',
-                          option.version === "2" ? 'bg-green-400' : 'bg-gray-200'
-                        )}
-                        aria-hidden="true"
-                      />
-                      <span className={classNames('ml-3 truncate', selected && 'font-semibold')}>
-                        {option.version?.[0] === "1" ? "(v1)" : ""} {option.handle}
-                        <span className="sr-only"> is {option.version === "2" ? 'newest' : 'old'}</span>
-                      </span>
-                    </div>
+                    <ProjectInfoEntry option={option} />
 
                     {selected && (
                       <span
@@ -95,5 +86,34 @@ export default function ProjectSearch({onProjectOptionSet, label}: {onProjectOpt
         )}
       </div>
     </Combobox>
+  )
+}
+
+function ProjectInfoEntry({ option }: { option: ProjectOption }) {
+  const { data, loading, error } = useProjectMetadata(option.metadataUri)
+
+  return (
+    <div className="flex flex-col">
+      <div>
+        <span
+          className={classNames(
+            'inline-block h-2 w-2 flex-shrink-0 rounded-full',
+            option.version === "2" ? 'bg-green-400' : 'bg-gray-200'
+          )}
+          aria-hidden="true"
+        />
+
+        <span className="ml-3 truncate">
+          {option.version?.[0] === "1" ? "(v1) " : ""}
+          {data?.name || "..."}
+          <span className="sr-only"> is {option.version === "2" ? 'newest' : 'old'}</span>
+        </span>
+      </div>
+
+      <p className="ml-3 truncate text-gray-400">
+        {option.handle ? ` @${option.handle}` : ""}
+        {` @id: ${option.projectId}` || ""}
+      </p>
+    </div>
   )
 }
