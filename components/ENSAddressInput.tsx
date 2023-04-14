@@ -24,7 +24,12 @@ export default function ENSAddressInput({ val, setVal }: { val: string, setVal: 
       <div className="relative mt-1">
         <Combobox.Input
           className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value)
+            if (!query.endsWith('.eth')) {
+              setVal(event.target.value)
+            }
+          }}
           displayValue={(option: string) => option}
           placeholder="Address/ENS"
         />
@@ -48,6 +53,10 @@ export default function ENSAddressInput({ val, setVal }: { val: string, setVal: 
                 {({ active, selected }) => (
                   <>
                     <div className="flex items-center">
+                      <span
+                        className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-green-400"
+                        aria-hidden="true"
+                      />
                       <span className={classNames('ml-3 truncate', selected && 'font-semibold')}>
                         {option}
                       </span>

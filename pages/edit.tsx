@@ -24,6 +24,8 @@ import { markdownToHtml, htmlToMarkdown } from '../libs/markdown';
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { CurrencyDollarIcon, LightningBoltIcon, PlusIcon, SwitchVerticalIcon, UserGroupIcon, XIcon } from "@heroicons/react/solid";
 import { Combobox, Dialog, Transition } from '@headlessui/react'
+import ENSAddressInput from "../components/ENSAddressInput";
+import { ErrorMessage } from "@hookform/error-message";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -434,7 +436,7 @@ function ActionPalettes({ open, setOpen, selectedAction, setSelectedAction }) {
 
 function PayoutMetadataForm({ genFieldName, remove, loadedPayout = undefined }:
   { genFieldName: (field: string) => any, remove: (i: number) => void, loadedPayout?: Payout }) {
-  const { register, setValue, watch, formState: { errors } } = useFormContext();
+  const { register, setValue, watch, control, formState: { errors } } = useFormContext();
   const [inputEns, setInputEns] = useState<string>("");
 
   return (
@@ -508,22 +510,22 @@ function PayoutMetadataForm({ genFieldName, remove, loadedPayout = undefined }:
         <label className="block text-sm font-medium text-gray-700">
           {watch(genFieldName("type")) === "project" ? "Token Beneficiary" : "Receiver Address"}
         </label>
-        <div className="mt-1 flex rounded-md shadow-sm">
-          <input
-            type="text"
-            id="payoutAddressInput"
-            value={loadedPayout?.address || "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"}
-            onChange={(e) => setInputEns(e.target.value)}
-            className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            placeholder="dao.jbx.eth / 0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"
-          />
-          <input
-            type="text"
-            {...register(genFieldName("address"), { shouldUnregister: true })}
-            className="hidden w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-        </div>
-        <ResolvedEns ens={inputEns} hook={(address) => setValue(genFieldName("address"), address)} />
+        <Controller
+          name={genFieldName("address")}
+          control={control}
+          rules={{
+            required: "Can't be empty",
+            pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
+          }}
+          render={({ field: { onChange, onBlur, value, ref } }) =>
+            <ENSAddressInput val={value} setVal={onChange} />
+          }
+        />
+        <ErrorMessage
+          errors={errors}
+          name={genFieldName("address")}
+          render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
+        />
       </div>
     </div>
   )
