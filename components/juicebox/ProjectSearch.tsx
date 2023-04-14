@@ -19,13 +19,16 @@ export interface ProjectOption {
 export default function ProjectSearch({ val, setVal }: { val: number, setVal: (v: number) => void }) {
   const [query, setQuery] = useState('')
 
-  const { data: projects } = useProjectSearch(query);
+  const { data: projects, loading } = useProjectSearch(query);
 
   return (
     <Combobox as="div" value={val} onChange={setVal}>
       <div className="relative mt-1">
         <Combobox.Input
-          className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+          className={classNames(
+            "w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm",
+            loading && "animate-pulse"
+          )}
           onChange={(event) => setQuery(event.target.value)}
           displayValue={(val: number) => val.toString()}
         />

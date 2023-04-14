@@ -9,7 +9,7 @@ function classNames(...classes) {
 
 export default function ENSAddressInput({ val, setVal }: { val: string, setVal: (v: any) => void }) {
   const [query, setQuery] = useState('')
-  const { data: address } = useEnsAddress({
+  const { data: address, isLoading } = useEnsAddress({
     name: query,
     enabled: query.endsWith('.eth')
   })
@@ -23,7 +23,10 @@ export default function ENSAddressInput({ val, setVal }: { val: string, setVal: 
     <Combobox as="div" value={val} onChange={setVal}>
       <div className="relative mt-1">
         <Combobox.Input
-          className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+          className={classNames(
+            "w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm",
+            isLoading && "animate-pulse"
+          )}
           onChange={(event) => {
             setQuery(event.target.value)
             if (!query.endsWith('.eth')) {
