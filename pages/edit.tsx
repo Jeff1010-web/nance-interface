@@ -1,8 +1,6 @@
-import { useContext, useEffect, useState, Fragment } from "react";
+import { useContext, useState, Fragment } from "react";
 import SiteNav from "../components/SiteNav";
 import { useForm, FormProvider, useFormContext, Controller, SubmitHandler, useFieldArray } from "react-hook-form";
-import ResolvedEns from "../components/ResolvedEns";
-import ResolvedProject from "../components/ResolvedProject";
 import { withDefault, NumberParam, useQueryParams, StringParam } from "next-query-params";
 import React from "react";
 import { useRouter } from "next/router";
@@ -10,7 +8,7 @@ import Notification from "../components/Notification";
 import GenericButton from "../components/GenericButton";
 import { fetchProposal, useProposalUpload } from "../hooks/NanceHooks";
 import { imageUpload } from "../hooks/ImageUpload";
-import { Proposal, ProposalUploadRequest, Action, Payout } from "../models/NanceTypes";
+import { Proposal, ProposalUploadRequest, Action, Payout, Transfer } from "../models/NanceTypes";
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Link from "next/link";
 
@@ -292,7 +290,17 @@ function Actions() {
                 <h3 className="font-semibold text-xl">Payout</h3>
                 <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
               </div>
-              <PayoutMetadataForm genFieldName={genFieldName(index)} remove={remove} />
+              <PayoutActionForm genFieldName={genFieldName(index)} />
+            </div>
+          )
+        } else if (field.type === "Transfer") {
+          return (
+            <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
+              <div className="flex justify-between mb-2">
+                <h3 className="font-semibold text-xl">Transfer</h3>
+                <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
+              </div>
+              <TransferActionForm genFieldName={genFieldName(index)} />
             </div>
           )
         } else {
@@ -436,10 +444,9 @@ function ActionPalettes({ open, setOpen, selectedAction, setSelectedAction }) {
   )
 }
 
-function PayoutMetadataForm({ genFieldName, remove, loadedPayout = undefined }:
-  { genFieldName: (field: string) => any, remove: (i: number) => void, loadedPayout?: Payout }) {
-  const { register, setValue, watch, control, formState: { errors } } = useFormContext();
-  const [inputEns, setInputEns] = useState<string>("");
+function PayoutActionForm({ genFieldName, loadedPayout = undefined }:
+  { genFieldName: (field: string) => any, loadedPayout?: Payout }) {
+  const { register, watch, control, formState: { errors } } = useFormContext();
 
   return (
     <div className="grid grid-cols-4 gap-6">
@@ -537,6 +544,67 @@ function PayoutMetadataForm({ genFieldName, remove, loadedPayout = undefined }:
           name={genFieldName("address")}
           render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
         />
+      </div>
+    </div>
+  )
+}
+
+function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
+  { genFieldName: (field: string) => any, loadedTransfer?: Transfer }) {
+  const { register, control, formState: { errors } } = useFormContext();
+
+  return (
+    <div className="grid grid-cols-4 gap-6">
+      <div className="col-span-4 sm:col-span-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Receiver
+        </label>
+        <Controller
+          name={genFieldName("to")}
+          control={control}
+          rules={{
+            required: "Can't be empty",
+            pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
+          }}
+          render={({ field: { onChange, onBlur, value, ref } }) =>
+            <ENSAddressInput val={value} setVal={onChange} />
+          }
+        />
+        <ErrorMessage
+          errors={errors}
+          name={genFieldName("address")}
+          render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
+        />
+      </div>
+
+      <div className="col-span-4 sm:col-span-1">
+        <label className="block text-sm font-medium text-gray-700">
+          Amount
+        </label>
+        <div className="mt-1 flex rounded-md shadow-sm">
+          <input
+            type="number"
+            step={1}
+            min={0}
+            {...register(genFieldName("amount"), { valueAsNumber: true, shouldUnregister: true, value: loadedTransfer?.amount || 0 })}
+            className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+      </div>
+
+      <div className="col-span-4 sm:col-span-1">
+        <label className="block text-sm font-medium text-gray-700">
+          Token
+        </label>
+        <select
+          {...register(genFieldName("contract"),
+            { shouldUnregister: true, value: loadedTransfer?.contract || "0x0000000000000000000000000000000000000000" })}
+          className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+        >
+          <option value="0x0000000000000000000000000000000000000000">ETH</option>
+          <option value="0x4554CC10898f92D45378b98D6D6c2dD54c687Fb2">JBX</option>
+          <option value="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48">USDC</option>
+        </select>
       </div>
     </div>
   )
