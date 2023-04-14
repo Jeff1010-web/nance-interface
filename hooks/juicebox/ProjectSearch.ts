@@ -6,6 +6,7 @@ const projectQueryByHandle = `query Project($first: Int, $keyword: String) {
       first: $first,
       where: {
         handle_contains: $keyword
+        pv: "2"
       },
       orderBy: trendingScore,
       orderDirection: desc
@@ -25,6 +26,7 @@ const projectQueryByProjectId = `query Project($first: Int, $keyword: Int) {
       first: $first,
       where: {
         projectId: $keyword
+        pv: "2"
       },
       orderBy: trendingScore,
       orderDirection: desc

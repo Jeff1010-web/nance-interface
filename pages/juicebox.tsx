@@ -54,7 +54,7 @@ export default function JuiceboxPage() {
   // router
   const [query, setQuery] = useQueryParams({
     project: withDefault(NumberParam, 1),
-    version: withDefault(NumberParam, 3),
+    version: withDefault(NumberParam, 2),
     role: withDefault(StringParam, "Multisig"),
     safeTxHash: withDefault(StringParam, "")
   });
@@ -133,13 +133,6 @@ export default function JuiceboxPage() {
     setGnosisResponse(res)
   }
 
-  const onProjectOptionSet = (option: ProjectOption) => {
-    setQuery({
-      project: option.projectId,
-      version: parseInt(option.version[0] ?? "1")
-    });
-  }
-
   useEffect(() => {
     setCurrentTime(new Date().toISOString())
   }, [projectInfo, owner])
@@ -175,8 +168,11 @@ export default function JuiceboxPage() {
           <ResolvedProject projectId={project} version={version} />
         </div>
 
-        <div id="project-selector" className="flex justify-center gap-x-3 pt-2 mx-6">
-          <ProjectSearch onProjectOptionSet={onProjectOptionSet} label="Seach project by handle" />
+        <div id="project-selector" className="flex flex-col items-center gap-x-3 pt-2 mx-6">
+          <div className="w-1/2">
+            <label className="block text-sm font-medium text-gray-700">Seach project</label>
+            <ProjectSearch val={query.project} setVal={(p) => setQuery({ project: p })} />
+          </div>
         </div>
         <div id="safetx-loader" className="flex justify-center pt-2 mx-6">
           {role === "Multisig" && (
