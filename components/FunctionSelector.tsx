@@ -9,10 +9,11 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function FunctionSelector({ address, val, setVal, setFunctionFragment }:
+export default function FunctionSelector({ address, val, setVal, setFunctionFragment, inputStyle = "" }:
   {
     address: string, val: string,
-    setVal: (v: any) => void, setFunctionFragment: (v: FunctionFragment) => void
+    setVal: (v: any) => void, setFunctionFragment: (v: FunctionFragment) => void,
+    inputStyle?: string
   }) {
 
   const [query, setQuery] = useState('')
@@ -41,11 +42,12 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
         console.warn("FunctionSelector.getFunction error", e)
       }
     }}>
-      <div className="relative mt-1">
+      <div className="relative">
         <Combobox.Input
           className={classNames(
-            "w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm",
-            isLoading && "animate-pulse"
+            "w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm",
+            isLoading && "animate-pulse",
+            inputStyle
           )}
           onChange={(event) => setQuery(event.target.value)}
           displayValue={(option: string) => option}

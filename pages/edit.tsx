@@ -246,7 +246,7 @@ function Form({ space }: { space: string }) {
                 isSubmitting
                 //|| (!isNew && hasVoting)
               }
-              className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
+              className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
             >
               {signing ? (isMutating ? "Submitting..." : "Signing...") : "Submit"}
             </button>
@@ -579,7 +579,7 @@ function PayoutActionForm({ genFieldName, loadedPayout = undefined }:
 
 function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
   { genFieldName: (field: string) => any, loadedTransfer?: Transfer }) {
-  const { register, control, formState: { errors } } = useFormContext();
+  const { register, control, setValue, getValues, formState: { errors } } = useFormContext();
 
   return (
     <div className="grid grid-cols-4 gap-6">
@@ -611,12 +611,18 @@ function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
           <input
-            type="number"
+            type="text"
             step={1}
             min={0}
-            {...register(genFieldName("amount"), { valueAsNumber: true, shouldUnregister: true, value: loadedTransfer?.amount || 0 })}
-            className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            {...register(genFieldName("amount"), { shouldUnregister: true, required: "Can't be empty" })}
+            className="block h-10 w-full flex-1 rounded-none rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
+          <GenericButton
+            onClick={() => setValue(genFieldName("amount"), getValues<string>(genFieldName("amount"))
+              .concat("000000000000000000"))}
+            className="inline-flex items-center rounded-none rounded-r-md border border-l-0 border-gray-300 m-0">
+            18
+          </GenericButton>
         </div>
       </div>
 
@@ -641,13 +647,13 @@ function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
 function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = undefined }:
   { genFieldName: (field: string) => any, loadedCustomTransaction?: CustomTransaction }) {
 
-  const { register, watch, control, formState: { errors } } = useFormContext();
+  const { register, watch, control, setValue, getValues, formState: { errors } } = useFormContext();
   const [functionFragment, setFunctionFragment] = useState<FunctionFragment>();
 
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-2">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           Contract
         </label>
         <Controller
@@ -658,7 +664,7 @@ function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = u
             pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
           }}
           render={({ field: { onChange, onBlur, value, ref } }) =>
-            <ENSAddressInput val={value} setVal={onChange} />
+            <ENSAddressInput val={value} setVal={onChange} inputStyle="h-10" />
           }
           defaultValue={loadedCustomTransaction?.contract || ""}
         />
@@ -675,19 +681,25 @@ function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = u
         </label>
         <div className="mt-1 flex rounded-md shadow-sm">
           <input
-            type="number"
+            type="text"
             step={1}
             min={0}
-            {...register(genFieldName("value"), { valueAsNumber: true, shouldUnregister: true, value: loadedCustomTransaction?.value || 0 })}
-            className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            {...register(genFieldName("value"), { shouldUnregister: true, required: "Can't be empty" })}
+            className="block h-10 w-full flex-1 rounded-none rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
+          <GenericButton
+            onClick={() => setValue(genFieldName("value"), getValues<string>(genFieldName("value"))
+              .concat("000000000000000000"))}
+            className="inline-flex items-center rounded-none rounded-r-md border border-l-0 border-gray-300 m-0">
+            18
+          </GenericButton>
         </div>
       </div>
 
       {
         watch(genFieldName("contract"))?.length === 42 && (
           <div className="col-span-4 sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Function
             </label>
             <Controller
@@ -697,7 +709,7 @@ function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = u
                 required: "Can't be empty"
               }}
               render={({ field: { onChange, onBlur, value, ref } }) =>
-                <FunctionSelector address={watch(genFieldName("contract"))} val={value} setVal={onChange} setFunctionFragment={setFunctionFragment} />
+                <FunctionSelector address={watch(genFieldName("contract"))} val={value} setVal={onChange} setFunctionFragment={setFunctionFragment} inputStyle="h-10" />
               }
               defaultValue={loadedCustomTransaction?.functionName || ""}
             />
@@ -716,23 +728,79 @@ function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = u
             <label className="block text-sm font-medium text-gray-700">
               Param: {param.name}
             </label>
+
             <div className="mt-1 flex rounded-md shadow-sm">
               <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
                 {param.type}
               </span>
-              <input
-                type="text"
-                step={1}
-                min={0}
-                {...register(genFieldName(`args.${param.name}`), { shouldUnregister: true })}
-                className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
+
+              {param.type === "address" && (
+                <>
+                  <Controller
+                    name={genFieldName(`args.${param.name}`)}
+                    control={control}
+                    rules={{
+                      required: "Can't be empty",
+                      pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
+                    }}
+                    render={({ field: { onChange, onBlur, value, ref } }) =>
+                      <ENSAddressInput val={value} setVal={onChange} inputStyle="rounded-none h-10 rounded-r-md" />
+                    }
+                    defaultValue={loadedCustomTransaction?.contract || ""}
+                  />
+                </>
+              )}
+
+              {param.type === "uint256" && (
+                <>
+                  <input
+                    type="text"
+                    step={1}
+                    min={0}
+                    {...register(genFieldName(`args.${param.name}`), { shouldUnregister: true, required: "Can't be empty" })}
+                    className="block h-10 w-full flex-1 rounded-none border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  />
+                  <GenericButton
+                    onClick={() => setValue(genFieldName(`args.${param.name}`), getValues<string>(genFieldName(`args.${param.name}`))
+                      .concat("000000000000000000"))}
+                    className="inline-flex items-center rounded-none rounded-r-md border border-l-0 border-gray-300 m-0">
+                    18
+                  </GenericButton>
+                </>
+              )}
+
+              {param.type === "bool" && (
+                <>
+                  <input
+                    type="checkbox"
+                    {...register(genFieldName(`args.${param.name}`), { shouldUnregister: true })}
+                    className="block h-10 w-10 flex-1 rounded-none rounded-r-md border-gray-300"
+                  />
+                </>
+              )}
+
+              {param.type !== "address" && param.type !== "uint256" && param.type !== "bool" && (
+                <input
+                  type="text"
+                  step={1}
+                  min={0}
+                  {...register(genFieldName(`args.${param.name}`), { shouldUnregister: true })}
+                  className="block h-10 w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              )}
+
             </div>
+
+            <ErrorMessage
+              errors={errors}
+              name={genFieldName(`args.${param.name}`)}
+              render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
+            />
           </div>
         ))
       }
 
-    </div>
+    </div >
   )
 }
 

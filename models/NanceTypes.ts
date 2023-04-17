@@ -141,12 +141,12 @@ export type Reserve = {
 export type Transfer = {
   contract: string;
   to: string;
-  amount: number;
+  amount: string;
 }
 
 export type CustomTransaction = {
   contract: string;
-  value: number;
+  value: string;
   functionName: string;
   args: any[];
 }
