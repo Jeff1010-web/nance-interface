@@ -147,7 +147,6 @@ export type Transfer = {
 export type CustomTransaction = {
   contract: string;
   value: number;
-  abi: any[];
   functionName: string;
   args: any[];
 }

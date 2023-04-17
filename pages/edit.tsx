@@ -8,7 +8,7 @@ import Notification from "../components/Notification";
 import GenericButton from "../components/GenericButton";
 import { fetchProposal, useProposalUpload } from "../hooks/NanceHooks";
 import { imageUpload } from "../hooks/ImageUpload";
-import { Proposal, ProposalUploadRequest, Action, Payout, Transfer } from "../models/NanceTypes";
+import { Proposal, ProposalUploadRequest, Action, Payout, Transfer, CustomTransaction } from "../models/NanceTypes";
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Link from "next/link";
 
@@ -25,6 +25,8 @@ import { Combobox, Dialog, Transition } from '@headlessui/react'
 import ENSAddressInput from "../components/ENSAddressInput";
 import { ErrorMessage } from "@hookform/error-message";
 import ProjectSearch from "../components/juicebox/ProjectSearch";
+import FunctionSelector from "../components/FunctionSelector";
+import { FunctionFragment } from "ethers/lib/utils";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -259,6 +261,7 @@ function Actions() {
   const [open, setOpen] = useState(false)
   const [selectedAction, setSelectedAction] = useState<ActionItem>()
 
+  const { register } = useFormContext();
   const { fields, append, remove } = useFieldArray<{
     actions: Action[];
     [key: string]: any;
@@ -290,6 +293,11 @@ function Actions() {
                 <h3 className="font-semibold text-xl">Payout</h3>
                 <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
               </div>
+              <input
+                type="text"
+                {...register(`proposal.actions.${index}.type`, { shouldUnregister: true, value: field.type })}
+                className="hidden"
+              />
               <PayoutActionForm genFieldName={genFieldName(index)} />
             </div>
           )
@@ -300,7 +308,27 @@ function Actions() {
                 <h3 className="font-semibold text-xl">Transfer</h3>
                 <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
               </div>
+              <input
+                type="text"
+                {...register(`proposal.actions.${index}.type`, { shouldUnregister: true, value: field.type })}
+                className="hidden"
+              />
               <TransferActionForm genFieldName={genFieldName(index)} />
+            </div>
+          )
+        } else if (field.type === "Custom Transaction") {
+          return (
+            <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
+              <div className="flex justify-between mb-2">
+                <h3 className="font-semibold text-xl">Custom Transaction</h3>
+                <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
+              </div>
+              <input
+                type="text"
+                {...register(`proposal.actions.${index}.type`, { shouldUnregister: true, value: field.type })}
+                className="hidden"
+              />
+              <CustomTransactionActionForm genFieldName={genFieldName(index)} />
             </div>
           )
         } else {
@@ -338,14 +366,14 @@ const items: ActionItem[] = [
     color: 'bg-blue-500',
     icon: CurrencyDollarIcon,
   },
-  {
-    id: 2,
-    name: 'Reserve',
-    description: 'Apply to be added in reserved token list.',
-    url: '#',
-    color: 'bg-blue-500',
-    icon: UserGroupIcon,
-  },
+  // {
+  //   id: 2,
+  //   name: 'Reserve',
+  //   description: 'Apply to be added in reserved token list.',
+  //   url: '#',
+  //   color: 'bg-blue-500',
+  //   icon: UserGroupIcon,
+  // },
   {
     id: 3,
     name: 'Transfer',
@@ -606,6 +634,104 @@ function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
           <option value="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48">USDC</option>
         </select>
       </div>
+    </div>
+  )
+}
+
+function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = undefined }:
+  { genFieldName: (field: string) => any, loadedCustomTransaction?: CustomTransaction }) {
+
+  const { register, watch, control, formState: { errors } } = useFormContext();
+  const [functionFragment, setFunctionFragment] = useState<FunctionFragment>();
+
+  return (
+    <div className="grid grid-cols-4 gap-6">
+      <div className="col-span-4 sm:col-span-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Contract
+        </label>
+        <Controller
+          name={genFieldName("contract")}
+          control={control}
+          rules={{
+            required: "Can't be empty",
+            pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
+          }}
+          render={({ field: { onChange, onBlur, value, ref } }) =>
+            <ENSAddressInput val={value} setVal={onChange} />
+          }
+          defaultValue={loadedCustomTransaction?.contract || ""}
+        />
+        <ErrorMessage
+          errors={errors}
+          name={genFieldName("contract")}
+          render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
+        />
+      </div>
+
+      <div className="col-span-4 sm:col-span-1">
+        <label className="block text-sm font-medium text-gray-700">
+          ETH Value
+        </label>
+        <div className="mt-1 flex rounded-md shadow-sm">
+          <input
+            type="number"
+            step={1}
+            min={0}
+            {...register(genFieldName("value"), { valueAsNumber: true, shouldUnregister: true, value: loadedCustomTransaction?.value || 0 })}
+            className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+      </div>
+
+      {
+        watch(genFieldName("contract"))?.length === 42 && (
+          <div className="col-span-4 sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Function
+            </label>
+            <Controller
+              name={genFieldName("functionName")}
+              control={control}
+              rules={{
+                required: "Can't be empty"
+              }}
+              render={({ field: { onChange, onBlur, value, ref } }) =>
+                <FunctionSelector address={watch(genFieldName("contract"))} val={value} setVal={onChange} setFunctionFragment={setFunctionFragment} />
+              }
+              defaultValue={loadedCustomTransaction?.functionName || ""}
+            />
+            <ErrorMessage
+              errors={errors}
+              name={genFieldName("functionName")}
+              render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
+            />
+          </div>
+        )
+      }
+
+      {
+        functionFragment?.inputs?.map((param, index) => (
+          <div className="col-span-4 sm:col-span-1">
+            <label className="block text-sm font-medium text-gray-700">
+              Param: {param.name}
+            </label>
+            <div className="mt-1 flex rounded-md shadow-sm">
+              <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
+                {param.type}
+              </span>
+              <input
+                type="text"
+                step={1}
+                min={0}
+                {...register(genFieldName(`args.${param.name}`), { shouldUnregister: true })}
+                className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+          </div>
+        ))
+      }
+
     </div>
   )
 }
