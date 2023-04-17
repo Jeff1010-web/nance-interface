@@ -724,7 +724,7 @@ function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = u
 
       {
         functionFragment?.inputs?.map((param, index) => (
-          <div className="col-span-4 sm:col-span-1">
+          <div key={param.name} className="col-span-4 sm:col-span-1">
             <label className="block text-sm font-medium text-gray-700">
               Param: {param.name}
             </label>
