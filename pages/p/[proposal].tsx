@@ -15,7 +15,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../components/ColorBar";
 import { fetchProposal } from "../../hooks/NanceHooks";
 import { getLastSlash } from "../../libs/nance";
-import { Proposal, Payout } from "../../models/NanceTypes";
+import { Proposal, Payout, Action } from "../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Custom404 from "../404";
@@ -87,7 +87,7 @@ interface ProposalCommonProps {
   end: number;
   snapshot: string,
   ipfs: string,
-  payout: Payout
+  actions: Action[]
 }
 
 const ProposalContext = createContext<{ commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal }>(undefined);
@@ -122,7 +122,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
     end: snapshotProposal?.end || 0,
     snapshot: snapshotProposal?.snapshot || "",
     ipfs: snapshotProposal?.ipfs || "",
-    payout: proposal.payout
+    actions: proposal.actions
   }
   console.debug("📚NanceProposalPage.begin", commonProps, proposal, snapshotProposal);
 
@@ -275,21 +275,13 @@ function ProposalContent({ body }: { body: string }) {
               </>
             )}
 
-            {commonProps.payout && (
+            {commonProps.actions && (
               <>
-                <span className="font-medium">Payout:</span>
+                <span className="font-medium">Actions:</span>
 
-                {commonProps.payout.project && (
-                  <span>
-                    Pay&nbsp;<ResolvedProject version={2} projectId={commonProps.payout.project} />{` $${commonProps.payout.amountUSD} for ${commonProps.payout.count} cycles`}
-                  </span>
-                )}
-
-                {commonProps.payout.address && (
-                  <span>
-                    Pay&nbsp;<FormattedAddress address={commonProps.payout.address} />{` $${commonProps.payout.amountUSD} for ${commonProps.payout.count} cycles`}
-                  </span>
-                )}
+                <span>
+                  {JSON.stringify(commonProps.actions)}
+                </span>
               </>
             )}
           </div>
