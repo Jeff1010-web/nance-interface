@@ -77,13 +77,15 @@ export default function NanceEditProposal({ loadedProposal }: { loadedProposal: 
         pageTitle="Edit Proposal"
         description="Create or edit proposal on Nance."
         withWallet />
-      <div className="m-4 lg:m-6 flex flex-col">
-        <p className="text-2xl font-bold">
-          {proposalId ? "Edit" : "New"} Proposal
-        </p>
-        <ProposalMetadataContext.Provider value={{ loadedProposal, version, project }}>
-          <Form space={space} />
-        </ProposalMetadataContext.Provider>
+      <div className="m-4 lg:m-6 flex justify-center items-center">
+        <div className="max-w-7xl w-full">
+          <p className="text-2xl font-bold">
+            {proposalId ? "Edit" : "New"} Proposal
+          </p>
+          <ProposalMetadataContext.Provider value={{ loadedProposal, version, project }}>
+            <Form space={space} />
+          </ProposalMetadataContext.Provider>
+        </div>
       </div>
     </>
   )
@@ -172,8 +174,8 @@ function Form({ space }: { space: string }) {
                 <div className="">
                   <input
                     type="text"
-                    {...register("proposal.title", { value: metadata.loadedProposal?.title || "Title" })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    {...register("proposal.title", { value: metadata.loadedProposal?.title || "Proposal Title" })}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xl"
                   />
                 </div>
               </div>
