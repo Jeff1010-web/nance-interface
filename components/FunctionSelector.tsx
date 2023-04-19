@@ -17,11 +17,11 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
   }) {
 
   const [query, setQuery] = useState('')
-  const { data: abi, isLoading } = useEtherscanContractABI(address, address.length === 42)
+  const { data: abi, isLoading, error } = useEtherscanContractABI(address, address.length === 42)
 
   const contract = useContract({
     address,
-    abi: abi,
+    abi: !error && abi,
   })
   const functions = Object.keys(contract?.interface.functions || {});
   console.debug(`FunctionSelector.interface of ${address}`, contract?.interface)
