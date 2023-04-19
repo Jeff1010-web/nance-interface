@@ -23,6 +23,7 @@ import VoterProfile from "../../components/VoterProfile";
 import ScrollToBottom from "../../components/ScrollToBottom";
 import { ExternalLinkIcon } from "@heroicons/react/solid";
 import ResolvedProject from "../../components/ResolvedProject";
+import { NANCE_DEFAULT_SPACE } from "../../constants/Nance";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -60,7 +61,7 @@ export async function getServerSideProps(context) {
 
   // check proposal parameter type
   const proposalParam: string = context.params.proposal;
-  const spaceParam: string = context.query.overrideSpace || 'juicebox';
+  const spaceParam: string = context.query.overrideSpace || NANCE_DEFAULT_SPACE;;
 
   const proposalResponse = await fetchProposal(spaceParam, proposalParam);
   proposal = proposalResponse.data;
