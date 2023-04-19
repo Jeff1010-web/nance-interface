@@ -27,6 +27,7 @@ import { ErrorMessage } from "@hookform/error-message";
 import ProjectSearch from "../components/juicebox/ProjectSearch";
 import FunctionSelector from "../components/FunctionSelector";
 import { FunctionFragment } from "ethers/lib/utils";
+import { CONTRACT_MAP } from "../constants/Contract";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -600,7 +601,7 @@ function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
         />
         <ErrorMessage
           errors={errors}
-          name={genFieldName("address")}
+          name={genFieldName("to")}
           render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
         />
       </div>
@@ -635,9 +636,9 @@ function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
             { shouldUnregister: true, value: loadedTransfer?.contract || "0x0000000000000000000000000000000000000000" })}
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
         >
-          <option value="0x0000000000000000000000000000000000000000">ETH</option>
-          <option value="0x4554CC10898f92D45378b98D6D6c2dD54c687Fb2">JBX</option>
-          <option value="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48">USDC</option>
+          <option value={CONTRACT_MAP.ETH}>ETH</option>
+          <option value={CONTRACT_MAP.JBX}>JBX</option>
+          <option value={CONTRACT_MAP.USDC}>USDC</option>
         </select>
       </div>
     </div>

@@ -4,10 +4,10 @@ import SiteNav from "../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../components/FormattedAddress";
-import { fromUnixTime, format, toDate } from "date-fns";
+import { format, toDate } from "date-fns";
 import { createContext, useContext, useEffect, useState } from "react";
 import VotingModal from "../../components/VotingModal";
-import { withDefault, NumberParam, createEnumParam, useQueryParams, useQueryParam, StringParam } from "next-query-params";
+import { withDefault, NumberParam, createEnumParam, useQueryParams, StringParam } from "next-query-params";
 import { processChoices } from "../../libs/snapshotUtil";
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -15,7 +15,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../components/ColorBar";
 import { fetchProposal } from "../../hooks/NanceHooks";
 import { getLastSlash } from "../../libs/nance";
-import { Proposal, Payout, Action } from "../../models/NanceTypes";
+import { Proposal, Payout, Action, Transfer, CustomTransaction } from "../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Custom404 from "../404";
@@ -24,6 +24,7 @@ import ScrollToBottom from "../../components/ScrollToBottom";
 import { ExternalLinkIcon } from "@heroicons/react/solid";
 import ResolvedProject from "../../components/ResolvedProject";
 import { NANCE_DEFAULT_SPACE } from "../../constants/Nance";
+import { CONTRACT_MAP } from "../../constants/Contract";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -278,11 +279,56 @@ function ProposalContent({ body }: { body: string }) {
 
             {commonProps.actions && (
               <>
-                <span className="font-medium">Actions:</span>
+                <p className="font-medium col-span-2">Actions:</p>
 
-                <span>
-                  {JSON.stringify(commonProps.actions)}
-                </span>
+                <div className="col-span-2 flex flex-col mt-2 w-full break-words space-y-2">
+                  {commonProps.actions.map((action, index) => (
+                    <p key={index} className="ml-2 flex space-x-2">
+                      <span className="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800">
+                        {action.type}
+                      </span>
+
+                      {action.type === "Transfer" && (
+                        <>
+                          <p>{(action.payload as Transfer).amount}</p>
+                          {(action.payload as Transfer).contract === CONTRACT_MAP.ETH && <p>ETH</p>}
+                          {(action.payload as Transfer).contract === CONTRACT_MAP.JBX && <p>JBX</p>}
+                          {(action.payload as Transfer).contract === CONTRACT_MAP.USDC && <p>USDC</p>}
+                          <p>to</p>
+                          <FormattedAddress address={(action.payload as Transfer).to} />
+                        </>
+                      )}
+
+                      {action.type === "Payout" && !(action.payload as Payout).project && (
+                        <>
+                          <p>${(action.payload as Payout).amountUSD}</p>
+                          <p>to</p>
+                          <FormattedAddress address={(action.payload as Payout).address} />
+                          <p>{` for ${(action.payload as Payout).count} cycles`}</p>
+                        </>
+                      )}
+
+                      {action.type === "Payout" && (action.payload as Payout).project && (
+                        <>
+                          <p>${(action.payload as Payout).amountUSD}</p>
+                          <p>to</p>
+                          <ResolvedProject version={2} projectId={(action.payload as Payout).project} />
+                          <p>{` for ${(action.payload as Payout).count} cycles`}</p>
+                        </>
+                      )}
+
+                      {action.type === "Custom Transaction" && (
+                        <>
+                          <p>{(action.payload as Payout).amountUSD}</p>
+                          <p>invoke</p>
+                          <FormattedAddress address={(action.payload as CustomTransaction).contract} />
+                          <p>{(action.payload as CustomTransaction).functionName}</p>
+                          <p>{` with ${JSON.stringify((action.payload as CustomTransaction).args)}`}</p>
+                        </>
+                      )}
+                    </p>
+                  ))}
+                </div>
               </>
             )}
           </div>
