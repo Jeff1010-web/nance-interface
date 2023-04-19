@@ -1,4 +1,4 @@
-import { useContext, useState, Fragment } from "react";
+import { useContext, useState, Fragment, useEffect } from "react";
 import SiteNav from "../components/SiteNav";
 import { useForm, FormProvider, useFormContext, Controller, SubmitHandler, useFieldArray } from "react-hook-form";
 import { withDefault, NumberParam, useQueryParams, StringParam } from "next-query-params";
@@ -278,6 +278,10 @@ function Actions() {
   const genFieldName = (index: number) => {
     return (field: string) => `proposal.actions.${index}.payload.${field}` as const
   }
+
+  useEffect(() => {
+    window.scrollTo(0, document.body.scrollHeight);
+  }, [fields])
 
   return (
     <div>
