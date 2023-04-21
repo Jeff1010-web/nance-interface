@@ -147,7 +147,7 @@ export type CustomTransaction = {
   contract: string;
   value: string;
   functionName: string;
-  args: any[];
+  args: any;
 }
 
 export type ParameterUpdate = {
