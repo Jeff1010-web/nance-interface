@@ -21,7 +21,7 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
 
   const contract = useContract({
     address,
-    abi: !error && abi,
+    abi: !error && abi as any,
   })
   const functions = Object.keys(contract?.interface.functions || {});
   console.debug(`FunctionSelector.interface of ${address}`, contract?.interface)

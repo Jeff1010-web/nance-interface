@@ -25,6 +25,7 @@ import { ExternalLinkIcon } from "@heroicons/react/solid";
 import ResolvedProject from "../../components/ResolvedProject";
 import { NANCE_DEFAULT_SPACE } from "../../constants/Nance";
 import { CONTRACT_MAP } from "../../constants/Contract";
+import ResolvedContract from "../../components/ResolvedContract";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -281,52 +282,51 @@ function ProposalContent({ body }: { body: string }) {
               <>
                 <p className="font-medium col-span-2">Actions:</p>
 
-                <div className="col-span-2 flex flex-col mt-2 w-full break-words space-y-2">
+                <div className="col-span-2 flex flex-col mt-2 w-full space-y-2">
                   {commonProps.actions.map((action, index) => (
-                    <p key={index} className="ml-2 flex space-x-2">
+                    <div key={index} className="ml-2 flex space-x-2 w-full break-words">
                       <span className="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800">
                         {action.type}
                       </span>
 
                       {action.type === "Transfer" && (
-                        <>
-                          <p>{(action.payload as Transfer).amount}</p>
-                          {(action.payload as Transfer).contract === CONTRACT_MAP.ETH && <p>ETH</p>}
-                          {(action.payload as Transfer).contract === CONTRACT_MAP.JBX && <p>JBX</p>}
-                          {(action.payload as Transfer).contract === CONTRACT_MAP.USDC && <p>USDC</p>}
-                          <p>to</p>
-                          <FormattedAddress address={(action.payload as Transfer).to} />
-                        </>
+                        <span className="line-clamp-5">
+                          {(action.payload as Transfer).amount}
+                          &nbsp;{getContractLabel((action.payload as Transfer).contract)}
+                          &nbsp;to
+                          <FormattedAddress address={(action.payload as Transfer).to} style="inline ml-1" />
+                        </span>
                       )}
 
                       {action.type === "Payout" && !(action.payload as Payout).project && (
-                        <>
-                          <p>${(action.payload as Payout).amountUSD}</p>
-                          <p>to</p>
-                          <FormattedAddress address={(action.payload as Payout).address} />
-                          <p>{` for ${(action.payload as Payout).count} cycles`}</p>
-                        </>
+                        <span className="line-clamp-5">
+                          ${(action.payload as Payout).amountUSD}
+                          &nbsp;to
+                          <FormattedAddress address={(action.payload as Payout).address} style="inline ml-1" />
+                          &nbsp;{` for ${(action.payload as Payout).count} cycles`}
+                        </span>
                       )}
 
                       {action.type === "Payout" && (action.payload as Payout).project && (
-                        <>
-                          <p>${(action.payload as Payout).amountUSD}</p>
-                          <p>to</p>
-                          <ResolvedProject version={2} projectId={(action.payload as Payout).project} />
-                          <p>{` for ${(action.payload as Payout).count} cycles`}</p>
-                        </>
+                        <span className="line-clamp-5">
+                          ${(action.payload as Payout).amountUSD}
+                          &nbsp;to
+                          <ResolvedProject version={2} projectId={(action.payload as Payout).project} style="inline ml-1" />
+                          {` for ${(action.payload as Payout).count} cycles`}
+                        </span>
                       )}
 
                       {action.type === "Custom Transaction" && (
-                        <>
-                          <p>{(action.payload as Payout).amountUSD}</p>
-                          <p>invoke</p>
-                          <FormattedAddress address={(action.payload as CustomTransaction).contract} />
-                          <p>{(action.payload as CustomTransaction).functionName}</p>
-                          <p>{` with ${JSON.stringify((action.payload as CustomTransaction).args)}`}</p>
-                        </>
+                        <span className="line-clamp-5">
+                          <ResolvedContract address={(action.payload as CustomTransaction).contract} style="inline ml-1" />
+                          &#46;
+                          <a href={`https://etherfunk.io/address/${(action.payload as CustomTransaction).contract}?fn=${(action.payload as CustomTransaction).functionName?.split("(")[0]}`} rel="noopener noreferrer" target="_blank" className="hover:underline inline">
+                            {(action.payload as CustomTransaction).functionName?.split("(")[0]}
+                            {`(${Object.values((action.payload as CustomTransaction).args || {}).join(",")}) {value: ${(action.payload as CustomTransaction).value}}`}
+                          </a>
+                        </span>
                       )}
-                    </p>
+                    </div>
                   ))}
                 </div>
               </>
@@ -335,8 +335,6 @@ function ProposalContent({ body }: { body: string }) {
         </div>
       </div>
 
-
-
       <div className="px-4 py-5 sm:px-6">
         <article className="prose prose-lg prose-indigo mx-auto text-gray-500 break-words">
           <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>{body}</ReactMarkdown>
@@ -344,6 +342,13 @@ function ProposalContent({ body }: { body: string }) {
       </div>
     </div>
   )
+}
+
+function getContractLabel(address: string) {
+  if(CONTRACT_MAP.ETH === address) return "ETH"
+  else if(CONTRACT_MAP.JBX === address) return "JBX"
+  else if(CONTRACT_MAP.USDC === address) return "USDC"
+  else return `Unknown(${address})`
 }
 
 // BasicVoting: For Against Abstain
