@@ -8,8 +8,8 @@ import Notification from "../components/Notification";
 import GenericButton from "../components/GenericButton";
 import { fetchProposal, useProposalUpload } from "../hooks/NanceHooks";
 import { imageUpload } from "../hooks/ImageUpload";
-import { Proposal, ProposalUploadRequest, Action, Payout, Transfer, CustomTransaction } from "../models/NanceTypes";
-import { NANCE_DEFAULT_SPACE } from "../constants/Nance";
+import { Proposal, ProposalUploadRequest, Action, Payout, Transfer, CustomTransaction, JBSplitNanceStruct } from "../models/NanceTypes";
+import { NANCE_DEFAULT_JUICEBOX_PROJECT, NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Link from "next/link";
 
 import { useAccount, useSigner } from "wagmi";
@@ -28,6 +28,11 @@ import ProjectSearch from "../components/juicebox/ProjectSearch";
 import FunctionSelector from "../components/FunctionSelector";
 import { FunctionFragment } from "ethers/lib/utils";
 import { CONTRACT_MAP } from "../constants/Contract";
+import { useCurrentFundingCycleV2 } from "../hooks/juicebox/CurrentFundingCycle";
+import { useCurrentSplits } from "../hooks/juicebox/CurrentSplits";
+import { JBConstants, JBSplit } from "../models/JuiceboxTypes";
+import { TrashIcon } from "@heroicons/react/outline";
+import FormattedAddress from "../components/FormattedAddress";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -323,6 +328,21 @@ function Actions() {
               <TransferActionForm genFieldName={genFieldName(index)} />
             </div>
           )
+        } else if (field.type === "Reserve") {
+          return (
+            <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
+              <div className="flex justify-between mb-2">
+                <h3 className="font-semibold text-xl">Reserve</h3>
+                <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
+              </div>
+              <input
+                type="text"
+                {...register(`proposal.actions.${index}.type`, { shouldUnregister: true, value: field.type })}
+                className="hidden"
+              />
+              <ReserveActionForm genFieldName={genFieldName(index)} />
+            </div>
+          )
         } else if (field.type === "Custom Transaction") {
           return (
             <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
@@ -373,14 +393,14 @@ const items: ActionItem[] = [
     color: 'bg-blue-500',
     icon: CurrencyDollarIcon,
   },
-  // {
-  //   id: 2,
-  //   name: 'Reserve',
-  //   description: 'Apply to be added in reserved token list.',
-  //   url: '#',
-  //   color: 'bg-blue-500',
-  //   icon: UserGroupIcon,
-  // },
+  {
+    id: 2,
+    name: 'Reserve',
+    description: 'Apply to be added in reserved token list.',
+    url: '#',
+    color: 'bg-blue-500',
+    icon: UserGroupIcon,
+  },
   {
     id: 3,
     name: 'Transfer',
@@ -648,6 +668,74 @@ function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
         </select>
       </div>
     </div>
+  )
+}
+
+function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }:
+  { genFieldName: (field: string) => any, loadedCustomTransaction?: CustomTransaction }) {
+
+  const { register, watch, control, setValue, getValues, formState: { errors } } = useFormContext();
+  const { fields, append, remove } = useFieldArray<{
+    splits: JBSplitNanceStruct[];
+    [key: string]: any;
+  }>({ name: "splits" });
+  
+  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId: NANCE_DEFAULT_JUICEBOX_PROJECT, isV3: true });
+  const [fc, metadata] = _fc || [];
+  const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(NANCE_DEFAULT_JUICEBOX_PROJECT, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN, true);
+
+  useEffect(() => {
+    ticketMods?.forEach(ticket => {
+      const split = {
+        beneficiary: ticket.beneficiary
+      }
+      append(split)
+    })
+  }, [ticketMods])
+
+  function typeOfSplit(split: JBSplit) {
+    let splitMode = "address";
+    if (split.allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
+    else if (split.projectId.toNumber() !== 0) splitMode = "project";
+
+    return splitMode
+  }
+
+  console.log(fields)
+
+  return (
+    <div className="flex flex-col gap-6">
+      {fields?.map((field: any, index) => (
+        <div key={field.id} className="w-full flex items-center gap-6">
+          <div className="w-1/2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Beneficiary
+            </label>
+            <Controller
+              name={genFieldName(`splits.${index}.beneficiary`)}
+              control={control}
+              rules={{
+                required: "Can't be empty",
+                pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
+              }}
+              render={({ field: { onChange, onBlur, value, ref } }) =>
+                <ENSAddressInput val={value} setVal={onChange} inputStyle="h-10" />
+              }
+              defaultValue={field.beneficiary || ""}
+            />
+            <FormattedAddress address={watch(genFieldName(`splits.${index}.beneficiary`))} />
+            <ErrorMessage
+              errors={errors}
+              name={genFieldName(`splits.${index}.beneficiary`)}
+              render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
+            />
+          </div>
+
+          <TrashIcon className="w-10 h-10 cursor-pointer" onClick={() => remove(index)} />
+        </div>
+      ))}
+
+    </div >
   )
 }
 
