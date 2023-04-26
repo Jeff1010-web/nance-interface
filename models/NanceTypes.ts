@@ -144,10 +144,10 @@ type Notification = {
 export interface JBSplitNanceStruct {
   preferClaimed: boolean
   preferAddToBalance: boolean
-  percent: string
-  projectId: string
+  percent: number
+  projectId: number
   beneficiary: string
-  lockedUntil: string
+  lockedUntil: number
   allocator: string
 }
 

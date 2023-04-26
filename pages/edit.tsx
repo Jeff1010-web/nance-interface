@@ -21,10 +21,8 @@ import { Editor } from '@tinymce/tinymce-react';
 import { markdownToHtml, htmlToMarkdown } from '../libs/markdown';
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { CurrencyDollarIcon, LightningBoltIcon, PlusIcon, SwitchVerticalIcon, UserGroupIcon, XIcon } from "@heroicons/react/solid";
-import { Combobox, Dialog, Transition } from '@headlessui/react'
-import ENSAddressInput from "../components/ENSAddressInput";
+import { Combobox, Dialog, Transition } from '@headlessui/react';
 import { ErrorMessage } from "@hookform/error-message";
-import ProjectSearch from "../components/juicebox/ProjectSearch";
 import FunctionSelector from "../components/FunctionSelector";
 import { FunctionFragment } from "ethers/lib/utils";
 import { CONTRACT_MAP } from "../constants/Contract";
@@ -33,6 +31,13 @@ import { useCurrentSplits } from "../hooks/juicebox/CurrentSplits";
 import { JBConstants, JBSplit } from "../models/JuiceboxTypes";
 import { TrashIcon } from "@heroicons/react/outline";
 import FormattedAddress from "../components/FormattedAddress";
+import ResolvedProject from "../components/ResolvedProject";
+import AddressForm from "../components/form/AddressForm";
+import NumberForm from "../components/form/NumberForm";
+import BooleanForm from "../components/form/BooleanForm";
+import StringForm from "../components/form/StringForm";
+import SelectForm from "../components/form/SelectForm";
+import ProjectForm from "../components/form/ProjectForm";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -501,104 +506,32 @@ function ActionPalettes({ open, setOpen, selectedAction, setSelectedAction }) {
 
 function PayoutActionForm({ genFieldName, loadedPayout = undefined }:
   { genFieldName: (field: string) => any, loadedPayout?: Payout }) {
-  const { register, watch, control, formState: { errors } } = useFormContext();
+    const { watch } = useFormContext();
 
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-1">
-        <label className="block text-sm font-medium text-gray-700">
-          Receiver Type
-        </label>
-        <select
-          {...register(genFieldName("type"),
-            { shouldUnregister: true, value: loadedPayout?.project ? "project" : "address" })}
-          className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-        >
-          <option value="address">Address</option>
-          <option value="project">Project</option>
-        </select>
+        <SelectForm label="Receiver Type" fieldName={genFieldName("type")} options={[
+          { displayValue: "Address", value: "address" },
+          { displayValue: "Project", value: "project" },
+        ]} />
       </div>
       <div className="col-span-4 sm:col-span-1">
-        <label className="block text-sm font-medium text-gray-700">
-          Duration(Cycles)
-        </label>
-        <div className="mt-1 flex rounded-md shadow-sm">
-          <input
-            type="number"
-            step={1}
-            min={1}
-            {...register(genFieldName("count"), { valueAsNumber: true, shouldUnregister: true, value: loadedPayout?.count || 1 })}
-            className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            placeholder="1"
-          />
-        </div>
+        <NumberForm label="Duration(Cycles)" fieldName={genFieldName("count")} defaultValue="1" />
       </div>
       <div className="col-span-4 sm:col-span-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Amount
-        </label>
-        <div className="mt-1 flex rounded-md shadow-sm">
-          <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
-            $
-          </span>
-          <input
-            type="number"
-            step={1}
-            min={0}
-            {...register(genFieldName("amountUSD"), { valueAsNumber: true, shouldUnregister: true, value: loadedPayout?.amountUSD || 0 })}
-            className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            placeholder="1500"
-          />
-        </div>
+        <NumberForm label="Amount" fieldName={genFieldName("amountUSD")} fieldType="$" />
       </div>
 
       {
         watch(genFieldName("type")) === "project" && (
           <div className="col-span-4 sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Project Receiver
-            </label>
-            <Controller
-              name={genFieldName("project")}
-              control={control}
-              rules={{
-                required: "Can't be empty",
-                validate: {
-                  positive: (v) => parseInt(v) > 0 || "Not a positive number"
-                }
-              }}
-              render={({ field: { onChange, onBlur, value, ref } }) =>
-                <ProjectSearch val={value} setVal={onChange} />
-              }
-            />
-            <ErrorMessage
-              errors={errors}
-              name={genFieldName("project")}
-              render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
-            />
+            <ProjectForm label="Project Receiver" fieldName={genFieldName("project")} />
           </div>
         )
       }
       <div className="col-span-4 sm:col-span-2">
-        <label className="block text-sm font-medium text-gray-700">
-          {watch(genFieldName("type")) === "project" ? "Token Beneficiary" : "Receiver Address"}
-        </label>
-        <Controller
-          name={genFieldName("address")}
-          control={control}
-          rules={{
-            required: "Can't be empty",
-            pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
-          }}
-          render={({ field: { onChange, onBlur, value, ref } }) =>
-            <ENSAddressInput val={value} setVal={onChange} />
-          }
-        />
-        <ErrorMessage
-          errors={errors}
-          name={genFieldName("address")}
-          render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
-        />
+        <AddressForm label={watch(genFieldName("type")) === "project" ? "Token Beneficiary" : "Receiver Address"} fieldName={genFieldName("address")} />
       </div>
     </div>
   )
@@ -606,68 +539,63 @@ function PayoutActionForm({ genFieldName, loadedPayout = undefined }:
 
 function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
   { genFieldName: (field: string) => any, loadedTransfer?: Transfer }) {
-  const { register, control, setValue, getValues, formState: { errors } } = useFormContext();
 
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Receiver
-        </label>
-        <Controller
-          name={genFieldName("to")}
-          control={control}
-          rules={{
-            required: "Can't be empty",
-            pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
-          }}
-          render={({ field: { onChange, onBlur, value, ref } }) =>
-            <ENSAddressInput val={value} setVal={onChange} />
-          }
-        />
-        <ErrorMessage
-          errors={errors}
-          name={genFieldName("to")}
-          render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
-        />
+        <AddressForm label="Receiver" fieldName={genFieldName("to")} />
       </div>
 
       <div className="col-span-4 sm:col-span-1">
-        <label className="block text-sm font-medium text-gray-700">
-          Amount
-        </label>
-        <div className="mt-1 flex rounded-md shadow-sm">
-          <input
-            type="text"
-            step={1}
-            min={0}
-            {...register(genFieldName("amount"), { shouldUnregister: true, required: "Can't be empty" })}
-            className="block h-10 w-full flex-1 rounded-none rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-          <GenericButton
-            onClick={() => setValue(genFieldName("amount"), getValues<string>(genFieldName("amount"))
-              .concat("000000000000000000"))}
-            className="inline-flex items-center rounded-none rounded-r-md border border-l-0 border-gray-300 m-0">
-            18
-          </GenericButton>
-        </div>
+        <NumberForm label="Amount" fieldName={genFieldName("amount")} />
       </div>
 
       <div className="col-span-4 sm:col-span-1">
-        <label className="block text-sm font-medium text-gray-700">
-          Token
-        </label>
-        <select
-          {...register(genFieldName("contract"),
-            { shouldUnregister: true, value: loadedTransfer?.contract || "0x0000000000000000000000000000000000000000" })}
-          className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-        >
-          <option value={CONTRACT_MAP.ETH}>ETH</option>
-          <option value={CONTRACT_MAP.JBX}>JBX</option>
-          <option value={CONTRACT_MAP.USDC}>USDC</option>
-        </select>
+        <SelectForm label="Token" fieldName={genFieldName("contract")} options={[
+          { displayValue: "ETH", value: CONTRACT_MAP.ETH },
+          { displayValue: "USDC", value: CONTRACT_MAP.USDC },
+          { displayValue: "JBX", value: CONTRACT_MAP.JBX },
+        ]} defaultValue={CONTRACT_MAP.ETH} />
       </div>
     </div>
+  )
+}
+
+function SplitEntry({ split }: { split: JBSplitNanceStruct }) {
+  let splitMode = "address";
+  if (split.allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
+  else if (split.projectId !== 0) splitMode = "project";
+
+  const mainStyle = "text-sm font-semibold";
+  const subStyle = "text-xs italic";
+
+  return (
+    <>
+      {splitMode === "allocator" && (
+        <>
+          <FormattedAddress address={split.allocator} style={mainStyle} />
+          <a href="https://info.juicebox.money/dev/learn/glossary/split-allocator/" target="_blank" rel="noreferrer">(Allocator)</a>
+          <ResolvedProject version={3} projectId={split.projectId} style={subStyle} />
+          <FormattedAddress address={split.beneficiary} style={subStyle} overrideURLPrefix="https://juicebox.money/account/" />
+        </>
+      )}
+
+      {splitMode === "project" && (
+        <>
+          <ResolvedProject version={3} projectId={split.projectId} style={mainStyle} />
+          <FormattedAddress address={split.beneficiary} style={subStyle} overrideURLPrefix="https://juicebox.money/account/" />
+        </>
+      )}
+
+      {/* Address mode */}
+      {splitMode === "address" && (
+        <>
+          <FormattedAddress address={split.beneficiary} style={mainStyle} overrideURLPrefix="https://juicebox.money/account/" />
+        </>
+      )}
+
+      {(split.percent / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%
+    </>
   )
 }
 
@@ -683,11 +611,18 @@ function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }
   const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId: NANCE_DEFAULT_JUICEBOX_PROJECT, isV3: true });
   const [fc, metadata] = _fc || [];
   const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(NANCE_DEFAULT_JUICEBOX_PROJECT, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN, true);
+  // TODO: reserve rate, percent / total_percentage JBConstants
 
   useEffect(() => {
     ticketMods?.forEach(ticket => {
-      const split = {
-        beneficiary: ticket.beneficiary
+      const split: JBSplitNanceStruct = {
+        preferClaimed: ticket.preferClaimed,
+        preferAddToBalance: ticket.preferAddToBalance,
+        percent: ticket.percent.toNumber(),
+        projectId: ticket.projectId.toNumber(),
+        beneficiary: ticket.beneficiary,
+        lockedUntil: ticket.lockedUntil.toNumber(),
+        allocator: ticket.allocator
       }
       append(split)
     })
@@ -707,31 +642,10 @@ function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }
     <div className="flex flex-col gap-6">
       {fields?.map((field: any, index) => (
         <div key={field.id} className="w-full flex items-center gap-6">
-          <div className="w-1/2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Beneficiary
-            </label>
-            <Controller
-              name={genFieldName(`splits.${index}.beneficiary`)}
-              control={control}
-              rules={{
-                required: "Can't be empty",
-                pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
-              }}
-              render={({ field: { onChange, onBlur, value, ref } }) =>
-                <ENSAddressInput val={value} setVal={onChange} inputStyle="h-10" />
-              }
-              defaultValue={field.beneficiary || ""}
-            />
-            <FormattedAddress address={watch(genFieldName(`splits.${index}.beneficiary`))} />
-            <ErrorMessage
-              errors={errors}
-              name={genFieldName(`splits.${index}.beneficiary`)}
-              render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
-            />
-          </div>
+          <SplitEntry split={field} />
 
-          <TrashIcon className="w-10 h-10 cursor-pointer" onClick={() => remove(index)} />
+
+          <TrashIcon className="w-3 h-3 cursor-pointer" onClick={() => remove(index)} />
         </div>
       ))}
 
@@ -742,53 +656,17 @@ function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }
 function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = undefined }:
   { genFieldName: (field: string) => any, loadedCustomTransaction?: CustomTransaction }) {
 
-  const { register, watch, control, setValue, getValues, formState: { errors } } = useFormContext();
+  const { watch, control, formState: { errors } } = useFormContext();
   const [functionFragment, setFunctionFragment] = useState<FunctionFragment>();
 
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-2">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Contract
-        </label>
-        <Controller
-          name={genFieldName("contract")}
-          control={control}
-          rules={{
-            required: "Can't be empty",
-            pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
-          }}
-          render={({ field: { onChange, onBlur, value, ref } }) =>
-            <ENSAddressInput val={value} setVal={onChange} inputStyle="h-10" />
-          }
-          defaultValue={loadedCustomTransaction?.contract || ""}
-        />
-        <ErrorMessage
-          errors={errors}
-          name={genFieldName("contract")}
-          render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
-        />
+        <AddressForm label="Contract" fieldName={genFieldName("contract")} defaultValue={loadedCustomTransaction?.contract || ""} />
       </div>
 
       <div className="col-span-4 sm:col-span-1">
-        <label className="block text-sm font-medium text-gray-700">
-          ETH Value
-        </label>
-        <div className="mt-1 flex rounded-md shadow-sm">
-          <input
-            type="text"
-            step={1}
-            min={0}
-            {...register(genFieldName("value"), { shouldUnregister: true, required: "Can't be empty" })}
-            className="block h-10 w-full flex-1 rounded-none rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-          <GenericButton
-            onClick={() => setValue(genFieldName("value"), getValues<string>(genFieldName("value"))
-              .concat("000000000000000000"))}
-            className="inline-flex items-center rounded-none rounded-r-md border border-l-0 border-gray-300 m-0">
-            18
-          </GenericButton>
-        </div>
+        <NumberForm label="ETH Value" fieldName={genFieldName("value")} />
       </div>
 
       {
@@ -820,77 +698,21 @@ function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = u
       {
         functionFragment?.inputs?.map((param, index) => (
           <div key={param.name} className="col-span-4 sm:col-span-1">
-            <label className="block text-sm font-medium text-gray-700">
-              Param: {param.name}
-            </label>
+            {param.type === "address" && (
+              <AddressForm label={`Param: ${param.name}`} fieldName={genFieldName(`args.${param.name}`)} />
+            )}
 
-            <div className="mt-1 flex rounded-md shadow-sm">
-              <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
-                {param.type}
-              </span>
+            {param.type.includes("int") && (
+              <NumberForm label={`Param: ${param.name}`} fieldName={genFieldName(`args.${param.name}`)} fieldType={param.type} />
+            )}
 
-              {param.type === "address" && (
-                <>
-                  <Controller
-                    name={genFieldName(`args.${param.name}`)}
-                    control={control}
-                    rules={{
-                      required: "Can't be empty",
-                      pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
-                    }}
-                    render={({ field: { onChange, onBlur, value, ref } }) =>
-                      <ENSAddressInput val={value} setVal={onChange} inputStyle="rounded-none h-10 rounded-r-md" />
-                    }
-                    defaultValue={loadedCustomTransaction?.contract || ""}
-                  />
-                </>
-              )}
+            {param.type === "bool" && (
+              <BooleanForm label={`Param: ${param.name}`} fieldName={genFieldName(`args.${param.name}`)} />
+            )}
 
-              {param.type === "uint256" && (
-                <>
-                  <input
-                    type="text"
-                    step={1}
-                    min={0}
-                    {...register(genFieldName(`args.${param.name}`), { shouldUnregister: true, required: "Can't be empty" })}
-                    className="block h-10 w-full flex-1 rounded-none border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                  <GenericButton
-                    onClick={() => setValue(genFieldName(`args.${param.name}`), getValues<string>(genFieldName(`args.${param.name}`))
-                      .concat("000000000000000000"))}
-                    className="inline-flex items-center rounded-none rounded-r-md border border-l-0 border-gray-300 m-0">
-                    18
-                  </GenericButton>
-                </>
-              )}
-
-              {param.type === "bool" && (
-                <>
-                  <input
-                    type="checkbox"
-                    {...register(genFieldName(`args.${param.name}`), { shouldUnregister: true })}
-                    className="block h-10 w-10 flex-1 rounded-none rounded-r-md border-gray-300"
-                  />
-                </>
-              )}
-
-              {param.type !== "address" && param.type !== "uint256" && param.type !== "bool" && (
-                <input
-                  type="text"
-                  step={1}
-                  min={0}
-                  {...register(genFieldName(`args.${param.name}`), { shouldUnregister: true })}
-                  className="block h-10 w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              )}
-
-            </div>
-
-            <ErrorMessage
-              errors={errors}
-              name={genFieldName(`args.${param.name}`)}
-              render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
-            />
+            {param.type !== "address" && !param.type.includes("int") && param.type !== "bool" && (
+              <StringForm label={`Param: ${param.name}`} fieldName={genFieldName(`args.${param.name}`)} fieldType={param.type} />
+            )}
           </div>
         ))
       }

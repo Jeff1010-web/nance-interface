@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from 'react'
+import { useState } from 'react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/solid'
 import { Combobox } from '@headlessui/react'
 import { useEnsAddress } from 'wagmi'
