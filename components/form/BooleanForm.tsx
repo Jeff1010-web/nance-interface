@@ -17,7 +17,7 @@ export default function BooleanForm(
                 </span>
                 <input
                     type="checkbox"
-                    checked={checked}
+                    defaultChecked={checked}
                     {...register(fieldName, { shouldUnregister: true })}
                     className="block h-10 w-10 flex-1 rounded-none rounded-r-md border-gray-300"
                   />
