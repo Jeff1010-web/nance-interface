@@ -24,7 +24,6 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
     abi: !error && abi as any,
   })
   const functions = Object.keys(contract?.interface.functions || {});
-  console.debug(`FunctionSelector.interface of ${address}`, contract?.interface)
 
   const filteredOption =
     query === ''

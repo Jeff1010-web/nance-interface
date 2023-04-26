@@ -21,14 +21,14 @@ import { Editor } from '@tinymce/tinymce-react';
 import { markdownToHtml, htmlToMarkdown } from '../libs/markdown';
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { CurrencyDollarIcon, LightningBoltIcon, PlusIcon, SwitchVerticalIcon, UserGroupIcon, XIcon } from "@heroicons/react/solid";
-import { Combobox, Dialog, Transition } from '@headlessui/react';
+import { Combobox, Dialog, Disclosure, Transition } from '@headlessui/react';
 import { ErrorMessage } from "@hookform/error-message";
 import FunctionSelector from "../components/FunctionSelector";
 import { FunctionFragment } from "ethers/lib/utils";
-import { CONTRACT_MAP } from "../constants/Contract";
+import { CONTRACT_MAP, ZERO_ADDRESS } from "../constants/Contract";
 import { useCurrentFundingCycleV2 } from "../hooks/juicebox/CurrentFundingCycle";
 import { useCurrentSplits } from "../hooks/juicebox/CurrentSplits";
-import { JBConstants, JBSplit } from "../models/JuiceboxTypes";
+import { JBConstants } from "../models/JuiceboxTypes";
 import { TrashIcon } from "@heroicons/react/outline";
 import FormattedAddress from "../components/FormattedAddress";
 import ResolvedProject from "../components/ResolvedProject";
@@ -111,20 +111,19 @@ function Form({ space }: { space: string }) {
   // state
   const [signing, setSigning] = useState(false);
   const [signError, setSignError] = useState(undefined);
+  const [formErrors, setFormErrors] = useState<string>("");
 
   // hooks
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space as string, metadata.loadedProposal?.hash, router.isReady);
   const { data: signer, isError, isLoading } = useSigner()
   const jrpcSigner = signer as JsonRpcSigner;
-  const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
 
   const isNew = metadata.loadedProposal === null;
-  const hasVoting = metadata.loadedProposal?.voteURL?.length > 0;
 
   // form
   const methods = useForm<ProposalFormValues>();
-  const { register, handleSubmit, control, formState: { errors } } = methods;
+  const { register, handleSubmit, control, formState } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
     const { body, title, hash } = metadata?.loadedProposal ?? {}; // send back all values except ones in form
     const payload = {
@@ -168,6 +167,12 @@ function Form({ space }: { space: string }) {
     setSignError(undefined);
     reset();
   }
+
+  useEffect(() => {
+    if(formState.errors && Object.keys(formState.errors).length > 0) {
+      setFormErrors(JSON.stringify(formState.errors))
+    }
+  }, [formState])
 
   return (
     <FormProvider {...methods} >
@@ -235,6 +240,12 @@ function Form({ space }: { space: string }) {
 
         <Actions />
 
+        {formErrors.length > 0 && (
+          <p className="text-red-500 mt-1">
+            Form errors: {formErrors}
+          </p>
+        )}
+
         <div className="flex justify-end">
           <Link href={`/${space !== NANCE_DEFAULT_SPACE ? `?overrideSpace=${space}` : ''}`}>
             <a
@@ -256,12 +267,14 @@ function Form({ space }: { space: string }) {
             <button
               type="submit"
               disabled={
-                isSubmitting
+                isSubmitting || formErrors.length > 0
                 //|| (!isNew && hasVoting)
               }
               className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
             >
-              {signing ? (isMutating ? "Submitting..." : "Signing...") : "Submit"}
+              {signing ? 
+                (isMutating ? "Submitting..." : "Signing...") : 
+                (formErrors.length > 0 ? "Error in form" : "Submit")}
             </button>
           )}
         </div>
@@ -278,7 +291,7 @@ function Actions() {
   const { fields, append, remove } = useFieldArray<{
     actions: Action[];
     [key: string]: any;
-  }>({ name: "actions" });
+  }>({ name: "proposal.actions" });
 
   const newAction = (a: ActionItem) => {
     setOpen(false)
@@ -514,10 +527,10 @@ function PayoutActionForm({ genFieldName, loadedPayout = undefined }:
         <SelectForm label="Receiver Type" fieldName={genFieldName("type")} options={[
           { displayValue: "Address", value: "address" },
           { displayValue: "Project", value: "project" },
-        ]} />
+        ]} defaultValue="address" />
       </div>
       <div className="col-span-4 sm:col-span-1">
-        <NumberForm label="Duration(Cycles)" fieldName={genFieldName("count")} defaultValue="1" />
+        <NumberForm label="Duration(Cycles)" fieldName={genFieldName("count")} defaultValue={1} decimal={1} />
       </div>
       <div className="col-span-4 sm:col-span-2">
         <NumberForm label="Amount" fieldName={genFieldName("amountUSD")} fieldType="$" />
@@ -561,10 +574,13 @@ function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
   )
 }
 
-function SplitEntry({ split }: { split: JBSplitNanceStruct }) {
+function SplitEntry({ beneficiary, projectId, allocator, percent }: 
+  { beneficiary: string, projectId: string, allocator: string, percent: string }) {
+
+  const project = parseInt(projectId);
   let splitMode = "address";
-  if (split.allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
-  else if (split.projectId !== 0) splitMode = "project";
+  if (allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
+  else if (project !== 0) splitMode = "project";
 
   const mainStyle = "text-sm font-semibold";
   const subStyle = "text-xs italic";
@@ -573,28 +589,28 @@ function SplitEntry({ split }: { split: JBSplitNanceStruct }) {
     <>
       {splitMode === "allocator" && (
         <>
-          <FormattedAddress address={split.allocator} style={mainStyle} />
+          <FormattedAddress address={allocator} style={mainStyle} />
           <a href="https://info.juicebox.money/dev/learn/glossary/split-allocator/" target="_blank" rel="noreferrer">(Allocator)</a>
-          <ResolvedProject version={3} projectId={split.projectId} style={subStyle} />
-          <FormattedAddress address={split.beneficiary} style={subStyle} overrideURLPrefix="https://juicebox.money/account/" />
+          <ResolvedProject version={3} projectId={project} style={subStyle} />
+          <FormattedAddress address={beneficiary} style={subStyle} noLink />
         </>
       )}
 
       {splitMode === "project" && (
         <>
-          <ResolvedProject version={3} projectId={split.projectId} style={mainStyle} />
-          <FormattedAddress address={split.beneficiary} style={subStyle} overrideURLPrefix="https://juicebox.money/account/" />
+          <ResolvedProject version={3} projectId={project} style={mainStyle} />
+          <FormattedAddress address={beneficiary} style={subStyle} noLink />
         </>
       )}
 
       {/* Address mode */}
       {splitMode === "address" && (
         <>
-          <FormattedAddress address={split.beneficiary} style={mainStyle} overrideURLPrefix="https://juicebox.money/account/" />
+          <FormattedAddress address={beneficiary} style={mainStyle} noLink />
         </>
       )}
 
-      {(split.percent / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%
+      <span>{(parseInt(percent) / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%</span>
     </>
   )
 }
@@ -602,11 +618,11 @@ function SplitEntry({ split }: { split: JBSplitNanceStruct }) {
 function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }:
   { genFieldName: (field: string) => any, loadedCustomTransaction?: CustomTransaction }) {
 
-  const { register, watch, control, setValue, getValues, formState: { errors } } = useFormContext();
-  const { fields, append, remove } = useFieldArray<{
+  const { watch, formState: { errors } } = useFormContext();
+  const { fields, append, remove, prepend } = useFieldArray<{
     splits: JBSplitNanceStruct[];
     [key: string]: any;
-  }>({ name: "splits" });
+  }>({ name: genFieldName("splits") });
   
   const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId: NANCE_DEFAULT_JUICEBOX_PROJECT, isV3: true });
   const [fc, metadata] = _fc || [];
@@ -632,41 +648,63 @@ function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }
 
   return (
     <div className="flex flex-col gap-6">
+      <GenericButton onClick={() => prepend({
+        preferClaimed: false,
+        preferAddToBalance: false,
+        percent: 0,
+        projectId: 0,
+        beneficiary: ZERO_ADDRESS,
+        lockedUntil: 0,
+        allocator: ZERO_ADDRESS
+      })} className="mt-6">
+        <PlusIcon className="w-5 h-5" />
+        <p className="ml-1">Add a receipient</p>
+      </GenericButton>
+
+      {ticketModsIsLoading && (
+        <>
+          <div className="w-full h-12 animate-pulse bg-blue-100 rounded-md shadow-sm p-4"></div>
+          <div className="w-full h-12 animate-pulse bg-blue-100 rounded-md shadow-sm p-4"></div>
+          <div className="w-full h-12 animate-pulse bg-blue-100 rounded-md shadow-sm p-4"></div>
+        </>
+      )}
+
       {fields?.map((field: JBSplitNanceStruct & { id: string }, index) => (
-        <div key={field.id} className="grid grid-cols-4 gap-6">
-          <div className="col-span-4 sm:col-span-3">
-            <AddressForm label="Beneficiary" fieldName={genFieldName(`splits.${index}.beneficiary`)} defaultValue={field.beneficiary} />
-          </div>
-          <div className="col-span-4 sm:col-span-1">
-            <NumberForm label="Percent" fieldName={genFieldName(`splits.${index}.percent`)} fieldType="per billion" decimal={9} defaultValue={field.percent} />
-          </div>
+        <Disclosure key={field.id} as="div" className="rounded-md bg-blue-100 shadow-sm p-4" defaultOpen={field.beneficiary === ZERO_ADDRESS}>
+          <Disclosure.Button as="div" className="flex space-x-6">
+            <span>No.{index}</span>
+            <SplitEntry beneficiary={watch(genFieldName(`splits.${index}.beneficiary`)) || field.beneficiary} projectId={watch(genFieldName(`splits.${index}.projectId`)) || field.projectId.toString()} allocator={watch(genFieldName(`splits.${index}.allocator`)) || field.allocator} percent={watch(genFieldName(`splits.${index}.percent`)) || field.percent.toString()}/>
+            <TrashIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
+          </Disclosure.Button>
+          <Disclosure.Panel as="div" className="grid grid-cols-4 gap-6 mt-2" unmount={false}>
+            <div className="col-span-4 sm:col-span-3">
+              <AddressForm label="Beneficiary" fieldName={genFieldName(`splits.${index}.beneficiary`)} defaultValue={field.beneficiary} />
+            </div>
+            <div className="col-span-4 sm:col-span-1">
+              <NumberForm label="Percent" fieldName={genFieldName(`splits.${index}.percent`)} fieldType="per billion" decimal={9} defaultValue={field.percent} />
+            </div>
 
-          <div className="col-span-4 sm:col-span-2">
-            <ProjectForm label="Project ID" fieldName={genFieldName(`splits.${index}.projectId`)} defaultValue={field.projectId.toString()} />
-          </div>
-          <div className="col-span-4 sm:col-span-2">
-            <AddressForm label="Allocator" fieldName={genFieldName(`splits.${index}.allocator`)} defaultValue={field.allocator} />
-          </div>
+            <div className="col-span-4 sm:col-span-2">
+              <ProjectForm label="Project ID" fieldName={genFieldName(`splits.${index}.projectId`)} defaultValue={field.projectId.toString()} />
+            </div>
+            <div className="col-span-4 sm:col-span-2">
+              <AddressForm label="Allocator" fieldName={genFieldName(`splits.${index}.allocator`)} defaultValue={field.allocator} />
+            </div>
 
-          <div className="col-span-4 sm:col-span-2">
-            {/* todo date timestamp param */}
-            <NumberForm label="lockedUntil" fieldName={genFieldName(`splits.${index}.lockedUntil`)} fieldType="timestamp" defaultValue={field.lockedUntil} />
-          </div>
-          <div className="col-span-4 sm:col-span-1">
-            <BooleanForm label="preferClaimed" fieldName={genFieldName(`splits.${index}.preferClaimed`)} checked={field.preferClaimed} />
-          </div>
-          <div className="col-span-4 sm:col-span-1">
-            <BooleanForm label="preferAddToBalance" fieldName={genFieldName(`splits.${index}.preferAddToBalance`)} checked={field.preferAddToBalance} />
-          </div>
-
-          {/* <SplitEntry split={field} /> */}
-
-
-          {/* <TrashIcon className="w-3 h-3 cursor-pointer" onClick={() => remove(index)} /> */}
-        </div>
+            <div className="col-span-4 sm:col-span-2">
+              {/* todo date timestamp param */}
+              <NumberForm label="lockedUntil" fieldName={genFieldName(`splits.${index}.lockedUntil`)} fieldType="timestamp" defaultValue={field.lockedUntil} />
+            </div>
+            <div className="col-span-4 sm:col-span-1">
+              <BooleanForm label="preferClaimed" fieldName={genFieldName(`splits.${index}.preferClaimed`)} checked={field.preferClaimed} />
+            </div>
+            <div className="col-span-4 sm:col-span-1">
+              <BooleanForm label="preferAddToBalance" fieldName={genFieldName(`splits.${index}.preferAddToBalance`)} checked={field.preferAddToBalance} />
+            </div>
+          </Disclosure.Panel>
+        </Disclosure>
       ))}
-
-    </div >
+    </div>
   )
 }
 
