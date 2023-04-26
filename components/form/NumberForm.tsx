@@ -3,7 +3,7 @@ import { useFormContext } from "react-hook-form";
 import GenericButton from "../GenericButton";
 
 export default function NumberForm(
-    { label, fieldName, fieldType = "uint256", defaultValue = "" } : { label: string, fieldName: any, fieldType?: string, defaultValue?: string }
+    { label, fieldName, fieldType = "uint256", decimal = 18, defaultValue = 0 } : { label: string, fieldName: any, fieldType?: string, decimal?: number, defaultValue?: number }
     ) {
     const { register, setValue, getValues, formState: { errors } } = useFormContext();
 
@@ -17,7 +17,7 @@ export default function NumberForm(
                     {fieldType}
                 </span>
                 <input
-                    type="text"
+                    type="number"
                     step={1}
                     min={0}
                     defaultValue={defaultValue}
@@ -26,9 +26,9 @@ export default function NumberForm(
                 />
                 <GenericButton
                     onClick={() => setValue(fieldName, getValues<string>(fieldName)
-                    .concat("000000000000000000"))}
+                    .concat("0".repeat(decimal)))}
                     className="inline-flex items-center rounded-none rounded-r-md border border-l-0 border-gray-300 m-0">
-                    18
+                    {decimal}
                 </GenericButton>
             </div>
             <ErrorMessage

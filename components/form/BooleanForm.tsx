@@ -2,7 +2,7 @@ import { ErrorMessage } from "@hookform/error-message";
 import { useFormContext } from "react-hook-form";
 
 export default function BooleanForm(
-    { label, fieldName, defaultValue = "" } : { label: string, fieldName: any, defaultValue?: string }
+    { label, fieldName, checked = false } : { label: string, fieldName: any, checked?: boolean }
     ) {
     const { register, formState: { errors } } = useFormContext();
 
@@ -17,6 +17,7 @@ export default function BooleanForm(
                 </span>
                 <input
                     type="checkbox"
+                    checked={checked}
                     {...register(fieldName, { shouldUnregister: true })}
                     className="block h-10 w-10 flex-1 rounded-none rounded-r-md border-gray-300"
                   />

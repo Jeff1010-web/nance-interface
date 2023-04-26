@@ -22,11 +22,11 @@ export default function ProjectForm(
                     rules={{
                         required: "Can't be empty",
                         validate: {
-                            positive: (v) => parseInt(v) > 0 || "Not a positive number"
+                            positive: (v) => parseInt(v) > -1 || "Can't be negative number"
                         }
                     }}
                     render={({ field: { onChange, onBlur, value, ref } }) =>
-                        <ProjectSearch val={value} setVal={onChange} />
+                        <ProjectSearch val={value} setVal={onChange} inputStyle="rounded-none h-10 rounded-r-md" />
                     }
                     defaultValue={defaultValue}
                     shouldUnregister

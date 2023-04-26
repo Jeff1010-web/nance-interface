@@ -614,7 +614,9 @@ function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }
   // TODO: reserve rate, percent / total_percentage JBConstants
 
   useEffect(() => {
-    ticketMods?.forEach(ticket => {
+    const arr = ticketMods ? [...ticketMods] : [];
+    arr.sort((a, b) => b.percent.sub(a.percent).toNumber());
+    arr.forEach(ticket => {
       const split: JBSplitNanceStruct = {
         preferClaimed: ticket.preferClaimed,
         preferAddToBalance: ticket.preferAddToBalance,
@@ -628,24 +630,39 @@ function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }
     })
   }, [ticketMods])
 
-  function typeOfSplit(split: JBSplit) {
-    let splitMode = "address";
-    if (split.allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
-    else if (split.projectId.toNumber() !== 0) splitMode = "project";
-
-    return splitMode
-  }
-
-  console.log(fields)
-
   return (
     <div className="flex flex-col gap-6">
-      {fields?.map((field: any, index) => (
-        <div key={field.id} className="w-full flex items-center gap-6">
-          <SplitEntry split={field} />
+      {fields?.map((field: JBSplitNanceStruct & { id: string }, index) => (
+        <div key={field.id} className="grid grid-cols-4 gap-6">
+          <div className="col-span-4 sm:col-span-3">
+            <AddressForm label="Beneficiary" fieldName={genFieldName(`splits.${index}.beneficiary`)} defaultValue={field.beneficiary} />
+          </div>
+          <div className="col-span-4 sm:col-span-1">
+            <NumberForm label="Percent" fieldName={genFieldName(`splits.${index}.percent`)} fieldType="per billion" decimal={9} defaultValue={field.percent} />
+          </div>
+
+          <div className="col-span-4 sm:col-span-2">
+            <ProjectForm label="Project ID" fieldName={genFieldName(`splits.${index}.projectId`)} defaultValue={field.projectId.toString()} />
+          </div>
+          <div className="col-span-4 sm:col-span-2">
+            <AddressForm label="Allocator" fieldName={genFieldName(`splits.${index}.allocator`)} defaultValue={field.allocator} />
+          </div>
+
+          <div className="col-span-4 sm:col-span-2">
+            {/* todo date timestamp param */}
+            <NumberForm label="lockedUntil" fieldName={genFieldName(`splits.${index}.lockedUntil`)} fieldType="timestamp" defaultValue={field.lockedUntil} />
+          </div>
+          <div className="col-span-4 sm:col-span-1">
+            <BooleanForm label="preferClaimed" fieldName={genFieldName(`splits.${index}.preferClaimed`)} checked={field.preferClaimed} />
+          </div>
+          <div className="col-span-4 sm:col-span-1">
+            <BooleanForm label="preferAddToBalance" fieldName={genFieldName(`splits.${index}.preferAddToBalance`)} checked={field.preferAddToBalance} />
+          </div>
+
+          {/* <SplitEntry split={field} /> */}
 
 
-          <TrashIcon className="w-3 h-3 cursor-pointer" onClick={() => remove(index)} />
+          {/* <TrashIcon className="w-3 h-3 cursor-pointer" onClick={() => remove(index)} /> */}
         </div>
       ))}
 
