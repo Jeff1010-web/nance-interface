@@ -15,7 +15,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../components/ColorBar";
 import { fetchProposal } from "../../hooks/NanceHooks";
 import { getLastSlash } from "../../libs/nance";
-import { Proposal, Payout, Action, Transfer, CustomTransaction } from "../../models/NanceTypes";
+import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve } from "../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Custom404 from "../404";
@@ -26,6 +26,10 @@ import ResolvedProject from "../../components/ResolvedProject";
 import { NANCE_DEFAULT_SPACE } from "../../constants/Nance";
 import { CONTRACT_MAP } from "../../constants/Contract";
 import ResolvedContract from "../../components/ResolvedContract";
+import JBSplitEntry from "../../components/juicebox/JBSplitEntry";
+import { JBConstants } from "../../models/JuiceboxTypes";
+import { BigNumber } from "ethers";
+import { formatUnits } from "ethers/lib/utils";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -287,11 +291,16 @@ function ProposalContent({ body }: { body: string }) {
                     <div key={index} className="ml-2 flex space-x-2 w-full break-words">
                       <span className="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800">
                         {action.type}
+                        {/* {action.type === "Reserve" && (
+                          <span>
+                            (Total: {(action.payload as Reserve).splits.reduce((acc, obj) => acc + obj.percent, 0) * 100 / JBConstants.TotalPercent.Splits[2]}%)
+                          </span>
+                        )} */}
                       </span>
 
                       {action.type === "Transfer" && (
                         <span className="line-clamp-5">
-                          {(action.payload as Transfer).amount}
+                          {formatUnits(BigNumber.from((action.payload as Transfer).amount), getContractDecimal((action.payload as Transfer).contract))}
                           &nbsp;{getContractLabel((action.payload as Transfer).contract)}
                           &nbsp;to
                           <FormattedAddress address={(action.payload as Transfer).to} style="inline ml-1" />
@@ -326,6 +335,17 @@ function ProposalContent({ body }: { body: string }) {
                           </a>
                         </span>
                       )}
+
+                      {action.type === "Reserve" && (
+                        <div className="flex flex-col">
+                          {(action.payload as Reserve).splits.sort((a, b) => b.percent - a.percent).map(
+                            (split, index) => (
+                              <JBSplitEntry key={index} beneficiary={split.beneficiary} allocator={split.allocator} projectId={split.projectId.toString()} percent={split.percent.toString()} preferAddToBalance={split.preferAddToBalance} preferClaimed={split.preferClaimed} style="grid grid-cols-3 gap-6" />
+                            )
+                          )}
+                        </div>
+                      )}
+
                     </div>
                   ))}
                 </div>
@@ -348,6 +368,13 @@ function getContractLabel(address: string) {
   if(CONTRACT_MAP.ETH === address) return "ETH"
   else if(CONTRACT_MAP.JBX === address) return "JBX"
   else if(CONTRACT_MAP.USDC === address) return "USDC"
+  else return `Unknown(${address})`
+}
+
+function getContractDecimal(address: string) {
+  if(CONTRACT_MAP.ETH === address) return 18
+  else if(CONTRACT_MAP.JBX === address) return 18
+  else if(CONTRACT_MAP.USDC === address) return 6
   else return `Unknown(${address})`
 }
 

@@ -30,14 +30,13 @@ import { useCurrentFundingCycleV2 } from "../hooks/juicebox/CurrentFundingCycle"
 import { useCurrentSplits } from "../hooks/juicebox/CurrentSplits";
 import { JBConstants } from "../models/JuiceboxTypes";
 import { TrashIcon } from "@heroicons/react/outline";
-import FormattedAddress from "../components/FormattedAddress";
-import ResolvedProject from "../components/ResolvedProject";
 import AddressForm from "../components/form/AddressForm";
 import NumberForm from "../components/form/NumberForm";
 import BooleanForm from "../components/form/BooleanForm";
 import StringForm from "../components/form/StringForm";
 import SelectForm from "../components/form/SelectForm";
 import ProjectForm from "../components/form/ProjectForm";
+import JBSplitEntry from "../components/juicebox/JBSplitEntry";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -574,47 +573,6 @@ function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
   )
 }
 
-function SplitEntry({ beneficiary, projectId, allocator, percent }: 
-  { beneficiary: string, projectId: string, allocator: string, percent: string }) {
-
-  const project = parseInt(projectId);
-  let splitMode = "address";
-  if (allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
-  else if (project !== 0) splitMode = "project";
-
-  const mainStyle = "text-sm font-semibold";
-  const subStyle = "text-xs italic";
-
-  return (
-    <>
-      {splitMode === "allocator" && (
-        <>
-          <FormattedAddress address={allocator} style={mainStyle} />
-          <a href="https://info.juicebox.money/dev/learn/glossary/split-allocator/" target="_blank" rel="noreferrer">(Allocator)</a>
-          <ResolvedProject version={3} projectId={project} style={subStyle} />
-          <FormattedAddress address={beneficiary} style={subStyle} noLink />
-        </>
-      )}
-
-      {splitMode === "project" && (
-        <>
-          <ResolvedProject version={3} projectId={project} style={mainStyle} />
-          <FormattedAddress address={beneficiary} style={subStyle} noLink />
-        </>
-      )}
-
-      {/* Address mode */}
-      {splitMode === "address" && (
-        <>
-          <FormattedAddress address={beneficiary} style={mainStyle} noLink />
-        </>
-      )}
-
-      <span>{(parseInt(percent) / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%</span>
-    </>
-  )
-}
-
 function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }:
   { genFieldName: (field: string) => any, loadedCustomTransaction?: CustomTransaction }) {
 
@@ -673,7 +631,7 @@ function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }
         <Disclosure key={field.id} as="div" className="rounded-md bg-blue-100 shadow-sm p-4" defaultOpen={field.beneficiary === ZERO_ADDRESS}>
           <Disclosure.Button as="div" className="flex space-x-6">
             <span>No.{index}</span>
-            <SplitEntry beneficiary={watch(genFieldName(`splits.${index}.beneficiary`)) || field.beneficiary} projectId={watch(genFieldName(`splits.${index}.projectId`)) || field.projectId.toString()} allocator={watch(genFieldName(`splits.${index}.allocator`)) || field.allocator} percent={watch(genFieldName(`splits.${index}.percent`)) || field.percent.toString()}/>
+            <JBSplitEntry beneficiary={watch(genFieldName(`splits.${index}.beneficiary`)) || field.beneficiary} projectId={watch(genFieldName(`splits.${index}.projectId`)) || field.projectId.toString()} allocator={watch(genFieldName(`splits.${index}.allocator`)) || field.allocator} percent={watch(genFieldName(`splits.${index}.percent`)) || field.percent.toString()} preferAddToBalance={watch(genFieldName(`splits.${index}.preferAddToBalance`)) || field.preferAddToBalance} preferClaimed={watch(genFieldName(`splits.${index}.preferClaimed`)) || field.preferClaimed} />
             <TrashIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
           </Disclosure.Button>
           <Disclosure.Panel as="div" className="grid grid-cols-4 gap-6 mt-2" unmount={false}>
