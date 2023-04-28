@@ -4,6 +4,7 @@ import Head from 'next/head'
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import GenericButton from './GenericButton';
 
 interface SiteNavProps {
   pageTitle: string,
@@ -17,8 +18,6 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
 
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Governance Process', href: '/process' },
-    { name: 'New proposal', href: '/edit' },
     { name: 'Treasury', href: '/treasury' },
     { name: 'Reconfiguration', href: '/juicebox' },
     { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
@@ -84,11 +83,12 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
                     </div>
                   </div>
 
-                  {withWallet && (
-                    <div className="hidden sm:ml-6 sm:flex sm:items-center">
-                      <ConnectButton />
-                    </div>
-                  )}
+                  <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-6">
+                    <GenericButton onClick={() => router.push('/edit')}>
+                      New Proposal
+                    </GenericButton>
+                    { withWallet && <ConnectButton /> }
+                  </div>
 
                   <div className="-mr-2 flex items-center sm:hidden">
                     {/* Mobile menu button */}
@@ -118,11 +118,12 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
                   ))}
                 </div>
 
-                {withWallet && (
-                  <div className="py-2 mx-2 border-t border-gray-200">
-                    <ConnectButton />
-                  </div>
-                )}
+                <div className="py-2 mx-2 border-t border-gray-200 space-y-3">
+                  <GenericButton onClick={() => router.push('/edit')}>
+                    New Proposal
+                  </GenericButton>
+                  { withWallet && <ConnectButton /> }
+                </div>
 
               </Disclosure.Panel>
             </>
