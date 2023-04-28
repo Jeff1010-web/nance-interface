@@ -94,8 +94,8 @@ export default function NanceProposals() {
         <div className="flex flex-col max-w-7xl w-full">
 
           {/* Page header */}
-          <div className="max-w-7xl md:flex md:space-x-5 bg-white p-4 shadow rounded-md">
-            <div className="flex flex-col space-y-6 items-center md:flex-row md:justify-between md:space-x-6 w-full">
+          <div className="max-w-7xl md:flex md:space-x-5 bg-white p-6 shadow rounded-md">
+            <div className="flex flex-col space-x-0 space-y-6 items-center md:flex-row md:justify-between md:space-x-6 md:space-y-0 w-full">
               <div className="flex-shrink-0 md:w-5/12 flex space-x-3">
                 <img
                   className="h-16 w-16 rounded-full"
@@ -107,10 +107,6 @@ export default function NanceProposals() {
                   <h1 className="text-4xl font-bold text-gray-900">JuiceboxDAO</h1>
                   <p className="text-sm font-medium text-gray-500 text-right">powered by Nance</p>
                 </div>
-              </div>
-
-              <div className="md:w-5/12 flex space-x-4 hidden md:block">
-                <SpaceStats />
               </div>
 
               <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-blue-600 bg-indigo-100">
