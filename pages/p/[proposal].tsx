@@ -4,10 +4,10 @@ import SiteNav from "../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../components/FormattedAddress";
-import { fromUnixTime, format, toDate } from "date-fns";
+import { format, toDate } from "date-fns";
 import { createContext, useContext, useEffect, useState } from "react";
 import VotingModal from "../../components/VotingModal";
-import { withDefault, NumberParam, createEnumParam, useQueryParams, useQueryParam, StringParam } from "next-query-params";
+import { withDefault, NumberParam, createEnumParam, useQueryParams, StringParam } from "next-query-params";
 import { processChoices } from "../../libs/snapshotUtil";
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -15,7 +15,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../components/ColorBar";
 import { fetchProposal } from "../../hooks/NanceHooks";
 import { getLastSlash } from "../../libs/nance";
-import { Proposal, Payout } from "../../models/NanceTypes";
+import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve } from "../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Custom404 from "../404";
@@ -23,6 +23,13 @@ import VoterProfile from "../../components/VoterProfile";
 import ScrollToBottom from "../../components/ScrollToBottom";
 import { ExternalLinkIcon } from "@heroicons/react/solid";
 import ResolvedProject from "../../components/ResolvedProject";
+import { NANCE_DEFAULT_SPACE } from "../../constants/Nance";
+import { CONTRACT_MAP } from "../../constants/Contract";
+import ResolvedContract from "../../components/ResolvedContract";
+import JBSplitEntry from "../../components/juicebox/JBSplitEntry";
+import { JBConstants } from "../../models/JuiceboxTypes";
+import { BigNumber } from "ethers";
+import { formatUnits } from "ethers/lib/utils";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -60,7 +67,7 @@ export async function getServerSideProps(context) {
 
   // check proposal parameter type
   const proposalParam: string = context.params.proposal;
-  const spaceParam: string = context.query.overrideSpace || 'juicebox';
+  const spaceParam: string = context.query.overrideSpace || NANCE_DEFAULT_SPACE;;
 
   const proposalResponse = await fetchProposal(spaceParam, proposalParam);
   proposal = proposalResponse.data;
@@ -87,7 +94,7 @@ interface ProposalCommonProps {
   end: number;
   snapshot: string,
   ipfs: string,
-  payout: Payout
+  actions: Action[]
 }
 
 const ProposalContext = createContext<{ commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal }>(undefined);
@@ -122,7 +129,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
     end: snapshotProposal?.end || 0,
     snapshot: snapshotProposal?.snapshot || "",
     ipfs: snapshotProposal?.ipfs || "",
-    payout: proposal.payout
+    actions: proposal.actions
   }
   console.debug("📚NanceProposalPage.begin", commonProps, proposal, snapshotProposal);
 
@@ -275,28 +282,78 @@ function ProposalContent({ body }: { body: string }) {
               </>
             )}
 
-            {commonProps.payout && (
+            {commonProps.actions && (
               <>
-                <span className="font-medium">Payout:</span>
+                <p className="font-medium col-span-2">Actions:</p>
 
-                {commonProps.payout.project && (
-                  <span>
-                    Pay&nbsp;<ResolvedProject version={2} projectId={commonProps.payout.project} />{` $${commonProps.payout.amountUSD} for ${commonProps.payout.count} cycles`}
-                  </span>
-                )}
+                <div className="col-span-2 flex flex-col mt-2 w-full space-y-2">
+                  {commonProps.actions.map((action, index) => (
+                    <div key={index} className="ml-2 flex space-x-2 w-full break-words">
+                      <span className="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800">
+                        {action.type}
+                        {/* {action.type === "Reserve" && (
+                          <span>
+                            (Total: {(action.payload as Reserve).splits.reduce((acc, obj) => acc + obj.percent, 0) * 100 / JBConstants.TotalPercent.Splits[2]}%)
+                          </span>
+                        )} */}
+                      </span>
 
-                {commonProps.payout.address && (
-                  <span>
-                    Pay&nbsp;<FormattedAddress address={commonProps.payout.address} />{` $${commonProps.payout.amountUSD} for ${commonProps.payout.count} cycles`}
-                  </span>
-                )}
+                      {action.type === "Transfer" && (
+                        <span className="line-clamp-5">
+                          {formatUnits(BigNumber.from((action.payload as Transfer).amount), getContractDecimal((action.payload as Transfer).contract))}
+                          &nbsp;{getContractLabel((action.payload as Transfer).contract)}
+                          &nbsp;to
+                          <FormattedAddress address={(action.payload as Transfer).to} style="inline ml-1" />
+                        </span>
+                      )}
+
+                      {action.type === "Payout" && !(action.payload as Payout).project && (
+                        <span className="line-clamp-5">
+                          ${(action.payload as Payout).amountUSD}
+                          &nbsp;to
+                          <FormattedAddress address={(action.payload as Payout).address} style="inline ml-1" />
+                          &nbsp;{` for ${(action.payload as Payout).count} cycles`}
+                        </span>
+                      )}
+
+                      {action.type === "Payout" && (action.payload as Payout).project && (
+                        <span className="line-clamp-5">
+                          ${(action.payload as Payout).amountUSD}
+                          &nbsp;to
+                          <ResolvedProject version={2} projectId={(action.payload as Payout).project} style="inline ml-1" />
+                          {` for ${(action.payload as Payout).count} cycles`}
+                        </span>
+                      )}
+
+                      {action.type === "Custom Transaction" && (
+                        <span className="line-clamp-5">
+                          <ResolvedContract address={(action.payload as CustomTransaction).contract} style="inline ml-1" />
+                          &#46;
+                          <a href={`https://etherfunk.io/address/${(action.payload as CustomTransaction).contract}?fn=${(action.payload as CustomTransaction).functionName?.split("(")[0]}`} rel="noopener noreferrer" target="_blank" className="hover:underline inline">
+                            {(action.payload as CustomTransaction).functionName?.split("(")[0]}
+                            {`(${Object.values((action.payload as CustomTransaction).args || {}).join(",")}) {value: ${(action.payload as CustomTransaction).value}}`}
+                          </a>
+                        </span>
+                      )}
+
+                      {action.type === "Reserve" && (
+                        <div className="flex flex-col">
+                          {(action.payload as Reserve).splits.sort((a, b) => b.percent - a.percent).map(
+                            (split, index) => (
+                              <JBSplitEntry key={index} beneficiary={split.beneficiary} allocator={split.allocator} projectId={split.projectId.toString()} percent={split.percent.toString()} preferAddToBalance={split.preferAddToBalance} preferClaimed={split.preferClaimed} style="grid grid-cols-3 gap-6" />
+                            )
+                          )}
+                        </div>
+                      )}
+
+                    </div>
+                  ))}
+                </div>
               </>
             )}
           </div>
         </div>
       </div>
-
-
 
       <div className="px-4 py-5 sm:px-6">
         <article className="prose prose-lg prose-indigo mx-auto text-gray-500 break-words">
@@ -305,6 +362,20 @@ function ProposalContent({ body }: { body: string }) {
       </div>
     </div>
   )
+}
+
+function getContractLabel(address: string) {
+  if(CONTRACT_MAP.ETH === address) return "ETH"
+  else if(CONTRACT_MAP.JBX === address) return "JBX"
+  else if(CONTRACT_MAP.USDC === address) return "USDC"
+  else return `Unknown(${address})`
+}
+
+function getContractDecimal(address: string) {
+  if(CONTRACT_MAP.ETH === address) return 18
+  else if(CONTRACT_MAP.JBX === address) return 18
+  else if(CONTRACT_MAP.USDC === address) return 6
+  else return `Unknown(${address})`
 }
 
 // BasicVoting: For Against Abstain
