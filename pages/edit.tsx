@@ -8,6 +8,7 @@ import Notification from "../components/Notification";
 import GenericButton from "../components/GenericButton";
 import { fetchProposal, useProposalUpload } from "../hooks/NanceHooks";
 import { imageUpload } from "../hooks/ImageUpload";
+import { fileDrop } from "../hooks/FileDrop";
 import { Proposal, ProposalUploadRequest, Action, Payout, Transfer, CustomTransaction, JBSplitNanceStruct } from "../models/NanceTypes";
 import { NANCE_DEFAULT_JUICEBOX_PROJECT, NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Link from "next/link";
@@ -218,7 +219,9 @@ function Form({ space }: { space: string }) {
                             'image link table | bold italic forecolor | bullist numlist outdent indent | ' +
                             'preview removeformat | help',
                           menubar: false,
+                          block_unsupported_drop: false,
                           images_upload_handler: imageUpload,
+                          init_instance_callback: fileDrop,
                           content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                           autosave_restore_when_empty: true,
                           templates: [
