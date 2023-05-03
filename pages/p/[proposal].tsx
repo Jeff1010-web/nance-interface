@@ -23,7 +23,7 @@ import VoterProfile from "../../components/VoterProfile";
 import ScrollToBottom from "../../components/ScrollToBottom";
 import { ExternalLinkIcon } from "@heroicons/react/solid";
 import ResolvedProject from "../../components/ResolvedProject";
-import { NANCE_DEFAULT_SPACE } from "../../constants/Nance";
+import { NANCE_API_URL, NANCE_DEFAULT_SPACE, NANCE_DEFAULT_IPFS_GATEWAY } from "../../constants/Nance";
 import { CONTRACT_MAP } from "../../constants/Contract";
 import ResolvedContract from "../../components/ResolvedContract";
 import JBSplitEntry from "../../components/juicebox/JBSplitEntry";
@@ -61,6 +61,12 @@ function openInDiscord(url) {
   }
 }
 
+function getDomain(url) {
+  // parse data between https:// and .<ending> to get name of domain, dont include www. or .<ending> in the name
+  const domain = url.replace(/(https?:\/\/)?(www\.)?/i, '').split('.')[0];
+  return domain;
+}
+
 export async function getServerSideProps(context) {
   let snapshotProposal: SnapshotProposal;
   let proposal: Proposal;
@@ -92,9 +98,12 @@ interface ProposalCommonProps {
   body: string;
   created: number;
   end: number;
-  snapshot: string,
-  ipfs: string,
-  actions: Action[]
+  snapshot: string;
+  ipfs: string;
+  discussion: string;
+  governanceCycle: number;
+  uuid: string;
+  actions: Action[];
 }
 
 const ProposalContext = createContext<{ commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal }>(undefined);
@@ -128,7 +137,10 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
     created: snapshotProposal?.start || Math.floor(new Date(proposal.date).getTime() / 1000),
     end: snapshotProposal?.end || 0,
     snapshot: snapshotProposal?.snapshot || "",
-    ipfs: snapshotProposal?.ipfs || "",
+    ipfs: proposal?.ipfsURL || "",
+    discussion: proposal?.discussionThreadURL || "",
+    governanceCycle: proposal.governanceCycle || 0,
+    uuid: proposal.hash || "",
     actions: proposal.actions
   }
   console.debug("📚NanceProposalPage.begin", commonProps, proposal, snapshotProposal);
@@ -255,13 +267,14 @@ function ProposalContent({ body }: { body: string }) {
 
         {/* Metadata */}
         <div className="my-4 border bg-gray-100 rounded-md px-4 py-5 sm:px-6">
-          <h2 className="text-gray-500 mb-3">Metadata</h2>
+          <h2 className="text-gray-500 mb-3"><a href={`${NANCE_API_URL}/juicebox/proposal/${commonProps.uuid}`}>Metadata</a></h2>
 
           <div className="grid grid-cols-2 gaps-4">
-            {commonProps.ipfs && (
+
+            {commonProps.governanceCycle && (
               <>
-                <span className="font-medium">IPFS:</span>
-                <a target="_blank" rel="noreferrer" href={`https://snapshot.mypinata.cloud/ipfs/${commonProps.ipfs}`}>#bafkrei<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+                <span className="font-medium">Governance Cycle:</span>
+                <span>{commonProps.governanceCycle}</span>
               </>
             )}
 
@@ -279,6 +292,20 @@ function ProposalContent({ body }: { body: string }) {
               <>
                 <span className="font-medium">Snapshot:</span>
                 <a target="_blank" rel="noreferrer" href={`https://etherscan.io/block/${commonProps.snapshot}`}>{commonProps.snapshot}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+              </>
+            )}
+
+            {commonProps.discussion && (
+              <>
+                <span className="font-medium">Discussion:</span>
+                <a target="_blank" rel="noreferrer" href={openInDiscord(commonProps.discussion)}>{getDomain(commonProps.discussion)}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+              </>
+            )}
+
+            {commonProps.ipfs && (
+              <>
+                <span className="font-medium">IPFS:</span>
+                <a target="_blank" rel="noreferrer" href={`${commonProps.ipfs}`}>{getLastSlash(commonProps.ipfs).slice(0,10)}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
               </>
             )}
 

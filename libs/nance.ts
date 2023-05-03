@@ -1,6 +1,6 @@
 import { NANCE_API_URL } from "../constants/Nance";
 
-export function getLastSlash(url) {
+export function getLastSlash(url): string {
     if(!url) return url;
 
     const split = url.split('/');
