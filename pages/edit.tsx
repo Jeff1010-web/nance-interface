@@ -166,7 +166,14 @@ function Form({ space }: { space: string }) {
 
   useEffect(() => {
     if(formState.errors && Object.keys(formState.errors).length > 0) {
-      setFormErrors(JSON.stringify(formState.errors))
+      const actionErrors = formState.errors.proposal?.actions || [];
+      const arr = [];
+      actionErrors.forEach((e, i) => {
+        if (e) {
+          arr.push(i);
+        }
+      })
+      setFormErrors("in actions " + arr.join(', '))
     } else {
       setFormErrors("")
     }

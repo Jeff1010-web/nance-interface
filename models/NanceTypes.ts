@@ -113,6 +113,7 @@ export interface Proposal {
 export type Action = {
   type: 'Payout' | 'Reserve' | 'Transfer' | 'Custom Transaction';
   payload: Payout | Reserve | Transfer | CustomTransaction;
+  uuid?: string;
 }
 
 export type Payout = {

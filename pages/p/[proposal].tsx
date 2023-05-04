@@ -23,11 +23,10 @@ import VoterProfile from "../../components/VoterProfile";
 import ScrollToBottom from "../../components/ScrollToBottom";
 import { ExternalLinkIcon } from "@heroicons/react/solid";
 import ResolvedProject from "../../components/ResolvedProject";
-import { NANCE_API_URL, NANCE_DEFAULT_SPACE, NANCE_DEFAULT_IPFS_GATEWAY } from "../../constants/Nance";
+import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../../constants/Nance";
 import { CONTRACT_MAP } from "../../constants/Contract";
 import ResolvedContract from "../../components/ResolvedContract";
 import JBSplitEntry from "../../components/juicebox/JBSplitEntry";
-import { JBConstants } from "../../models/JuiceboxTypes";
 import { BigNumber } from "ethers";
 import { formatUnits } from "ethers/lib/utils";
 
@@ -116,9 +115,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
     overrideSpace: StringParam
   });
   const editPageQuery = {
-    proposalId: proposal?.hash,
-    version: 2,
-    project: 1
+    proposalId: proposal?.hash
   };
   if (query.overrideSpace) {
     editPageQuery['overrideSpace'] = query.overrideSpace;
@@ -190,7 +187,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
 
                     Votes
                     <span className="ml-2 text-center text-gray-300 text-xs">
-                      sort by {query.sortBy}
+                      sort by {query.sortBy === "vp" ? "voting power" : "time"}
                     </span>
 
                   </button>
