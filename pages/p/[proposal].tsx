@@ -267,7 +267,7 @@ function ProposalContent({ body }: { body: string }) {
 
         {/* Metadata */}
         <div className="my-4 border bg-gray-100 rounded-md px-4 py-5 sm:px-6">
-          <h2 className="text-gray-500 mb-3"><a href={`${NANCE_API_URL}/juicebox/proposal/${commonProps.uuid}`}>Metadata</a></h2>
+          <h2 className="text-gray-500 mb-3"><a href={`${NANCE_API_URL}/${NANCE_DEFAULT_SPACE}/proposal/${commonProps.uuid}`}>Metadata</a></h2>
 
           <div className="grid grid-cols-2 gaps-4">
 
