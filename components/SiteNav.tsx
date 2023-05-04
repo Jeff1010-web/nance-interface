@@ -21,7 +21,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet }: S
     { name: 'Treasury', href: '/treasury' },
     { name: 'Reconfiguration', href: '/juicebox' },
     { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
-    { name: 'Discord', href: 'https://discord.gg/juicebox' }
+    { name: 'Support us', href: 'https://juicebox.money/v2/p/477' }
   ]
 
   const meta = {

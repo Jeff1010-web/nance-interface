@@ -38,6 +38,7 @@ import StringForm from "../components/form/StringForm";
 import SelectForm from "../components/form/SelectForm";
 import ProjectForm from "../components/form/ProjectForm";
 import JBSplitEntry from "../components/juicebox/JBSplitEntry";
+import Footer from "../components/Footer";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null
@@ -83,6 +84,7 @@ export default function NanceEditProposal({ loadedProposal }: { loadedProposal: 
         pageTitle="Edit Proposal"
         description="Create or edit proposal on Nance."
         withWallet />
+        
       <div className="m-4 lg:m-6 flex justify-center items-center">
         <div className="max-w-7xl w-full">
           <p className="text-2xl font-bold">
@@ -94,6 +96,8 @@ export default function NanceEditProposal({ loadedProposal }: { loadedProposal: 
           </ProposalMetadataContext.Provider>
         </div>
       </div>
+
+      <Footer />
     </>
   )
 }

@@ -29,6 +29,7 @@ import ResolvedContract from "../../components/ResolvedContract";
 import JBSplitEntry from "../../components/juicebox/JBSplitEntry";
 import { BigNumber } from "ethers";
 import { formatUnits } from "ethers/lib/utils";
+import Footer from "../../components/Footer";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -243,6 +244,8 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
           </ProposalContext.Provider>
         </main>
       </div>
+
+      <Footer />
     </>
   )
 }

@@ -14,6 +14,7 @@ import { useTokenBalanceOfProject, useTotalSupplyOfProject } from "../hooks/juic
 import { useTokenUsdPrice } from "../hooks/PriceHook";
 import { useMultisigAssets } from "../hooks/SafeHooks";
 import { JBConstants, JBSplit } from "../models/JuiceboxTypes";
+import Footer from "../components/Footer";
 
 function formatUSD(usd: number) {
   return usd ? '$' + commify(usd.toFixed(2)) : '$0';
@@ -182,6 +183,7 @@ export default function TreasuryPage() {
 
       </div>
 
+      <Footer />
     </>
 
   )

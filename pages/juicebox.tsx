@@ -23,6 +23,7 @@ import Tabs from '../components/Tabs';
 import { useMultisigTransactionOf } from '../hooks/SafeHooks';
 import { Switch } from '@headlessui/react';
 import fetchMetadata, { consolidateMetadata, ProjectMetadataV4 } from '../libs/projectMetadata';
+import Footer from '../components/Footer';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -236,6 +237,7 @@ export default function JuiceboxPage() {
           </div>
         )}
       </div>
+      <Footer />
     </>
   )
 }

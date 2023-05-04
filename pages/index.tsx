@@ -19,6 +19,7 @@ import { getLastSlash } from "../libs/nance"
 import { useAccount } from "wagmi"
 import { Tooltip } from "flowbite-react"
 import ScrollToBottom from "../components/ScrollToBottom"
+import Footer from "../components/Footer"
 
 export default function NanceProposals() {
   const router = useRouter();
@@ -177,6 +178,7 @@ export default function NanceProposals() {
           <ScrollToBottom />
         </div>
       </div>
+      <Footer />
     </>
   )
 }
