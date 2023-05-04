@@ -13,7 +13,7 @@ import { Proposal, ProposalUploadRequest, Action, Payout, Transfer, CustomTransa
 import { NANCE_DEFAULT_JUICEBOX_PROJECT, NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Link from "next/link";
 
-import { useAccount, useSigner } from "wagmi";
+import { useSigner } from "wagmi";
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { signPayload } from "../libs/signer";
 
@@ -40,16 +40,14 @@ import ProjectForm from "../components/form/ProjectForm";
 import JBSplitEntry from "../components/juicebox/JBSplitEntry";
 
 const ProposalMetadataContext = React.createContext({
-  loadedProposal: null as Proposal | null,
-  version: 2,
-  project: 1
+  loadedProposal: null as Proposal | null
 });
 
 export async function getServerSideProps(context) {
   // check proposal parameter type
   console.debug(context.query);
   const proposalParam: string = context.query.proposalId;
-  const spaceParam: string = context.query.overrideSpace || 'juicebox';
+  const spaceParam: string = context.query.overrideSpace || NANCE_DEFAULT_SPACE;
   let proposalResponse = null;
   if (proposalParam) {
     proposalResponse = await fetchProposal(spaceParam, proposalParam);
@@ -67,11 +65,9 @@ export default function NanceEditProposal({ loadedProposal }: { loadedProposal: 
 
   const [query, setQuery] = useQueryParams({
     proposalId: StringParam,
-    version: withDefault(NumberParam, 2),
-    project: withDefault(NumberParam, 1),
     overrideSpace: StringParam
   });
-  const { proposalId, version, project, overrideSpace } = query;
+  const { proposalId, overrideSpace } = query;
   let space = NANCE_DEFAULT_SPACE;
   if (overrideSpace) {
     space = overrideSpace;
@@ -93,7 +89,7 @@ export default function NanceEditProposal({ loadedProposal }: { loadedProposal: 
             {proposalId ? "Edit" : "New"} Proposal
           </p>
 
-          <ProposalMetadataContext.Provider value={{ loadedProposal, version, project }}>
+          <ProposalMetadataContext.Provider value={{ loadedProposal }}>
             <Form space={space} />
           </ProposalMetadataContext.Provider>
         </div>
@@ -126,7 +122,7 @@ function Form({ space }: { space: string }) {
   const methods = useForm<ProposalFormValues>();
   const { register, handleSubmit, control, formState } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
-    const { body, title, hash } = metadata?.loadedProposal ?? {}; // send back all values except ones in form
+    const { hash } = metadata?.loadedProposal ?? {};
     const payload = {
       ...formData.proposal,
       body: await htmlToMarkdown(formData.proposal.body),
@@ -136,7 +132,6 @@ function Form({ space }: { space: string }) {
 
     setSigning(true);
 
-    // TODO combo box for project search
     signPayload(
       jrpcSigner, space as string,
       isNew ? "upload" : "edit",
@@ -172,6 +167,8 @@ function Form({ space }: { space: string }) {
   useEffect(() => {
     if(formState.errors && Object.keys(formState.errors).length > 0) {
       setFormErrors(JSON.stringify(formState.errors))
+    } else {
+      setFormErrors("")
     }
   }, [formState])
 
@@ -182,7 +179,7 @@ function Form({ space }: { space: string }) {
         <Notification title="Error" description={error.error_description || error.message || error} show={true} close={resetSignAndUpload} checked={false} />
       }
       <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
-        <Actions />
+        <Actions loadedActions={metadata.loadedProposal?.actions || []} />
 
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
           <div>
@@ -290,12 +287,12 @@ function Form({ space }: { space: string }) {
   )
 }
 
-function Actions() {
+function Actions({ loadedActions }: { loadedActions: Action[] }) {
   const [open, setOpen] = useState(false)
   const [selectedAction, setSelectedAction] = useState<ActionItem>()
 
   const { register } = useFormContext();
-  const { fields, append, remove } = useFieldArray<{
+  const { fields, append, remove, replace } = useFieldArray<{
     actions: Action[];
     [key: string]: any;
   }>({ name: "proposal.actions" });
@@ -308,6 +305,13 @@ function Actions() {
   const genFieldName = (index: number) => {
     return (field: string) => `proposal.actions.${index}.payload.${field}` as const
   }
+
+  useEffect(() => {
+    // load actions
+    if (fields.length === 0) {
+      replace(loadedActions)
+    }
+  }, [replace])
 
   return (
     <div>
@@ -524,9 +528,9 @@ function ActionPalettes({ open, setOpen, selectedAction, setSelectedAction }) {
   )
 }
 
-function PayoutActionForm({ genFieldName, loadedPayout = undefined }:
-  { genFieldName: (field: string) => any, loadedPayout?: Payout }) {
-    const { watch } = useFormContext();
+function PayoutActionForm({ genFieldName }:
+  { genFieldName: (field: string) => any }) {
+    const { watch, getValues } = useFormContext();
 
   return (
     <div className="grid grid-cols-4 gap-6">
@@ -534,10 +538,10 @@ function PayoutActionForm({ genFieldName, loadedPayout = undefined }:
         <SelectForm label="Receiver Type" fieldName={genFieldName("type")} options={[
           { displayValue: "Address", value: "address" },
           { displayValue: "Project", value: "project" },
-        ]} defaultValue="address" />
+        ]} defaultValue={getValues(genFieldName("project")) > 0 ? "project" : "address"} />
       </div>
       <div className="col-span-4 sm:col-span-1">
-        <NumberForm label="Duration(Cycles)" fieldName={genFieldName("count")} defaultValue={1} decimal={1} />
+        <NumberForm label="Duration(Cycles)" fieldName={genFieldName("count")} decimal={1} />
       </div>
       <div className="col-span-4 sm:col-span-2">
         <NumberForm label="Amount" fieldName={genFieldName("amountUSD")} fieldType="$" />
@@ -557,8 +561,8 @@ function PayoutActionForm({ genFieldName, loadedPayout = undefined }:
   )
 }
 
-function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
-  { genFieldName: (field: string) => any, loadedTransfer?: Transfer }) {
+function TransferActionForm({ genFieldName }:
+  { genFieldName: (field: string) => any }) {
 
   return (
     <div className="grid grid-cols-4 gap-6">
@@ -581,8 +585,8 @@ function TransferActionForm({ genFieldName, loadedTransfer = undefined }:
   )
 }
 
-function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }:
-  { genFieldName: (field: string) => any, loadedCustomTransaction?: CustomTransaction }) {
+function ReserveActionForm({ genFieldName }:
+  { genFieldName: (field: string) => any }) {
 
   const { watch, formState: { errors } } = useFormContext();
   const { fields, append, remove, prepend } = useFieldArray<{
@@ -651,7 +655,7 @@ function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }
             </div>
 
             <div className="col-span-4 sm:col-span-2">
-              <ProjectForm label="Project ID" fieldName={genFieldName(`splits.${index}.projectId`)} defaultValue={field.projectId.toString()} />
+              <ProjectForm label="Project ID" fieldName={genFieldName(`splits.${index}.projectId`)} defaultValue={field.projectId} />
             </div>
             <div className="col-span-4 sm:col-span-2">
               <AddressForm label="Allocator" fieldName={genFieldName(`splits.${index}.allocator`)} defaultValue={field.allocator} />
@@ -674,8 +678,8 @@ function ReserveActionForm({ genFieldName, loadedCustomTransaction = undefined }
   )
 }
 
-function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = undefined }:
-  { genFieldName: (field: string) => any, loadedCustomTransaction?: CustomTransaction }) {
+function CustomTransactionActionForm({ genFieldName }:
+  { genFieldName: (field: string) => any }) {
 
   const { watch, control, formState: { errors } } = useFormContext();
   const [functionFragment, setFunctionFragment] = useState<FunctionFragment>();
@@ -683,7 +687,7 @@ function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = u
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-2">
-        <AddressForm label="Contract" fieldName={genFieldName("contract")} defaultValue={loadedCustomTransaction?.contract || ""} />
+        <AddressForm label="Contract" fieldName={genFieldName("contract")} />
       </div>
 
       <div className="col-span-4 sm:col-span-1">
@@ -705,7 +709,6 @@ function CustomTransactionActionForm({ genFieldName, loadedCustomTransaction = u
               render={({ field: { onChange, onBlur, value, ref } }) =>
                 <FunctionSelector address={watch(genFieldName("contract"))} val={value} setVal={onChange} setFunctionFragment={setFunctionFragment} inputStyle="h-10" />
               }
-              defaultValue={loadedCustomTransaction?.functionName || ""}
             />
             <ErrorMessage
               errors={errors}
