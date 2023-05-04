@@ -93,13 +93,6 @@ export default function NanceEditProposal({ loadedProposal }: { loadedProposal: 
             {proposalId ? "Edit" : "New"} Proposal
           </p>
 
-          <div className="text-gray-500 text-sm mt-2">
-            <p>
-              <CheckCircleIcon className="h-5 w-5 inline mr-1" />
-              Drag and drop markdown file or image to attach content
-            </p>
-          </div>
-
           <ProposalMetadataContext.Provider value={{ loadedProposal, version, project }}>
             <Form space={space} />
           </ProposalMetadataContext.Provider>
@@ -189,6 +182,7 @@ function Form({ space }: { space: string }) {
         <Notification title="Error" description={error.error_description || error.message || error} show={true} close={resetSignAndUpload} checked={false} />
       }
       <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
+        <Actions />
 
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
           <div>
@@ -246,9 +240,12 @@ function Form({ space }: { space: string }) {
               </div>
             </div>
           </div>
-        </div>
 
-        <Actions />
+          <p className="text-gray-500 text-sm mt-1">
+            <CheckCircleIcon className="h-5 w-5 inline mr-1" />
+            Drag and drop markdown file or image to attach content
+          </p>
+        </div>
 
         {formErrors.length > 0 && (
           <p className="text-red-500 mt-1">
@@ -312,19 +309,19 @@ function Actions() {
     return (field: string) => `proposal.actions.${index}.payload.${field}` as const
   }
 
-  useEffect(() => {
-    window.scrollTo(0, document.body.scrollHeight);
-  }, [fields])
-
   return (
     <div>
-      <p className="text-2xl font-bold">Proposed Actions</p>
-
-      <GenericButton onClick={() => setOpen(true)} className="mt-6">
-        <PlusIcon className="w-5 h-5" />
-        <p className="ml-1">Add an action</p>
-      </GenericButton>
-
+      <div className="bg-white p-8 shadow rounded-lg flex flex-col items-center justify-center">
+        <GenericButton onClick={() => setOpen(true)} className="px-3 py-3">
+          <PlusIcon className="w-5 h-5" />
+          <p className="ml-1 font-semibold text-xl">Add an action</p>
+        </GenericButton>
+        <p className="text-gray-500 text-sm mt-1">
+          <CheckCircleIcon className="h-5 w-5 inline mr-1" />
+          Specify on-chain actions you want to execute with current proposal
+        </p>
+      </div>
+      
       {fields.map((field: any, index) => {
         if (field.type === "Payout") {
           return (
