@@ -30,7 +30,7 @@ import { CONTRACT_MAP, ZERO_ADDRESS } from "../constants/Contract";
 import { useCurrentFundingCycleV2 } from "../hooks/juicebox/CurrentFundingCycle";
 import { useCurrentSplits } from "../hooks/juicebox/CurrentSplits";
 import { JBConstants } from "../models/JuiceboxTypes";
-import { TrashIcon } from "@heroicons/react/outline";
+import { CheckCircleIcon, TrashIcon } from "@heroicons/react/outline";
 import AddressForm from "../components/form/AddressForm";
 import NumberForm from "../components/form/NumberForm";
 import BooleanForm from "../components/form/BooleanForm";
@@ -92,6 +92,14 @@ export default function NanceEditProposal({ loadedProposal }: { loadedProposal: 
           <p className="text-2xl font-bold">
             {proposalId ? "Edit" : "New"} Proposal
           </p>
+
+          <div className="text-gray-500 text-sm mt-2">
+            <p>
+              <CheckCircleIcon className="h-5 w-5 inline mr-1" />
+              Drag and drop markdown file or image to attach content
+            </p>
+          </div>
+
           <ProposalMetadataContext.Provider value={{ loadedProposal, version, project }}>
             <Form space={space} />
           </ProposalMetadataContext.Provider>

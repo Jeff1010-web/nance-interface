@@ -7,7 +7,8 @@ export const fileDrop = (editor: Editor) => {
       const file = e.dataTransfer.items[0].getAsFile();
       if (file.name.endsWith('.md')) {      
         const md = await file.text();
-        editor.setContent(await markdownToHtml(md))
+        const html = await markdownToHtml(md);
+        editor.setContent(html + '\n\n' + editor.getContent())
       }
     });
   }
