@@ -599,18 +599,19 @@ function VotesBar({ snapshotProposal, proposal }: { snapshotProposal: SnapshotPr
     return (
       <div className="flex flex-col space-y-1">
         {proposal.status === "Cancelled" && (
-          <span className="text-xs">
-            Temp check failed
-          </span>
+          <>
+            <span className="text-xs">
+              Temp check failed
+            </span>
+            <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
+          </>
         )}
-        {proposal.status !== "Cancelled" && (
+        {proposal.status === "Temperature Check" && (
           <span className="text-xs">
-            Temp check
+            Temp check voting
           </span>
         )}
 
-
-        <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
       </div>
     )
   }
