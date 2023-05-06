@@ -22,9 +22,6 @@ export async function htmlToMarkdown(raw: string, failSilently: boolean = false)
           pre(h, node) {
             return h(node, 'html', toHtml(node))
           },
-          code(h, node) {
-            return h(node, 'html', toHtml(node))
-          },
           span(h, node) {
             return h(node, 'html', toHtml(node))
           },
