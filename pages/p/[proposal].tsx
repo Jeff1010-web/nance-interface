@@ -13,7 +13,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../components/ColorBar";
-import { fetchProposal } from "../../hooks/NanceHooks";
+import { fetchProposal, useProposal } from "../../hooks/NanceHooks";
 import { getLastSlash } from "../../libs/nance";
 import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve } from "../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
@@ -30,6 +30,7 @@ import JBSplitEntry from "../../components/juicebox/JBSplitEntry";
 import { BigNumber } from "ethers";
 import { formatUnits } from "ethers/lib/utils";
 import Footer from "../../components/Footer";
+import { ArrowCircleLeftIcon, ArrowCircleRightIcon } from "@heroicons/react/outline";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -104,6 +105,7 @@ interface ProposalCommonProps {
   governanceCycle: number;
   uuid: string;
   actions: Action[];
+  proposalId: number;
 }
 
 const ProposalContext = createContext<{ commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal }>(undefined);
@@ -139,7 +141,8 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
     discussion: proposal?.discussionThreadURL || "",
     governanceCycle: proposal.governanceCycle || 0,
     uuid: proposal.hash || "",
-    actions: proposal.actions
+    actions: proposal.actions,
+    proposalId: proposal.proposalId
   }
   console.debug("📚NanceProposalPage.begin", commonProps, proposal, snapshotProposal);
 
@@ -199,7 +202,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
 
                       <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
 
-                      {proposal.status !== "Cancelled" && (
+                      {proposal.status === "Temperature Check" && (
                         <>
                           <p>Temp check voting open on Discord now.</p>
 
@@ -223,6 +226,16 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
                       {proposal.status === "Cancelled" && (
                         <>
                           <p>Temp check failed, this proposal has been cancelled.</p>
+
+                          <a href={openInDiscord(proposal.discussionThreadURL) || '#'} className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
+                            Check discussion on Discord
+                          </a>
+                        </>
+                      )}
+
+                      {proposal.status === "Revoked" && (
+                        <>
+                          <p>This proposal has been revoked by author.</p>
 
                           <a href={openInDiscord(proposal.discussionThreadURL) || '#'} className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
                             Check discussion on Discord
@@ -256,6 +269,8 @@ function ProposalContent({ body }: { body: string }) {
   return (
     <div className="">
       <div className="px-4 py-5 sm:px-6 flex flex-col">
+        <ProposalNavigator />
+
         <h1 id="applicant-information-title" className="text-3xl font-medium">
           {commonProps.title}
         </h1>
@@ -403,6 +418,31 @@ function getContractDecimal(address: string) {
   else if(CONTRACT_MAP.JBX === address) return 18
   else if(CONTRACT_MAP.USDC === address) return 6
   else return `Unknown(${address})`
+}
+
+function ProposalNavigator() {
+  // pre load prev and next proposal
+  const { commonProps } = useContext(ProposalContext);
+  const proposalId = commonProps.proposalId;
+  
+  const { data: prevProp } = useProposal({space: NANCE_DEFAULT_SPACE, hash: (proposalId-1).toString()}, !!proposalId);
+  const { data: nextProp } = useProposal({space: NANCE_DEFAULT_SPACE, hash: (proposalId+1).toString()}, !!proposalId);
+
+  return (
+    <div className="flex justify-between text-gray-500 mb-4">
+      {prevProp?.data?.title && (
+        <a href={`/p/${proposalId-1}`}>
+          <ArrowCircleLeftIcon className="h-5 w-5 inline"/> {prevProp?.data?.title}
+        </a>
+      )}
+
+      {nextProp?.data?.title && (
+        <a href={`/p/${proposalId+1}`}>
+          <ArrowCircleRightIcon className="h-5 w-5 inline"/> {nextProp?.data?.title}
+        </a>
+      )}
+    </div>
+  )
 }
 
 // BasicVoting: For Against Abstain
