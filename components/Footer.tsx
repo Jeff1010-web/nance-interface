@@ -50,7 +50,7 @@ const navigation = [
           </div>
           <div className="mt-8 md:order-1 md:mt-0">
             <p className="text-center text-xs leading-5 text-gray-500">
-              &copy; 2023 Nance. All rights reserved.
+              &infin; Built with <a href={`https://github.com/nance-eth/nance-interface/tree/${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA}`}>{process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || "dev"}</a>
             </p>
           </div>
         </div>
