@@ -158,7 +158,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
         <main className="py-2">
           <ProposalContext.Provider value={{ commonProps, proposalInfo: snapshotProposal }}>
 
-            <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
+            <div className="mx-auto mt-4 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
               <div className="space-y-6 lg:col-span-2 lg:col-start-1">
                 {/* Content */}
                 <section aria-labelledby="proposal-title">
@@ -434,15 +434,15 @@ function ProposalNavigator() {
   const { data: nextProp } = useProposal({space: NANCE_DEFAULT_SPACE, hash: (proposalId+1).toString()}, !!proposalId);
 
   return (
-    <div className="flex justify-between text-gray-500 mb-4">
+    <div className="flex flex-col space-y-2 space-x-0 md:flex-row md:space-y-0 md:space-x-4 justify-between text-gray-500 mb-4">
       {prevProp?.data?.title && (
-        <a href={`/p/${proposalId-1}`}>
+        <a href={`/p/${proposalId-1}`} className="w-full md:w-1/2">
           <ArrowCircleLeftIcon className="h-5 w-5 inline"/> {prevProp?.data?.title}
         </a>
       )}
 
       {nextProp?.data?.title && (
-        <a href={`/p/${proposalId+1}`}>
+        <a href={`/p/${proposalId+1}`}  className="w-full md:w-1/2">
           <ArrowCircleRightIcon className="h-5 w-5 inline"/> {nextProp?.data?.title}
         </a>
       )}
