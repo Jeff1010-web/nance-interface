@@ -96,6 +96,7 @@ export interface Proposal {
   status: string;
   proposalId: number | null;
   author?: string;
+  coauthors?: string[];
   discussionThreadURL: string;
   ipfsURL: string;
   voteURL: string;
