@@ -32,6 +32,7 @@ import { formatUnits } from "ethers/lib/utils";
 import Footer from "../../components/Footer";
 import { ArrowCircleLeftIcon, ArrowCircleRightIcon } from "@heroicons/react/outline";
 import { Disclosure } from "@headlessui/react";
+import { numToPrettyString } from "../../libs/NumberFormatter";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -330,7 +331,7 @@ function ProposalContent({ body }: { body: string }) {
 
                       {action.type === "Transfer" && (
                         <span className="line-clamp-5">
-                          {formatUnits(BigNumber.from((action.payload as Transfer).amount), getContractDecimal((action.payload as Transfer).contract))}
+                          { numToPrettyString(Number((action.payload as Transfer).amount)) }
                           &nbsp;{getContractLabel((action.payload as Transfer).contract)}
                           &nbsp;to
                           <FormattedAddress address={(action.payload as Transfer).to} style="inline ml-1" />
@@ -339,7 +340,7 @@ function ProposalContent({ body }: { body: string }) {
 
                       {action.type === "Payout" && !(action.payload as Payout).project && (
                         <span className="line-clamp-5">
-                          ${(action.payload as Payout).amountUSD}
+                          ${(action.payload as Payout).amountUSD.toLocaleString()}
                           &nbsp;to
                           <FormattedAddress address={(action.payload as Payout).address} style="inline ml-1" />
                           &nbsp;{` for ${(action.payload as Payout).count} cycles`}
@@ -348,7 +349,7 @@ function ProposalContent({ body }: { body: string }) {
 
                       {action.type === "Payout" && (action.payload as Payout).project && (
                         <span className="line-clamp-5">
-                          ${(action.payload as Payout).amountUSD}
+                          ${(action.payload as Payout).amountUSD.toLocaleString()}
                           &nbsp;to
                           <ResolvedProject version={2} projectId={(action.payload as Payout).project} style="inline ml-1" />
                           {` for ${(action.payload as Payout).count} cycles`}

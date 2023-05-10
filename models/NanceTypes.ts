@@ -161,6 +161,7 @@ export type Transfer = {
   contract: string;
   to: string;
   amount: string;
+  decimals: number;
 }
 
 export type CustomTransaction = {
