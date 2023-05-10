@@ -140,7 +140,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
     created: snapshotProposal?.start || Math.floor(new Date(proposal.date).getTime() / 1000),
     end: snapshotProposal?.end || 0,
     snapshot: snapshotProposal?.snapshot || "",
-    ipfs: proposal?.ipfsURL || "",
+    ipfs: snapshotProposal?.ipfs || proposal?.ipfsURL || "",
     discussion: proposal?.discussionThreadURL || "",
     governanceCycle: proposal.governanceCycle || 0,
     uuid: proposal.hash || "",
@@ -425,7 +425,7 @@ function ProposalContent({ body }: { body: string }) {
                   {commonProps.ipfs && (
                     <>
                       <span className="font-medium">IPFS:</span>
-                      <a target="_blank" rel="noreferrer" href={`${commonProps.ipfs}`}>{getLastSlash(commonProps.ipfs).slice(0,10)}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+                      <a target="_blank" rel="noreferrer" href={`https://snapshot.mypinata.cloud/ipfs/${commonProps.ipfs}`}>{getLastSlash(commonProps.ipfs).slice(0,7)}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
                     </>
                   )}
                 </Disclosure.Panel>
