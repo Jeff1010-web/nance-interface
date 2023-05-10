@@ -32,7 +32,7 @@ export default function NanceProposals() {
   const [query, setQuery] = useQueryParams({
     keyword: StringParam,
     //limit: NumberParam,
-    sortBy: withDefault(StringParam, 'title'),
+    sortBy: withDefault(StringParam, 'status'),
     sortDesc: withDefault(BooleanParam, true),
     cycle: NumberParam,
     overrideSpace: StringParam
@@ -230,8 +230,8 @@ function SpaceStats() {
 }
 
 const StatusValue = {
-  'Cancelled': 0,
-  'Revoked': 1,
+  'Revoked': 0,
+  'Cancelled': 1,
   'Draft': 2,
   'Discussion': 2,
   'Voting': 3,
@@ -301,8 +301,8 @@ function ProposalCards({ space, loading, proposals, query, setQuery, maxCycle }:
   if (!query.sortBy || !SortOptionsArr.includes(query.sortBy)) {
     // fall back to default sorting
     sortedProposals
-      .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
       .sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
+      .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
   } else {
     if (query.sortBy === "status") {
       sortedProposals.sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
