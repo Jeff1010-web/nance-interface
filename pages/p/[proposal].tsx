@@ -551,9 +551,9 @@ function ProposalVotes() {
 
   return (
     <div className="flex flex-col" style={{
-      height: 'calc(100vh - 12rem)'
+      maxHeight: 'calc(100vh - 12rem)'
     }}>
-      <div className="overflow-y-scroll pt-5 grow">
+      <div className="overflow-y-scroll pt-5">
         <div className="">
           {isSimpleVoting && (
             <>
