@@ -592,7 +592,7 @@ function ProposalVotes() {
             <li key={vote.id}>
               <div className={classNames(
                 "flex flex-col",
-                vote.voter === selectedVoter ? "bg-blue-100 rounded-lg shadow p-4" : ""
+                vote.voter === selectedVoter ? "shadow" : ""
               )}>
                 <div className="cursor-pointer" onClick={() => vote.voter === selectedVoter ? setSelectedVoter("") : setSelectedVoter(vote.voter)}>
                   {isSimpleVoting && (
