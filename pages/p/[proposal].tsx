@@ -31,6 +31,7 @@ import { BigNumber } from "ethers";
 import { formatUnits } from "ethers/lib/utils";
 import Footer from "../../components/Footer";
 import { ArrowCircleLeftIcon, ArrowCircleRightIcon } from "@heroicons/react/outline";
+import { Disclosure } from "@headlessui/react";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -304,48 +305,16 @@ function ProposalContent({ body }: { body: string }) {
           </h2>
 
           <div className="grid grid-cols-2 gaps-4">
-
-            {commonProps.governanceCycle && (
-              <>
-                <span className="font-medium">Governance Cycle:</span>
-                <span>{commonProps.governanceCycle}</span>
-              </>
-            )}
-
-            <span className="font-medium">Start date:</span>
-            <span>{format(toDate(commonProps.created * 1000), "LLL dd, u KK:mm a")}</span>
-
-            {commonProps.end > 0 && (
-              <>
-                <span className="font-medium">End date:</span>
-                <span>{format(toDate(commonProps.end * 1000), "LLL dd, u KK:mm a")}</span>
-              </>
-            )}
-
-            {commonProps.snapshot && (
-              <>
-                <span className="font-medium">Snapshot:</span>
-                <a target="_blank" rel="noreferrer" href={`https://etherscan.io/block/${commonProps.snapshot}`}>{commonProps.snapshot}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
-              </>
-            )}
-
-            {commonProps.discussion && (
-              <>
-                <span className="font-medium">Discussion:</span>
-                <a target="_blank" rel="noreferrer" href={openInDiscord(commonProps.discussion)}>{getDomain(commonProps.discussion)}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
-              </>
-            )}
-
-            {commonProps.ipfs && (
-              <>
-                <span className="font-medium">IPFS:</span>
-                <a target="_blank" rel="noreferrer" href={`${commonProps.ipfs}`}>{getLastSlash(commonProps.ipfs).slice(0,10)}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
-              </>
-            )}
-
             {commonProps.actions && (
               <>
-                <p className="font-medium col-span-2">Actions:</p>
+                <p className="font-medium col-span-2">
+                  Actions:
+                  {commonProps.actions.length == 0 && (
+                    <span className="ml-2 inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800">
+                      No action
+                    </span>
+                  )}
+                </p>
 
                 <div className="col-span-2 flex flex-col mt-2 w-full space-y-2">
                   {commonProps.actions.map((action, index) => (
@@ -413,10 +382,60 @@ function ProposalContent({ body }: { body: string }) {
               </>
             )}
           </div>
+
+          <Disclosure>
+            {({ open }) => (
+              /* Use the `open` state to conditionally change the direction of an icon. */
+              <>
+                <Disclosure.Button className="my-1 p-1 w-full text-center text-white bg-blue-600 hover:bg-blue-500 rounded-md">
+                  {open ? "See less" : "See more"}
+                </Disclosure.Button>
+                <Disclosure.Panel className="grid grid-cols-2 gaps-4" as="div">
+                  {commonProps.governanceCycle && (
+                    <>
+                      <span className="font-medium">Governance Cycle:</span>
+                      <span>{commonProps.governanceCycle}</span>
+                    </>
+                  )}
+
+                  <span className="font-medium">Start date:</span>
+                  <span>{format(toDate(commonProps.created * 1000), "LLL dd, u KK:mm a")}</span>
+
+                  {commonProps.end > 0 && (
+                    <>
+                      <span className="font-medium">End date:</span>
+                      <span>{format(toDate(commonProps.end * 1000), "LLL dd, u KK:mm a")}</span>
+                    </>
+                  )}
+
+                  {commonProps.snapshot && (
+                    <>
+                      <span className="font-medium">Snapshot:</span>
+                      <a target="_blank" rel="noreferrer" href={`https://etherscan.io/block/${commonProps.snapshot}`}>{commonProps.snapshot}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+                    </>
+                  )}
+
+                  {commonProps.discussion && (
+                    <>
+                      <span className="font-medium">Discussion:</span>
+                      <a target="_blank" rel="noreferrer" href={openInDiscord(commonProps.discussion)}>{getDomain(commonProps.discussion)}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+                    </>
+                  )}
+
+                  {commonProps.ipfs && (
+                    <>
+                      <span className="font-medium">IPFS:</span>
+                      <a target="_blank" rel="noreferrer" href={`${commonProps.ipfs}`}>{getLastSlash(commonProps.ipfs).slice(0,10)}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+                    </>
+                  )}
+                </Disclosure.Panel>
+              </>
+            )}
+          </Disclosure>
         </div>
       </div>
 
-      <div className="px-4 py-5 sm:px-6">
+      <div className="px-4 sm:px-6">
         <article className="prose prose-lg prose-indigo mx-auto text-gray-500 break-words">
           <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>{body}</ReactMarkdown>
         </article>
