@@ -274,8 +274,6 @@ function ProposalContent({ body }: { body: string }) {
   return (
     <div className="">
       <div className="px-4 py-5 sm:px-6 flex flex-col">
-        <ProposalNavigator />
-
         <h1 id="applicant-information-title" className="text-3xl font-medium">
           {commonProps.title}
         </h1>
@@ -423,6 +421,10 @@ function ProposalContent({ body }: { body: string }) {
           <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>{body}</ReactMarkdown>
         </article>
       </div>
+
+      <div className="px-4 py-5 sm:px-6 mt-4">
+        <ProposalNavigator />
+      </div>
     </div>
   )
 }
@@ -450,7 +452,7 @@ function ProposalNavigator() {
   const { data: nextProp } = useProposal({space: NANCE_DEFAULT_SPACE, hash: (proposalId+1).toString()}, !!proposalId);
 
   return (
-    <div className="flex flex-col space-y-2 space-x-0 md:flex-row md:space-y-0 md:space-x-4 justify-between text-gray-500 mb-4">
+    <div className="flex flex-col space-y-2 space-x-0 md:flex-row md:space-y-0 md:space-x-4 justify-between text-gray-500">
       {prevProp?.data?.title && (
         <a href={`/p/${proposalId-1}`} className="w-full md:w-1/2">
           <ArrowCircleLeftIcon className="h-5 w-5 inline"/> {prevProp?.data?.title}
