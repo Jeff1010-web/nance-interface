@@ -7,13 +7,16 @@ export interface APIResponse<T> {
 }
 
 export type SpaceInfo = {
-  name: string,
-  currentCycle: number,
+  name: string;
+  currentCycle: number;
   currentEvent: {
-    title: string,
-    start: string,
-    end: string
-  }
+    title: string;
+    start: string;
+    end: string;
+  };
+  snapshotSpace: string;
+  juiceboxProjectId: string;
+  dolthubLink: string;
 };
 
 export type ProposalUploadPayload = {

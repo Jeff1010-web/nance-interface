@@ -175,6 +175,14 @@ export default function NanceProposals() {
             {overrideSpace ? `Override Space: ${overrideSpace}` : ''}
           </div>
 
+          <div className="mt-2 text-center">
+            {infoData?.data?.dolthubLink && (
+              <p className="text-center text-xs text-gray-500">
+                ∴ dolt commit <a href={infoData?.data?.dolthubLink} target="_blank" rel="noopener noreferrer">{getLastSlash(infoData?.data?.dolthubLink)?.slice(0, 7)}</a>
+              </p>
+            )}
+          </div>
+
           <ScrollToBottom />
         </div>
       </div>
