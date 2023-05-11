@@ -7,7 +7,7 @@ import FormattedAddress from "../../../components/FormattedAddress";
 import { format, toDate } from "date-fns";
 import { createContext, useContext, useEffect, useState, Fragment } from "react";
 import VotingModal from "../../../components/VotingModal";
-import { withDefault, NumberParam, createEnumParam, useQueryParams, StringParam } from "next-query-params";
+import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-query-params";
 import { processChoices } from "../../../libs/snapshotUtil";
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -27,11 +27,10 @@ import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import { CONTRACT_MAP } from "../../../constants/Contract";
 import ResolvedContract from "../../../components/ResolvedContract";
 import JBSplitEntry from "../../../components/juicebox/JBSplitEntry";
-import { BigNumber } from "ethers";
-import { formatUnits } from "ethers/lib/utils";
 import Footer from "../../../components/Footer";
 import { ArrowCircleLeftIcon, ArrowCircleRightIcon } from "@heroicons/react/outline";
 import { Disclosure } from "@headlessui/react";
+import { numToPrettyString } from "../../../libs/NumberFormatter";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -329,7 +328,7 @@ function ProposalContent({ body }: { body: string }) {
 
                       {action.type === "Transfer" && (
                         <span className="line-clamp-5">
-                          {formatUnits(BigNumber.from((action.payload as Transfer).amount), getContractDecimal((action.payload as Transfer).contract))}
+                          { numToPrettyString(Number((action.payload as Transfer).amount)) }
                           &nbsp;{getContractLabel((action.payload as Transfer).contract)}
                           &nbsp;to
                           <FormattedAddress address={(action.payload as Transfer).to} style="inline ml-1" />
@@ -338,7 +337,7 @@ function ProposalContent({ body }: { body: string }) {
 
                       {action.type === "Payout" && !(action.payload as Payout).project && (
                         <span className="line-clamp-5">
-                          ${(action.payload as Payout).amountUSD}
+                          ${(action.payload as Payout).amountUSD.toLocaleString()}
                           &nbsp;to
                           <FormattedAddress address={(action.payload as Payout).address} style="inline ml-1" />
                           &nbsp;{` for ${(action.payload as Payout).count} cycles`}
@@ -347,7 +346,7 @@ function ProposalContent({ body }: { body: string }) {
 
                       {action.type === "Payout" && (action.payload as Payout).project && (
                         <span className="line-clamp-5">
-                          ${(action.payload as Payout).amountUSD}
+                          ${(action.payload as Payout).amountUSD.toLocaleString()}
                           &nbsp;to
                           <ResolvedProject version={2} projectId={(action.payload as Payout).project} style="inline ml-1" />
                           {` for ${(action.payload as Payout).count} cycles`}

@@ -7,6 +7,7 @@ import { useSpaceInfo, useProposals } from "../../hooks/NanceHooks";
 import ScrollToBottom from "../ScrollToBottom";
 import SearchableComboBox, { Option } from "../SearchableComboBox";
 import ProposalCards from "./ProposalCards";
+import { getLastSlash } from "../../libs/nance";
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
     // State
@@ -151,6 +152,14 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   
             <div className="mt-6 text-center">
               {proposalData?.data?.length > 0 && `Total Proposals: ${proposalData?.data?.length}`}
+            </div>
+
+            <div className="mt-2 text-center">
+              {infoData?.data?.dolthubLink && (
+                <p className="text-center text-xs text-gray-500">
+                  ∴ dolt commit <a href={infoData?.data?.dolthubLink} target="_blank" rel="noopener noreferrer">{getLastSlash(infoData?.data?.dolthubLink)?.slice(0, 7)}</a>
+                </p>
+              )}
             </div>
   
             <ScrollToBottom />

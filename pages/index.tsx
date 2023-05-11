@@ -6,16 +6,15 @@ import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo"
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance"
 
 import Footer from "../components/Footer"
-import NanceSpacePage from "../components/nance/Space"
+import NanceSpace from "../components/nance/Space"
 
 export default function NanceProposals() {
   let space = NANCE_DEFAULT_SPACE;
-  const newPageQuery: any = { version: 2, project: 1 };
 
   return (
     <>
       <SiteNav pageTitle="JuiceboxDAO Governance" description="JuiceboxDAO Governance Platform" image="/images/opengraph/homepage.png" withWallet />
-      <NanceSpacePage space={space} />
+      <NanceSpace space={space} />
       <Footer />
     </>
   )
