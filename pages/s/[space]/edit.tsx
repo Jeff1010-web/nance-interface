@@ -1,44 +1,44 @@
 import { useContext, useState, Fragment, useEffect } from "react";
-import SiteNav from "../components/SiteNav";
+import SiteNav from "../../../components/SiteNav";
 import { useForm, FormProvider, useFormContext, Controller, SubmitHandler, useFieldArray } from "react-hook-form";
-import { withDefault, NumberParam, useQueryParams, StringParam } from "next-query-params";
+import { useQueryParams, StringParam } from "next-query-params";
 import React from "react";
 import { useRouter } from "next/router";
-import Notification from "../components/Notification";
-import GenericButton from "../components/GenericButton";
-import { fetchProposal, useProposalUpload } from "../hooks/NanceHooks";
-import { imageUpload } from "../hooks/ImageUpload";
-import { fileDrop } from "../hooks/FileDrop";
-import { Proposal, ProposalUploadRequest, Action, Payout, Transfer, CustomTransaction, JBSplitNanceStruct } from "../models/NanceTypes";
-import { NANCE_DEFAULT_JUICEBOX_PROJECT, NANCE_DEFAULT_SPACE } from "../constants/Nance";
+import Notification from "../../../components/Notification";
+import GenericButton from "../../../components/GenericButton";
+import { fetchProposal, useProposalUpload } from "../../../hooks/NanceHooks";
+import { imageUpload } from "../../../hooks/ImageUpload";
+import { fileDrop } from "../../../hooks/FileDrop";
+import { Proposal, ProposalUploadRequest, Action, JBSplitNanceStruct } from "../../../models/NanceTypes";
+import { NANCE_DEFAULT_JUICEBOX_PROJECT, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import Link from "next/link";
 
 import { useSigner } from "wagmi";
 import { JsonRpcSigner } from "@ethersproject/providers";
-import { signPayload } from "../libs/signer";
+import { signPayload } from "../../../libs/signer";
 
 import { Editor } from '@tinymce/tinymce-react';
 
-import { markdownToHtml, htmlToMarkdown } from '../libs/markdown';
+import { markdownToHtml, htmlToMarkdown } from '../../../libs/markdown';
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { CurrencyDollarIcon, LightningBoltIcon, PlusIcon, SwitchVerticalIcon, UserGroupIcon, XIcon } from "@heroicons/react/solid";
 import { Combobox, Dialog, Disclosure, Transition } from '@headlessui/react';
 import { ErrorMessage } from "@hookform/error-message";
-import FunctionSelector from "../components/FunctionSelector";
+import FunctionSelector from "../../../components/FunctionSelector";
 import { FunctionFragment } from "ethers/lib/utils";
-import { CONTRACT_MAP, ZERO_ADDRESS } from "../constants/Contract";
-import { useCurrentFundingCycleV2 } from "../hooks/juicebox/CurrentFundingCycle";
-import { useCurrentSplits } from "../hooks/juicebox/CurrentSplits";
-import { JBConstants } from "../models/JuiceboxTypes";
+import { CONTRACT_MAP, ZERO_ADDRESS } from "../../../constants/Contract";
+import { useCurrentFundingCycleV2 } from "../../../hooks/juicebox/CurrentFundingCycle";
+import { useCurrentSplits } from "../../../hooks/juicebox/CurrentSplits";
+import { JBConstants } from "../../../models/JuiceboxTypes";
 import { CheckCircleIcon, TrashIcon } from "@heroicons/react/outline";
-import AddressForm from "../components/form/AddressForm";
-import NumberForm from "../components/form/NumberForm";
-import BooleanForm from "../components/form/BooleanForm";
-import StringForm from "../components/form/StringForm";
-import SelectForm from "../components/form/SelectForm";
-import ProjectForm from "../components/form/ProjectForm";
-import JBSplitEntry from "../components/juicebox/JBSplitEntry";
-import Footer from "../components/Footer";
+import AddressForm from "../../../components/form/AddressForm";
+import NumberForm from "../../../components/form/NumberForm";
+import BooleanForm from "../../../components/form/BooleanForm";
+import StringForm from "../../../components/form/StringForm";
+import SelectForm from "../../../components/form/SelectForm";
+import ProjectForm from "../../../components/form/ProjectForm";
+import JBSplitEntry from "../../../components/juicebox/JBSplitEntry";
+import Footer from "../../../components/Footer";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null
@@ -48,7 +48,7 @@ export async function getServerSideProps(context) {
   // check proposal parameter type
   console.debug(context.query);
   const proposalParam: string = context.query.proposalId;
-  const spaceParam: string = context.query.overrideSpace || NANCE_DEFAULT_SPACE;
+  const spaceParam: string = context.params.space;
   let proposalResponse = null;
   if (proposalParam) {
     proposalResponse = await fetchProposal(spaceParam, proposalParam);
@@ -58,21 +58,16 @@ export async function getServerSideProps(context) {
   }
 
   // Pass data to the page via props
-  return { props: { loadedProposal: proposalResponse?.data || null } }
+  return { props: { space: spaceParam, loadedProposal: proposalResponse?.data || null } }
 }
 
-export default function NanceEditProposal({ loadedProposal }: { loadedProposal: Proposal }) {
+export default function NanceEditProposal({ space, loadedProposal }: { space: string, loadedProposal: Proposal }) {
   const router = useRouter();
 
   const [query, setQuery] = useQueryParams({
-    proposalId: StringParam,
-    overrideSpace: StringParam
+    proposalId: StringParam
   });
-  const { proposalId, overrideSpace } = query;
-  let space = NANCE_DEFAULT_SPACE;
-  if (overrideSpace) {
-    space = overrideSpace;
-  }
+  const { proposalId } = query;
 
   if (!router.isReady) {
     return <p className="mt-2 text-xs text-gray-500 text-center">loading...</p>
@@ -115,7 +110,7 @@ function Form({ space }: { space: string }) {
   const [formErrors, setFormErrors] = useState<string>("");
 
   // hooks
-  const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space as string, metadata.loadedProposal?.hash, router.isReady);
+  const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, metadata.loadedProposal?.hash, router.isReady);
   const { data: signer, isError, isLoading } = useSigner()
   const jrpcSigner = signer as JsonRpcSigner;
   const { openConnectModal } = useConnectModal();
@@ -137,7 +132,7 @@ function Form({ space }: { space: string }) {
     setSigning(true);
 
     signPayload(
-      jrpcSigner, space as string,
+      jrpcSigner, space,
       isNew ? "upload" : "edit",
       payload
     ).then((signature) => {
@@ -152,7 +147,7 @@ function Form({ space }: { space: string }) {
       console.debug("📗 Nance.editProposal.submit ->", req);
       return trigger(req);
     })
-      .then(res => router.push(`/p/${res.data.hash}${space !== NANCE_DEFAULT_SPACE ? `?overrideSpace=${space}` : ''}`))
+      .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res.data.hash}` : `/s/${space}/${res.data.hash}`))
       .catch((err) => {
         setSigning(false);
         setSignError(err);
@@ -262,7 +257,7 @@ function Form({ space }: { space: string }) {
         )}
 
         <div className="flex justify-end">
-          <Link href={`/${space !== NANCE_DEFAULT_SPACE ? `?overrideSpace=${space}` : ''}`}>
+          <Link href={space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`}>
             <a
               className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >

@@ -1,35 +1,35 @@
-import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE } from "../../hooks/snapshot/Proposals";
+import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE } from "../../../hooks/snapshot/Proposals";
 import { useAccount } from 'wagmi'
-import SiteNav from "../../components/SiteNav";
+import SiteNav from "../../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
 import { Tooltip } from 'flowbite-react';
-import FormattedAddress from "../../components/FormattedAddress";
+import FormattedAddress from "../../../components/FormattedAddress";
 import { format, toDate } from "date-fns";
 import { createContext, useContext, useEffect, useState, Fragment } from "react";
-import VotingModal from "../../components/VotingModal";
+import VotingModal from "../../../components/VotingModal";
 import { withDefault, NumberParam, createEnumParam, useQueryParams, StringParam } from "next-query-params";
-import { processChoices } from "../../libs/snapshotUtil";
+import { processChoices } from "../../../libs/snapshotUtil";
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
-import ColorBar from "../../components/ColorBar";
-import { fetchProposal, useProposal } from "../../hooks/NanceHooks";
-import { getLastSlash } from "../../libs/nance";
-import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve } from "../../models/NanceTypes";
+import ColorBar from "../../../components/ColorBar";
+import { fetchProposal, useProposal } from "../../../hooks/NanceHooks";
+import { getLastSlash } from "../../../libs/nance";
+import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve } from "../../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
-import Custom404 from "../404";
-import VoterProfile from "../../components/VoterProfile";
-import ScrollToBottom from "../../components/ScrollToBottom";
+import Custom404 from "../../404";
+import VoterProfile from "../../../components/VoterProfile";
+import ScrollToBottom from "../../../components/ScrollToBottom";
 import { ExternalLinkIcon } from "@heroicons/react/solid";
-import ResolvedProject from "../../components/ResolvedProject";
-import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../../constants/Nance";
-import { CONTRACT_MAP } from "../../constants/Contract";
-import ResolvedContract from "../../components/ResolvedContract";
-import JBSplitEntry from "../../components/juicebox/JBSplitEntry";
+import ResolvedProject from "../../../components/ResolvedProject";
+import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
+import { CONTRACT_MAP } from "../../../constants/Contract";
+import ResolvedContract from "../../../components/ResolvedContract";
+import JBSplitEntry from "../../../components/juicebox/JBSplitEntry";
 import { BigNumber } from "ethers";
 import { formatUnits } from "ethers/lib/utils";
-import Footer from "../../components/Footer";
+import Footer from "../../../components/Footer";
 import { ArrowCircleLeftIcon, ArrowCircleRightIcon } from "@heroicons/react/outline";
 import { Disclosure } from "@headlessui/react";
 
@@ -75,7 +75,7 @@ export async function getServerSideProps(context) {
 
   // check proposal parameter type
   const proposalParam: string = context.params.proposal;
-  const spaceParam: string = context.query.overrideSpace || NANCE_DEFAULT_SPACE;;
+  const spaceParam: string = context.params.space;
 
   const proposalResponse = await fetchProposal(spaceParam, proposalParam);
   proposal = proposalResponse.data;
@@ -87,6 +87,7 @@ export async function getServerSideProps(context) {
   // Pass data to the page via props
   return {
     props: {
+      space: spaceParam,
       proposal: proposal || null,
       snapshotProposal: snapshotProposal || null
     }
@@ -94,6 +95,7 @@ export async function getServerSideProps(context) {
 }
 
 interface ProposalCommonProps {
+  space: string;
   status: string;
   title: string;
   author: string;
@@ -112,19 +114,15 @@ interface ProposalCommonProps {
 
 const ProposalContext = createContext<{ commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal }>(undefined);
 
-export default function NanceProposalPage({ proposal, snapshotProposal }: { proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }) {
+export default function NanceProposalPage({ space, proposal, snapshotProposal }: { space: string, proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }) {
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
     sortBy: withDefault(createEnumParam(["time", "vp"]), "time"),
-    withField: withDefault(createEnumParam(["reason", "app"]), ""),
-    overrideSpace: StringParam
+    withField: withDefault(createEnumParam(["reason", "app"]), "")
   });
   const editPageQuery = {
     proposalId: proposal?.hash
   };
-  if (query.overrideSpace) {
-    editPageQuery['overrideSpace'] = query.overrideSpace;
-  }
 
   // this page need proposal to work
   if (!proposal) {
@@ -132,6 +130,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
   }
 
   const commonProps: ProposalCommonProps = {
+    space,
     status: snapshotProposal?.state || proposal.status,
     title: snapshotProposal?.title || proposal.title,
     author: snapshotProposal?.author || proposal.authorAddress,
@@ -218,7 +217,7 @@ export default function NanceProposalPage({ proposal, snapshotProposal }: { prop
                         <>
                           <Link
                             href={{
-                              pathname: '/edit',
+                              pathname: space === NANCE_DEFAULT_SPACE ? '/edit' : `/s/${space}/edit`,
                               query: editPageQuery,
                             }}
                           >
@@ -299,7 +298,7 @@ function ProposalContent({ body }: { body: string }) {
         <div className="my-4 border bg-gray-100 rounded-md px-4 py-5 sm:px-6">
           <h2 className="text-gray-500 mb-3">
             Metadata 
-            <a href={`${NANCE_API_URL}/${NANCE_DEFAULT_SPACE}/proposal/${commonProps.uuid}`} className="ml-2">
+            <a href={`${NANCE_API_URL}/${commonProps.space}/proposal/${commonProps.uuid}`} className="ml-2">
               <ExternalLinkIcon  className="h-4 w-4 inline" />
             </a>
           </h2>
@@ -473,13 +472,13 @@ function ProposalNavigator() {
   return (
     <div className="flex flex-col space-y-2 space-x-0 md:flex-row md:space-y-0 md:space-x-4 justify-between text-gray-500">
       {prevProp?.data?.title && (
-        <a href={`/p/${proposalId-1}`} className="w-full md:w-1/2">
+        <a href={`/s/${commonProps.space}/p/${proposalId-1}`} className="w-full md:w-1/2">
           <ArrowCircleLeftIcon className="h-5 w-5 inline"/> {prevProp?.data?.title}
         </a>
       )}
 
       {nextProp?.data?.title && (
-        <a href={`/p/${proposalId+1}`}  className="w-full md:w-1/2">
+        <a href={`/s/${commonProps.space}/p/${proposalId+1}`}  className="w-full md:w-1/2">
           <ArrowCircleRightIcon className="h-5 w-5 inline"/> {nextProp?.data?.title}
         </a>
       )}
