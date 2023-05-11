@@ -471,13 +471,13 @@ function ProposalNavigator() {
   return (
     <div className="flex flex-col space-y-2 space-x-0 md:flex-row md:space-y-0 md:space-x-4 justify-between text-gray-500">
       {prevProp?.data?.title && (
-        <a href={`/s/${commonProps.space}/p/${proposalId-1}`} className="w-full md:w-1/2">
+        <a href={commonProps.space === NANCE_DEFAULT_SPACE ? `/p/${proposalId-1}` : `/s/${commonProps.space}/${proposalId-1}`} className="w-full md:w-1/2">
           <ArrowCircleLeftIcon className="h-5 w-5 inline"/> {prevProp?.data?.title}
         </a>
       )}
 
       {nextProp?.data?.title && (
-        <a href={`/s/${commonProps.space}/p/${proposalId+1}`}  className="w-full md:w-1/2">
+        <a href={commonProps.space === NANCE_DEFAULT_SPACE ? `/p/${proposalId+1}` : `/s/${commonProps.space}/${proposalId+1}`}  className="w-full md:w-1/2">
           <ArrowCircleRightIcon className="h-5 w-5 inline"/> {nextProp?.data?.title}
         </a>
       )}
