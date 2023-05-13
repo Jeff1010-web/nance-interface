@@ -8,7 +8,7 @@ export default function NanceSpacePage() {
   let space = router.query.space as string;
   return (
     <>
-      <SiteNav pageTitle="JuiceboxDAO Governance" description="JuiceboxDAO Governance Platform" image="/images/opengraph/homepage.png" withWallet />
+      <SiteNav space={space} pageTitle="JuiceboxDAO Governance" description="JuiceboxDAO Governance Platform" image="/images/opengraph/homepage.png" withWallet />
       <NanceSpace space={space} proposalUrlPrefix={`/s/${space}/`} />
       <Footer />
     </>
