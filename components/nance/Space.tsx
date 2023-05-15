@@ -82,12 +82,12 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
                 <div className="flex-shrink-0 md:w-5/12 flex space-x-3">
                   <img
                     className="h-16 w-16 rounded-full"
-                    src={`https://cdn.stamp.fyi/space/jbdao.eth?s=160`}
-                    alt="JuiceboxDAO Logo"
+                    src={`https://cdn.stamp.fyi/space/${infoData?.data?.snapshotSpace}?s=160`}
+                    alt={`${space} Logo`}
                   />
   
                   <div>
-                    <h1 className="text-4xl font-bold text-gray-900">JuiceboxDAO</h1>
+                    <h1 className="text-4xl font-bold text-gray-900">{space}</h1>
                     <p className="text-sm font-medium text-gray-500 text-right">powered by Nance</p>
                   </div>
                 </div>
