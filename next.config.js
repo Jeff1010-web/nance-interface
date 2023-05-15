@@ -29,6 +29,18 @@ const nextConfig = {
         permanent: true,
       },
     ]
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/edit',
+        destination: '/s/juicebox/edit',
+      },
+      {
+        source: '/p/:path',
+        destination: '/s/juicebox/:path',
+      },
+    ];
   }
 }
 
