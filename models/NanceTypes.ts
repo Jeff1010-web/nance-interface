@@ -1,5 +1,3 @@
-import { BigNumber } from "ethers";
-
 export interface APIResponse<T> {
   success: boolean;
   error: string;

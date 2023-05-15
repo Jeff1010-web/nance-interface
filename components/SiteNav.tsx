@@ -4,7 +4,6 @@ import Head from 'next/head'
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import GenericButton from './GenericButton';
 
 interface SiteNavProps {
   pageTitle: string,
@@ -22,7 +21,8 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
     { name: 'Treasury', href: '/treasury' },
     { name: 'Reconfiguration', href: '/juicebox' },
     { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
-    { name: 'Support us', href: 'https://juicebox.money/v2/p/477' }
+    { name: 'Support us', href: 'https://juicebox.money/v2/p/477' },
+    { name: 'Other spaces', href: '/s' }
   ]
 
   const meta = {

@@ -25,6 +25,13 @@ function jsonFetcher(): Fetcher<APIResponse<any>, string> {
     }
 }
 
+export function useAllSpaceInfo(shouldFetch: boolean = true) {
+    return useSWR<APIResponse<SpaceInfo[]>>(
+        shouldFetch ? `${NANCE_API_URL}/ish/all` : null,
+        jsonFetcher()
+    );
+}
+
 export function useSpaceInfo(args: SpaceInfoRequest, shouldFetch: boolean = true) {
     return useSWR<APIResponse<SpaceInfo>, string>(
         shouldFetch ? `${NANCE_API_URL}/${args.space}` : null,
