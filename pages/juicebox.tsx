@@ -55,7 +55,7 @@ export default function JuiceboxPage() {
   // router
   const [query, setQuery] = useQueryParams({
     project: withDefault(NumberParam, 1),
-    version: withDefault(NumberParam, 2),
+    version: withDefault(NumberParam, 3),
     role: withDefault(StringParam, "Multisig"),
     safeTxHash: withDefault(StringParam, "")
   });
