@@ -61,7 +61,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                 <div className="flex justify-between h-16">
                   <div className="flex">
                     <div className="flex-shrink-0 flex items-center">
-                      <Link href="/">
+                      <Link href="/" legacyBehavior>
                         <a>
                           <img
                             className="block h-8 w-auto"

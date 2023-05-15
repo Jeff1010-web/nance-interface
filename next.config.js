@@ -3,10 +3,13 @@ const removeImports = require('next-remove-imports')();
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  experimental: {
-    images: {
-      unoptimized: true,
-    },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'http.cat'
+      },
+    ],
   },
   async redirects() {
     return [

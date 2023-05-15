@@ -216,6 +216,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                       {(proposal.status === "Temperature Check" || proposal.status === "Discussion") && (
                         <>
                           <Link
+                            legacyBehavior
                             href={{
                               pathname: space === NANCE_DEFAULT_SPACE ? '/edit' : `/s/${space}/edit`,
                               query: editPageQuery,
