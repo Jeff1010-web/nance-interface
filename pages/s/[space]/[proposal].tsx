@@ -153,6 +153,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
         pageTitle={`${commonProps.title}`}
         description={commonProps.body?.slice(0, 140) || 'No content'}
         image={`https://cdn.stamp.fyi/space/jbdao.eth?w=1200&h=630`}
+        space={space}
         withWallet />
 
       <div className="min-h-full">

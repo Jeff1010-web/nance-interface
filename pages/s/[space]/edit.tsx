@@ -78,6 +78,7 @@ export default function NanceEditProposal({ space, loadedProposal }: { space: st
       <SiteNav
         pageTitle="Edit Proposal"
         description="Create or edit proposal on Nance."
+        space={space}
         withWallet />
         
       <div className="m-4 lg:m-6 flex justify-center items-center">
