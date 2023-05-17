@@ -39,7 +39,7 @@ function AllSpace() {
                             <div className="flex justify-between gap-x-4 py-3">
                             <dt className="text-gray-500">Current cycle</dt>
                             <dd className="text-gray-700">
-                                {`${spaceInfo.currentEvent.title} of GC${spaceInfo.currentCycle}`}
+                                {`${spaceInfo.currentEvent?.title ? `${spaceInfo.currentEvent?.title} of ` : ''}GC${spaceInfo.currentCycle}`}
                             </dd>
                             </div>
                             <div className="flex justify-between gap-x-4 py-3">
