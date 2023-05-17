@@ -6,10 +6,10 @@ import React from "react";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
 import GenericButton from "../../../components/GenericButton";
-import { fetchProposal, useProposalUpload } from "../../../hooks/NanceHooks";
+import { fetchProposal, useProposalDelete, useProposalUpload } from "../../../hooks/NanceHooks";
 import { imageUpload } from "../../../hooks/ImageUpload";
 import { fileDrop } from "../../../hooks/FileDrop";
-import { Proposal, ProposalUploadRequest, Action, JBSplitNanceStruct } from "../../../models/NanceTypes";
+import { Proposal, ProposalUploadRequest, ProposalDeleteRequest, Action, JBSplitNanceStruct } from "../../../models/NanceTypes";
 import { NANCE_DEFAULT_JUICEBOX_PROJECT, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import Link from "next/link";
 
@@ -112,9 +112,33 @@ function Form({ space }: { space: string }) {
 
   // hooks
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, metadata.loadedProposal?.hash, router.isReady);
-  const { data: signer, isError, isLoading } = useSigner()
+  const { trigger: deleteTrigger, reset: deleteReset } = useProposalDelete(space, metadata.loadedProposal?.hash, router.isReady);
+  const { data: signer } = useSigner()
   const jrpcSigner = signer as JsonRpcSigner;
   const { openConnectModal } = useConnectModal();
+
+  const deleteProposal = async () => {
+    const { hash } = metadata.loadedProposal ?? {};
+    signPayload(
+      jrpcSigner, space,
+      "delete",
+      { hash }
+    ).then((signature) => {
+      deleteReset();
+      const req: ProposalDeleteRequest = {
+        signature,
+        hash
+      }
+      console.debug("📗 Nance.deleteProposal.onDelete ->", req);
+      return deleteTrigger(req);
+    })
+    .then(() => router.push(space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`))
+    .catch((err) => {
+      console.warn("📗 Nance.deleteProposal.onSignError ->", err);
+      setSigning(false);
+      setSignError(err);
+    });
+  }
 
   const isNew = metadata.loadedProposal === null;
 
@@ -274,6 +298,17 @@ function Form({ space }: { space: string }) {
             </button>
           )}
 
+          {jrpcSigner &&
+          ((metadata.loadedProposal?.status === 'Discussion') ||
+          (metadata.loadedProposal?.status == 'Draft'))
+          && (
+            <button type="button"
+              className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
+              onClick={deleteProposal}
+            >
+              Delete
+            </button>
+          )}
           {jrpcSigner && (
             <button
               type="submit"

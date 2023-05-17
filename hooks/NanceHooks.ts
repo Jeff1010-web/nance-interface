@@ -11,7 +11,8 @@ import {
     SpaceInfo,
     Proposal,
     FetchReconfigureData,
-    ProposalUploadPayload
+    ProposalUploadPayload,
+    ProposalDeleteRequest,
 } from '../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -101,6 +102,15 @@ export function useProposalUpload(space: string, proposalId: string, shouldFetch
     );
 }
 
+export function useProposalDelete(space: string, uuid: string, shouldFetch: boolean = true) {
+    let url = `${NANCE_API_URL}/${space}/proposal/${uuid}`
+    let fetcher = deleter
+    return useSWRMutation(
+        shouldFetch ? url : null,
+        fetcher,
+    );
+}
+
 async function editor(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRequest }) {
     const res = await fetch(url, {
       method: 'PUT',
@@ -112,6 +122,22 @@ async function editor(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRequ
     const json: APIResponse<ProposalUploadPayload> = await res.json()
     if (json.success === false) {
         throw new Error(`An error occurred while uploading the data: ${json?.error}`)
+    }
+
+    return json
+}
+
+async function deleter(url: RequestInfo | URL, { arg }: { arg: ProposalDeleteRequest }) {
+    const res = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(arg)
+    })
+    const json: APIResponse<ProposalUploadPayload> = await res.json()
+    if (json.success === false) {
+        throw new Error(`An error occurred while deleting this proposal: ${json?.error}`)
     }
 
     return json
