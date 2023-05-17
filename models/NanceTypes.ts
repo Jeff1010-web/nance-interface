@@ -75,7 +75,7 @@ export interface SignatureRequest {
 export interface ProposalUploadRequest extends SignatureRequest {
   // presented when editting proposal
   hash?: string
-  proposal: Pick<Proposal, "title" | "body" | "notification" | "actions">;
+  proposal: Pick<Proposal, "title" | "body" | "notification" | "actions" | "status">;
 }
 
 export interface ProposalDeleteRequest extends SignatureRequest {

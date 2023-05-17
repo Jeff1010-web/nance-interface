@@ -213,7 +213,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                           </a>
                         </>
                       )}
-                      {(proposal.status === "Temperature Check" || proposal.status === "Discussion") && (
+                      {(proposal.status === "Temperature Check" || proposal.status === "Discussion" || proposal.status === "Draft") && (
                         <>
                           <Link
                             legacyBehavior
