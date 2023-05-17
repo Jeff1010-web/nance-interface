@@ -18,3 +18,11 @@ export function urlOfQuery(space: string, cycle: number | undefined) {
 export function urlOfContent(space: string, hash: string) {
     return `${NANCE_API_URL}/${space}/markdown?hash=${hash}`;
 }
+
+export function canEditProposal(status: string) {
+    return (
+        status === 'Discussion' ||
+        status === 'Draft' ||
+        status === 'Temperature Check'
+    );
+};

@@ -11,6 +11,7 @@ import { imageUpload } from "../../../hooks/ImageUpload";
 import { fileDrop } from "../../../hooks/FileDrop";
 import { Proposal, ProposalUploadRequest, ProposalDeleteRequest, Action, JBSplitNanceStruct } from "../../../models/NanceTypes";
 import { NANCE_DEFAULT_JUICEBOX_PROJECT, NANCE_DEFAULT_SPACE, proposalSetStatuses } from "../../../constants/Nance";
+import { canEditProposal } from "../../../libs/nance";
 import Link from "next/link";
 
 import { useSigner } from "wagmi";
@@ -272,14 +273,16 @@ function Form({ space }: { space: string }) {
             <CheckCircleIcon className="h-5 w-5 inline mr-1" />
             Drag and drop markdown file or image to attach content (images are pinned to IPFS)
           </p>
-          <p className="text-gray-500 text-sm mt-5 mb-1">set status</p>
-          <div className="flex items-center">
-            <select {...register("proposal.status")} className="block rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-              {Object.entries(proposalSetStatuses).map(([key, val]) => (
-                <option key={key}>{val}</option>
-              ))}
-            </select>
-          </div>
+          {canEditProposal(metadata.loadedProposal?.status) && (
+            <div>
+              <p className="text-gray-500 text-sm mt-5 mb-1">set status</p>
+              <select {...register("proposal.status")} className="block rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                {Object.entries(proposalSetStatuses).map(([key, val]) => (
+                  <option key={key}>{val}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {formErrors.length > 0 && (
@@ -305,10 +308,7 @@ function Form({ space }: { space: string }) {
             </button>
           )}
 
-          {jrpcSigner &&
-          ((metadata.loadedProposal?.status === 'Discussion') ||
-          (metadata.loadedProposal?.status === 'Draft'))
-          && (
+          {jrpcSigner && canEditProposal(metadata.loadedProposal?.status) && (
             <button type="button"
               className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
               onClick={deleteProposal}
