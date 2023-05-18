@@ -14,7 +14,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../../components/ColorBar";
 import { fetchProposal, useProposal } from "../../../hooks/NanceHooks";
-import { getLastSlash } from "../../../libs/nance";
+import { canEditProposal, getLastSlash } from "../../../libs/nance";
 import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve } from "../../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
@@ -213,7 +213,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                           </a>
                         </>
                       )}
-                      {(proposal.status === "Temperature Check" || proposal.status === "Discussion") && (
+                      {canEditProposal(proposal.status) && (
                         <>
                           <Link
                             legacyBehavior
