@@ -308,7 +308,7 @@ function Form({ space }: { space: string }) {
             </button>
           )}
 
-          {jrpcSigner && canEditProposal(metadata.loadedProposal?.status) && (
+          {jrpcSigner && canEditProposal(metadata.loadedProposal?.status) && !isNew &&(
             <button type="button"
               className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
               onClick={deleteProposal}

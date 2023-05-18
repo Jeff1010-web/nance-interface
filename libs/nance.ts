@@ -20,9 +20,10 @@ export function urlOfContent(space: string, hash: string) {
 }
 
 export function canEditProposal(status: string) {
-    return (
-        status === 'Discussion' ||
-        status === 'Draft' ||
-        status === 'Temperature Check'
-    );
+    return ([
+        'Discussion',
+        'Draft',
+        'Temperature Check',
+        undefined,
+    ].includes(status));
 };
