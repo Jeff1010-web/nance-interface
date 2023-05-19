@@ -281,14 +281,14 @@ function ProposalContent({ body }: { body: string }) {
 
         <p className="text-sm text-gray-500 text-right">
           by&nbsp;
-          <FormattedAddress address={commonProps.author} style="text-gray-500" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
+          <FormattedAddress address={commonProps.author} style="text-gray-500" overrideURLPrefix="/u/" openInNewWindow={false} />
         </p>
         { commonProps.coauthors.length > 0 && (
           <p className="text-sm text-gray-500 text-right">
             co-authored by&nbsp;
             {commonProps.coauthors.map((coauthor, i) => (
               <Fragment key={i}>
-                <FormattedAddress address={coauthor} style="text-gray-500" overrideURLPrefix="/snapshot/profile/" openInNewWindow={false} />
+                <FormattedAddress address={coauthor} style="text-gray-500" overrideURLPrefix="/u/" openInNewWindow={false} />
                 {i < commonProps.coauthors.length - 1 && ', '}
               </Fragment>
             ))}

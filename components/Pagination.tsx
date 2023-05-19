@@ -9,11 +9,12 @@ export interface PaginationProps {
   setPage: (page: number) => void;
   total: number;
   limit: number;
+  infinite?: boolean;
 }
 
-export default function Pagination({ page, setPage, total, limit }: PaginationProps) {
+export default function Pagination({ page, setPage, total, limit, infinite = false }: PaginationProps) {
     const itemStart = (page - 1) * limit + 1;
-    const itemEnd = Math.min(page * limit, total);
+    const itemEnd = infinite ? page*limit : Math.min(page * limit, total);
     const pages = Math.ceil(total / limit);
 
     const firstPages = Math.max(1, page - 3);
@@ -38,7 +39,7 @@ export default function Pagination({ page, setPage, total, limit }: PaginationPr
     })
 
   return (
-    <div className="w-full rounded-lg mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+    <div className="w-full rounded-lg mt-6 flex items-center justify-between px-4 py-3 sm:px-6">
       <div className="flex flex-1 justify-between sm:hidden">
         <button
             disabled={page === 1}
@@ -55,11 +56,11 @@ export default function Pagination({ page, setPage, total, limit }: PaginationPr
           Next
         </button>
       </div>
-      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between space-x-2">
         <div>
           <p className="text-sm text-gray-700">
             Showing <span className="font-medium">{itemStart}</span> to <span className="font-medium">{itemEnd}</span> of{' '}
-            <span className="font-medium">{total}</span> results
+            <span className="font-medium">{infinite ? "∞" : total}</span> results
           </p>
         </div>
         <div>

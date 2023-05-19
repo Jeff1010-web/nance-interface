@@ -1,14 +1,9 @@
 import useSWR, { Fetcher } from 'swr'
 import { ProfileResponse } from '../pages/api/profile';
-import FormattedAddress from './FormattedAddress';
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useClearDelegate, useDelegated, useSetDelegate } from '../hooks/snapshot/Delegations';
-import { XCircleIcon } from '@heroicons/react/solid';
-
-const formatter = new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "short" });
-const formatNumber = (num) => formatter.format(num);
 
 interface VoterProfileProps {
   voter: string
@@ -80,7 +75,7 @@ export default function VoterProfile({ voter, space, proposal, isOpen }: VoterPr
       <div className="mt-1 flex justify-between items-center space-x-2">
         {/* Avatar */}
         <div className='justify-center hidden lg:flex'>
-          <a href={`https://snapshot.org/#/profile/${voter}`} target="_blank" rel="noreferrer">
+          <a href={`/u/${voter}`} target="_blank" rel="noreferrer">
             <img src={`https://cdn.stamp.fyi/avatar/${voter}`} className="rounded-full h-10 w-10 p-1" />
           </a>
         </div>

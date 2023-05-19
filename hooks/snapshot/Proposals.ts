@@ -348,17 +348,20 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
   //console.debug("🔧 useProposalsWithCustomQuery.args ->", {query, variables});
 
   // Load voted proposals
+  const variables = {
+    voter: address,
+    first: Math.min(limit, 1000),
+    skip
+  };
+  if(spaceFilter) {
+    variables["space"] = spaceFilter
+  }
   const {
     loading: votedLoading,
     data: votedRawData,
     error: votedError
   } = useQuery<{ votes: SnapshotVotedData[] }>(VOTED_PROPOSALS_QUERY, {
-    variables: {
-      voter: address,
-      first: Math.min(limit, 1000),
-      skip,
-      space: spaceFilter
-    },
+    variables,
     skip: !(address && address.length == 42)
   });
 
