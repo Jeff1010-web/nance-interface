@@ -9,6 +9,8 @@ import Link from "next/link";
 import Pagination from "../../components/Pagination";
 import { shortenAddress } from "../../libs/address";
 import { classNames } from "../../libs/tailwind";
+import { useAllSpaceInfo } from "../../hooks/NanceHooks";
+import { NANCE_DEFAULT_SPACE } from "../../constants/Nance";
 
 const getColorOfChoice = (choice: string) => {
   if (choice == 'For') {
@@ -77,6 +79,27 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
   const address = ensInfo.address;
   const { data, loading } = useVotesOfAddress(address, (query.page - 1) * query.limit, query.limit);
 
+  const { data: allSpaceInfo } = useAllSpaceInfo();
+  const snapshotToNanceSpaceMap = {};
+  allSpaceInfo?.data?.forEach((spaceInfo) => {
+    snapshotToNanceSpaceMap[spaceInfo.snapshotSpace] = spaceInfo.name
+  });
+  // FIXME temp workaround, mapping jbdao.eth to juicebox space
+  snapshotToNanceSpaceMap["jbdao.eth"] = "juicebox";
+  function getProposalLink(spaceId: string, proposalId: string) {
+    // Direct user to nance proposal page if eligible
+    const nanceSpaceName = snapshotToNanceSpaceMap[spaceId];
+    if (nanceSpaceName) {
+      if (nanceSpaceName === NANCE_DEFAULT_SPACE) {
+        return `/p/${proposalId}`
+      } else {
+        return `/s/${nanceSpaceName}/${proposalId}`
+      }
+    } else {
+      return `https://snapshot.org/#/${spaceId}/proposal/${proposalId}`
+    }
+  }
+
   return (
     <>
       <SiteNav
@@ -99,7 +122,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
                           "flex flex-col space-y-1",
                           vote.reason ? "w-1/2" : ""
                         )}>
-                          <Link href={`/p/${vote.proposal.id}`} className="">{vote.proposal.title}</Link>
+                          <Link href={getProposalLink(vote.space.id, vote.proposal.id)} className="">{vote.proposal.title}</Link>
                           <span className={classNames(
                             getColorOfChoice(processChoices(vote.proposal.type, vote.choice) as string),
                             ''
