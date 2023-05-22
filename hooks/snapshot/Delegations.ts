@@ -28,7 +28,7 @@ export default function useDelegators(space: string, address: string) {
 }
 
 export async function fetchDelegators(voter: string, space: string): Promise<{ delegator: string }[]> {
-  return fetch(SUBGRAPH_URL, {
+  const ret = await fetch(SUBGRAPH_URL, {
     method: "POST",
     headers: {
       'Content-Type': 'application/json',
@@ -37,7 +37,13 @@ export async function fetchDelegators(voter: string, space: string): Promise<{ d
       query: QUERY,
       variables: { address: voter, space }
     }),
-  }).then(res => res.json()).then(json => json.data.delegations)
+  }).then(res => res.json())
+
+  if(ret.errors) {
+    return []
+  } else {
+    return await ret.data?.delegation
+  }
 }
 
 const SNAPSHOT_DELEGATE_REGISTRY_ADDRESS = '0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446'

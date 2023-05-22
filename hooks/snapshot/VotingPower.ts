@@ -36,7 +36,7 @@ export default function useVotingPower(voter: string, space: string, proposal: s
 }
 
 export async function fetchVotingPower(voter: string, space: string, proposal: string): Promise<SnapshotVotingPower> {
-  return fetch('https://hub.snapshot.org/graphql', {
+  const ret = await fetch('https://hub.snapshot.org/graphql', {
     method: "POST",
     headers: {
       'Content-Type': 'application/json',
@@ -45,5 +45,15 @@ export async function fetchVotingPower(voter: string, space: string, proposal: s
       query: QUERY,
       variables: { voter, space, proposal }
     }),
-  }).then(res => res.json()).then(json => json.data.vp)
+  }).then(res => res.json())
+  
+  if(ret.errors) {
+    return {
+      vp: 0,
+      vp_by_strategy: [],
+      vp_state: "error"
+    }
+  } else {
+    return ret.data.vp;
+  }
 }

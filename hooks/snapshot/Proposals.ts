@@ -155,6 +155,10 @@ query AllVotesOfUser($first: Int, $voter: String, $space: String) {
     orderDirection: desc
   ) {
     id
+    choice
+    proposal {
+      type
+    }
   }
 }
 `
@@ -300,13 +304,20 @@ export interface SnapshotSpaceWithVotesCount {
   votes: number;
 }
 
+export interface AllVotes {
+  total: number,
+  for: number,
+  against: number,
+  abstain: number
+}
+
 export function useAllVotesOfAddress(address: string, limit: number, spaceFilter: string = ""): {
   loading: boolean,
   error: APIError<object>,
-  data: number
+  data: AllVotes
 } {
   // Load voted proposals
-  const { loading, data, error, cacheHit } = useQuery<{ votes: { id: string }[] }>(ALL_VOTES_OF_USER, {
+  const { loading, data, error, cacheHit } = useQuery<{ votes: { id: string, choice: any, proposal: { type: string } }[] }>(ALL_VOTES_OF_USER, {
     variables: {
       voter: address,
       first: Math.min(limit, 1000),
@@ -316,11 +327,19 @@ export function useAllVotesOfAddress(address: string, limit: number, spaceFilter
   });
   console.debug("🔧 useAllVotesOfAddress.cacheHit", cacheHit)
 
-  return { loading, error, data: data?.votes.length }
+  const optionCount = []; 
+  data?.votes?.filter(v => v.proposal.type === "basic").forEach(v => optionCount[v.choice]++)
+
+  return { loading, error, data: {
+    total: data?.votes.length,
+    for: optionCount[1],
+    against: optionCount[2],
+    abstain: optionCount[3]
+  } }
 }
 
-export async function fetchAllVotesOfAddress(address: string, limit: number, spaceFilter: string = ""): Promise<{ id: string }[]> {
-  return fetch('https://hub.snapshot.org/graphql', {
+export async function fetchAllVotesOfAddress(address: string, limit: number, spaceFilter: string = ""): Promise<AllVotes> {
+  const ret = await fetch('https://hub.snapshot.org/graphql', {
     method: "POST",
     headers: {
       'Content-Type': 'application/json',
@@ -333,7 +352,27 @@ export async function fetchAllVotesOfAddress(address: string, limit: number, spa
         space: spaceFilter
       }
     }),
-  }).then(res => res.json()).then(json => json.data.votes)
+  }).then(res => res.json())
+
+  if (ret.errors) {
+    return {
+      total: 0,
+      for: 0,
+      against: 0,
+      abstain: 0
+    }
+  }
+  
+  const votes = ret.data?.votes;
+  const optionCount = [0,0,0,0]; 
+  votes.filter(v => v.proposal.type === "basic").forEach(v => optionCount[v.choice]++)
+
+  return {
+    total: votes.length,
+    for: optionCount[1],
+    against: optionCount[2],
+    abstain: optionCount[3]
+  }
 }
 
 export function useVotesOfAddress(address: string, skip: number, limit: number, spaceFilter: string = ""): {

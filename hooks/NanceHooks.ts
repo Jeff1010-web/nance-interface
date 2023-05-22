@@ -146,3 +146,22 @@ async function deleter(url: RequestInfo | URL, { arg }: { arg: ProposalDeleteReq
 export function getPath(space: string, command: string) {
     return `${NANCE_API_URL}/${space}/${command}`;
 }
+
+export async function fetchCreatedProposals(space: string, author: string) {
+    if(!space || !author) {
+        const emptyResponse: APIResponse<Proposal[]> = {
+            success: true,
+            data: []
+        };
+        return emptyResponse;
+    }
+
+    const url = `${NANCE_API_URL}/${space}/proposals/?author=${author}`;
+    const res = await fetch(url);
+    const json: APIResponse<Proposal[]> = await res.json();
+    if (json.success === false) {
+        throw new Error(`An error occurred while fetching created proposals: ${json?.error}`)
+    }
+    
+    return json
+}
