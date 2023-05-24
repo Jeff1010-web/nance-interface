@@ -1,5 +1,5 @@
 import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE } from "../../../hooks/snapshot/Proposals";
-import { useAccount } from 'wagmi'
+import { useAccount, useSigner } from 'wagmi'
 import SiteNav from "../../../components/SiteNav";
 import ReactMarkdown from "react-markdown";
 import { Tooltip } from 'flowbite-react';
@@ -13,15 +13,15 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../../components/ColorBar";
-import { fetchProposal, useProposal } from "../../../hooks/NanceHooks";
+import { fetchProposal, useProposal, useProposalDelete, useProposalUpload } from "../../../hooks/NanceHooks";
 import { canEditProposal, getLastSlash } from "../../../libs/nance";
-import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve } from "../../../models/NanceTypes";
+import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve, ProposalDeleteRequest, ProposalUploadRequest } from "../../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Custom404 from "../../404";
 import VoterProfile from "../../../components/VoterProfile";
 import ScrollToBottom from "../../../components/ScrollToBottom";
-import { ExternalLinkIcon } from "@heroicons/react/solid";
+import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@heroicons/react/solid";
 import ResolvedProject from "../../../components/ResolvedProject";
 import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import { CONTRACT_MAP } from "../../../constants/Contract";
@@ -29,8 +29,12 @@ import ResolvedContract from "../../../components/ResolvedContract";
 import JBSplitEntry from "../../../components/juicebox/JBSplitEntry";
 import Footer from "../../../components/Footer";
 import { ArrowCircleLeftIcon, ArrowCircleRightIcon } from "@heroicons/react/outline";
-import { Disclosure } from "@headlessui/react";
+import { Disclosure, Listbox, Transition } from "@headlessui/react";
 import { numToPrettyString } from "../../../libs/NumberFormatter";
+import { signPayload } from "../../../libs/signer";
+import { JsonRpcSigner } from "@ethersproject/providers";
+import { useRouter } from "next/router";
+import Notification from "../../../components/Notification";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -113,7 +117,13 @@ interface ProposalCommonProps {
 
 const ProposalContext = createContext<{ commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal }>(undefined);
 
+const ProposalStatus = [
+  {title: "Archive", description: "Archive your proposal and exit from governance process."},
+  {title: "Delete", description: "Delete your proposal and this can't be undo."},
+]
+
 export default function NanceProposalPage({ space, proposal, snapshotProposal }: { space: string, proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }) {
+  const router = useRouter();
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
     sortBy: withDefault(createEnumParam(["time", "vp"]), "time"),
@@ -122,6 +132,68 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
   const editPageQuery = {
     proposalId: proposal?.hash
   };
+
+  const { data: signer } = useSigner();
+  const jrpcSigner = signer as JsonRpcSigner;
+  const [signError, setSignError] = useState(undefined);
+  const [selected, setSelected] = useState(ProposalStatus[0])
+  const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, proposal?.hash, router.isReady);
+  const { trigger: deleteTrigger, reset: deleteReset } = useProposalDelete(space, proposal?.hash, router.isReady);
+  const resetSignAndUpload = () => {
+    setSignError(undefined);
+    deleteReset();
+  }
+
+  const archiveProposal = async () => {
+    const payload: Pick<Proposal, "hash" | "title" | "body" | "notification" | "actions" | "status"> = {
+      ...proposal,
+      status: "Archived"
+    };
+    console.debug("📚 Nance.archiveProposal.onSubmit ->", { payload })
+
+    signPayload(
+      jrpcSigner, space,
+      "edit",
+      payload
+    ).then((signature) => {
+
+      // send to API endpoint
+      reset();
+      const req: ProposalUploadRequest = {
+        signature,
+        proposal: payload
+      }
+      console.debug("📗 Nance.archiveProposal.submit ->", req);
+      return trigger(req);
+    })
+      .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res.data.hash}` : `/s/${space}/${res.data.hash}`))
+      .catch((err) => {
+        setSignError(err);
+        console.warn("📗 Nance.archiveProposal.onSignError ->", err);
+      });
+  }
+
+  const deleteProposal = async () => {
+    const hash = proposal?.hash;
+    signPayload(
+      jrpcSigner, space,
+      "delete",
+      { hash }
+    ).then((signature) => {
+      deleteReset();
+      const req: ProposalDeleteRequest = {
+        signature,
+        hash
+      }
+      console.debug("📗 Nance.deleteProposal.onDelete ->", req);
+      return deleteTrigger(req);
+    })
+    .then(() => router.push(space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`))
+    .catch((err) => {
+      console.warn("📗 Nance.deleteProposal.onSignError ->", err);
+      setSignError(err);
+    });
+  }
 
   // this page need proposal to work
   if (!proposal) {
@@ -145,7 +217,6 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
     actions: proposal.actions,
     proposalId: proposal.proposalId
   }
-  console.debug("📚NanceProposalPage.begin", commonProps, proposal, snapshotProposal);
 
   return (
     <>
@@ -159,7 +230,6 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
       <div className="min-h-full">
         <main className="py-2">
           <ProposalContext.Provider value={{ commonProps, proposalInfo: snapshotProposal }}>
-
             <div className="mx-auto mt-4 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
               <div className="space-y-6 lg:col-span-2 lg:col-start-1">
                 {/* Content */}
@@ -200,7 +270,9 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
 
                   {!snapshotProposal && (
                     <div className="mt-2 space-y-4">
-
+                      {signError &&
+                        <Notification title="Error" description={signError.error_description || signError.message || signError} show={true} close={resetSignAndUpload} checked={false} />
+                      }
 
                       <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
 
@@ -213,20 +285,85 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                           </a>
                         </>
                       )}
+                      
                       {canEditProposal(proposal.status) && (
-                        <>
-                          <Link
-                            legacyBehavior
-                            href={{
-                              pathname: space === NANCE_DEFAULT_SPACE ? '/edit' : `/s/${space}/edit`,
-                              query: editPageQuery,
-                            }}
-                          >
-                            <a className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
-                              Edit Proposal
-                            </a>
-                          </Link>
-                        </>
+                        <Link
+                          legacyBehavior
+                          href={{
+                            pathname: space === NANCE_DEFAULT_SPACE ? '/edit' : `/s/${space}/edit`,
+                            query: editPageQuery,
+                          }}
+                        >
+                          <a className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
+                            Edit Proposal
+                          </a>
+                        </Link>
+                      )}
+
+                      {canEditProposal(proposal.status) && (
+                        <Listbox value={selected} onChange={setSelected} as="div">
+                        {({ open }) => (
+                          <>
+                            <Listbox.Label className="sr-only">Change published status</Listbox.Label>
+                            <div className="relative">
+                              <div className="inline-flex divide-x divide-red-700 rounded-md shadow-sm w-full">
+                                <button onClick={() => {
+                                  if(selected.title === "Archive") {
+                                    archiveProposal();
+                                  } else if(selected.title === "Delete") {
+                                    deleteProposal();
+                                  }
+                                }} className="inline-flex items-center justify-center rounded-none rounded-l-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
+                                  {selected.title}
+                                </button>
+                                <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-red-600 p-2 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-offset-gray-50">
+                                  <span className="sr-only">Change proposal status</span>
+                                  <ChevronDownIcon className="h-5 w-5 text-white" aria-hidden="true" />
+                                </Listbox.Button>
+                              </div>
+          
+                              <Transition
+                                show={open}
+                                as={Fragment}
+                                leave="transition ease-in duration-100"
+                                leaveFrom="opacity-100"
+                                leaveTo="opacity-0"
+                              >
+                                <Listbox.Options className="absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                  {ProposalStatus.map((option) => (
+                                    <Listbox.Option
+                                      key={option.title}
+                                      className={({ active }) =>
+                                        classNames(
+                                          active ? 'bg-red-600 text-white' : 'text-gray-900',
+                                          'cursor-default select-none p-4 text-sm'
+                                        )
+                                      }
+                                      value={option}
+                                    >
+                                      {({ selected, active }) => (
+                                        <div className="flex flex-col">
+                                          <div className="flex justify-between">
+                                            <p className={selected ? 'font-semibold' : 'font-normal'}>{option.title}</p>
+                                            {selected ? (
+                                              <span className={active ? 'text-white' : 'text-red-600'}>
+                                                <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                              </span>
+                                            ) : null}
+                                          </div>
+                                          <p className={classNames(active ? 'text-red-200' : 'text-gray-500', 'mt-2')}>
+                                            {option.description}
+                                          </p>
+                                        </div>
+                                      )}
+                                    </Listbox.Option>
+                                  ))}
+                                </Listbox.Options>
+                              </Transition>
+                            </div>
+                          </>
+                        )}
+                      </Listbox>
                       )}
 
                       {proposal.status === "Cancelled" && (
@@ -276,7 +413,7 @@ function ProposalContent({ body }: { body: string }) {
     <div className="">
       <div className="px-4 py-5 sm:px-6 flex flex-col">
         <h1 id="applicant-information-title" className="text-3xl font-medium">
-          {commonProps.title}
+          {canEditProposal(commonProps.status) ? `[${commonProps.status}] ` : ""}{commonProps.title}
         </h1>
 
         <p className="text-sm text-gray-500 text-right">

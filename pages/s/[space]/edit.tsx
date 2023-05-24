@@ -6,12 +6,11 @@ import React from "react";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
 import GenericButton from "../../../components/GenericButton";
-import { fetchProposal, useProposalDelete, useProposalUpload } from "../../../hooks/NanceHooks";
+import { fetchProposal, useProposalUpload } from "../../../hooks/NanceHooks";
 import { imageUpload } from "../../../hooks/ImageUpload";
 import { fileDrop } from "../../../hooks/FileDrop";
-import { Proposal, ProposalUploadRequest, ProposalDeleteRequest, Action, JBSplitNanceStruct } from "../../../models/NanceTypes";
-import { NANCE_DEFAULT_JUICEBOX_PROJECT, NANCE_DEFAULT_SPACE, proposalSetStatuses } from "../../../constants/Nance";
-import { canEditProposal } from "../../../libs/nance";
+import { Proposal, ProposalUploadRequest, Action, JBSplitNanceStruct } from "../../../models/NanceTypes";
+import { NANCE_DEFAULT_JUICEBOX_PROJECT, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import Link from "next/link";
 
 import { useSigner } from "wagmi";
@@ -22,8 +21,8 @@ import { Editor } from '@tinymce/tinymce-react';
 
 import { markdownToHtml, htmlToMarkdown } from '../../../libs/markdown';
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { CurrencyDollarIcon, LightningBoltIcon, PlusIcon, SwitchVerticalIcon, UserGroupIcon, XIcon } from "@heroicons/react/solid";
-import { Combobox, Dialog, Disclosure, Transition } from '@headlessui/react';
+import { CheckIcon, ChevronDownIcon, CurrencyDollarIcon, LightningBoltIcon, PlusIcon, SwitchVerticalIcon, UserGroupIcon, XIcon } from "@heroicons/react/solid";
+import { Combobox, Dialog, Disclosure, Listbox, Transition } from '@headlessui/react';
 import { ErrorMessage } from "@hookform/error-message";
 import FunctionSelector from "../../../components/FunctionSelector";
 import { FunctionFragment } from "ethers/lib/utils";
@@ -101,6 +100,11 @@ export default function NanceEditProposal({ space, loadedProposal }: { space: st
 
 type ProposalFormValues = Omit<ProposalUploadRequest, "signature">
 
+const ProposalStatus = [
+  {title: "Publish", description: "Publish your proposal and let people join the discussion.", value: "Discussion", display: "Publish"},
+  {title: "Draft", description: "Save your proposal as draft, you can publish it later.", value: "Draft", display: "Save as Draft"},
+]
+
 function Form({ space }: { space: string }) {
   // query and context
   const router = useRouter();
@@ -110,36 +114,14 @@ function Form({ space }: { space: string }) {
   const [signing, setSigning] = useState(false);
   const [signError, setSignError] = useState(undefined);
   const [formErrors, setFormErrors] = useState<string>("");
+  const [selected, setSelected] = useState(ProposalStatus[0])
 
   // hooks
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, metadata.loadedProposal?.hash, router.isReady);
-  const { trigger: deleteTrigger, reset: deleteReset } = useProposalDelete(space, metadata.loadedProposal?.hash, router.isReady);
+  
   const { data: signer } = useSigner()
   const jrpcSigner = signer as JsonRpcSigner;
   const { openConnectModal } = useConnectModal();
-
-  const deleteProposal = async () => {
-    const { hash } = metadata.loadedProposal ?? {};
-    signPayload(
-      jrpcSigner, space,
-      "delete",
-      { hash }
-    ).then((signature) => {
-      deleteReset();
-      const req: ProposalDeleteRequest = {
-        signature,
-        hash
-      }
-      console.debug("📗 Nance.deleteProposal.onDelete ->", req);
-      return deleteTrigger(req);
-    })
-    .then(() => router.push(space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`))
-    .catch((err) => {
-      console.warn("📗 Nance.deleteProposal.onSignError ->", err);
-      setSigning(false);
-      setSignError(err);
-    });
-  }
 
   const isNew = metadata.loadedProposal === null;
 
@@ -150,6 +132,7 @@ function Form({ space }: { space: string }) {
     const { hash } = metadata?.loadedProposal ?? {};
     const payload = {
       ...formData.proposal,
+      status: selected.value,
       body: await htmlToMarkdown(formData.proposal.body),
       hash
     };
@@ -273,16 +256,7 @@ function Form({ space }: { space: string }) {
             <CheckCircleIcon className="h-5 w-5 inline mr-1" />
             Drag and drop markdown file or image to attach content (images are pinned to IPFS)
           </p>
-          {canEditProposal(metadata.loadedProposal?.status) && (
-            <div>
-              <p className="text-gray-500 text-sm mt-5 mb-1">set status</p>
-              <select {...register("proposal.status")} className="block rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                {Object.entries(proposalSetStatuses).map(([key, val]) => (
-                  <option key={key}>{val}</option>
-                ))}
-              </select>
-            </div>
-          )}
+
         </div>
 
         {formErrors.length > 0 && (
@@ -308,27 +282,73 @@ function Form({ space }: { space: string }) {
             </button>
           )}
 
-          {jrpcSigner && canEditProposal(metadata.loadedProposal?.status) && !isNew &&(
-            <button type="button"
-              className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
-              onClick={deleteProposal}
-            >
-              Delete
-            </button>
-          )}
           {jrpcSigner && (
-            <button
-              type="submit"
-              disabled={
-                isSubmitting || formErrors.length > 0
-                //|| (!isNew && hasVoting)
-              }
-              className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
-            >
-              {signing ? 
-                (isMutating ? "Submitting..." : "Signing...") : 
-                (formErrors.length > 0 ? "Error in form" : "Submit")}
-            </button>
+            <Listbox value={selected} onChange={setSelected} as="div">
+              {({ open }) => (
+                <>
+                  <Listbox.Label className="sr-only">Change published status</Listbox.Label>
+                  <div className="relative">
+                    <div className="inline-flex divide-x divide-blue-700 rounded-md shadow-sm">
+                      <button
+                        type="submit"
+                        disabled={
+                          isSubmitting || formErrors.length > 0
+                          //|| (!isNew && hasVoting)
+                        }
+                        className="ml-3 inline-flex justify-center rounded-none rounded-l-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
+                      >
+                        {signing ? 
+                          (isMutating ? "Submitting..." : "Signing...") : 
+                          (formErrors.length > 0 ? "Error in form" : selected.display)}
+                      </button>
+                      <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-blue-600 p-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-gray-50">
+                        <span className="sr-only">Change proposal status</span>
+                        <ChevronDownIcon className="h-5 w-5 text-white" aria-hidden="true" />
+                      </Listbox.Button>
+                    </div>
+
+                    <Transition
+                      show={open}
+                      as={Fragment}
+                      leave="transition ease-in duration-100"
+                      leaveFrom="opacity-100"
+                      leaveTo="opacity-0"
+                    >
+                      <Listbox.Options className="absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        {ProposalStatus.map((option) => (
+                          <Listbox.Option
+                            key={option.title}
+                            className={({ active }) =>
+                              classNames(
+                                active ? 'bg-blue-600 text-white' : 'text-gray-900',
+                                'cursor-default select-none p-4 text-sm'
+                              )
+                            }
+                            value={option}
+                          >
+                            {({ selected, active }) => (
+                              <div className="flex flex-col">
+                                <div className="flex justify-between">
+                                  <p className={selected ? 'font-semibold' : 'font-normal'}>{option.title}</p>
+                                  {selected ? (
+                                    <span className={active ? 'text-white' : 'text-blue-600'}>
+                                      <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <p className={classNames(active ? 'text-blue-200' : 'text-gray-500', 'mt-2')}>
+                                  {option.description}
+                                </p>
+                              </div>
+                            )}
+                          </Listbox.Option>
+                        ))}
+                      </Listbox.Options>
+                    </Transition>
+                  </div>
+                </>
+              )}
+            </Listbox>
           )}
         </div>
       </form>
