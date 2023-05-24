@@ -455,13 +455,6 @@ function getContractLabel(address: string) {
   else return `Unknown(${address})`
 }
 
-function getContractDecimal(address: string) {
-  if(CONTRACT_MAP.ETH === address) return 18
-  else if(CONTRACT_MAP.JBX === address) return 18
-  else if(CONTRACT_MAP.USDC === address) return 6
-  else return `Unknown(${address})`
-}
-
 function ProposalNavigator() {
   // pre load prev and next proposal
   const { commonProps } = useContext(ProposalContext);
