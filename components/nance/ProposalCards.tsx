@@ -8,7 +8,7 @@ import { Proposal } from "../../models/NanceTypes";
 import FormattedAddress from "../FormattedAddress";
 import { classNames } from "../../libs/tailwind";
 import { Tooltip } from "flowbite-react";
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon, InformationCircleIcon, XIcon } from '@heroicons/react/solid';
+import { ArchiveIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, ClockIcon, InformationCircleIcon, PencilAltIcon, XCircleIcon, XIcon } from '@heroicons/react/solid';
 import { formatDistanceToNow, toDate } from "date-fns";
 import ColorBar from "../ColorBar";
 
@@ -336,16 +336,33 @@ export default function ProposalCards({ loading, proposals, query, setQuery, max
     )
 }
 
-function getVotingTimeLabel(p: SnapshotProposal) {
-    if (!p) return ""
+function VotingTimeIndicator({p}: {p: SnapshotProposal}) {
+    if (!p) return null
   
     const currentTime = Math.floor(Date.now() / 1000)
+    const startLabel = formatDistanceToNow(toDate(p.start * 1000), { addSuffix: true })
+    const endLabel = formatDistanceToNow(toDate(p.end * 1000), { addSuffix: true })
+
     if (currentTime < p.start) {
-      return `Voting starts ${formatDistanceToNow(toDate(p.start * 1000), { addSuffix: true })}`
+      return (
+        <div className="flex space-x-1 text-xs justify-center place-items-center">
+          <PencilAltIcon className="h-3 w-3" />
+          <p>{startLabel}</p>
+        </div>
+      )
     } else if (currentTime >= p.start && currentTime <= p.end) {
-      return `Voting ends ${formatDistanceToNow(toDate(p.end * 1000), { addSuffix: true })}`
+      return (
+        <div className="flex space-x-1 text-xs justify-center place-items-center">
+          <ClockIcon className="h-3 w-3" />
+          <p>{endLabel}</p>
+        </div>
+      )
     } else {
-      return `Voting ended ${formatDistanceToNow(toDate(p.end * 1000), { addSuffix: true })}`
+      return (
+        <div className="flex space-x-1 text-xs justify-center place-items-center">
+          <ArchiveIcon className="h-3 w-3" />
+        </div>
+      )
     }
 }
 
@@ -355,9 +372,7 @@ function VotesBar({ snapshotProposal, proposal }: { snapshotProposal: SnapshotPr
     if (hasSnapshotVoting) {
       return (
         <div className="flex flex-col space-y-1">
-          <span className="text-xs">
-            {getVotingTimeLabel(snapshotProposal)}
-          </span>
+          <VotingTimeIndicator p={snapshotProposal} />
   
           {['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(snapshotProposal?.type) ? (
             // sum all scores to get the total score
@@ -373,16 +388,16 @@ function VotesBar({ snapshotProposal, proposal }: { snapshotProposal: SnapshotPr
         <div className="flex flex-col space-y-1">
           {proposal.status === "Cancelled" && (
             <>
-              <span className="text-xs">
-                Temp check failed
-              </span>
+              <div className="flex space-x-1 text-xs justify-center place-items-center">
+                <XCircleIcon className="h-3 w-3" />
+              </div>
               <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
             </>
           )}
           {proposal.status === "Temperature Check" && (
-            <span className="text-xs">
-              Temp check voting
-            </span>
+            <div className="flex space-x-1 text-xs justify-center place-items-center">
+              <ClockIcon className="h-3 w-3" />
+            </div>
           )}
   
         </div>
