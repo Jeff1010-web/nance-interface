@@ -17,6 +17,13 @@ export type SpaceInfo = {
   dolthubLink: string;
 };
 
+export type ProposalInfo = {
+  proposalIdPrefix: string;
+  minTokenPassingAmount: number;
+};
+
+export type ProposalsPacket = { proposalInfo: ProposalInfo, proposals: Proposal[] };
+
 export type ProposalUploadPayload = {
   hash: string;
 }

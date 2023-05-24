@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { useProposalsByID, SnapshotProposal } from "../../hooks/snapshot/Proposals";
 import { getLastSlash } from "../../libs/nance";
-import { Proposal } from "../../models/NanceTypes";
+import { Proposal, ProposalsPacket } from "../../models/NanceTypes";
 import FormattedAddress from "../FormattedAddress";
 import { classNames } from "../../libs/tailwind";
 import { Tooltip } from "flowbite-react";
@@ -48,9 +48,9 @@ function getRandomInt(max) {
     return Math.floor(Math.random() * max);
 }
 
-export default function ProposalCards({ loading, proposals, query, setQuery, maxCycle, proposalUrlPrefix }:
+export default function ProposalCards({ loading, proposalsPacket, query, setQuery, maxCycle, proposalUrlPrefix }:
     {
-      loading: boolean, proposals: Proposal[],
+      loading: boolean, proposalsPacket: ProposalsPacket,
       query: { cycle: number, keyword: string, sortBy: string, sortDesc: boolean },
       setQuery: (o: object) => void, maxCycle: number,
       proposalUrlPrefix: string
@@ -60,13 +60,13 @@ export default function ProposalCards({ loading, proposals, query, setQuery, max
     const { address, isConnected } = useAccount();
   
     // for those proposals with no results cached by nance, we need to fetch them from snapshot
-    const snapshotProposalIds: string[] = proposals?.filter(p => p.voteURL).map(p => getLastSlash(p.voteURL)) || [];
+    const snapshotProposalIds: string[] = proposalsPacket?.proposals?.filter(p => p.voteURL).map(p => getLastSlash(p.voteURL)) || [];
     const { data, loading: snapshotLoading, error } = useProposalsByID(snapshotProposalIds, address, snapshotProposalIds.length === 0);
     // convert proposalsData to dict with proposal id as key
     const snapshotProposalDict: { [id: string]: SnapshotProposal } = {};
     data?.proposalsData?.forEach(p => snapshotProposalDict[p.id] = p);
     // override the snapshot proposal vote results into proposals.voteResults
-    const mergedProposals: Proposal[] = proposals?.map(p => {
+    const mergedProposals: Proposal[] = proposalsPacket?.proposals?.map(p => {
       const snapshotProposal = snapshotProposalDict[getLastSlash(p.voteURL)];
       if (snapshotProposal) {
         return {
@@ -114,15 +114,15 @@ export default function ProposalCards({ loading, proposals, query, setQuery, max
       if (loading) {
         setInfoText('Loading...');
       } else {
-        if (!proposals) {
+        if (!proposalsPacket?.proposals) {
           setInfoText('Error. Please try again later.');
-        } else if (proposals.length === 0) {
+        } else if (proposalsPacket?.proposals.length === 0) {
           setInfoText('No proposals found, try below actions:');
         } else {
           setInfoText('');
         }
       }
-    }, [proposals, loading]);
+    }, [proposalsPacket?.proposals, loading]);
   
     function SortableTableHeader({ val, label }: { val: SortOptions, label: string }) {
       const sortedByCurrentVal = query.sortBy === val
@@ -245,7 +245,7 @@ export default function ProposalCards({ loading, proposals, query, setQuery, max
                           )}
                         </div>
                         <span className="text-xs">
-                          {`GC-${proposal.governanceCycle}, JBP-${proposal.proposalId || "tbd"} - by `}
+                          {`GC-${proposal.governanceCycle}, ${proposalsPacket.proposalInfo.proposalIdPrefix}${proposal.proposalId || "tbd"} - by `}
                           <FormattedAddress address={proposal.authorAddress} noLink />
                         </span>
   
@@ -292,7 +292,7 @@ export default function ProposalCards({ loading, proposals, query, setQuery, max
           {infoText}
         </p>
   
-        {!loading && proposals?.length === 0 && (
+        {!loading && proposalsPacket?.proposals?.length === 0 && (
           <div className="flex flex-col items-center space-y-4 mb-6">
             <button type="button"
               className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"

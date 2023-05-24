@@ -147,11 +147,11 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             </div>
   
             <div className="">
-              <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={infoLoading || proposalsLoading} proposals={proposalData?.data} query={query} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
+              <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={infoLoading || proposalsLoading} proposalsPacket={proposalData?.data} query={query} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
             </div>
   
             <div className="mt-6 text-center">
-              {proposalData?.data?.length > 0 && `Total Proposals: ${proposalData?.data?.length}`}
+              {proposalData?.data?.proposals.length > 0 && `Total Proposals: ${proposalData?.data?.proposals.length}`}
             </div>
 
             <div className="mt-2 text-center">

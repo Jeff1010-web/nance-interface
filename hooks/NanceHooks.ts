@@ -13,6 +13,7 @@ import {
     FetchReconfigureData,
     ProposalUploadPayload,
     ProposalDeleteRequest,
+    ProposalsPacket
 } from '../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -49,7 +50,7 @@ export function useProposals(args: ProposalsRequest, shouldFetch: boolean = true
         url.searchParams.set('keyword', args.keyword);
     }
 
-    return useSWR<APIResponse<Proposal[]>, string>(
+    return useSWR<APIResponse<ProposalsPacket>, string>(
         shouldFetch ? url.toString() : null,
         jsonFetcher(),
     );
