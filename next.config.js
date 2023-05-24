@@ -28,19 +28,17 @@ const nextConfig = {
         destination: '/p/:slug',
         permanent: true,
       },
-    ]
-  },
-  async rewrites() {
-    return [
-      {
-        source: '/edit',
-        destination: '/s/juicebox/edit',
-      },
       {
         source: '/p/:path',
         destination: '/s/juicebox/:path',
+        permanent: true,
       },
-    ];
+      {
+        source: '/edit',
+        destination: '/s/juicebox/edit',
+        permanent: true,
+      },
+    ]
   }
 }
 
