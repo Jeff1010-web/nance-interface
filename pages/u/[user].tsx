@@ -13,9 +13,9 @@ import { useAllSpaceInfo } from "../../hooks/NanceHooks";
 import { NANCE_DEFAULT_SPACE } from "../../constants/Nance";
 import useSWR, { Fetcher } from 'swr';
 import { ProfileResponse } from "../api/profile";
-import { Listbox, Transition } from "@headlessui/react";
+import { Disclosure, Listbox, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { CheckIcon, ChevronDownIcon, XIcon } from "@heroicons/react/solid";
+import { CheckIcon, ChevronDownIcon, ChevronRightIcon, XIcon } from "@heroicons/react/solid";
 
 const getColorOfChoice = (choice: string) => {
   if (choice == 'For') {
@@ -274,10 +274,31 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
                         <p className="text-gray-500">{userProfileInfo ? `${userProfileInfo?.votes.for} / ${userProfileInfo?.votes.against} / ${userProfileInfo?.votes.abstain}` : `0 / 0 / 0`}</p>
                       </div>
 
-                      <div className="flex justify-between">
-                        <p>Proposals created</p>
-                        <p className="text-gray-500">{userProfileInfo?.proposals.length || 0}</p>
-                      </div>
+                      <Disclosure>
+                        {({ open }) => (
+                          <>
+                            <Disclosure.Button as="div" className="flex justify-between">
+                              <p>Proposals created</p>
+                              <div className="flex place-items-center text-gray-500">
+                                <p>{userProfileInfo?.proposals.length || 0}</p>
+                                <ChevronRightIcon className={open ? 'rotate-90 transform h-5 w-5' : 'h-5 w-5'} />
+                              </div>
+                            </Disclosure.Button>
+                            <Disclosure.Panel as="div">
+                              <ul className="text-gray-500">
+                                {userProfileInfo?.proposals?.sort((a,b) => (b.proposalId ?? 0) - (a.proposalId ?? 0)).map(p => (
+                                  <li key={p.hash}>
+                                    <a href={getProposalLink(query.space, p.hash)} className="flex justify-between space-x-2">
+                                      <p className="w-1/3">{`Prop ${p.proposalId ? p.proposalId : "tbd"}`}</p>
+                                      <p className="w-2/3 line-clamp-1">{p.title}</p>
+                                    </a>
+                                  </li>
+                                ))}
+                              </ul>
+                            </Disclosure.Panel>
+                          </>
+                        )}
+                      </Disclosure>
 
                       <div className="flex justify-between">
                         <p>Delegated from</p>

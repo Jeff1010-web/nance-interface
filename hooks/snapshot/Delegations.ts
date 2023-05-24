@@ -40,6 +40,7 @@ export async function fetchDelegators(voter: string, space: string): Promise<{ d
   }).then(res => res.json())
 
   if(ret.errors) {
+    console.warn("fetchDelegators errors occurred: ", ret.errors)
     return []
   } else {
     return await ret.data?.delegation
