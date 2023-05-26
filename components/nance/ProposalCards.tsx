@@ -358,11 +358,7 @@ function VotingTimeIndicator({p}: {p: SnapshotProposal}) {
         </div>
       )
     } else {
-      return (
-        <div className="flex space-x-1 text-xs justify-center place-items-center">
-          <ArchiveIcon className="h-3 w-3" />
-        </div>
-      )
+      return null
     }
 }
 
@@ -386,14 +382,11 @@ function VotesBar({ snapshotProposal, proposal }: { snapshotProposal: SnapshotPr
     } else {
       return (
         <div className="flex flex-col space-y-1">
+          
           {proposal.status === "Cancelled" && (
-            <>
-              <div className="flex space-x-1 text-xs justify-center place-items-center">
-                <XCircleIcon className="h-3 w-3" />
-              </div>
-              <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
-            </>
+            <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
           )}
+
           {proposal.status === "Temperature Check" && (
             <div className="flex space-x-1 text-xs justify-center place-items-center">
               <ClockIcon className="h-3 w-3" />
