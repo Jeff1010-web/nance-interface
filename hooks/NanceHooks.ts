@@ -150,18 +150,20 @@ export function getPath(space: string, command: string) {
 
 export async function fetchCreatedProposals(space: string, author: string) {
     if(!space || !author) {
-        const emptyResponse: APIResponse<Proposal[]> = {
+        return {
             success: true,
-            data: []
-        };
-        return emptyResponse;
+            data: {
+                proposalInfo: {},
+                proposals: []
+            }
+        } as APIResponse<ProposalsPacket>;
     }
 
     const url = `${NANCE_API_URL}/${space}/proposals/?author=${author}`;
     const res = await fetch(url);
-    const json: APIResponse<Proposal[]> = await res.json();
+    const json: APIResponse<ProposalsPacket> = await res.json();
     if (json.success === false) {
-        throw new Error(`An error occurred while fetching created proposals: ${json?.error}`)
+        console.warn("fetchCreatedProposals errors occurred: ", json.error)
     }
     
     return json

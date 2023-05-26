@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const response: ProfileResponse = {
       vp: vp?.vp ?? 0,
       delegators: delegators?.map(o => o.delegator) ?? [],
-      proposals: proposals?.data?.map(p => {return { title: p.title, hash: p.hash, proposalId: p.proposalId }}) ?? [],
+      proposals: proposals?.data?.proposals.map(p => {return { title: p.title, hash: p.hash, proposalId: p.proposalId }}) ?? [],
       votes
     }
 
@@ -46,6 +46,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     )
     res.status(200).json(response)
   } catch (err) {
-    res.status(500).json({ err: JSON.stringify(err) })
+    console.debug("api.profile.error", err)
+    if (err instanceof Error) {
+      res.status(500).json({ err: err.message })
+    } else {
+      res.status(500).json({ err: `Something wrong happened: ${JSON.stringify(err)}` })
+    }
   }
 }

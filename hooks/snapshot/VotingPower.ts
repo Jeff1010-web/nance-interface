@@ -48,6 +48,7 @@ export async function fetchVotingPower(voter: string, space: string, proposal: s
   }).then(res => res.json())
   
   if(ret.errors) {
+    console.warn("fetchVotingPower errors occurred: ", ret.errors)
     return {
       vp: 0,
       vp_by_strategy: [],

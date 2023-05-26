@@ -355,6 +355,7 @@ export async function fetchAllVotesOfAddress(address: string, limit: number, spa
   }).then(res => res.json())
 
   if (ret.errors) {
+    console.warn("fetchAllVotesOfAddress errors occurred: ", ret.errors)
     return {
       total: 0,
       for: 0,
