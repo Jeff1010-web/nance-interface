@@ -1,7 +1,7 @@
 import { Switch } from "@headlessui/react";
 import { BigNumber, constants } from "ethers";
 import { commify } from "ethers/lib/utils";
-import { BooleanParam, useQueryParam } from "next-query-params";
+import { BooleanParam, useQueryParam, withDefault } from "next-query-params";
 import FormattedAddress from "../components/FormattedAddress";
 import ResolvedProject from "../components/ResolvedProject";
 import SiteNav from "../components/SiteNav"
@@ -46,20 +46,23 @@ const JBDAO_SAFE = "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"
 
 export default function TreasuryPage() {
   // state
-  const [excludeJBX, setExcludeJBX] = useQueryParam("excludeJBX", BooleanParam);
+  const [excludeJBX, setExcludeJBX] = useQueryParam("excludeJBX", withDefault(BooleanParam, true));
 
   // read project balance from JBETHTerminal
-  const { data: ethPrice, isLoading: ethPriceLoading } = useTokenUsdPrice("ETH")
-  const { data: jbxPrice, isLoading: jbxPriceLoading } = useTokenUsdPrice("JBX", !excludeJBX)
+  const { data: _jbxPrice, isLoading: jbxPriceLoading } = useTokenUsdPrice("JBX", !excludeJBX)
   const { value: v1ETHBalance, loading: v1ETHBalanceLoading } = useTerminalBalanceV1({ projectId: 1 });
   const { value: v2ETHBalance, loading: v2ETHBalanceLoading } = useTerminalBalance({ projectId: 1, isV2: true });
   const { value: v3ETHBalance, loading: v3ETHBalanceLoading } = useTerminalBalance({ projectId: 1 });
   const { data: safeAssets, isLoading: safeAssetsLoading } = useMultisigAssets(JBDAO_SAFE);
+  
+  const ethPrice = parseFloat(safeAssets?.find((o) => o.token === null).fiatConversion || "0")
+  const jbxPrice = _jbxPrice || 0
 
-  console.debug("ETH", {
+  console.debug("TreasuryPage.stats", {
     v1: v1ETHBalance?.div(constants.WeiPerEther).toNumber(),
     v2: v2ETHBalance?.div(constants.WeiPerEther).toNumber(),
-    v3: v3ETHBalance?.div(constants.WeiPerEther).toNumber()
+    v3: v3ETHBalance?.div(constants.WeiPerEther).toNumber(),
+    ethPrice, jbxPrice
   })
 
   // get all current payouts
@@ -77,7 +80,7 @@ export default function TreasuryPage() {
   // get v1 JBX balance
   const { value: v1JBXBalance, loading: v1JBXBalanceIsLoading } = useTokenBalanceOfProject({ holder: excludeJBX ? undefined : JBDAO_SAFE, projectId: 1, version: 1 });
 
-  const loading = ethPriceLoading || jbxPriceLoading || v1ETHBalanceLoading || v2ETHBalanceLoading || v3ETHBalanceLoading || safeAssetsLoading;
+  const loading = jbxPriceLoading || v1ETHBalanceLoading || v2ETHBalanceLoading || v3ETHBalanceLoading || safeAssetsLoading;
   const _ethInProjects = (loading ? 0 : v1ETHBalance?.add(v2ETHBalance).add(v3ETHBalance).div(constants.WeiPerEther).toNumber()) || 0;
   const _jbxInProjects = (loading ? 0 : v1JBXBalance?.div(constants.WeiPerEther).toNumber()) || 0;
   const usdInProjects = _ethInProjects * ethPrice;
