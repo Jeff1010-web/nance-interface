@@ -8,8 +8,8 @@ import { Proposal, ProposalsPacket } from "../../models/NanceTypes";
 import FormattedAddress from "../FormattedAddress";
 import { classNames } from "../../libs/tailwind";
 import { Tooltip } from "flowbite-react";
-import { ArchiveIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, ClockIcon, InformationCircleIcon, PencilAltIcon, XCircleIcon, XIcon } from '@heroicons/react/solid';
-import { formatDistanceToNow, toDate } from "date-fns";
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, ClockIcon, InformationCircleIcon, PencilAltIcon, XCircleIcon, XIcon } from '@heroicons/react/solid';
+import { formatDistanceToNowStrict, toDate } from "date-fns";
 import ColorBar from "../ColorBar";
 
 type SortOptions = "" | "status" | "title" | "approval" | "participants" | "voted"
@@ -340,8 +340,8 @@ function VotingTimeIndicator({p}: {p: SnapshotProposal}) {
     if (!p) return null
   
     const currentTime = Math.floor(Date.now() / 1000)
-    const startLabel = formatDistanceToNow(toDate(p.start * 1000), { addSuffix: true })
-    const endLabel = formatDistanceToNow(toDate(p.end * 1000), { addSuffix: true })
+    const startLabel = formatDistanceToNowStrict(toDate(p.start * 1000), { addSuffix: true })
+    const endLabel = formatDistanceToNowStrict(toDate(p.end * 1000), { addSuffix: true })
 
     if (currentTime < p.start) {
       return (
@@ -382,7 +382,7 @@ function VotesBar({ snapshotProposal, proposal }: { snapshotProposal: SnapshotPr
     } else {
       return (
         <div className="flex flex-col space-y-1">
-          
+
           {proposal.status === "Cancelled" && (
             <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
           )}
