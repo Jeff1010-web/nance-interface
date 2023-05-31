@@ -21,14 +21,14 @@ import Link from "next/link";
 import Custom404 from "../../404";
 import VoterProfile from "../../../components/VoterProfile";
 import ScrollToBottom from "../../../components/ScrollToBottom";
-import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@heroicons/react/solid";
+import { CheckIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 import ResolvedProject from "../../../components/ResolvedProject";
 import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import { CONTRACT_MAP } from "../../../constants/Contract";
 import ResolvedContract from "../../../components/ResolvedContract";
 import JBSplitEntry from "../../../components/juicebox/JBSplitEntry";
 import Footer from "../../../components/Footer";
-import { ArrowCircleLeftIcon, ArrowCircleRightIcon } from "@heroicons/react/outline";
+import { ArrowLeftCircleIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import { Disclosure, Listbox, Transition } from "@headlessui/react";
 import { numToPrettyString } from "../../../libs/NumberFormatter";
 import { signPayload } from "../../../libs/signer";
@@ -438,7 +438,7 @@ function ProposalContent({ body }: { body: string }) {
           <h2 className="text-gray-500 mb-3">
             Metadata 
             <a href={`${NANCE_API_URL}/${commonProps.space}/proposal/${commonProps.uuid}`} className="ml-2">
-              <ExternalLinkIcon  className="h-4 w-4 inline" />
+              <ArrowTopRightOnSquareIcon  className="h-4 w-4 inline" />
             </a>
           </h2>
 
@@ -569,21 +569,21 @@ function ProposalContent({ body }: { body: string }) {
                   {commonProps.snapshot && (
                     <>
                       <span className="font-medium">Snapshot:</span>
-                      <a target="_blank" rel="noreferrer" href={`https://etherscan.io/block/${commonProps.snapshot}`}>{commonProps.snapshot}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+                      <a target="_blank" rel="noreferrer" href={`https://etherscan.io/block/${commonProps.snapshot}`}>{commonProps.snapshot}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
                     </>
                   )}
 
                   {commonProps.discussion && (
                     <>
                       <span className="font-medium">Discussion:</span>
-                      <a target="_blank" rel="noreferrer" href={openInDiscord(commonProps.discussion)}>{getDomain(commonProps.discussion)}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+                      <a target="_blank" rel="noreferrer" href={openInDiscord(commonProps.discussion)}>{getDomain(commonProps.discussion)}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
                     </>
                   )}
 
                   {commonProps.ipfs && (
                     <>
                       <span className="font-medium">IPFS:</span>
-                      <a target="_blank" rel="noreferrer" href={`https://snapshot.mypinata.cloud/ipfs/${commonProps.ipfs}`}>{getLastSlash(commonProps.ipfs).slice(0,7)}<ExternalLinkIcon className="h-3 w-3 inline text-xs" /></a>
+                      <a target="_blank" rel="noreferrer" href={`https://snapshot.mypinata.cloud/ipfs/${commonProps.ipfs}`}>{getLastSlash(commonProps.ipfs).slice(0,7)}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
                     </>
                   )}
                 </Disclosure.Panel>
@@ -625,13 +625,13 @@ function ProposalNavigator() {
     <div className="flex flex-col space-y-2 space-x-0 md:flex-row md:space-y-0 md:space-x-4 justify-between text-gray-500">
       {prevProp?.data?.title && (
         <a href={commonProps.space === NANCE_DEFAULT_SPACE ? `/p/${proposalId-1}` : `/s/${commonProps.space}/${proposalId-1}`} className="w-full md:w-1/2">
-          <ArrowCircleLeftIcon className="h-5 w-5 inline"/> {prevProp?.data?.title}
+          <ArrowLeftCircleIcon className="h-5 w-5 inline"/> {prevProp?.data?.title}
         </a>
       )}
 
       {nextProp?.data?.title && (
         <a href={commonProps.space === NANCE_DEFAULT_SPACE ? `/p/${proposalId+1}` : `/s/${commonProps.space}/${proposalId+1}`}  className="w-full md:w-1/2">
-          <ArrowCircleRightIcon className="h-5 w-5 inline"/> {nextProp?.data?.title}
+          <ArrowRightCircleIcon className="h-5 w-5 inline"/> {nextProp?.data?.title}
         </a>
       )}
     </div>

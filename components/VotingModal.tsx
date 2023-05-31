@@ -2,8 +2,8 @@ import { useState, Fragment, useEffect } from "react"
 import useVotingPower from "../hooks/snapshot/VotingPower"
 import { Dialog, RadioGroup, Transition } from '@headlessui/react'
 import { SnapshotProposal } from "../hooks/snapshot/Proposals"
-import { XIcon } from '@heroicons/react/outline'
-import { CheckIcon, ExclamationIcon } from '@heroicons/react/solid'
+import { XMarkIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid'
 import Notification from "./Notification"
 import useVote from "../hooks/snapshot/Vote"
 import { useForm } from "react-hook-form"
@@ -121,7 +121,7 @@ export default function VotingModal({ modalIsOpen, closeModal, address, spaceId,
                     onClick={close}
                   >
                     <span className="sr-only">Close</span>
-                    <XIcon className="h-6 w-6" aria-hidden="true" />
+                    <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
 
                   <div className="w-full grid grid-cols-1 gap-y-8 gap-x-6 items-start sm:grid-cols-12 lg:gap-x-8">
@@ -163,7 +163,7 @@ export default function VotingModal({ modalIsOpen, closeModal, address, spaceId,
                           </div>
                         ) : (
                           <div className="mt-6 flex items-center">
-                            <ExclamationIcon className="flex-shrink-0 w-5 h-5 text-yellow-500" aria-hidden="true" />
+                            <ExclamationTriangleIcon className="flex-shrink-0 w-5 h-5 text-yellow-500" aria-hidden="true" />
                             <p className="ml-2 font-medium text-gray-500">{vpLoading ? "Loading..." : "You have no voting power"}</p>
                           </div>
                         )}

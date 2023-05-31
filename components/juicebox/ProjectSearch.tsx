@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckIcon, ChevronDownIcon } from '@heroicons/react/solid'
+import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
 import { Combobox } from '@headlessui/react'
 import useProjectSearch, { ProjectSearchEntry } from '../../hooks/juicebox/ProjectSearch'
 import useProjectMetadata from '../../hooks/juicebox/ProjectMetadata'

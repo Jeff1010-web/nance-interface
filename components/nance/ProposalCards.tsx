@@ -8,7 +8,7 @@ import { Proposal, ProposalsPacket } from "../../models/NanceTypes";
 import FormattedAddress from "../FormattedAddress";
 import { classNames } from "../../libs/tailwind";
 import { Tooltip } from "flowbite-react";
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon, ClockIcon, InformationCircleIcon, PencilAltIcon, XCircleIcon, XIcon } from '@heroicons/react/solid';
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, ClockIcon, InformationCircleIcon, PencilSquareIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { formatDistanceToNowStrict, toDate } from "date-fns";
 import ColorBar from "../ColorBar";
 
@@ -34,7 +34,7 @@ function getVotedIcon(choice) {
       if (choice === 'For' || choice === 'Yes') {
         return <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
       } else if (choice === 'Against' || choice === 'No') {
-        return <XIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
+        return <XMarkIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
       }
     }
   
@@ -346,7 +346,7 @@ function VotingTimeIndicator({p}: {p: SnapshotProposal}) {
     if (currentTime < p.start) {
       return (
         <div className="flex space-x-1 text-xs justify-center place-items-center">
-          <PencilAltIcon className="h-3 w-3" />
+          <PencilSquareIcon className="h-3 w-3" />
           <p>{startLabel}</p>
         </div>
       )
