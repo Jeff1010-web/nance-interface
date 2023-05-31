@@ -35,6 +35,7 @@ import { signPayload } from "../../../libs/signer";
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
+import { BigNumber } from "ethers";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -456,7 +457,7 @@ function ProposalContent({ body }: { body: string }) {
                 <div className="col-span-2 flex flex-col mt-2 w-full space-y-2">
                   {commonProps.actions.map((action, index) => (
                     <div key={index} className="ml-2 flex space-x-2 w-full break-words">
-                      <span className="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800">
+                      <span className="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800 h-min w-min">
                         {action.type}
                         {/* {action.type === "Reserve" && (
                           <span>
@@ -493,13 +494,33 @@ function ProposalContent({ body }: { body: string }) {
                       )}
 
                       {action.type === "Custom Transaction" && (
-                        <span className="line-clamp-5">
+                        <span className="line-clamp-6">
                           <ResolvedContract address={(action.payload as CustomTransaction).contract} style="inline ml-1" />
                           &#46;
                           <a href={`https://etherfunk.io/address/${(action.payload as CustomTransaction).contract}?fn=${(action.payload as CustomTransaction).functionName?.split("(")[0]}`} rel="noopener noreferrer" target="_blank" className="hover:underline inline">
                             {(action.payload as CustomTransaction).functionName?.split("(")[0]}
-                            {`(${Object.values((action.payload as CustomTransaction).args || {}).join(",")}) {value: ${(action.payload as CustomTransaction).value}}`}
                           </a>
+                          
+                          <span>{"("}</span>
+                          <span>
+                            {Object.entries((action.payload as CustomTransaction).args || {}).map(([key, value]) => (
+                              <span key={key} className="ml-1 first:ml-0 after:content-[','] last:after:content-[''] text-gray-500 ">
+                                <span className="inline-block">{key}</span>
+                                <span>{`: ${value}`}</span>
+                              </span>
+                            ))}
+                          </span>
+                          <span>{")"}</span>
+
+                          {BigNumber.from((action.payload as CustomTransaction).value).gt(0) && (
+                            <span>
+                              <span>{"{"}</span>
+                              <span className="text-gray-500">value</span>
+                              <span>{`: ${(action.payload as CustomTransaction).value}`}</span>
+                              <span>{"}"}</span>
+                            </span>
+                          )}
+
                         </span>
                       )}
 
