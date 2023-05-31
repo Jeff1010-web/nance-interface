@@ -21,7 +21,7 @@ import { Editor } from '@tinymce/tinymce-react';
 
 import { markdownToHtml, htmlToMarkdown } from '../../../libs/markdown';
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { CheckIcon, ChevronDownIcon, CurrencyDollarIcon, LightningBoltIcon, PlusIcon, SwitchVerticalIcon, UserGroupIcon, XIcon } from "@heroicons/react/solid";
+import { CheckIcon, ChevronDownIcon, CurrencyDollarIcon, BoltIcon, PlusIcon, ArrowsUpDownIcon, UserGroupIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { Combobox, Dialog, Disclosure, Listbox, Transition } from '@headlessui/react';
 import { ErrorMessage } from "@hookform/error-message";
 import FunctionSelector from "../../../components/FunctionSelector";
@@ -30,7 +30,7 @@ import { CONTRACT_MAP, ZERO_ADDRESS } from "../../../constants/Contract";
 import { useCurrentFundingCycleV2 } from "../../../hooks/juicebox/CurrentFundingCycle";
 import { useCurrentSplits } from "../../../hooks/juicebox/CurrentSplits";
 import { JBConstants } from "../../../models/JuiceboxTypes";
-import { CheckCircleIcon, TrashIcon } from "@heroicons/react/outline";
+import { CheckCircleIcon, InformationCircleIcon, TrashIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
 import AddressForm from "../../../components/form/AddressForm";
 import NumberForm from "../../../components/form/NumberForm";
 import BooleanForm from "../../../components/form/BooleanForm";
@@ -384,16 +384,6 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
 
   return (
     <div>
-      <div className="bg-white p-8 shadow rounded-lg flex flex-col items-center justify-center">
-        <GenericButton onClick={() => setOpen(true)} className="px-3 py-3">
-          <PlusIcon className="w-5 h-5" />
-          <p className="ml-1 font-semibold text-xl">Add an action</p>
-        </GenericButton>
-        <p className="text-gray-500 text-sm mt-1">
-          <CheckCircleIcon className="h-5 w-5 inline mr-1" />
-          Specify on-chain actions you want to execute with current proposal
-        </p>
-      </div>
       
       {fields.map((field: any, index) => {
         if (field.type === "Payout") {
@@ -401,7 +391,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
             <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold text-xl">Payout</h3>
-                <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
+                <XMarkIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
               </div>
               <input
                 type="text"
@@ -416,7 +406,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
             <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold text-xl">Transfer</h3>
-                <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
+                <XMarkIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
               </div>
               <input
                 type="text"
@@ -431,7 +421,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
             <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold text-xl">Reserve</h3>
-                <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
+                <XMarkIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
               </div>
               <input
                 type="text"
@@ -446,7 +436,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
             <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold text-xl">Custom Transaction</h3>
-                <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
+                <XMarkIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
               </div>
               <input
                 type="text"
@@ -461,12 +451,24 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
             <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold text-xl">{field.type}</h3>
-                <XIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
+                <XMarkIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
               </div>
             </div>
           )
         }
       })}
+
+      <div className="bg-white p-8 mt-4 shadow rounded-lg flex flex-col items-center justify-center hover:cursor-pointer"
+        onClick={() => setOpen(true)}>
+        <div className="w-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-8">
+          <SquaresPlusIcon className="w-14 h-14 text-gray-400" />
+            <p className="mt-2 font-medium text-l">Add an action</p>
+          <p className="text-gray-500 text-sm mt-6">
+            {/* <InformationCircleIcon className="h-5 w-5 inline mr-1 mb-0.5" /> */}
+            Specify this proposal{"'"}s onchain actions
+          </p>
+        </div>
+      </div>
 
       <ActionPalettes open={open} setOpen={setOpen} selectedAction={selectedAction} setSelectedAction={newAction} />
     </div>
@@ -505,7 +507,7 @@ const items: ActionItem[] = [
     description: 'Transfer tokens from Safe.',
     url: '#',
     color: 'bg-blue-500',
-    icon: SwitchVerticalIcon,
+    icon: ArrowsUpDownIcon,
   },
   {
     id: 4,
@@ -513,7 +515,7 @@ const items: ActionItem[] = [
     description: 'Execute custom transaction with Safe.',
     url: '#',
     color: 'bg-blue-500',
-    icon: LightningBoltIcon,
+    icon: BoltIcon,
   },
   // More items...
 ]
