@@ -1,4 +1,4 @@
-import { DocumentSearchIcon } from "@heroicons/react/outline";
+import { DocumentMagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { useQueryParams, StringParam, withDefault, BooleanParam, NumberParam } from "next-query-params";
 import { useRouter } from "next/router";
@@ -122,7 +122,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
                 <div className="mt-1 flex rounded-md shadow-sm">
                   <div className="relative flex flex-grow items-stretch focus-within:z-10">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <DocumentSearchIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                      <DocumentMagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                     </div>
                     <input
                       type="text"

@@ -15,7 +15,7 @@ import useSWR, { Fetcher } from 'swr';
 import { ProfileResponse } from "../api/profile";
 import { Disclosure, Listbox, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { CheckIcon, ChevronDownIcon, ChevronRightIcon, XIcon } from "@heroicons/react/solid";
+import { CheckIcon, ChevronDownIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 const getColorOfChoice = (choice: string) => {
   if (choice == 'For') {
@@ -225,7 +225,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
                       )}
                     </Listbox>
 
-                    <XIcon className="h-5 w-5 text-gray-400" aria-hidden="true" onClick={() => setQuery({space: ""})} />
+                    <XMarkIcon className="h-5 w-5 text-gray-400" aria-hidden="true" onClick={() => setQuery({space: ""})} />
                   </div>
 
                   {query.space && !userProfileInfo && (

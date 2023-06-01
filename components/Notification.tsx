@@ -1,8 +1,8 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { Fragment, useEffect } from 'react'
 import { Transition } from '@headlessui/react'
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/outline'
-import { XIcon } from '@heroicons/react/outline'
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 export default function Notification({title, description, show, close, checked, autoClose = false}:
     {title: string, description: string, show: boolean, close: () => void, checked: boolean, autoClose?: boolean}) {
@@ -52,7 +52,7 @@ export default function Notification({title, description, show, close, checked, 
                       onClick={close}
                     >
                       <span className="sr-only">Close</span>
-                      <XIcon className="h-5 w-5" aria-hidden="true" />
+                      <XMarkIcon className="h-5 w-5" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
