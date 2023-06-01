@@ -752,7 +752,7 @@ function ReserveActionForm({ genFieldName }:
 function CustomTransactionActionForm({ genFieldName }:
   { genFieldName: (field: string) => any }) {
 
-  const { watch, control, formState: { errors } } = useFormContext();
+  const { watch, control, setValue, formState: { errors } } = useFormContext();
   const [functionFragment, setFunctionFragment] = useState<FunctionFragment>();
 
   return (
@@ -778,7 +778,10 @@ function CustomTransactionActionForm({ genFieldName }:
                 required: "Can't be empty"
               }}
               render={({ field: { onChange, onBlur, value, ref } }) =>
-                <FunctionSelector address={watch(genFieldName("contract"))} val={value} setVal={onChange} setFunctionFragment={setFunctionFragment} inputStyle="h-10" />
+                <FunctionSelector address={watch(genFieldName("contract"))} val={value} setVal={onChange} setFunctionFragment={(f) => {
+                  setFunctionFragment(f);
+                  setValue(genFieldName("functionFragment"), f);
+                }} inputStyle="h-10" />
               }
             />
             <ErrorMessage
