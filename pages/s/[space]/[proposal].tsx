@@ -307,17 +307,17 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                           <>
                             <Listbox.Label className="sr-only">Change published status</Listbox.Label>
                             <div className="relative">
-                              <div className="inline-flex divide-x divide-red-700 rounded-md shadow-sm w-full">
+                              <div className="inline-flex divide-x divide-gray-700 rounded-md shadow-sm w-full">
                                 <button onClick={() => {
                                   if(selected.title === "Archive") {
                                     archiveProposal();
                                   } else if(selected.title === "Delete") {
                                     deleteProposal();
                                   }
-                                }} className="inline-flex items-center justify-center rounded-none rounded-l-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
+                                }} className="inline-flex items-center justify-center rounded-none rounded-l-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
                                   {selected.title}
                                 </button>
-                                <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-red-600 p-2 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-offset-gray-50">
+                                <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-gray-600 p-2 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-gray-50">
                                   <span className="sr-only">Change proposal status</span>
                                   <ChevronDownIcon className="h-5 w-5 text-white" aria-hidden="true" />
                                 </Listbox.Button>
@@ -336,7 +336,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                                       key={option.title}
                                       className={({ active }) =>
                                         classNames(
-                                          active ? 'bg-red-600 text-white' : 'text-gray-900',
+                                          active ? 'bg-gray-600 text-white' : 'text-gray-900',
                                           'cursor-default select-none p-4 text-sm'
                                         )
                                       }
@@ -347,12 +347,12 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                                           <div className="flex justify-between">
                                             <p className={selected ? 'font-semibold' : 'font-normal'}>{option.title}</p>
                                             {selected ? (
-                                              <span className={active ? 'text-white' : 'text-red-600'}>
+                                              <span className={active ? 'text-white' : 'text-gray-600'}>
                                                 <CheckIcon className="h-5 w-5" aria-hidden="true" />
                                               </span>
                                             ) : null}
                                           </div>
-                                          <p className={classNames(active ? 'text-red-200' : 'text-gray-500', 'mt-2')}>
+                                          <p className={classNames(active ? 'text-gray-200' : 'text-gray-500', 'mt-2')}>
                                             {option.description}
                                           </p>
                                         </div>
