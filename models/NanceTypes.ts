@@ -179,6 +179,7 @@ export type CustomTransaction = {
   value: string;
   functionName: string;
   args: object;
+  functionFragment: string;
 }
 
 export type ParameterUpdate = {
