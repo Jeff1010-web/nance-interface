@@ -15,7 +15,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../../components/ColorBar";
 import { fetchProposal, useProposal, useProposalDelete, useProposalUpload } from "../../../hooks/NanceHooks";
 import { canEditProposal, getLastSlash } from "../../../libs/nance";
-import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve, ProposalDeleteRequest, ProposalUploadRequest } from "../../../models/NanceTypes";
+import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve, ProposalDeleteRequest, ProposalUploadRequest, extractFunctionName, parseFunctionAbiWithNamedArgs } from "../../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Custom404 from "../../404";
@@ -36,6 +36,7 @@ import { JsonRpcSigner } from "@ethersproject/providers";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
 import { BigNumber } from "ethers";
+import { Interface } from "ethers/lib/utils";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -497,16 +498,16 @@ function ProposalContent({ body }: { body: string }) {
                         <span className="line-clamp-6">
                           <ResolvedContract address={(action.payload as CustomTransaction).contract} style="inline ml-1" />
                           &#46;
-                          <a href={`https://etherfunk.io/address/${(action.payload as CustomTransaction).contract}?fn=${(action.payload as CustomTransaction).functionName?.split("(")[0]}`} rel="noopener noreferrer" target="_blank" className="hover:underline inline">
-                            {(action.payload as CustomTransaction).functionName?.split("(")[0]}
+                          <a href={`https://etherfunk.io/address/${(action.payload as CustomTransaction).contract}?fn=${extractFunctionName((action.payload as CustomTransaction).functionName)}`} rel="noopener noreferrer" target="_blank" className="hover:underline inline">
+                            {extractFunctionName((action.payload as CustomTransaction).functionName)}
                           </a>
                           
                           <span>{"("}</span>
                           <span>
-                            {Object.entries((action.payload as CustomTransaction).args || {}).map(([key, value]) => (
-                              <span key={key} className="ml-1 first:ml-0 after:content-[','] last:after:content-[''] text-gray-500 ">
-                                <span className="inline-block">{key}</span>
-                                <span>{`: ${value}`}</span>
+                            {parseFunctionAbiWithNamedArgs((action.payload as CustomTransaction).functionName, (action.payload as CustomTransaction).args).map((pair, index) => (
+                              <span key={index} className="ml-1 first:ml-0 after:content-[','] last:after:content-[''] text-gray-500 ">
+                                <span className="inline-block">{pair[0]}</span>
+                                <span>{`: ${pair[1]}`}</span>
                               </span>
                             ))}
                           </span>

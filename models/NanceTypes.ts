@@ -1,3 +1,5 @@
+import { Interface } from "ethers/lib/utils";
+
 export interface APIResponse<T> {
   success: boolean;
   error?: string;
@@ -177,9 +179,33 @@ export type Transfer = {
 export type CustomTransaction = {
   contract: string;
   value: string;
+  // function approve(address guy, uint256 wad) returns (bool)
+  // can pass as ABI
+  // can have unnamed parameters
   functionName: string;
-  args: object;
-  functionFragment: string;
+  args: any[];
+  tenderlyId: string;
+}
+
+export function extractFunctionName(str) {
+  return str.split("(")[0].split(" ").slice(-1)
+}
+
+export function parseFunctionAbiWithNamedArgs(functionAbi: string, args: any[] | object) {
+  if(!args) return [];
+
+  let abi = functionAbi;
+  // compatiable with old minimal format functionName
+  if(!functionAbi.startsWith("function")) {
+    abi = `function ${functionAbi}`;
+  }
+
+  const ethersInterface = new Interface([abi]);
+  const paramNames = ethersInterface.fragments[0].inputs.map(p => p.name || "_")
+  let dict = [];
+  Object.values(args).forEach((val, index) => dict.push([paramNames[index] || '_', val]));
+
+  return dict;
 }
 
 export type ParameterUpdate = {

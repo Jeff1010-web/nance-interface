@@ -30,7 +30,7 @@ import { CONTRACT_MAP, ZERO_ADDRESS } from "../../../constants/Contract";
 import { useCurrentFundingCycleV2 } from "../../../hooks/juicebox/CurrentFundingCycle";
 import { useCurrentSplits } from "../../../hooks/juicebox/CurrentSplits";
 import { JBConstants } from "../../../models/JuiceboxTypes";
-import { CheckCircleIcon, InformationCircleIcon, TrashIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, TrashIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
 import AddressForm from "../../../components/form/AddressForm";
 import NumberForm from "../../../components/form/NumberForm";
 import BooleanForm from "../../../components/form/BooleanForm";
@@ -752,8 +752,20 @@ function ReserveActionForm({ genFieldName }:
 function CustomTransactionActionForm({ genFieldName }:
   { genFieldName: (field: string) => any }) {
 
-  const { watch, control, setValue, formState: { errors } } = useFormContext();
   const [functionFragment, setFunctionFragment] = useState<FunctionFragment>();
+
+  const { watch, control, formState: { errors } } = useFormContext();
+  const { remove, append } = useFieldArray<{
+    args: any[];
+    [key: string]: any;
+  }>({ name: genFieldName("args") });
+  
+  useEffect(() => {
+    if(functionFragment?.inputs && remove) {
+      remove();
+      functionFragment.inputs.forEach(p => append(""))
+    }
+  }, [functionFragment])
 
   return (
     <div className="grid grid-cols-4 gap-6">
@@ -778,10 +790,7 @@ function CustomTransactionActionForm({ genFieldName }:
                 required: "Can't be empty"
               }}
               render={({ field: { onChange, onBlur, value, ref } }) =>
-                <FunctionSelector address={watch(genFieldName("contract"))} val={value} setVal={onChange} setFunctionFragment={(f) => {
-                  setFunctionFragment(f);
-                  setValue(genFieldName("functionFragment"), f);
-                }} inputStyle="h-10" />
+                <FunctionSelector address={watch(genFieldName("contract"))} val={value} setVal={onChange} setFunctionFragment={(f) => setFunctionFragment(f)} inputStyle="h-10" />
               }
             />
             <ErrorMessage
@@ -797,19 +806,19 @@ function CustomTransactionActionForm({ genFieldName }:
         functionFragment?.inputs?.map((param, index) => (
           <div key={param.name} className="col-span-4 sm:col-span-1">
             {param.type === "address" && (
-              <AddressForm label={`Param: ${param.name}`} fieldName={genFieldName(`args.${param.name}`)} />
+              <AddressForm label={`Param: ${param.name || '_'}`} fieldName={genFieldName(`args.${index}`)} />
             )}
 
             {param.type.includes("int") && (
-              <NumberForm label={`Param: ${param.name}`} fieldName={genFieldName(`args.${param.name}`)} fieldType={param.type} />
+              <NumberForm label={`Param: ${param.name || '_'}`} fieldName={genFieldName(`args.${index}`)} fieldType={param.type} />
             )}
 
             {param.type === "bool" && (
-              <BooleanForm label={`Param: ${param.name}`} fieldName={genFieldName(`args.${param.name}`)} />
+              <BooleanForm label={`Param: ${param.name || '_'}`} fieldName={genFieldName(`args.${index}`)} />
             )}
 
             {param.type !== "address" && !param.type.includes("int") && param.type !== "bool" && (
-              <StringForm label={`Param: ${param.name}`} fieldName={genFieldName(`args.${param.name}`)} fieldType={param.type} />
+              <StringForm label={`Param: ${param.name || '_'}`} fieldName={genFieldName(`args.${index}`)} fieldType={param.type} />
             )}
           </div>
         ))
