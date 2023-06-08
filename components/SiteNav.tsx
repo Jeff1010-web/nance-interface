@@ -71,7 +71,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                         </a>
                       </Link>
                     </div>
-                    <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
+                    <div className="hidden xl:-my-px xl:ml-6 xl:flex xl:space-x-8">
                       {navigation.map((item) => (
                         <a
                           key={item.name}
@@ -84,7 +84,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                     </div>
                   </div>
 
-                  <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-6">
+                  <div className="hidden xl:ml-6 xl:flex xl:items-center xl:space-x-6">
                     <button
                       type="button"
                       className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-[#0E76FD] px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
@@ -95,7 +95,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                     { withWallet && <ConnectButton /> }
                   </div>
 
-                  <div className="-mr-2 flex items-center sm:hidden">
+                  <div className="-mr-2 flex items-center xl:hidden">
                     {/* Mobile menu button */}
                     <Disclosure.Button className="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                       <span className="sr-only">Open main menu</span>
@@ -109,7 +109,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                 </div>
               </div>
 
-              <Disclosure.Panel className="sm:hidden">
+              <Disclosure.Panel className="xl:hidden">
                 <div className="py-2 space-y-1">
                   {navigation.map((item) => (
                     <Disclosure.Button
