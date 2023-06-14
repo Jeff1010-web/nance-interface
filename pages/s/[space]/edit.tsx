@@ -224,7 +224,7 @@ function Form({ space }: { space: string }) {
                     render={({ field: { onChange, onBlur, value, ref } }) =>
                       <Editor
                         apiKey={process.env.NEXT_PUBLIC_TINY_KEY || 'no-api-key'}
-                        onInit={(evt, editor) => console.log(editor.getBody())}
+                        onInit={(evt, editor) => editor.setContent(metadata.loadedProposal?.body || TEMPLATE)}
                         initialValue={metadata.loadedProposal?.body || TEMPLATE}
                         value={value}
                         onEditorChange={(newValue, editor) => onChange(newValue)}
