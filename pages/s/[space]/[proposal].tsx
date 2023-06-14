@@ -36,7 +36,6 @@ import { JsonRpcSigner } from "@ethersproject/providers";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
 import { BigNumber } from "ethers";
-import { Interface } from "ethers/lib/utils";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -227,6 +226,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
         description={commonProps.body?.slice(0, 140) || 'No content'}
         image={`https://cdn.stamp.fyi/space/jbdao.eth?w=1200&h=630`}
         space={space}
+        proposalId={proposal?.hash}
         withWallet />
 
       <div className="min-h-full">

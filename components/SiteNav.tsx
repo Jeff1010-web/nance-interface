@@ -11,9 +11,10 @@ interface SiteNavProps {
   image?: string
   withWallet?: boolean;
   space?: string;
+  proposalId?: string;
 }
 
-export default function SiteNav({ pageTitle, description, image, withWallet, space }: SiteNavProps) {
+export default function SiteNav({ pageTitle, description, image, withWallet, space, proposalId }: SiteNavProps) {
   const router = useRouter();
 
   const navigation = [
@@ -30,6 +31,12 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
     description: description || "Nance platform for automatic governance.",
     url: `https://jbdao.org${router.asPath}`,
     image: image || "/images/unsplash_application.jpeg",
+  }
+
+  const canForkProposal = !!proposalId;
+  let editProposalUrl = space ? `/s/${space}/edit` : "/edit";
+  if (canForkProposal) {
+    editProposalUrl = editProposalUrl + `?&proposalId=${proposalId}&fork=true`
   }
 
   return (
@@ -88,8 +95,8 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                     <button
                       type="button"
                       className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-[#0E76FD] px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
-                      onClick={() => router.push(space ? `/s/${space}/edit` : "/edit")}>
-                      New Proposal
+                      onClick={() => router.push(editProposalUrl)}>
+                      {canForkProposal ? "Fork Proposal" : "New Proposal"}
                     </button>
 
                     { withWallet && <ConnectButton /> }
@@ -127,8 +134,8 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                   <button
                     type="button"
                     className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-[#0E76FD] px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
-                    onClick={() => router.push(space ? `/s/${space}/edit` : "/edit")}>
-                    New Proposal
+                    onClick={() => router.push(editProposalUrl)}>
+                      {canForkProposal ? "Fork Proposal" : "New Proposal"}
                     </button>
                   { withWallet && <ConnectButton /> }
                 </div>

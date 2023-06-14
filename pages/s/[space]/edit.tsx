@@ -41,14 +41,17 @@ import JBSplitEntry from "../../../components/juicebox/JBSplitEntry";
 import Footer from "../../../components/Footer";
 
 const ProposalMetadataContext = React.createContext({
-  loadedProposal: null as Proposal | null
+  loadedProposal: null as Proposal | null,
+  fork: false as boolean
 });
 
 export async function getServerSideProps(context) {
   // check proposal parameter type
   console.debug(context.query);
+  const forkParam: string = context.query.fork;
   const proposalParam: string = context.query.proposalId;
   const spaceParam: string = context.params.space;
+
   let proposalResponse = null;
   if (proposalParam) {
     proposalResponse = await fetchProposal(spaceParam, proposalParam);
@@ -58,10 +61,10 @@ export async function getServerSideProps(context) {
   }
 
   // Pass data to the page via props
-  return { props: { space: spaceParam, loadedProposal: proposalResponse?.data || null } }
+  return { props: { space: spaceParam, loadedProposal: proposalResponse?.data || null, fork: forkParam === "true" } }
 }
 
-export default function NanceEditProposal({ space, loadedProposal }: { space: string, loadedProposal: Proposal }) {
+export default function NanceEditProposal({ space, loadedProposal, fork }: { space: string, loadedProposal: Proposal, fork: boolean }) {
   const router = useRouter();
 
   const [query, setQuery] = useQueryParams({
@@ -84,10 +87,10 @@ export default function NanceEditProposal({ space, loadedProposal }: { space: st
       <div className="m-4 lg:m-6 flex justify-center items-center">
         <div className="max-w-7xl w-full">
           <p className="text-2xl font-bold">
-            {proposalId ? "Edit" : "New"} Proposal for <a href={`/s/${space}`}>{space}</a>
+            {(proposalId && !fork) ? "Edit" : "New"} Proposal for <a href={`/s/${space}`}>{space}</a>
           </p>
 
-          <ProposalMetadataContext.Provider value={{ loadedProposal }}>
+          <ProposalMetadataContext.Provider value={{ loadedProposal, fork }}>
             <Form space={space} />
           </ProposalMetadataContext.Provider>
         </div>
@@ -117,19 +120,23 @@ function Form({ space }: { space: string }) {
   const [selected, setSelected] = useState(ProposalStatus[0])
 
   // hooks
-  const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, metadata.loadedProposal?.hash, router.isReady);
+  const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, !metadata.fork && metadata.loadedProposal?.hash, router.isReady);
   
   const { data: signer } = useSigner()
   const jrpcSigner = signer as JsonRpcSigner;
   const { openConnectModal } = useConnectModal();
 
-  const isNew = metadata.loadedProposal === null;
+  const isNew = metadata.fork || metadata.loadedProposal === null;
 
   // form
   const methods = useForm<ProposalFormValues>();
   const { register, handleSubmit, control, formState } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
-    const { hash } = metadata?.loadedProposal ?? {};
+    let hash;
+    if (!metadata.fork && metadata?.loadedProposal) {
+      hash = metadata.loadedProposal.hash;
+    }
+
     const payload = {
       ...formData.proposal,
       status: selected.value,
