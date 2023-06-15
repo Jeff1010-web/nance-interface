@@ -762,17 +762,17 @@ function CustomTransactionActionForm({ genFieldName }:
   const [functionFragment, setFunctionFragment] = useState<FunctionFragment>();
 
   const { watch, control, formState: { errors } } = useFormContext();
-  const { remove, append } = useFieldArray<{
+  const { replace } = useFieldArray<{
     args: any[];
     [key: string]: any;
   }>({ name: genFieldName("args") });
   
   useEffect(() => {
-    if(functionFragment?.inputs && remove) {
-      remove();
-      functionFragment.inputs.forEach(p => append(""))
+    if(functionFragment?.inputs && replace) {
+      console.debug(functionFragment)
+      replace(functionFragment.inputs.map(p => ""))
     }
-  }, [functionFragment])
+  }, [functionFragment, replace])
 
   return (
     <div className="grid grid-cols-4 gap-6">
@@ -811,7 +811,7 @@ function CustomTransactionActionForm({ genFieldName }:
 
       {
         functionFragment?.inputs?.map((param, index) => (
-          <div key={param.name} className="col-span-4 sm:col-span-1">
+          <div key={index} className="col-span-4 sm:col-span-1">
             {param.type === "address" && (
               <AddressForm label={`Param: ${param.name || '_'}`} fieldName={genFieldName(`args.${index}`)} />
             )}
