@@ -201,7 +201,7 @@ function Form({ space }: { space: string }) {
         <Notification title="Error" description={error.error_description || error.message || error} show={true} close={resetSignAndUpload} checked={false} />
       }
       <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
-        <Actions loadedActions={metadata.loadedProposal?.actions || []} />
+        <Actions loadedActions={(metadata.fork) ? metadata.loadedProposal?.actions.map(({ uuid, ...rest }) => rest) : metadata.loadedProposal?.actions || []} />
 
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
           <div>
