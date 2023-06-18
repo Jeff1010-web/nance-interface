@@ -678,21 +678,23 @@ function ReserveActionForm({ genFieldName }:
   // TODO: reserve rate, percent / total_percentage JBConstants
 
   useEffect(() => {
-    const arr = ticketMods ? [...ticketMods] : [];
-    arr.sort((a, b) => b.percent.sub(a.percent).toNumber());
-    arr.forEach(ticket => {
-      const split: JBSplitNanceStruct = {
-        preferClaimed: ticket.preferClaimed,
-        preferAddToBalance: ticket.preferAddToBalance,
-        percent: ticket.percent.toNumber(),
-        projectId: ticket.projectId.toNumber(),
-        beneficiary: ticket.beneficiary,
-        lockedUntil: ticket.lockedUntil.toNumber(),
-        allocator: ticket.allocator
-      }
-      append(split)
-    })
-  }, [ticketMods])
+    if (fields.length === 0) { // if no splits in proposal (not editing) then load from JB project
+      const arr = ticketMods ? [...ticketMods] : [];
+      arr.sort((a, b) => b.percent.sub(a.percent).toNumber());
+      arr.forEach(ticket => {
+        const split: JBSplitNanceStruct = {
+          preferClaimed: ticket.preferClaimed,
+          preferAddToBalance: ticket.preferAddToBalance,
+          percent: ticket.percent.toNumber(),
+          projectId: ticket.projectId.toNumber(),
+          beneficiary: ticket.beneficiary,
+          lockedUntil: ticket.lockedUntil.toNumber(),
+          allocator: ticket.allocator
+        }
+        append(split)
+      })
+    }
+  }, [ticketMods, append, fields])
 
   return (
     <div className="flex flex-col gap-6">
