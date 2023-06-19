@@ -66,7 +66,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
     const snapshotProposalDict: { [id: string]: SnapshotProposal } = {};
     data?.proposalsData?.forEach(p => snapshotProposalDict[p.id] = p);
     // override the snapshot proposal vote results into proposals.voteResults
-    const mergedProposals: Proposal[] = proposalsPacket?.proposals?.map(p => {
+    const mergedProposals = proposalsPacket?.proposals?.map(p => {
       const snapshotProposal = snapshotProposalDict[getLastSlash(p.voteURL)];
       if (snapshotProposal) {
         return {
@@ -82,12 +82,18 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
     });
     const votedData = data?.votedData;
     // sort proposals
-    let sortedProposals = mergedProposals?.sort((a, b) => b.governanceCycle - a.governanceCycle) || []
+    let sortedProposals = mergedProposals || []
     if (!query.sortBy || !SortOptionsArr.includes(query.sortBy)) {
-      // fall back to default sorting
-      sortedProposals
-        .sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
-        .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
+      if (query.keyword) {
+        // keep relevance order
+      } else {
+        // fall back to default sorting
+        // if no keyword
+        sortedProposals
+          .sort((a, b) => b.governanceCycle - a.governanceCycle) 
+          .sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
+          .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
+      }
     } else {
       if (query.sortBy === "status") {
         sortedProposals.sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
@@ -101,6 +107,20 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
       } else if (query.sortBy === "voted") {
         const votedWeightOf = (p: Proposal) => votedData?.[getLastSlash(p.voteURL)] !== undefined ? 1 : -1
         sortedProposals.sort((a, b) => votedWeightOf(b) - (votedWeightOf(a)))
+      } else if (query.sortBy === "title") {
+        sortedProposals.sort((a, b) => {
+          const nameA = a.title;
+          const nameB = b.title;
+          if (nameA < nameB) {
+            return -1;
+          }
+          if (nameA > nameB) {
+            return 1;
+          }
+        
+          // names must be equal
+          return 0;
+        })
       } else {
         sortedProposals.sort()
       }

@@ -19,7 +19,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     const [query, setQuery] = useQueryParams({
       keyword: StringParam,
       //limit: NumberParam,
-      sortBy: withDefault(StringParam, 'status'),
+      sortBy: withDefault(StringParam, ''),
       sortDesc: withDefault(BooleanParam, true),
       cycle: NumberParam
     });
