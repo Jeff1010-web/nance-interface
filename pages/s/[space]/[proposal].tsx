@@ -13,7 +13,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../../components/ColorBar";
-import { fetchProposal, useProposal, useProposalDelete, useProposalUpload } from "../../../hooks/NanceHooks";
+import { fetchProposal, useProposal, useProposalDelete, useProposalUpload, useSpaceInfo } from "../../../hooks/NanceHooks";
 import { canEditProposal, getLastSlash } from "../../../libs/nance";
 import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve, ProposalDeleteRequest, ProposalUploadRequest, extractFunctionName, parseFunctionAbiWithNamedArgs } from "../../../models/NanceTypes";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
@@ -100,6 +100,7 @@ export async function getServerSideProps(context) {
 
 interface ProposalCommonProps {
   space: string;
+  snapshotSpace: string;
   status: string;
   title: string;
   author: string;
@@ -108,6 +109,7 @@ interface ProposalCommonProps {
   created: number;
   end: number;
   snapshot: string;
+  snapshotHash: string;
   ipfs: string;
   discussion: string;
   governanceCycle: number;
@@ -138,6 +140,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
   const jrpcSigner = signer as JsonRpcSigner;
   const [signError, setSignError] = useState(undefined);
   const [selected, setSelected] = useState(ProposalStatus[0])
+  const { data: spaceInfo } = useSpaceInfo({space})
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, proposal?.hash, router.isReady);
   const { trigger: deleteTrigger, reset: deleteReset } = useProposalDelete(space, proposal?.hash, router.isReady);
   const resetSignAndUpload = () => {
@@ -203,6 +206,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
 
   const commonProps: ProposalCommonProps = {
     space,
+    snapshotSpace: spaceInfo?.data?.snapshotSpace || "",
     status: snapshotProposal?.state || proposal.status,
     title: snapshotProposal?.title || proposal.title,
     author: snapshotProposal?.author || proposal.authorAddress,
@@ -211,6 +215,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
     created: snapshotProposal?.start || Math.floor(new Date(proposal.date).getTime() / 1000),
     end: snapshotProposal?.end || 0,
     snapshot: snapshotProposal?.snapshot || "",
+    snapshotHash: proposal?.voteURL || "",
     ipfs: snapshotProposal?.ipfs || proposal?.ipfsURL || "",
     discussion: proposal?.discussionThreadURL || "",
     governanceCycle: proposal.governanceCycle || 0,
@@ -567,9 +572,16 @@ function ProposalContent({ body }: { body: string }) {
                     </>
                   )}
 
-                  {commonProps.snapshot && (
+                  {commonProps.snapshotSpace && commonProps.snapshotHash && (
                     <>
                       <span className="font-medium">Snapshot:</span>
+                      <a target="_blank" rel="noreferrer" href={`https://snapshot.org/#/${commonProps.snapshotSpace}/proposal/${commonProps.snapshotHash}`}>{commonProps.snapshotHash.substring(0, 8)}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
+                    </>
+                  )}
+
+                  {commonProps.snapshot && (
+                    <>
+                      <span className="font-medium">Block:</span>
                       <a target="_blank" rel="noreferrer" href={`https://etherscan.io/block/${commonProps.snapshot}`}>{commonProps.snapshot}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
                     </>
                   )}
