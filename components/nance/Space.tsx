@@ -8,6 +8,7 @@ import ScrollToBottom from "../ScrollToBottom";
 import SearchableComboBox, { Option } from "../SearchableComboBox";
 import ProposalCards from "./ProposalCards";
 import { getLastSlash } from "../../libs/nance";
+import Pagination from "../Pagination";
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
     // State
@@ -18,16 +19,17 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     const router = useRouter();
     const [query, setQuery] = useQueryParams({
       keyword: StringParam,
-      //limit: NumberParam,
+      limit:withDefault(NumberParam, 15),
+      page:withDefault(NumberParam, 1),
       sortBy: withDefault(StringParam, ''),
       sortDesc: withDefault(BooleanParam, true),
       cycle: NumberParam
     });
-    const { keyword, cycle } = query;
+    const { keyword, cycle, limit, page } = query;
   
     // External Hooks
     const { data: infoData, isLoading: infoLoading, error: infoError } = useSpaceInfo({ space }, router.isReady);
-    const { data: proposalData, isLoading: proposalsLoading, error: proposalError } = useProposals({ space, cycle, keyword }, router.isReady);
+    const { data: proposalData, isLoading: proposalsLoading, error: proposalError } = useProposals({ space, cycle, keyword, page, limit }, router.isReady);
     const currentCycle = cycle || infoData?.data?.currentCycle;
     const allCycle = { id: "All", label: `All`, status: true };
     
@@ -149,10 +151,8 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             <div className="">
               <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={infoLoading || proposalsLoading} proposalsPacket={proposalData?.data} query={query} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
             </div>
-  
-            <div className="mt-6 text-center">
-              {proposalData?.data?.proposals.length > 0 && `Total Proposals: ${proposalData?.data?.proposals.length}`}
-            </div>
+
+            <Pagination page={page} setPage={(p) => setQuery({page: p})} limit={limit} total={0} infinite />
 
             <div className="mt-2 text-center">
               {infoData?.data?.dolthubLink && (

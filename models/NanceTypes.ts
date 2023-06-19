@@ -26,6 +26,8 @@ export type ProposalInfo = {
 
 export type ProposalsPacket = { proposalInfo: ProposalInfo, proposals: Proposal[] };
 
+export type ProposalsPacketWithoutBody = { proposalInfo: ProposalInfo, proposals: Omit<Proposal, 'body'>[] };
+
 export type ProposalUploadPayload = {
   hash: string;
 }
@@ -39,6 +41,8 @@ interface BaseRequest {
 export interface ProposalsRequest extends BaseRequest {
   cycle: number | undefined;
   keyword: string | undefined;
+  limit: number | undefined;
+  page: number | undefined;
 }
 
 export type SpaceInfoRequest = BaseRequest;
