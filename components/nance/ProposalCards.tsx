@@ -51,7 +51,7 @@ function getRandomInt(max) {
 export default function ProposalCards({ loading, proposalsPacket, query, setQuery, maxCycle, proposalUrlPrefix }:
     {
       loading: boolean, proposalsPacket: ProposalsPacket,
-      query: { cycle: number, keyword: string, sortBy: string, sortDesc: boolean },
+      query: { cycle: number, keyword: string, sortBy: string, sortDesc: boolean, page: number, limit: number },
       setQuery: (o: object) => void, maxCycle: number,
       proposalUrlPrefix: string
     }) {
@@ -317,8 +317,18 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
             <button type="button"
               className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
               onClick={router.back}>
-              Back to previous page
+              Back
             </button>
+
+            {
+              query.page && query.page > 1 && (
+                <button type="button"
+                  className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
+                  onClick={() => setQuery({ page: 1 })}>
+                  Go to first page
+                </button>
+              )
+            }
   
             {
               query.keyword && (
