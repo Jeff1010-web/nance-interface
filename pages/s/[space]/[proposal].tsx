@@ -36,6 +36,7 @@ import { JsonRpcSigner } from "@ethersproject/providers";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
 import { BigNumber } from "ethers";
+import NewVoteButton from "../../../components/NewVoteButton";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -836,50 +837,7 @@ function ProposalVotes() {
         </ul>
       </div>
 
-      <NewVote refetch={refetch} />
-    </div>
-  )
-}
-
-function NewVote({ refetch }: { refetch: (option?: any) => void }) {
-  const { proposalInfo } = useContext(ProposalContext);
-  // state
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [buttonLabel, setButtonLabel] = useState('Vote');
-  // external hook
-  const { address, isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
-
-  useEffect(() => {
-    if (proposalInfo?.state !== 'active') {
-      setButtonLabel('Voting Closed');
-    } else if (isConnected) {
-      setButtonLabel('Vote');
-    } else {
-      setButtonLabel('Connect Wallet');
-    }
-  }, [isConnected, proposalInfo?.state]);
-
-  return (
-    <div className="my-4">
-      <button id="vote" className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full"
-        onClick={() => {
-          if (isConnected) {
-            setModalIsOpen(true);
-          } else {
-            openConnectModal();
-          }
-        }}
-        disabled={proposalInfo?.state !== 'active'}>
-
-        <span>
-          {buttonLabel}
-        </span>
-      </button>
-
-      {proposalInfo?.choices && (
-        <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId='jbdao.eth' proposal={proposalInfo} spaceHideAbstain={true} refetch={refetch} />
-      )}
+      <NewVoteButton proposal={proposalInfo} refetch={refetch} />
     </div>
   )
 }

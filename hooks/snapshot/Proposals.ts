@@ -248,7 +248,8 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
   data: {
     proposalsData: SnapshotProposal[],
     votedData: { [id: string]: SnapshotVotedData }
-  }
+  },
+  refetch: (options?: any) => void
 } {
 
   console.debug("🔧 useProposalsWithCustomQuery.args ->", { query, variables, skip });
@@ -264,7 +265,8 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
   const {
     loading: votedLoading,
     data: votedRawData,
-    error: votedError
+    error: votedError,
+    refetch
   } = useQuery<{ votes: SnapshotVotedData[] }>(VOTED_PROPOSALS_QUERY, {
     variables: {
       voter: address,
@@ -292,7 +294,8 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
       votedData
     },
     loading: proposalsLoading || votedLoading,
-    error: proposalsError || votedError
+    error: proposalsError || votedError,
+    refetch
   };
   console.debug("🔧 useProposalsWithCustomQuery.return ->", { ret });
   return ret;

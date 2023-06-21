@@ -11,6 +11,7 @@ import { Tooltip } from "flowbite-react";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon, ClockIcon, InformationCircleIcon, PencilSquareIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { formatDistanceToNowStrict, toDate } from "date-fns";
 import ColorBar from "../ColorBar";
+import NewVoteButton from "../NewVoteButton";
 
 type SortOptions = "" | "status" | "title" | "approval" | "participants" | "voted"
 const SortOptionsArr = ["status", "title", "approval", "participants", "voted"]
@@ -32,7 +33,7 @@ function getVotedIcon(choice) {
       return null
     } else if (typeof choice === 'string') {
       if (choice === 'For' || choice === 'Yes') {
-        return <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
+        return <CheckIcon className="h-5 w-5 text-green-500 text-center" aria-hidden="true" />
       } else if (choice === 'Against' || choice === 'No') {
         return <XMarkIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
       }
@@ -40,7 +41,7 @@ function getVotedIcon(choice) {
   
     return (
       <Tooltip content={JSON.stringify(choice)}>
-        <InformationCircleIcon className="h-5 w-5 text-gray-500" aria-hidden="true" />
+        <InformationCircleIcon className="h-5 w-5 text-gray-500 text-center" aria-hidden="true" />
       </Tooltip>
     )
 }
@@ -61,7 +62,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
   
     // for those proposals with no results cached by nance, we need to fetch them from snapshot
     const snapshotProposalIds: string[] = proposalsPacket?.proposals?.filter(p => p.voteURL).map(p => getLastSlash(p.voteURL)) || [];
-    const { data, loading: snapshotLoading, error } = useProposalsByID(snapshotProposalIds, address, snapshotProposalIds.length === 0);
+    const { data, loading: snapshotLoading, error, refetch } = useProposalsByID(snapshotProposalIds, address, snapshotProposalIds.length === 0);
     // convert proposalsData to dict with proposal id as key
     const snapshotProposalDict: { [id: string]: SnapshotProposal } = {};
     data?.proposalsData?.forEach(p => snapshotProposalDict[p.id] = p);
@@ -82,6 +83,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
     });
     const votedData = data?.votedData;
     // sort proposals
+    // FIXME this can only sort proposals in current page
     let sortedProposals = mergedProposals || []
     if (!query.sortBy || !SortOptionsArr.includes(query.sortBy)) {
       if (query.keyword) {
@@ -105,7 +107,17 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
       } else if (query.sortBy === "participants") {
         sortedProposals.sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
       } else if (query.sortBy === "voted") {
-        const votedWeightOf = (p: Proposal) => votedData?.[getLastSlash(p.voteURL)] !== undefined ? 1 : -1
+        const votedWeightOf = (p: Proposal) => {
+          const voted = votedData?.[getLastSlash(p.voteURL)] !== undefined;
+          const hasSnapshotVoting = snapshotProposalDict[getLastSlash(p.voteURL)];
+          
+          if (hasSnapshotVoting) {
+            if (voted) return 2;
+            else return 1;
+          } else {
+            return 0;
+          }
+        }
         sortedProposals.sort((a, b) => votedWeightOf(b) - (votedWeightOf(a)))
       } else if (query.sortBy === "title") {
         sortedProposals.sort((a, b) => {
@@ -196,7 +208,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                   >
                     <SortableTableHeader val="participants" label="Participants" />
                   </th>
-                  <th scope="col" className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 md:table-cell">
+                  <th scope="col" className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 md:table-cell">
                     <SortableTableHeader val="voted" label="Voted" />
                   </th>
                 </tr>
@@ -299,7 +311,9 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                         'px-3 py-3.5 text-sm text-gray-500 hidden md:table-cell text-center'
                       )}
                     >
-                      {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
+                      {!votedData?.[getLastSlash(proposal.voteURL)] && snapshotProposalDict[getLastSlash(proposal.voteURL)] ?
+                        <NewVoteButton proposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} refetch={refetch} isSmall />
+                      : <div className="flex justify-center">{getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}</div>}
                     </td>
                   </tr>
                 ))}
