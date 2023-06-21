@@ -5,8 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../../components/FormattedAddress";
 import { format, toDate } from "date-fns";
-import { createContext, useContext, useEffect, useState, Fragment } from "react";
-import VotingModal from "../../../components/VotingModal";
+import { createContext, useContext, useState, Fragment } from "react";
 import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-query-params";
 import { processChoices } from "../../../libs/snapshotUtil";
 import remarkGfm from 'remark-gfm';
@@ -16,7 +15,6 @@ import ColorBar from "../../../components/ColorBar";
 import { fetchProposal, useProposal, useProposalDelete, useProposalUpload, useSpaceInfo } from "../../../hooks/NanceHooks";
 import { canEditProposal, getLastSlash } from "../../../libs/nance";
 import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve, ProposalDeleteRequest, ProposalUploadRequest, extractFunctionName, parseFunctionAbiWithNamedArgs } from "../../../models/NanceTypes";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Custom404 from "../../404";
 import VoterProfile from "../../../components/VoterProfile";
@@ -28,7 +26,7 @@ import { CONTRACT_MAP } from "../../../constants/Contract";
 import ResolvedContract from "../../../components/ResolvedContract";
 import JBSplitEntry from "../../../components/juicebox/JBSplitEntry";
 import Footer from "../../../components/Footer";
-import { ArrowLeftCircleIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftCircleIcon, ArrowRightCircleIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import { Disclosure, Listbox, Transition } from "@headlessui/react";
 import { numToPrettyString } from "../../../libs/NumberFormatter";
 import { signPayload } from "../../../libs/signer";
@@ -416,10 +414,16 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
 
 function ProposalContent({ body }: { body: string }) {
   const { commonProps } = useContext(ProposalContext);
+  const router = useRouter();
 
   return (
     <div className="">
       <div className="px-4 py-5 sm:px-6 flex flex-col">
+        <div onClick={() => router.back()} className="flex mb-4 rounded-md border-1 shadow-sm w-fit p-2 cursor-pointer">
+          <ArrowUturnLeftIcon className="h-5 w-5 mr-1" />
+          Back
+        </div>
+
         <h1 id="applicant-information-title" className="text-3xl font-medium">
           {canEditProposal(commonProps.status) ? `[${commonProps.status}] ` : ""}{commonProps.title}
         </h1>
@@ -552,7 +556,7 @@ function ProposalContent({ body }: { body: string }) {
             {({ open }) => (
               /* Use the `open` state to conditionally change the direction of an icon. */
               <>
-                <Disclosure.Button className="my-1 p-1 w-full text-center text-white bg-blue-600 hover:bg-blue-500 rounded-md">
+                <Disclosure.Button className="my-2 p-1 w-full text-center text-white bg-blue-600 hover:bg-blue-500 rounded-md">
                   {open ? "See less" : "See more"}
                 </Disclosure.Button>
                 <Disclosure.Panel className="grid grid-cols-2 gaps-4" as="div">
