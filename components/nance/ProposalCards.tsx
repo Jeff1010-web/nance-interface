@@ -238,6 +238,11 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                             Cancelled
                           </span>
                         )}
+                        {proposal.status === 'Temperature Check' && (
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                            Temp-check
+                          </span>
+                        )}
                         {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled' && proposal.status !== 'Draft' && proposal.status !== 'Revoked') && (
                           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
                             {proposal.status}
