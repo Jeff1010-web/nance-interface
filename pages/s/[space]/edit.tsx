@@ -6,7 +6,7 @@ import React from "react";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
 import GenericButton from "../../../components/GenericButton";
-import { fetchProposal, useProposalUpload } from "../../../hooks/NanceHooks";
+import { fetchProposal, useProposalUpload, useSpaceInfo } from "../../../hooks/NanceHooks";
 import { imageUpload } from "../../../hooks/ImageUpload";
 import { fileDrop } from "../../../hooks/FileDrop";
 import { Proposal, ProposalUploadRequest, Action, JBSplitNanceStruct } from "../../../models/NanceTypes";
@@ -42,7 +42,8 @@ import Footer from "../../../components/Footer";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
-  fork: false as boolean
+  fork: false as boolean,
+  space: '' as string
 });
 
 export async function getServerSideProps(context) {
@@ -90,7 +91,7 @@ export default function NanceEditProposal({ space, loadedProposal, fork }: { spa
             {(proposalId && !fork) ? "Edit" : "New"} Proposal for <a href={`/s/${space}`}>{space}</a>
           </p>
 
-          <ProposalMetadataContext.Provider value={{ loadedProposal, fork }}>
+          <ProposalMetadataContext.Provider value={{ loadedProposal, fork, space }}>
             <Form space={space} />
           </ProposalMetadataContext.Provider>
         </div>
@@ -666,15 +667,19 @@ function TransferActionForm({ genFieldName }:
 function ReserveActionForm({ genFieldName }:
   { genFieldName: (field: string) => any }) {
 
+  const {space} = useContext(ProposalMetadataContext);
+
   const { watch, formState: { errors } } = useFormContext();
   const { fields, append, remove, prepend } = useFieldArray<{
     splits: JBSplitNanceStruct[];
     [key: string]: any;
   }>({ name: genFieldName("splits") });
   
-  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId: NANCE_DEFAULT_JUICEBOX_PROJECT, isV3: true });
+  const { data: spaceInfo } = useSpaceInfo({space});
+  const projectId = spaceInfo?.data?.juiceboxProjectId;
+  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId, isV3: true });
   const [fc, metadata] = _fc || [];
-  const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(NANCE_DEFAULT_JUICEBOX_PROJECT, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN, true);
+  const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN, true);
   // TODO: reserve rate, percent / total_percentage JBConstants
 
   useEffect(() => {
