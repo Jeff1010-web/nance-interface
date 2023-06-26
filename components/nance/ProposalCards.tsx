@@ -291,6 +291,10 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                             {proposal.title}
                           </a>
                         </Link>
+
+                        <div className="md:hidden">
+                          <VotesBar proposal={proposal} snapshotProposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} />
+                        </div>
                       </div>
   
                     </td>
