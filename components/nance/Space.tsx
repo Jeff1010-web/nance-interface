@@ -95,11 +95,11 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
                 </div>
   
                 <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-blue-600 bg-indigo-100">
-                  <a className="text-2xl font-semibold text-gray-900"
+                  <p className="text-2xl font-semibold">{remainingTime} remaining</p>
+                  <a className="text-sm text-gray-900"
                     href="https://info.juicebox.money/dao/process/" target="_blank" rel="noopener noreferrer">
                     {infoData?.data?.currentEvent?.title || "Unknown"} of GC{infoData?.data?.currentCycle}
                   </a>
-                  <p className="text-sm font-medium text-gray-500">{remainingTime} remaining</p>
                 </div>
               </div>
             </div>
