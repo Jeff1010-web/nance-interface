@@ -1,16 +1,12 @@
 import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE } from "../../../hooks/snapshot/Proposals";
-import { useAccount, useSigner } from 'wagmi'
+import { useSigner } from 'wagmi'
 import SiteNav from "../../../components/SiteNav";
-import ReactMarkdown from "react-markdown";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../../components/FormattedAddress";
 import { format, toDate } from "date-fns";
 import { createContext, useContext, useState, Fragment } from "react";
 import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-query-params";
 import { processChoices } from "../../../libs/snapshotUtil";
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize from 'rehype-sanitize';
 import ColorBar from "../../../components/ColorBar";
 import { fetchProposal, useProposal, useProposalDelete, useProposalUpload, useSpaceInfo } from "../../../hooks/NanceHooks";
 import { canEditProposal, getLastSlash } from "../../../libs/nance";
@@ -35,6 +31,7 @@ import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
 import { BigNumber } from "ethers";
 import NewVoteButton from "../../../components/NewVoteButton";
+import MarkdownWithTOC from "../../../components/MarkdownWithTOC";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -612,9 +609,7 @@ function ProposalContent({ body }: { body: string }) {
       </div>
 
       <div className="px-4 sm:px-6">
-        <article className="prose prose-lg prose-indigo mx-auto text-gray-500 break-words">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>{body}</ReactMarkdown>
-        </article>
+        <MarkdownWithTOC body={body} />
       </div>
 
       <div className="px-4 py-5 sm:px-6 mt-4">
