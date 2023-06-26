@@ -139,7 +139,7 @@ function Form({ space }: { space: string }) {
 
     const payload = {
       ...formData.proposal,
-      status: metadata.loadedProposal.status || selected.value,
+      status: metadata.loadedProposal?.status || selected.value,
       body: await htmlToMarkdown(formData.proposal.body),
       hash
     };
