@@ -1,4 +1,7 @@
-import useSWR, { Fetcher } from 'swr'
+import { Contract } from 'ethers'
+import { useEffect, useState } from 'react'
+import useSWR from 'swr'
+import { useProvider } from 'wagmi'
 
 const API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_KEY
 
@@ -15,11 +18,37 @@ const fetcher = (url) => fetch(url).then(res => res.json()).then((j: EtherscanAP
   return j.result
 });
 
-export function useEtherscanContractABI(contract: string, shouldFetch: boolean = true) {
-  return useSWR<string>(
-    shouldFetch ? `https://api.etherscan.io/api?module=contract&action=getabi&address=${contract}&apikey=${API_KEY}` : null,
+const MasterCopyFunction = "function masterCopy() external view returns (address)";
+export function useEtherscanContractABI(initialAddress: string, shouldFetch: boolean = true) {
+  const [address, setAddress] = useState(initialAddress);
+  const provider = useProvider();
+  const { data: abi, isLoading, error } = useSWR<string>(
+    shouldFetch ? `https://api.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=${API_KEY}` : null,
     fetcher,
   );
+
+  useEffect(() => {
+    (async () => {
+      if (abi && provider) {
+        const contract = new Contract(address, abi, provider);
+        if (Object.values(contract.interface.functions).length === 0) {
+          // this maybe a proxy contract without any explicit function
+          const proxy = new Contract(address, [MasterCopyFunction], provider);
+          // to retrieve real abi
+          const proxyAddress = await proxy.masterCopy()
+          console.debug("useEtherscanContractABI.proxy", initialAddress, address, proxyAddress);
+          setAddress(proxyAddress);
+        }
+      }
+    })()
+  }, [address, abi, provider])
+
+  return {
+    data: abi,
+    isLoading,
+    error,
+    isProxy: address === initialAddress
+  }
 }
 
 interface EtherscanContractSource {

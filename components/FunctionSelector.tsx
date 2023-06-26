@@ -17,13 +17,12 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
   }) {
 
   const [query, setQuery] = useState('')
-  const { data: abi, isLoading, error } = useEtherscanContractABI(address, address.length === 42)
+  const { data: abi, isLoading, error, isProxy } = useEtherscanContractABI(address, address.length === 42)
 
   const contract = useContract({
     address,
     abi: !error && abi as any,
   })
-  console.debug("FunctionSelector", contract)
   const fragmentMap = {};
   Object.values(contract?.interface.functions || {}).forEach(f => fragmentMap[f.format("full")] = f)
 
