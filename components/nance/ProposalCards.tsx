@@ -222,7 +222,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                         'relative py-4 pl-6 pr-3 text-sm hidden md:table-cell'
                       )}
                     >
-                      <div className="font-medium text-gray-900">
+                      <Link href={`${proposalUrlPrefix}${proposal.proposalId || proposal.hash}`} className="font-medium text-gray-900">
                         {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
                           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                             {proposal.status}
@@ -248,7 +248,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                             {proposal.status}
                           </span>
                         )}
-                      </div>
+                      </Link>
   
                       {proposalIdx !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-gray-200" /> : null}
                     </td>
@@ -258,7 +258,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                         'px-3 py-3.5 text-sm text-gray-500'
                       )}
                     >
-                      <div className="flex flex-col space-y-1">
+                      <Link href={`${proposalUrlPrefix}${proposal.proposalId || proposal.hash}`} className="flex flex-col space-y-1">
                         <div className="text-gray-900 block md:hidden">
                           {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
@@ -286,16 +286,14 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                           <FormattedAddress address={proposal.authorAddress} noLink />
                         </span>
   
-                        <Link href={`${proposalUrlPrefix}${proposal.proposalId || proposal.hash}`} legacyBehavior>
-                          <a className="break-words text-base text-black">
-                            {proposal.title}
-                          </a>
-                        </Link>
+                        <p className="break-words text-base text-black">
+                          {proposal.title}
+                        </p>
 
                         <div className="md:hidden">
                           <VotesBar proposal={proposal} snapshotProposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} />
                         </div>
-                      </div>
+                      </Link>
   
                     </td>
                     <td
@@ -312,7 +310,9 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                         'hidden px-3 py-3.5 text-sm text-black md:table-cell text-center'
                       )}
                     >
-                      {proposal?.voteResults?.votes || '-'}
+                      <Link href={`${proposalUrlPrefix}${proposal.proposalId || proposal.hash}`}>
+                        {proposal?.voteResults?.votes || '-'}
+                      </Link>
                     </td>
                     <td
                       className={classNames(
