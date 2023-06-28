@@ -412,15 +412,14 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
 
 function ProposalContent({ body }: { body: string }) {
   const { commonProps } = useContext(ProposalContext);
-  const router = useRouter();
 
   return (
     <div className="">
       <div className="px-4 py-5 sm:px-6 flex flex-col">
-        <div onClick={() => router.back()} className="flex mb-4 rounded-md border-1 shadow-sm w-fit p-2 cursor-pointer">
+        <Link href={`/s/${commonProps.space}`} className="flex mb-4 rounded-md border-1 shadow-sm w-fit p-2">
           <ArrowUturnLeftIcon className="h-5 w-5 mr-1" />
           Back
-        </div>
+        </Link>
 
         <h1 id="applicant-information-title" className="text-3xl font-medium">
           {canEditProposal(commonProps.status) ? `[${commonProps.status}] ` : ""}{commonProps.title}
