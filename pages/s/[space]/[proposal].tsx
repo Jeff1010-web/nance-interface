@@ -126,7 +126,8 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
     sortBy: withDefault(createEnumParam(["time", "vp"]), "time"),
-    withField: withDefault(createEnumParam(["reason", "app"]), "")
+    withField: withDefault(createEnumParam(["reason", "app"]), ""),
+    filterBy: withDefault(createEnumParam(["for", "against"]), ""),
   });
   const editPageQuery = {
     proposalId: proposal?.hash
@@ -724,13 +725,21 @@ function ProposalVotes() {
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
     sortBy: withDefault(createEnumParam(["time", "vp"]), "time"),
-    withField: withDefault(createEnumParam(["reason", "app"]), "")
+    withField: withDefault(createEnumParam(["reason", "app"]), ""),
+    filterBy: withDefault(createEnumParam(["for", "against"]), ""),
   });
 
   const { loading, data, error, refetch } = useProposalVotes(proposalInfo, Math.max((query.page - 1) * VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
 
   const proposalType = proposalInfo.type;
   const isSimpleVoting = !['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(proposalType);
+
+  let votes = data?.votesData;
+  if (query.filterBy === "for") {
+    votes = votes.filter((v) => v.choice === "For")
+  } else if (query.filterBy === "against") {
+    votes = votes.filter((v) => v.choice === "Against")
+  }
 
   return (
     <div className="flex flex-col" style={{
@@ -741,8 +750,27 @@ function ProposalVotes() {
           {isSimpleVoting && (
             <>
               <div className="flex justify-between">
-                <p className="text-green-500 text-sm">FOR {formatNumber(proposalInfo.scores[0] || 0)}</p>
-                <p className="text-red-500 text-sm">AGAINST {formatNumber(proposalInfo.scores[1] || 0)}</p>
+
+                <p className={classNames(
+                  "text-green-500 text-sm cursor-pointer",
+                  query.filterBy === "for" ? "underline" : ""
+                )} onClick={() => {
+                  if(query.filterBy === "for") setQuery({filterBy: ""})
+                  else setQuery({filterBy: "for"})
+                }}>
+                  FOR {formatNumber(proposalInfo.scores[0] || 0)}
+                </p>
+
+                <p className={classNames(
+                  "text-red-500 text-sm cursor-pointer",
+                  query.filterBy === "against" ? "underline" : ""
+                )} onClick={() => {
+                  if(query.filterBy === "against") setQuery({filterBy: ""})
+                  else setQuery({filterBy: "against"})
+                }}>
+                  AGAINST {formatNumber(proposalInfo.scores[1] || 0)}
+                </p>
+
               </div>
 
               <div className='p-3 text-sm text-gray-500'>
@@ -771,7 +799,7 @@ function ProposalVotes() {
 
         <ul role="list" className="space-y-2 pt-2">
           {loading && "loading..."}
-          {data?.votesData?.map((vote) => (
+          {votes?.map((vote) => (
             <li key={vote.id}>
               <div className={classNames(
                 "flex flex-col",
