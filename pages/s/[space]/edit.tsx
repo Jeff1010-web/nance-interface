@@ -6,16 +6,12 @@ import React from "react";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
 import GenericButton from "../../../components/GenericButton";
-import { fetchProposal, useProposalUpload, useSpaceInfo } from "../../../hooks/NanceHooks";
+import { useProposalUpload, useSpaceInfo } from "../../../hooks/NanceHooks";
 import { imageUpload } from "../../../hooks/ImageUpload";
 import { fileDrop } from "../../../hooks/FileDrop";
 import { Proposal, ProposalUploadRequest, Action, JBSplitNanceStruct } from "../../../models/NanceTypes";
-import { NANCE_DEFAULT_JUICEBOX_PROJECT, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
+import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import Link from "next/link";
-
-import { useSigner } from "wagmi";
-import { JsonRpcSigner } from "@ethersproject/providers";
-import { signPayload } from "../../../libs/signer";
 
 import { Editor } from '@tinymce/tinymce-react';
 
@@ -39,6 +35,8 @@ import SelectForm from "../../../components/form/SelectForm";
 import ProjectForm from "../../../components/form/ProjectForm";
 import JBSplitEntry from "../../../components/juicebox/JBSplitEntry";
 import Footer from "../../../components/Footer";
+import { getToken } from "next-auth/jwt";
+import { useSession } from "next-auth/react";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -46,16 +44,21 @@ const ProposalMetadataContext = React.createContext({
   space: '' as string
 });
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps({ req, query, params}) {
   // check proposal parameter type
-  console.debug(context.query);
-  const forkParam: string = context.query.fork;
-  const proposalParam: string = context.query.proposalId;
-  const spaceParam: string = context.params.space;
+  const proposalParam: string = query.proposalId;
+  const spaceParam: string = params.space;
+  const forkParam: string = query.fork;
+
+  // Attach the JWT token to the request headers
+  const token = await getToken({ req, raw: true });
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
 
   let proposalResponse = null;
   if (proposalParam) {
-    proposalResponse = await fetchProposal(spaceParam, proposalParam);
+    proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, {headers}).then(res => res.json())
     if (proposalResponse?.data) {
       proposalResponse.data.body = await markdownToHtml(proposalResponse.data.body)
     }
@@ -115,16 +118,13 @@ function Form({ space }: { space: string }) {
   const metadata = useContext(ProposalMetadataContext);
 
   // state
-  const [signing, setSigning] = useState(false);
-  const [signError, setSignError] = useState(undefined);
   const [formErrors, setFormErrors] = useState<string>("");
   const [selected, setSelected] = useState(ProposalStatus[0])
 
   // hooks
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, !metadata.fork && metadata.loadedProposal?.hash, router.isReady);
   
-  const { data: signer } = useSigner()
-  const jrpcSigner = signer as JsonRpcSigner;
+  const { data: session, status } = useSession();
   const { openConnectModal } = useConnectModal();
 
   const isNew = metadata.fork || metadata.loadedProposal === null;
@@ -146,39 +146,20 @@ function Form({ space }: { space: string }) {
     };
     console.debug("📚 Nance.editProposal.onSubmit ->", { formData, payload })
 
-    setSigning(true);
-
-    signPayload(
-      jrpcSigner, space,
-      isNew ? "upload" : "edit",
-      payload
-    ).then((signature) => {
-
-      setSigning(false);
-      // send to API endpoint
-      reset();
-      const req: ProposalUploadRequest = {
-        signature,
-        proposal: payload
-      }
-      console.debug("📗 Nance.editProposal.submit ->", req);
-      return trigger(req);
-    })
+    const req: ProposalUploadRequest = {
+      proposal: payload
+    }
+    console.debug("📗 Nance.editProposal.submit ->", req);
+    trigger(req)
       .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res.data.hash}` : `/s/${space}/${res.data.hash}`))
       .catch((err) => {
-        setSigning(false);
-        setSignError(err);
         console.warn("📗 Nance.editProposal.onSignError ->", err);
       });
   }
 
   // shortcut
-  const isSubmitting = signing || isMutating;
-  const error = signError || uploadError;
-  const resetSignAndUpload = () => {
-    setSignError(undefined);
-    reset();
-  }
+  const isSubmitting = isMutating;
+  const error = uploadError;
 
   useEffect(() => {
     if(formState.errors && Object.keys(formState.errors).length > 0) {
@@ -197,9 +178,9 @@ function Form({ space }: { space: string }) {
 
   return (
     <FormProvider {...methods} >
-      <Notification title="Success" description={`${isNew ? "Created" : "Updated"} proposal ${data?.data.hash}`} show={data !== undefined} close={resetSignAndUpload} checked={true} />
-      {(signError || uploadError) &&
-        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={resetSignAndUpload} checked={false} />
+      <Notification title="Success" description={`${isNew ? "Created" : "Updated"} proposal ${data?.data.hash}`} show={data !== undefined} close={reset} checked={true} />
+      {error &&
+        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={reset} checked={false} />
       }
       <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
         <Actions loadedActions={(metadata.fork) ? metadata.loadedProposal?.actions.map(({ uuid, ...rest }) => rest) : metadata.loadedProposal?.actions || []} />
@@ -282,15 +263,15 @@ function Form({ space }: { space: string }) {
             </a>
           </Link>
 
-          {!jrpcSigner && (
-            <button onClick={() => openConnectModal()}
+          {status === "unauthenticated" && (
+            <button type="button" onClick={() => openConnectModal()}
               className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
             >
               Connect Wallet
             </button>
           )}
 
-          {jrpcSigner && (
+          {status !== "unauthenticated" && (
             <Listbox value={selected} onChange={setSelected} as="div">
               {({ open }) => (
                 <>
@@ -305,8 +286,8 @@ function Form({ space }: { space: string }) {
                         }
                         className="ml-3 inline-flex justify-center rounded-none rounded-l-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
                       >
-                        {signing ? 
-                          (isMutating ? "Submitting..." : "Signing...") : 
+                        {status === "loading" ? 
+                          (isMutating ? "Submitting..." : "Connecting...") : 
                           (formErrors.length > 0 ? "Error in form" : selected.display)}
                       </button>
                       <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-blue-600 p-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-gray-50">

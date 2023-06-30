@@ -81,15 +81,11 @@ export interface Signature {
   timestamp: number;
 }
 
-export interface SignatureRequest {
-  signature: Signature
-}
-
-export interface ProposalUploadRequest extends SignatureRequest {
+export interface ProposalUploadRequest {
   proposal: Pick<Proposal, "hash" | "title" | "body" | "notification" | "actions" | "status">;
 }
 
-export interface ProposalDeleteRequest extends SignatureRequest {
+export interface ProposalDeleteRequest {
   hash: string;
 }
 

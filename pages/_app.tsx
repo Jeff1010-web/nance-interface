@@ -1,12 +1,11 @@
 import '../styles/globals.css'
 import '@rainbow-me/rainbowkit/styles.css';
-
 import { GraphQLClient, ClientContext } from 'graphql-hooks'
 import memCache from 'graphql-hooks-memcache'
 
 import {
   getDefaultWallets,
-  RainbowKitProvider,
+  RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 import {
   WagmiConfig, createClient,
@@ -20,6 +19,9 @@ import { JuiceProvider } from 'juice-hooks'
 import { Flowbite } from 'flowbite-react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
+
+import { SessionProvider } from 'next-auth/react';
+import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
 
 const graphqlClient = new GraphQLClient({
   url: 'https://hub.snapshot.org/graphql',
@@ -58,24 +60,28 @@ function MyApp({ Component, pageProps }) {
   return (
     <>
       <WagmiConfig client={wagmiClient}>
-        <RainbowKitProvider
-          chains={chains}
-          appInfo={{
-            appName: 'JBDAO',
-            learnMoreUrl: 'https://jbdao.org',
-          }}>
-          <ClientContext.Provider value={graphqlClient}>
-            <NextQueryParamProvider>
-              <JuiceProvider provider={wagmiClient.provider}>
-                <Flowbite theme={theme}>
-                  <ErrorBoundary>
-                    <Component {...pageProps} />
-                  </ErrorBoundary>
-                </Flowbite>
-              </JuiceProvider>
-            </NextQueryParamProvider>
-          </ClientContext.Provider>
-        </RainbowKitProvider>
+        <SessionProvider refetchInterval={0} session={pageProps.session}>
+          <RainbowKitSiweNextAuthProvider>
+            <RainbowKitProvider
+              chains={chains}
+              appInfo={{
+                appName: 'JBDAO',
+                learnMoreUrl: 'https://jbdao.org',
+              }}>
+              <ClientContext.Provider value={graphqlClient}>
+                <NextQueryParamProvider>
+                  <JuiceProvider provider={wagmiClient.provider}>
+                    <Flowbite theme={theme}>
+                      <ErrorBoundary>
+                        <Component {...pageProps} />
+                      </ErrorBoundary>
+                    </Flowbite>
+                  </JuiceProvider>
+                </NextQueryParamProvider>
+              </ClientContext.Provider>
+            </RainbowKitProvider>
+          </RainbowKitSiweNextAuthProvider>
+        </SessionProvider>
       </WagmiConfig>
       <Analytics />
     </>

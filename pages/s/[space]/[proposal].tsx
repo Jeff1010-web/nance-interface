@@ -1,5 +1,4 @@
 import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE } from "../../../hooks/snapshot/Proposals";
-import { useSigner } from 'wagmi'
 import SiteNav from "../../../components/SiteNav";
 import { Tooltip } from 'flowbite-react';
 import FormattedAddress from "../../../components/FormattedAddress";
@@ -8,7 +7,7 @@ import { createContext, useContext, useState, Fragment } from "react";
 import { withDefault, NumberParam, createEnumParam, useQueryParams } from "next-query-params";
 import { processChoices } from "../../../libs/snapshotUtil";
 import ColorBar from "../../../components/ColorBar";
-import { fetchProposal, useProposal, useProposalDelete, useProposalUpload, useSpaceInfo } from "../../../hooks/NanceHooks";
+import { useProposal, useProposalDelete, useProposalUpload, useSpaceInfo } from "../../../hooks/NanceHooks";
 import { canEditProposal, getLastSlash } from "../../../libs/nance";
 import { Proposal, Payout, Action, Transfer, CustomTransaction, Reserve, ProposalDeleteRequest, ProposalUploadRequest, extractFunctionName, parseFunctionAbiWithNamedArgs } from "../../../models/NanceTypes";
 import Link from "next/link";
@@ -25,13 +24,13 @@ import Footer from "../../../components/Footer";
 import { ArrowLeftCircleIcon, ArrowRightCircleIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import { Disclosure, Listbox, Transition } from "@headlessui/react";
 import { numToPrettyString } from "../../../libs/NumberFormatter";
-import { signPayload } from "../../../libs/signer";
-import { JsonRpcSigner } from "@ethersproject/providers";
 import { useRouter } from "next/router";
 import Notification from "../../../components/Notification";
+import { getToken } from "next-auth/jwt";
 import { BigNumber } from "ethers";
 import NewVoteButton from "../../../components/NewVoteButton";
 import MarkdownWithTOC from "../../../components/MarkdownWithTOC";
+import { useSession } from "next-auth/react";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -69,15 +68,21 @@ function getDomain(url) {
   return domain;
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps({ req, params }) {
   let snapshotProposal: SnapshotProposal;
   let proposal: Proposal;
 
   // check proposal parameter type
-  const proposalParam: string = context.params.proposal;
-  const spaceParam: string = context.params.space;
+  const proposalParam: string = params.proposal;
+  const spaceParam: string = params.space;
 
-  const proposalResponse = await fetchProposal(spaceParam, proposalParam);
+  // Attach the JWT token to the request headers
+  const token = await getToken({ req, raw: true });
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  const proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, {headers}).then(res => res.json())
   proposal = proposalResponse.data;
   const proposalHash = getLastSlash(proposal?.voteURL);
   if (proposalHash) {
@@ -133,17 +138,12 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
     proposalId: proposal?.hash
   };
 
-  const { data: signer } = useSigner();
-  const jrpcSigner = signer as JsonRpcSigner;
-  const [signError, setSignError] = useState(undefined);
+  const { data: session, status } = useSession();
   const [selected, setSelected] = useState(ProposalStatus[0])
   const { data: spaceInfo } = useSpaceInfo({space})
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, proposal?.hash, router.isReady);
-  const { trigger: deleteTrigger, reset: deleteReset } = useProposalDelete(space, proposal?.hash, router.isReady);
-  const resetSignAndUpload = () => {
-    setSignError(undefined);
-    deleteReset();
-  }
+  const { trigger: deleteTrigger, reset: deleteReset, error: deleteError } = useProposalDelete(space, proposal?.hash, router.isReady);
+  const error = uploadError || deleteError;
 
   const archiveProposal = async () => {
     const payload: Pick<Proposal, "hash" | "title" | "body" | "notification" | "actions" | "status"> = {
@@ -152,48 +152,31 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
     };
     console.debug("📚 Nance.archiveProposal.onSubmit ->", { payload })
 
-    signPayload(
-      jrpcSigner, space,
-      "edit",
-      payload
-    ).then((signature) => {
-
-      // send to API endpoint
-      reset();
-      const req: ProposalUploadRequest = {
-        signature,
-        proposal: payload
-      }
-      console.debug("📗 Nance.archiveProposal.submit ->", req);
-      return trigger(req);
-    })
+    // send to API endpoint
+    reset();
+    const req: ProposalUploadRequest = {
+      proposal: payload
+    }
+    console.debug("📗 Nance.archiveProposal.submit ->", req);
+    trigger(req)
       .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res.data.hash}` : `/s/${space}/${res.data.hash}`))
       .catch((err) => {
-        setSignError(err);
-        console.warn("📗 Nance.archiveProposal.onSignError ->", err);
+        console.warn("📗 Nance.archiveProposal.onUploadError ->", err);
       });
   }
 
   const deleteProposal = async () => {
     const hash = proposal?.hash;
-    signPayload(
-      jrpcSigner, space,
-      "delete",
-      { hash }
-    ).then((signature) => {
-      deleteReset();
-      const req: ProposalDeleteRequest = {
-        signature,
-        hash
-      }
-      console.debug("📗 Nance.deleteProposal.onDelete ->", req);
-      return deleteTrigger(req);
-    })
-    .then(() => router.push(space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`))
-    .catch((err) => {
-      console.warn("📗 Nance.deleteProposal.onSignError ->", err);
-      setSignError(err);
-    });
+    deleteReset();
+    const req: ProposalDeleteRequest = {
+      hash
+    }
+    console.debug("📗 Nance.deleteProposal.onDelete ->", req);
+    deleteTrigger(req)
+      .then(() => router.push(space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`))
+      .catch((err) => {
+        console.warn("📗 Nance.deleteProposal.onDeleteError ->", err);
+      });
   }
 
   // this page need proposal to work
@@ -274,8 +257,8 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
 
                   {!snapshotProposal && (
                     <div className="mt-2 space-y-4">
-                      {signError &&
-                        <Notification title="Error" description={signError.error_description || signError.message || signError} show={true} close={resetSignAndUpload} checked={false} />
+                      {error &&
+                        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={() => {reset(); deleteReset()}} checked={false} />
                       }
 
                       <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
@@ -290,7 +273,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                         </>
                       )}
                       
-                      {canEditProposal(proposal.status) && (
+                      {canEditProposal(proposal.status) && status === "authenticated" && (
                         <Link
                           legacyBehavior
                           href={{
@@ -304,7 +287,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                         </Link>
                       )}
 
-                      {canEditProposal(proposal.status) && (
+                      {canEditProposal(proposal.status) && status === "authenticated" && (
                         <Listbox value={selected} onChange={setSelected} as="div">
                         {({ open }) => (
                           <>
