@@ -46,6 +46,10 @@ Env:
 
 `NEXT_PUBLIC_ETHERSCAN_KEY` Etherscan API Key, used to retrieve contract ABI when adding custom transaction action to proposal.
 
+#### WalletConnect V2 ProjectId
+
+`WALLETCONNECT_PROJECT_ID`
+
 ### Framework & Library
 
 * [react](https://github.com/facebook/react)

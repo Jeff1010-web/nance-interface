@@ -1,12 +1,14 @@
-import { erc20ABI, useContract, useProvider } from 'wagmi';
+import { erc20ABI } from 'wagmi';
 import { getTicketBooth } from 'juice-sdk-v1';
 import { getJBTokenStore } from 'juice-sdk';
 import { useContractReadValue } from './ContractReadValue';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { invalidateZeroAddress } from '../../libs/address';
+import { useEthersProvider } from '../ViemAdapter';
+import { Contract } from 'ethers';
 
 export function useTokenAddressOfProject(version: number, projectId: BigNumberish | undefined) {
-  const provider = useProvider();
+  const provider = useEthersProvider();
   // FIXME support version 3
   const contract = version == 2 ? getJBTokenStore(provider) : getTicketBooth(provider);
 
@@ -18,12 +20,12 @@ export function useTokenAddressOfProject(version: number, projectId: BigNumberis
 }
 
 export function useSymbolOfERC20(tokenAddress: string | undefined) {
-  const provider = useProvider();
-  let contract = useContract({
-    address: invalidateZeroAddress(tokenAddress), 
-    abi: erc20ABI,
-    signerOrProvider: provider
-  })
+  const provider = useEthersProvider();
+  let contract = new Contract(
+    invalidateZeroAddress(tokenAddress), 
+    erc20ABI,
+    provider
+  )
 
   return useContractReadValue<string>({
     contract,

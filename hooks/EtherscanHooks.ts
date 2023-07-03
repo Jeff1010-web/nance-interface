@@ -1,7 +1,8 @@
-import { Contract } from 'ethers'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
-import { useProvider } from 'wagmi'
+import { usePublicClient } from 'wagmi'
+import { parseAbi } from 'viem'
+import { Interface } from 'ethers/lib/utils'
 
 const API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_KEY
 
@@ -18,10 +19,10 @@ const fetcher = (url) => fetch(url).then(res => res.json()).then((j: EtherscanAP
   return j.result
 });
 
-const MasterCopyFunction = "function masterCopy() external view returns (address)";
+const MasterCopyABI = parseAbi(["function masterCopy() external view returns (address)"]);
 export function useEtherscanContractABI(initialAddress: string, shouldFetch: boolean = true) {
   const [address, setAddress] = useState(initialAddress);
-  const provider = useProvider();
+  const client = usePublicClient();
   const { data: abi, isLoading, error } = useSWR<string>(
     shouldFetch ? `https://api.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=${API_KEY}` : null,
     fetcher,
@@ -29,19 +30,21 @@ export function useEtherscanContractABI(initialAddress: string, shouldFetch: boo
 
   useEffect(() => {
     (async () => {
-      if (abi && provider) {
-        const contract = new Contract(address, abi, provider);
-        if (Object.values(contract.interface.functions).length === 0) {
+      if (abi && client) {
+        const ethersInterface = new Interface(abi);
+        if (Object.values(ethersInterface.functions).length === 0) {
           // this maybe a proxy contract without any explicit function
-          const proxy = new Contract(address, [MasterCopyFunction], provider);
-          // to retrieve real abi
-          const proxyAddress = await proxy.masterCopy()
+          const proxyAddress = await client.readContract({
+            address: address as `0x${string}`,
+            abi: MasterCopyABI,
+            functionName: "masterCopy"
+          })
           console.debug("useEtherscanContractABI.proxy", initialAddress, address, proxyAddress);
           setAddress(proxyAddress);
         }
       }
     })()
-  }, [address, abi, provider])
+  }, [address, abi, client])
 
   return {
     data: abi,

@@ -1,13 +1,13 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
-import { useProvider } from "wagmi";
 import { getModStore } from "juice-sdk-v1";
 import { useContractReadValue } from "./ContractReadValue";
 import { PayoutModV1, TicketModV1 } from '../../models/JuiceboxTypes';
+import { useEthersProvider } from '../ViemAdapter';
 
 export function useCurrentPayoutMods(
     projectId: BigNumberish | undefined,
     currentConfigured: BigNumberish | undefined,)  {
-    const provider = useProvider();
+    const provider = useEthersProvider();
     const contract = getModStore(provider);
 
     return useContractReadValue<PayoutModV1[]>({
@@ -25,7 +25,7 @@ export function useCurrentPayoutMods(
 export function useCurrentTicketMods(
     projectId: BigNumberish | undefined,
     currentConfigured: BigNumberish | undefined,)  {
-    const provider = useProvider();
+    const provider = useEthersProvider();
     const contract = getModStore(provider);
 
     return useContractReadValue<TicketModV1[]>({

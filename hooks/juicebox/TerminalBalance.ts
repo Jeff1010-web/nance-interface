@@ -1,4 +1,3 @@
-import { useContract, useProvider } from 'wagmi';
 import { getTerminalV1 } from 'juice-sdk-v1';
 import { getJBSingleTokenPaymentTerminalStore } from 'juice-sdk';
 import { useContractReadValue } from './ContractReadValue';
@@ -6,13 +5,15 @@ import { BigNumber } from '@ethersproject/bignumber';
 import JBETHPaymentTerminalV2 from '@jbx-protocol/contracts-v2/deployments/mainnet/JBETHPaymentTerminal.json';
 import JBETHPaymentTerminalV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal3_1.json';
 import JBSingleTokenPaymentTerminalStoreV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBSingleTokenPaymentTerminalStore3_1.json';
+import { useEthersProvider } from '../ViemAdapter';
+import { Contract } from 'ethers';
 
 export function useTerminalBalanceV1({
   projectId
 }: {
   projectId: number | undefined
 }) {
-  const provider = useProvider();
+  const provider = useEthersProvider();
   const contract = getTerminalV1(provider);
 
   return useContractReadValue<BigNumber>({
@@ -28,8 +29,8 @@ export function useTerminalBalance({
   projectId: number | undefined,
   isV2?: boolean
 }) {
-  const provider = useProvider();
-  const contract = isV2 ? getJBSingleTokenPaymentTerminalStore(provider) : useContract({ address: JBSingleTokenPaymentTerminalStoreV3.address, abi: JBSingleTokenPaymentTerminalStoreV3.abi, signerOrProvider: provider });
+  const provider = useEthersProvider();
+  const contract = isV2 ? getJBSingleTokenPaymentTerminalStore(provider) : new Contract(JBSingleTokenPaymentTerminalStoreV3.address, JBSingleTokenPaymentTerminalStoreV3.abi, provider);
   const terminal = isV2 ? JBETHPaymentTerminalV2.address : JBETHPaymentTerminalV3.address;
 
   return useContractReadValue<BigNumber>({

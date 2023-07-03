@@ -8,14 +8,13 @@ import {
   RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
 import {
-  WagmiConfig, createClient,
-  configureChains, chain
+  WagmiConfig, createConfig,
+  configureChains, mainnet
 } from 'wagmi'
 import { infuraProvider } from 'wagmi/providers/infura'
 
 import { NextQueryParamProvider } from 'next-query-params';
 
-import { JuiceProvider } from 'juice-hooks'
 import { Flowbite } from 'flowbite-react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
@@ -29,22 +28,23 @@ const graphqlClient = new GraphQLClient({
 })
 
 // WAGMI and RainbowKit configuration
-const { chains, provider } = configureChains(
-  [chain.mainnet],
+const { chains, publicClient } = configureChains(
+  [mainnet],
   [
     infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY }),
   ],
 )
 
 const { connectors } = getDefaultWallets({
-  appName: 'My RainbowKit App',
+  appName: "Nance Interface",
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
   chains
 });
 
-const wagmiClient = createClient({
+const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
-  provider
+  publicClient
 })
 
 const theme = {
@@ -59,7 +59,7 @@ const theme = {
 function MyApp({ Component, pageProps }) {
   return (
     <>
-      <WagmiConfig client={wagmiClient}>
+      <WagmiConfig config={wagmiConfig}>
         <SessionProvider refetchInterval={0} session={pageProps.session}>
           <RainbowKitSiweNextAuthProvider>
             <RainbowKitProvider
@@ -70,13 +70,11 @@ function MyApp({ Component, pageProps }) {
               }}>
               <ClientContext.Provider value={graphqlClient}>
                 <NextQueryParamProvider>
-                  <JuiceProvider provider={wagmiClient.provider}>
-                    <Flowbite theme={theme}>
-                      <ErrorBoundary>
-                        <Component {...pageProps} />
-                      </ErrorBoundary>
-                    </Flowbite>
-                  </JuiceProvider>
+                  <Flowbite theme={theme}>
+                    <ErrorBoundary>
+                      <Component {...pageProps} />
+                    </ErrorBoundary>
+                  </Flowbite>
                 </NextQueryParamProvider>
               </ClientContext.Provider>
             </RainbowKitProvider>

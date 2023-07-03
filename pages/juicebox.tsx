@@ -7,27 +7,21 @@ import { JBConstants, parseV1Metadata, payoutMod2Split, ticketMod2Split, V1Fundi
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
 import { AddressMap, SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
 import useProjectInfo from '../hooks/juicebox/ProjectInfo';
-import ProjectSearch, { ProjectOption } from "../components/juicebox/ProjectSearch";
+import ProjectSearch from "../components/juicebox/ProjectSearch";
 import ResolvedProject from "../components/ResolvedProject";
 import ReconfigurationCompare, { FundingCycleConfigProps, MetadataArgs } from '../components/juicebox/ReconfigurationCompare';
 import { useCurrentSplits } from '../hooks/juicebox/CurrentSplits';
 import { useDistributionLimit } from '../hooks/juicebox/DistributionLimit';
 import useTerminalFee from '../hooks/juicebox/TerminalFee';
 import { useReconfigureRequest } from '../hooks/NanceHooks';
-import { useAccount, useSigner } from 'wagmi';
-import { JsonRpcSigner } from "@ethersproject/providers";
+import { useAccount, useWalletClient } from 'wagmi';
 import { GnosisHandler } from '../libs/gnosis';
 import { QueueSafeTransaction, SafeMultisigTransaction } from '../models/SafeTypes';
 import parseSafeJuiceboxTx, { getVersionOfTx } from '../libs/SafeJuiceboxParser';
 import Tabs from '../components/Tabs';
 import { useMultisigTransactionOf } from '../hooks/SafeHooks';
-import { Switch } from '@headlessui/react';
 import fetchMetadata, { consolidateMetadata, ProjectMetadataV4 } from '../libs/projectMetadata';
 import Footer from '../components/Footer';
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
 
 function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
   if (!m) return undefined;
@@ -80,8 +74,7 @@ export default function JuiceboxPage() {
 
   // nance
   const { address } = useAccount();
-  const { data: signer, isError, isLoading: signerLoading } = useSigner()
-  const jrpcSigner = signer as JsonRpcSigner;
+  const { data: walletClient } = useWalletClient()
   const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest({
     space: "juicebox",
     version: `V${version}`,
@@ -114,7 +107,10 @@ export default function JuiceboxPage() {
     };
     const { safeTxGas } = await gnosis.getEstimate(txnPartial);
     const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
-    const signature = await signer.signMessage(message).then((sig) => {
+    const signature = await walletClient.signMessage({
+      account: (await walletClient.getAddresses())[0],
+      message: { raw: message }
+    }).then((sig) => {
       return sig.replace(/1b$/, '1f').replace(/1c$/, '20')
     }).catch(() => {
       setGnosisLoading(false)
@@ -205,7 +201,7 @@ export default function JuiceboxPage() {
               <div className="flex space-x-2">
                 <button
                   className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-                  disabled={!jrpcSigner || !rawData}
+                  disabled={!walletClient || !rawData}
                   onClick={postTransaction}
                 >{(gnosisLoading) ? 'Signing...' : 'Queue'}</button>
                 <input

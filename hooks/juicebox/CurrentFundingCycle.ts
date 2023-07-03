@@ -1,4 +1,3 @@
-import { useContract, useProvider } from 'wagmi';
 import { getFundingCycles } from 'juice-sdk-v1';
 import { getJBController } from 'juice-sdk';
 import { useContractReadValue } from './ContractReadValue';
@@ -6,6 +5,8 @@ import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { useCallback } from 'react';
 import { FundingCycleV1, V2V3FundingCycle, V2V3FundingCycleMetadata } from '../../models/JuiceboxTypes';
 import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController3_1.json';
+import { useEthersProvider } from '../ViemAdapter';
+import { Contract } from 'ethers';
 
 const deepEqFundingCycles = (a?: FundingCycleV1, b?: FundingCycleV1) => {
   if (a && !b) return false
@@ -35,7 +36,7 @@ export default function useCurrentFundingCycle({
 }: {
   projectId: BigNumberish | undefined
 }) {
-  const provider = useProvider();
+  const provider = useEthersProvider();
   const contract = getFundingCycles(provider);
 
   return useContractReadValue<FundingCycleV1>({
@@ -52,9 +53,9 @@ export function useCurrentFundingCycleV2({
   projectId: BigNumberish | undefined,
   isV3?: boolean
 }) {
-  const provider = useProvider();
+  const provider = useEthersProvider();
   const contract = isV3 ? 
-    useContract({address: JBControllerV3.address, abi: JBControllerV3.abi, signerOrProvider: provider}) 
+    new Contract(JBControllerV3.address, JBControllerV3.abi, provider) 
     : getJBController(provider);
 
   return useContractReadValue<[V2V3FundingCycle, V2V3FundingCycleMetadata]>({

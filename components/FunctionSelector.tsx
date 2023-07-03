@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
 import { Combobox } from '@headlessui/react'
-import { useContract } from 'wagmi'
 import { useEtherscanContractABI } from '../hooks/EtherscanHooks'
-import { FunctionFragment } from 'ethers/lib/utils'
+import { FunctionFragment, Interface } from 'ethers/lib/utils'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -19,12 +18,9 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
   const [query, setQuery] = useState('')
   const { data: abi, isLoading, error, isProxy } = useEtherscanContractABI(address, address.length === 42)
 
-  const contract = useContract({
-    address,
-    abi: !error && abi as any,
-  })
+  const ethersInterface = new Interface(abi || []);
   const fragmentMap = {};
-  Object.values(contract?.interface.functions || {}).forEach(f => fragmentMap[f.format("full")] = f)
+  Object.values(ethersInterface.functions || {}).forEach(f => fragmentMap[f.format("full")] = f)
 
   const filteredOption =
     query === ''
