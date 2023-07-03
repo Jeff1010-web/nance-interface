@@ -1,15 +1,12 @@
 import { Tooltip } from "flowbite-react";
 import { useEnsAddress } from "wagmi";
 import { shortenAddress } from "../libs/address";
+import { classNames } from '../libs/tailwind';
 
 export interface Props {
     ens: string;
     style?: string;
     hook?: (address: string) => void;
-}
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
 }
 
 export default function ResolvedEns({ ens, style, hook }: Props) {
@@ -30,7 +27,7 @@ export default function ResolvedEns({ ens, style, hook }: Props) {
     }
 
     if(hook) {
-        hook(ens.endsWith('.eth') ? address : ens);
+        hook(ens.endsWith('.eth') ? (address ?? "") : ens);
     }
 
     if(ens.endsWith('.eth')) {

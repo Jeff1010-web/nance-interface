@@ -12,14 +12,13 @@ interface EtherscanAPIResponse {
   result: any
 }
 
-const fetcher = (url) => fetch(url).then(res => res.json()).then((j: EtherscanAPIResponse) => {
+const fetcher = (url: string) => fetch(url).then(res => res.json()).then((j: EtherscanAPIResponse) => {
   if(j.status != "1") {
     throw new Error(`Etherscan API Error: ${j.result}`)
   }
   return j.result
 });
 
-const MasterCopyABI = parseAbi(["function masterCopy() external view returns (address)"]);
 export function useEtherscanContractABI(initialAddress: string, shouldFetch: boolean = true) {
   const [address, setAddress] = useState(initialAddress);
   const client = usePublicClient();
@@ -34,11 +33,17 @@ export function useEtherscanContractABI(initialAddress: string, shouldFetch: boo
         const ethersInterface = new Interface(abi);
         if (Object.values(ethersInterface.functions).length === 0) {
           // this maybe a proxy contract without any explicit function
-          const proxyAddress = await client.readContract({
+          const proxyAddress = (await client.readContract({
             address: address as `0x${string}`,
-            abi: MasterCopyABI,
-            functionName: "masterCopy"
-          })
+            abi: [{
+              name: 'masterCopy',
+              type: 'function',
+              stateMutability: 'view',
+              inputs: [],
+              outputs: [{ type: 'address' }],
+            }],
+            functionName: "masterCopy",
+          })) as `0x${string}`;
           console.debug("useEtherscanContractABI.proxy", initialAddress, address, proxyAddress);
           setAddress(proxyAddress);
         }

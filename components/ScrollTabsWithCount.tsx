@@ -1,11 +1,9 @@
+import { classNames } from '../libs/tailwind';
+
 export interface ScrollTabOption {
     id: string;
     name: string;
     count: number;
-}
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
 }
 
 export default function ScrollTabsWithCount({ tabs, activeTab }: { tabs: ScrollTabOption[], activeTab: string }) {

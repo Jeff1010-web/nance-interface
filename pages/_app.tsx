@@ -31,13 +31,13 @@ const graphqlClient = new GraphQLClient({
 const { chains, publicClient } = configureChains(
   [mainnet],
   [
-    infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY }),
+    infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY || "" }),
   ],
 )
 
 const { connectors } = getDefaultWallets({
   appName: "Nance Interface",
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
   chains
 });
 
@@ -56,7 +56,7 @@ const theme = {
   }
 }
 
-function MyApp({ Component, pageProps }) {
+function MyApp({ Component, pageProps }: any) {
   return (
     <>
       <WagmiConfig config={wagmiConfig}>

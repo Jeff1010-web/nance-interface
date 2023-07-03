@@ -1,17 +1,14 @@
 import { shortenAddress } from "../libs/address";
 import { Address, useEnsName } from "wagmi";
 import { useEffect, useState } from "react";
+import { classNames } from '../libs/tailwind';
 
 export interface Props {
-    address: string;
+    address: string | undefined;
     style?: string;
     overrideURLPrefix?: string;
     openInNewWindow?: boolean;
     noLink?: boolean;
-}
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
 }
 
 export default function FormattedAddress({ address, style, overrideURLPrefix, openInNewWindow = true, noLink = false }: Props) {
@@ -44,7 +41,7 @@ export default function FormattedAddress({ address, style, overrideURLPrefix, op
             className={classNames(
                 style,
                 'hover:underline'
-            )} href={`${urlPrefix}${encodeURIComponent(address)}`}>
+            )} href={`${urlPrefix}${address ? encodeURIComponent(address) : ''}`}>
             {label}
         </a>
     )

@@ -30,7 +30,7 @@ const getColorOfChoice = (choice: string) => {
 }
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "short" });
-const formatNumber = (num) => formatter.format(num);
+const formatNumber = (num: number) => formatter.format(num);
 
 const fetcher: Fetcher<ProfileResponse, { url: string, voter: string, space: string }> = async ({ url, voter, space }) => {
   const res = await fetch(url + new URLSearchParams({ voter, space }))
@@ -49,7 +49,7 @@ interface ENSIdeasResponse {
   error?: string;
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: any) {
   const user = context.params.user;
 
   try {
@@ -95,7 +95,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
   const { data, loading } = useVotesOfAddress(address, (query.page - 1) * query.limit, query.limit, query.space || "");
 
   const { data: allSpaceInfo } = useAllSpaceInfo();
-  const snapshotToNanceSpaceMap = {};
+  const snapshotToNanceSpaceMap: {[key: string]: string} = {};
   allSpaceInfo?.data?.forEach((spaceInfo) => {
     snapshotToNanceSpaceMap[spaceInfo.snapshotSpace] = spaceInfo.name
   });
@@ -288,7 +288,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
                               <ul className="text-gray-500">
                                 {userProfileInfo?.proposals?.sort((a,b) => (b.proposalId ?? 0) - (a.proposalId ?? 0)).map(p => (
                                   <li key={p.hash}>
-                                    <a href={getProposalLink(query.space, p.hash)} className="flex justify-between space-x-2">
+                                    <a href={getProposalLink(query.space || "", p.hash)} className="flex justify-between space-x-2">
                                       <p className="w-1/3">{`Prop ${p.proposalId ? p.proposalId : "tbd"}`}</p>
                                       <p className="w-2/3 line-clamp-1">{p.title}</p>
                                     </a>

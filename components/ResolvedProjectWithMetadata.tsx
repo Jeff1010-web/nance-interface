@@ -1,5 +1,5 @@
 import useProjectMetadata from "../hooks/juicebox/ProjectMetadata";
-
+import { classNames } from '../libs/tailwind';
 
 export interface Props {
     projectId: string;
@@ -7,10 +7,6 @@ export interface Props {
     metadataUri: string;
     version: number;
     style?: string;
-}
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
 }
 
 export default function ResolvedProject({ version, projectId, handle, metadataUri, style }: Props) {

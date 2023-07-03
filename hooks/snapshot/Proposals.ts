@@ -244,9 +244,9 @@ export function useProposalsWithFilter(space: string, active: boolean, keyword: 
 
 export function useProposalsWithCustomQuery(query: string, variables: object, address: string, skip: boolean = false): {
   loading: boolean,
-  error: APIError<object>,
+  error: APIError<object> | undefined,
   data: {
-    proposalsData: SnapshotProposal[],
+    proposalsData: SnapshotProposal[] | undefined,
     votedData: { [id: string]: SnapshotVotedData }
   },
   refetch: (options?: any) => void
@@ -316,7 +316,7 @@ export interface AllVotes {
 
 export function useAllVotesOfAddress(address: string, limit: number, spaceFilter: string = ""): {
   loading: boolean,
-  error: APIError<object>,
+  error: APIError<object> | undefined,
   data: AllVotes
 } {
   // Load voted proposals
@@ -330,11 +330,11 @@ export function useAllVotesOfAddress(address: string, limit: number, spaceFilter
   });
   console.debug("🔧 useAllVotesOfAddress.cacheHit", cacheHit)
 
-  const optionCount = []; 
+  const optionCount: {[key: number]: number} = []; 
   data?.votes?.filter(v => v.proposal.type === "basic").forEach(v => optionCount[v.choice]++)
 
   return { loading, error, data: {
-    total: data?.votes.length,
+    total: data?.votes.length ?? 0,
     for: optionCount[1],
     against: optionCount[2],
     abstain: optionCount[3]
@@ -367,7 +367,13 @@ export async function fetchAllVotesOfAddress(address: string, limit: number, spa
     }
   }
   
-  const votes = ret.data?.votes;
+  const votes: {
+    id: string;
+    choice: any;
+    proposal: {
+      type: string;
+    }
+  }[] = ret.data?.votes;
   const optionCount = [0,0,0,0]; 
   votes.filter(v => v.proposal.type === "basic").forEach(v => optionCount[v.choice]++)
 
@@ -381,7 +387,7 @@ export async function fetchAllVotesOfAddress(address: string, limit: number, spa
 
 export function useVotesOfAddress(address: string, skip: number, limit: number, spaceFilter: string = ""): {
   loading: boolean,
-  error: APIError<object>,
+  error: APIError<object> | undefined,
   data: {
     votedData: SnapshotVotedData[],
     spaces: SnapshotSpaceWithVotesCount[]
@@ -391,7 +397,7 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
   //console.debug("🔧 useProposalsWithCustomQuery.args ->", {query, variables});
 
   // Load voted proposals
-  const variables = {
+  const variables: {[key: string]: any} = {
     voter: address,
     first: Math.min(limit, 1000),
     skip
@@ -412,7 +418,7 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
   let votedData: SnapshotVotedData[] = [];
   let spaces: { [id: string]: SnapshotSpaceWithVotesCount } = {};
   if (address) {
-    votedData = votedRawData?.votes.map(vote => {
+    votedData = votedRawData?.votes?.map(vote => {
       if (!spaces[vote.space.id]) {
         spaces[vote.space.id] = {
           id: vote.space.id,
@@ -426,7 +432,7 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
         ...vote,
         choice: mapChoiceIndex(vote.proposal.type, vote.proposal.choices, vote.choice)
       }
-    });
+    }) || [];
   }
 
   const ret = {
@@ -442,9 +448,9 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
 
 export const VOTES_PER_PAGE = 150;
 
-export function useProposalVotes(proposal: SnapshotProposal, skip: number, orderBy: 'created' | 'vp' = 'created', withField: "" | "reason" | "app", skipThisHook: boolean = false, overrideLimit: number = 0): {
+export function useProposalVotes(proposal: SnapshotProposal | undefined, skip: number, orderBy: 'created' | 'vp' = 'created', withField: "" | "reason" | "app", skipThisHook: boolean = false, overrideLimit: number = 0): {
   loading: boolean,
-  error: APIError<object>,
+  error: APIError<object> | undefined,
   data: {
     votesData: SnapshotVote[],
     totalVotes: number
@@ -454,7 +460,7 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
 
   // sort after query if need reason
   const sortAfterQuery = withField === "reason" || withField === "app";
-  console.debug("🔧 useProposalVotes.args ->", { proposalId: proposal.id, skip, orderBy, withField });
+  console.debug("🔧 useProposalVotes.args ->", { proposalId: proposal?.id, skip, orderBy, withField });
 
   // Load related votes
   const {
@@ -466,10 +472,10 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
   } = useQuery<{ votes: SnapshotVote[] }>(VOTES_OF_PROPOSAL_QUERY, {
     variables: {
       // Snapshot API Limit: The `first` argument must not be greater than 1000
-      first: sortAfterQuery ? Math.min(proposal.votes, 1000) : (overrideLimit === 0 ? VOTES_PER_PAGE : Math.min(overrideLimit, 1000)),
+      first: sortAfterQuery ? Math.min(proposal?.votes ?? 0, 1000) : (overrideLimit === 0 ? VOTES_PER_PAGE : Math.min(overrideLimit, 1000)),
       skip: sortAfterQuery ? 0 : skip,
       orderBy: orderBy,
-      id: proposal.id
+      id: proposal?.id ?? ""
     },
     skip: skipThisHook
   });
@@ -480,7 +486,7 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
 
   if (sortAfterQuery) {
     const allVotes = voteData?.votes
-      .filter((vote) => {
+      ?.filter((vote) => {
         if (withField === "reason") {
           return vote.reason && vote.reason !== "";
         } else if (withField === "app") {
@@ -488,7 +494,7 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
         } else {
           return true;
         }
-      });
+      }) || [];
     totalVotes = allVotes?.length || 0;
     votes = allVotes?.sort((a, b) => {
       if (orderBy === 'created') {
@@ -502,7 +508,7 @@ export function useProposalVotes(proposal: SnapshotProposal, skip: number, order
   let votesData: SnapshotVote[] = votes?.map(vote => {
     return {
       ...vote,
-      choice: mapChoiceIndex(proposal.type, proposal.choices, vote.choice)
+      choice: mapChoiceIndex(proposal?.type, proposal?.choices, vote?.choice)
     }
   })
 

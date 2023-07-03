@@ -1,10 +1,9 @@
 import SiteNav from "../components/SiteNav";
 import ReactMarkdown from "react-markdown";
-import Link from "next/link";
 import remarkGfm from 'remark-gfm';
 
 
-export async function getStaticProps(context) {
+export async function getStaticProps(context: any) {
     // fetch markdown from git raw
     const res = await fetch("https://raw.githubusercontent.com/jbx-protocol/juice-docs/main/docs/dao/proposals.md");
     const markdown = await res.text();
@@ -16,7 +15,7 @@ export async function getStaticProps(context) {
     }
 }
 
-export default function ProcessPage({ markdown }) {
+export default function ProcessPage({ markdown }: { markdown: string }) {
 
     return (
         <>

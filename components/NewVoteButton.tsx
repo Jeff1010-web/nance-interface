@@ -8,7 +8,7 @@ import { classNames } from "../libs/tailwind";
 
 export default function NewVoteButton(
     { proposal, refetch, isSmall = false }: 
-    { proposal: SnapshotProposal, refetch: (option?: any) => void, isSmall?: boolean}) {
+    { proposal: SnapshotProposal | undefined, refetch: (option?: any) => void, isSmall?: boolean}) {
     // state
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [buttonLabel, setButtonLabel] = useState('Vote');
@@ -36,7 +36,7 @@ export default function NewVoteButton(
             if (isConnected) {
               setModalIsOpen(true);
             } else {
-              openConnectModal();
+              openConnectModal?.();
             }
           }}
           disabled={proposal?.state !== 'active'}>

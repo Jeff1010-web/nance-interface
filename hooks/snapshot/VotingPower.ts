@@ -20,7 +20,7 @@ export interface SnapshotVotingPower {
   vp_state: string;
 }
 
-export default function useVotingPower(voter: string, space: string, proposal: string): { data: number, loading: boolean } {
+export default function useVotingPower(voter: string | undefined, space: string | undefined, proposal: string | undefined): { data: number, loading: boolean } {
   const { loading, data, error } = useQuery<{ vp: SnapshotVotingPower }>(QUERY, {
     skip: !voter || !space || !proposal,
     variables: { voter, space, proposal }
@@ -32,7 +32,7 @@ export default function useVotingPower(voter: string, space: string, proposal: s
   }
 
   const vp = data?.vp?.vp;
-  return { data: vp, loading };
+  return { data: vp ?? 0, loading };
 }
 
 export async function fetchVotingPower(voter: string, space: string, proposal: string): Promise<SnapshotVotingPower> {

@@ -20,7 +20,7 @@ export default function useVote(
     // state
     const [value, setValue] = useState<unknown>()
     const [loading, setLoading] = useState<boolean>(false)
-    const [error, setError] = useState(undefined);
+    const [error, setError] = useState<any>(undefined);
     // external state
     const signer = useEthersSigner();
     const { address, isConnected } = useAccount();
@@ -31,7 +31,7 @@ export default function useVote(
             setLoading(true);
             const receipt = await client.vote(
                 signer as Signer as Wallet, 
-                address, 
+                address as any, 
                 {
                     space,
                     proposal,
@@ -42,7 +42,7 @@ export default function useVote(
                 }
             );
             setValue(receipt);
-        } catch(err) {
+        } catch(err: any) {
             console.warn("🚨 useVote.trigger.error ->", err);
             setError(err);
             setValue(undefined);

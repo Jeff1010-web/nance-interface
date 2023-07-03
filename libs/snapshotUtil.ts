@@ -1,8 +1,8 @@
 
 
 // map indexed choice number to choice string
-export function mapChoiceIndex (type: string, choices: string[], choice: any) {
-    if (!choices) return choice;
+export function mapChoiceIndex (type: string | undefined, choices: string[] | undefined, choice: number | number[] | { [key: string]: number } | undefined) {
+    if (!type || !choices || !choice) return choice;
 
     if (['approval', 'ranked-choice'].includes(type)) {
       // choice = [1,2,3]
@@ -11,18 +11,18 @@ export function mapChoiceIndex (type: string, choices: string[], choice: any) {
     } else if (['quadratic', 'weighted'].includes(type)) {
       // choice = {"1": 1, "2": 2, "3": 3}
       const choiceObj = choice as { [key: string]: number };
-      const mapped = {};
+      const mapped: {[key: string]: number} = {};
       Object.entries(choiceObj).map(([key, value]) => {
         mapped[choices[parseInt(key)-1]] = value;
       });
       return mapped;
     } else {
       // choice = 1
-      return choices[choice-1];
+      return choices[(choice as number)-1];
     }
   }
 
-export function processChoices(type: string, choice: any): string | string[] {
+export function processChoices(type: string | undefined, choice: any): string | string[] {
   if (!choice || !type) return '';
 
   if(type == 'approval') {

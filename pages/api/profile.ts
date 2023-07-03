@@ -13,7 +13,7 @@ export type ProfileResponse = {
 }
 
 // FIXME retrieve from API instead of fix values here
-const NANCE_MAPPING = {
+const NANCE_MAPPING: {[key: string]: string} = {
   "jbdao.eth": "juicebox",
   "gov.thirstythirsty.eth": "thirstythirsty",
   "jigglyjams.eth": "waterbox"

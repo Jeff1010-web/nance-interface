@@ -125,7 +125,7 @@ const BUTTON_STYLE = "w-fit m-2 inline-flex items-center justify-center rounded-
 function DelegateActions({ delegate }: { delegate: string }) {
   const { address, isConnecting, isDisconnected } = useAccount()
   const { openConnectModal } = useConnectModal()
-  const { data: delegatedAddress } = useDelegated('jbdao.eth', address)
+  const { data: delegatedAddress } = useDelegated('jbdao.eth', address || "")
 
   // Wallet: connecting / not connected
   // Delegate: delegate / undelegate
@@ -137,7 +137,7 @@ function DelegateActions({ delegate }: { delegate: string }) {
     )
   } else if (!address) {
     return (
-      <button onClick={() => openConnectModal()}
+      <button onClick={() => openConnectModal?.()}
         className={BUTTON_STYLE}>
         Connect Wallet
       </button>

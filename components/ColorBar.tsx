@@ -1,17 +1,14 @@
 import { Tooltip } from "flowbite-react";
+import { classNames } from "../libs/tailwind";
 
 const JB_THRESHOLD = 80_000_000;
 
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
+const COLOR_VARIANTS: {[key: string]: string} = {
+    "green": 'bg-green-500',
+    "red": 'bg-red-500',
+    "gray": 'bg-gray-200'
 }
-
-const COLOR_VARIANTS = {
-    green: 'bg-green-500',
-    red: 'bg-red-500',
-    gray: 'bg-gray-200'
-}
-const WIDTH_VARIANTS = {
+const WIDTH_VARIANTS: {[key: number]: string} = {
     0: 'w-0',
     1: 'w-1/12',
     2: 'w-2/12',
@@ -29,9 +26,9 @@ const WIDTH_VARIANTS = {
 const TOTAL_WIDTH = 12;
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact" , compactDisplay: "short" });
-const formatNumber = (num) => formatter.format(num);
+const formatNumber = (num: number) => formatter.format(num);
 
-function ColorDiv({color, width}) {
+function ColorDiv({color, width} : {color: string, width: number}) {
     if (!width) return null;
 
     return (

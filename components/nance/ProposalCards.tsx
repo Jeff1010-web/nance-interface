@@ -15,7 +15,7 @@ import NewVoteButton from "../NewVoteButton";
 
 type SortOptions = "" | "status" | "title" | "approval" | "participants" | "voted"
 const SortOptionsArr = ["status", "title", "approval", "participants", "voted"]
-const StatusValue = {
+const StatusValue: {[key: string]: number} = {
     'Revoked': 0,
     'Cancelled': 1,
     'Draft': 2,
@@ -28,7 +28,7 @@ const StatusValue = {
 function getValueOfStatus(status: string) {
     return StatusValue[status] ?? -1;
 }
-function getVotedIcon(choice) {
+function getVotedIcon(choice: any) {
     if (choice === undefined) {
       return null
     } else if (typeof choice === 'string') {
@@ -45,13 +45,13 @@ function getVotedIcon(choice) {
       </Tooltip>
     )
 }
-function getRandomInt(max) {
+function getRandomInt(max: number) {
     return Math.floor(Math.random() * max);
 }
 
 export default function ProposalCards({ loading, proposalsPacket, query, setQuery, maxCycle, proposalUrlPrefix }:
     {
-      loading: boolean, proposalsPacket: ProposalsPacket,
+      loading: boolean, proposalsPacket: ProposalsPacket | undefined,
       query: { cycle: number, keyword: string, sortBy: string, sortDesc: boolean, page: number, limit: number },
       setQuery: (o: object) => void, maxCycle: number,
       proposalUrlPrefix: string
@@ -62,7 +62,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
   
     // for those proposals with no results cached by nance, we need to fetch them from snapshot
     const snapshotProposalIds: string[] = proposalsPacket?.proposals?.filter(p => p.voteURL).map(p => getLastSlash(p.voteURL)) || [];
-    const { data, loading: snapshotLoading, error, refetch } = useProposalsByID(snapshotProposalIds, address, snapshotProposalIds.length === 0);
+    const { data, loading: snapshotLoading, error, refetch } = useProposalsByID(snapshotProposalIds, address ?? "", snapshotProposalIds.length === 0);
     // convert proposalsData to dict with proposal id as key
     const snapshotProposalDict: { [id: string]: SnapshotProposal } = {};
     data?.proposalsData?.forEach(p => snapshotProposalDict[p.id] = p);
@@ -92,7 +92,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
         // fall back to default sorting
         // if no keyword
         sortedProposals
-          .sort((a, b) => b.governanceCycle - a.governanceCycle) 
+          .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0)) 
           .sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
           .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
       }
@@ -282,7 +282,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                           )}
                         </div>
                         <span className="text-xs">
-                          {`GC-${proposal.governanceCycle}, ${proposalsPacket.proposalInfo.proposalIdPrefix}${proposal.proposalId || "tbd"} - by `}
+                          {`GC-${proposal.governanceCycle}, ${proposalsPacket?.proposalInfo.proposalIdPrefix}${proposal.proposalId || "tbd"} - by `}
                           <FormattedAddress address={proposal.authorAddress} noLink />
                         </span>
   

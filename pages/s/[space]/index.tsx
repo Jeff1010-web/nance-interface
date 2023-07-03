@@ -2,7 +2,7 @@ import SiteNav from "../../../components/SiteNav"
 import Footer from "../../../components/Footer"
 import NanceSpace from "../../../components/nance/Space";
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: any) {
   const spaceParam: string = context.params.space;
 
   // Pass data to the page via props

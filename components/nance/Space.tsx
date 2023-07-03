@@ -12,15 +12,15 @@ import Pagination from "../Pagination";
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
     // State
-    const [cycleOption, setCycleOption] = useState<Option>(undefined);
+    const [cycleOption, setCycleOption] = useState<Option>();
     const [options, setOptions] = useState<Option[]>([{ id: "Loading", label: `Loading...`, status: true }]);
-    const [keywordInput, setKeywordInput] = useState<string>(undefined);
+    const [keywordInput, setKeywordInput] = useState<string>();
     // QueryParams
     const router = useRouter();
     const [query, setQuery] = useQueryParams({
       keyword: StringParam,
-      limit:withDefault(NumberParam, 15),
-      page:withDefault(NumberParam, 1),
+      limit: withDefault(NumberParam, 15),
+      page: withDefault(NumberParam, 1),
       sortBy: withDefault(StringParam, ''),
       sortDesc: withDefault(BooleanParam, true),
       cycle: NumberParam
@@ -36,7 +36,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     // Data process
     let remainingTime = "-";
     try {
-      remainingTime = formatDistanceToNowStrict(parseISO(infoData?.data?.currentEvent?.end));
+      remainingTime = formatDistanceToNowStrict(parseISO(infoData?.data?.currentEvent?.end ?? ""));
     } catch (error) {
       //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
     }
@@ -70,7 +70,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     // sync keyword input with the query params
     useEffect(() => {
       if (keyword != keywordInput) {
-        setKeywordInput(keyword);
+        setKeywordInput(keyword ?? "");
       }
     }, [keyword]);
   
@@ -132,7 +132,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
                       id="keyword"
                       className="block w-full rounded-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       placeholder="grant, swap and payout etc."
-                      value={keywordInput !== undefined ? keywordInput : keyword}
+                      value={keywordInput !== undefined ? keywordInput : (keyword ?? "")}
                       onChange={(e) => setKeywordInput(e.target.value)}
                       onKeyUp={(e) => {
                         if (e.key == "Enter") {
@@ -149,7 +149,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             </div>
   
             <div className="">
-              <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={infoLoading || proposalsLoading} proposalsPacket={proposalData?.data} query={query} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
+              <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={infoLoading || proposalsLoading} proposalsPacket={proposalData?.data} query={query as any} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
             </div>
 
             <Pagination page={page} setPage={(p) => setQuery({page: p})} limit={limit} total={0} infinite />

@@ -66,16 +66,16 @@ function hexToBytes(hex: string) {
     return bytes;
 }
 
-export function parseV1Metadata(raw: { toHexString: () => string; }): V1FundingCycleMetadata {
+export function parseV1Metadata(raw: BigNumber): V1FundingCycleMetadata | undefined {
     if(!raw) return;
     const bytes = hexToBytes(raw.toHexString()).reverse();
     let ret: V1FundingCycleMetadata = {
-        version: bytes[0],
+        version: bytes[0] as any,
         reservedRate: bytes[1],
         bondingCurveRate: bytes[2],
         reconfigurationBondingCurveRate: bytes[3],
-        payIsPaused: bytes[0] == 1 ? bytes[4] : null,
-        ticketPrintingIsAllowed: bytes[0] == 1 ? bytes[5] : null,
+        payIsPaused: bytes[0] == 1 && !!bytes[4],
+        ticketPrintingIsAllowed: bytes[0] == 1 && !!bytes[5],
         treasuryExtension: ''
     }
     return ret;

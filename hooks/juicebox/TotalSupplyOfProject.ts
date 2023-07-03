@@ -32,7 +32,7 @@ export function useTotalSupplyOfProject({
 export function useTokenBalanceOfProject({
   holder, projectId, version
 }: {
-  holder: string
+  holder: string | undefined
   projectId: BigNumberish | undefined,
   version: 1 | 2 | 3
 }) {

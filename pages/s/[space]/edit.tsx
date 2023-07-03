@@ -37,6 +37,7 @@ import JBSplitEntry from "../../../components/juicebox/JBSplitEntry";
 import Footer from "../../../components/Footer";
 import { getToken } from "next-auth/jwt";
 import { useSession } from "next-auth/react";
+import { classNames } from "../../../libs/tailwind";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -44,7 +45,7 @@ const ProposalMetadataContext = React.createContext({
   space: '' as string
 });
 
-export async function getServerSideProps({ req, query, params}) {
+export async function getServerSideProps({ req, query, params}: any) {
   // check proposal parameter type
   const proposalParam: string = query.proposalId;
   const spaceParam: string = params.space;
@@ -122,7 +123,7 @@ function Form({ space }: { space: string }) {
   const [selected, setSelected] = useState(ProposalStatus[0])
 
   // hooks
-  const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, !metadata.fork && metadata.loadedProposal?.hash, router.isReady);
+  const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, !metadata.fork && metadata.loadedProposal?.hash || undefined, router.isReady);
   
   const { data: session, status } = useSession();
   const { openConnectModal } = useConnectModal();
@@ -141,17 +142,17 @@ function Form({ space }: { space: string }) {
     const payload = {
       ...formData.proposal,
       status: metadata.loadedProposal?.status || selected.value,
-      body: await htmlToMarkdown(formData.proposal.body),
+      body: await htmlToMarkdown(formData.proposal.body ?? ""),
       hash
     };
     console.debug("📚 Nance.editProposal.onSubmit ->", { formData, payload })
 
     const req: ProposalUploadRequest = {
-      proposal: payload
+      proposal: payload as any
     }
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req)
-      .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res.data.hash}` : `/s/${space}/${res.data.hash}`))
+      .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res?.data.hash}` : `/s/${space}/${res?.data.hash}`))
       .catch((err) => {
         console.warn("📗 Nance.editProposal.onSignError ->", err);
       });
@@ -164,8 +165,8 @@ function Form({ space }: { space: string }) {
   useEffect(() => {
     if(formState.errors && Object.keys(formState.errors).length > 0) {
       const actionErrors = formState.errors.proposal?.actions || [];
-      const arr = [];
-      actionErrors.forEach((e, i) => {
+      const arr: any = [];
+      actionErrors.forEach?.((e, i) => {
         if (e) {
           arr.push(i);
         }
@@ -183,7 +184,7 @@ function Form({ space }: { space: string }) {
         <Notification title="Error" description={error.error_description || error.message || error} show={true} close={reset} checked={false} />
       }
       <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
-        <Actions loadedActions={(metadata.fork) ? metadata.loadedProposal?.actions.map(({ uuid, ...rest }) => rest) : metadata.loadedProposal?.actions || []} />
+        <Actions loadedActions={((metadata.fork) ? metadata.loadedProposal?.actions?.map(({ uuid, ...rest }) => rest) : metadata.loadedProposal?.actions) || []} />
 
         <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
           <div>
@@ -264,7 +265,7 @@ function Form({ space }: { space: string }) {
           </Link>
 
           {status === "unauthenticated" && (
-            <button type="button" onClick={() => openConnectModal()}
+            <button type="button" onClick={() => openConnectModal?.()}
               className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
             >
               Connect Wallet
@@ -509,11 +510,7 @@ const items: ActionItem[] = [
   // More items...
 ]
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
-
-function ActionPalettes({ open, setOpen, selectedAction, setSelectedAction }) {
+function ActionPalettes({ open, setOpen, selectedAction, setSelectedAction }: any) {
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -675,7 +672,7 @@ function ReserveActionForm({ genFieldName }:
           projectId: ticket.projectId.toNumber(),
           beneficiary: ticket.beneficiary,
           lockedUntil: ticket.lockedUntil.toNumber(),
-          allocator: ticket.allocator
+          allocator: ticket.allocator || ""
         }
         append(split)
       })
@@ -705,7 +702,7 @@ function ReserveActionForm({ genFieldName }:
         </>
       )}
 
-      {fields?.map((field: JBSplitNanceStruct & { id: string }, index) => (
+      {(fields as any)?.map((field: JBSplitNanceStruct & { id: string }, index: number) => (
         <Disclosure key={field.id} as="div" className="rounded-md bg-blue-100 shadow-sm p-4" defaultOpen={field.beneficiary === ZERO_ADDRESS}>
           <Disclosure.Button as="div" className="flex space-x-6">
             <span>No.{index}</span>

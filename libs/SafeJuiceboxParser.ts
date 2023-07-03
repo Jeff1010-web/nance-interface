@@ -9,19 +9,19 @@ import { SafeMultisigTransaction } from "../models/SafeTypes";
 import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController3_1.json';
 import JBETHPaymentTerminalV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal3_1.json';
 
-function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
+function v1metadata2args(m: V1FundingCycleMetadata | undefined): MetadataArgs | undefined {
     if (!m) return undefined;
     return {
       redemptionRate: BigNumber.from(m.bondingCurveRate),
       reservedRate: BigNumber.from(m.reservedRate),
-      pausePay: m.payIsPaused,
-      allowMinting: m.ticketPrintingIsAllowed,
+      pausePay: !!m.payIsPaused,
+      allowMinting: !!m.ticketPrintingIsAllowed,
       allowTerminalMigration: false,
       allowControllerMigration: false
     }
-}
+  }
 
-export function getVersionOfTx(tx: SafeMultisigTransaction, fallbackVersion: number): number {
+export function getVersionOfTx(tx: SafeMultisigTransaction | undefined, fallbackVersion: number): number {
     const to = tx?.to;
     if (to === JBControllerV3.address) return 3;
     else if (to === JBControllerV2.address) return 2;
@@ -35,7 +35,7 @@ export default function parseSafeJuiceboxTx(
     submissionDate: string, 
     fallbackFee: BigNumber, 
     fallbackConfiguration: BigNumber
-): FundingCycleConfigProps {
+): FundingCycleConfigProps | undefined {
 
     if(version === 1) {
         const iface = new utils.Interface(TerminalV1Contract.contractInterface);
@@ -63,7 +63,7 @@ export default function parseSafeJuiceboxTx(
             fee: fallbackFee, 
             configuration: txDate ? BigNumber.from(txDate) : fallbackConfiguration
             },
-            metadata: v1metadata2args(_metadata),
+            metadata: v1metadata2args(_metadata) as any,
             payoutMods: _payoutMods.map(payoutMod2Split),
             ticketMods: _ticketMods.map(ticketMod2Split)
         };
@@ -96,12 +96,12 @@ export default function parseSafeJuiceboxTx(
                 ..._data, 
                 fee: fallbackFee,
                 configuration: txDate ? BigNumber.from(txDate) : fallbackConfiguration,
-                currency: fac?.distributionLimitCurrency.sub(1),
-                target: fac?.distributionLimit
+                currency: fac?.distributionLimitCurrency.sub(1) || BigNumber.from(0),
+                target: fac?.distributionLimit || BigNumber.from(0)
                 },
                 metadata: _metadata,
-                payoutMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.ETH)?.splits,
-                ticketMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.RESERVED_TOKEN)?.splits
+                payoutMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.ETH)?.splits ?? [],
+                ticketMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.RESERVED_TOKEN)?.splits ?? []
             };
             return newConfig;
         } catch (e) {
@@ -132,12 +132,12 @@ export default function parseSafeJuiceboxTx(
                 ..._data, 
                 fee: fallbackFee,
                 configuration: txDate ? BigNumber.from(txDate) : fallbackConfiguration,
-                currency: fac?.distributionLimitCurrency.sub(1),
-                target: fac?.distributionLimit
+                currency: fac?.distributionLimitCurrency.sub(1) || BigNumber.from(0),
+                target: fac?.distributionLimit || BigNumber.from(0)
                 },
                 metadata: _metadata,
-                payoutMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.ETH)?.splits,
-                ticketMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.RESERVED_TOKEN)?.splits
+                payoutMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.ETH)?.splits ?? [],
+                ticketMods: _groupedSplits.find(s => s.group.toNumber() == JBConstants.SplitGroup.RESERVED_TOKEN)?.splits ?? []
             };
             return newConfig;
         } catch (e) {

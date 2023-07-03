@@ -1,6 +1,6 @@
-import useSWR, { Fetcher } from 'swr'
+import useSWR from 'swr'
 
-const fetcher = (url) => fetch(url).then(res => res.json()).then(j => j.USD);
+const fetcher = (url: string) => fetch(url).then(res => res.json()).then(j => j.USD);
 
 export function useTokenUsdPrice(token: string, shouldFetch: boolean = true) {
   return useSWR(

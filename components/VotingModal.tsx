@@ -7,34 +7,31 @@ import { CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid'
 import Notification from "./Notification"
 import useVote from "../hooks/snapshot/Vote"
 import { useForm } from "react-hook-form"
+import { classNames } from '../libs/tailwind'
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "short" });
-const formatNumber = (num) => formatter.format(num);
+const formatNumber = (num: number) => formatter.format(num);
 
 interface VotingProps {
   modalIsOpen: boolean
   closeModal: () => void
-  address: string
+  address: string | undefined
   spaceId: string
   spaceHideAbstain: boolean
   proposal: SnapshotProposal
   refetch: (option?: any) => void
 }
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
-
 const SUPPORTED_VOTING_TYPES = ['single-choice', 'basic', 'weighted']
 
 export default function VotingModal({ modalIsOpen, closeModal, address, spaceId, spaceHideAbstain, proposal, refetch }: VotingProps) {
   // state
-  const [choice, setChoice] = useState(undefined);
+  const [choice, setChoice] = useState();
   const [reason, setReason] = useState('');
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   // external
   const { data: vp, loading: vpLoading } = useVotingPower(address, spaceId, proposal?.id || '');
-  const { trigger, value, loading, error, reset } = useVote(spaceId, proposal?.id, proposal?.type, choice, reason);
+  const { trigger, value, loading, error, reset } = useVote(spaceId, proposal?.id, proposal?.type, choice as any, reason);
 
   // shorthand functions
   const submitVote = () => {
@@ -125,7 +122,7 @@ export default function VotingModal({ modalIsOpen, closeModal, address, spaceId,
                   </button>
 
                   <div className="w-full grid grid-cols-1 gap-y-8 gap-x-6 items-start sm:grid-cols-12 lg:gap-x-8">
-                    {value &&
+                    {!!value &&
                       <Notification title="Vote result" description="Success!" show={notificationEnabled} close={close} checked={true} autoClose={true} />
                     }
                     {error &&
@@ -278,14 +275,14 @@ function BasicChoiceSelector({ value, setValue, choices }: SelectorProps) {
   )
 }
 
-function WeightedChoiceSelector({ value, setValue, choices }: Omit<SelectorProps, 'value'> & { value: { [key: string]: number } }) {
+function WeightedChoiceSelector({ value, setValue, choices }: Omit<SelectorProps, 'value'> & { value: { [key: string]: number } | undefined }) {
   const { register, getValues, watch } = useForm();
 
   useEffect(() => {
     // sync form state
     const subscription = watch((_) => {
       const values = getValues();
-      const newValue = {};
+      const newValue: {[key: string]: any} = {};
       // remove empty values
       for (const key in values) {
         const val = values[key]

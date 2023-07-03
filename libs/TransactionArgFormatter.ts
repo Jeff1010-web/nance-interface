@@ -1,7 +1,7 @@
 import { BigNumber, utils } from 'ethers'
 import { TransactionDescription } from 'ethers/lib/utils'
 
-export default function formatArgs(abi, obj) {
+export default function formatArgs(abi: string, obj: any) {
     return TransactionArgFormatter
         .withABI(abi)
         .removeAbundantKeys()
@@ -11,7 +11,7 @@ export default function formatArgs(abi, obj) {
 }
 
 export class TransactionArgFormatter {
-    _parser: (o: any) => { data: TransactionDescription; message: string }
+    _parser: (o: any) => { data: TransactionDescription | undefined; message: string }
     _func: (obj: any) => any = (o) => o
 
     constructor(abi: string) {
@@ -51,24 +51,24 @@ export class TransactionArgFormatter {
 }
 
 function _parse(abi: string, rawData: string) {
-    let data: TransactionDescription
+    let data: TransactionDescription | undefined = undefined
     let message = ''
     try {
         const iface = new utils.Interface(abi);
         data = iface.parseTransaction({ data: rawData });
         message = data.signature
-    } catch (e) {
+    } catch (e: any) {
         message = e.message;
     }
 
     return { data, message };
 }
 
-function range(start, end) {
+function range(start: number, end: number) {
     return Array(end - start + 1).fill(1).map((_, idx) => start + idx)
 }
 
-function _removeAbundantKeys(obj) {
+function _removeAbundantKeys(obj: any) {
     if(typeof obj === 'object' && obj.length !== undefined) {
         // Array
         if (Object.keys(obj).length === 2*obj.length) {
@@ -77,7 +77,7 @@ function _removeAbundantKeys(obj) {
             // =>
             // {first: 3, second: 4, third: {top: 1}, fourth: [1,2]]}
             const indexKeys = range(0, obj.length-1).map((i) => i.toString())
-            const newObj = {}
+            const newObj: {[key:string]: any} = {}
             for (const key of Object.keys(obj)) {
                 if(!indexKeys.includes(key)) {
                     newObj[key] = _removeAbundantKeys(obj[key])
@@ -100,30 +100,33 @@ export interface ArgEntry {
 }
 
 function _flattenToEntries(obj: any, level = 0): ArgEntry[] {
-    if(obj !== undefined)
-    return Object.keys(obj).reduce((acc, key) => {
+    if(obj !== undefined) {
+        return Object.keys(obj).reduce((acc: ArgEntry[], key) => {
 
-        if (typeof obj[key] === 'object') {
-            if (BigNumber.isBigNumber(obj[key])) {
-                const bn: BigNumber = obj[key]
-                acc.push({ level, key, value: {
-                    _isBigNumber: true,
-                    _hex: bn.toHexString()
-                } })
+            if (typeof obj[key] === 'object') {
+                if (BigNumber.isBigNumber(obj[key])) {
+                    const bn: BigNumber = obj[key]
+                    acc.push({ level, key, value: {
+                        _isBigNumber: true,
+                        _hex: bn.toHexString()
+                    } })
+                } else {
+                    // array / struct, continue to flatten
+                    const value = obj.length !== undefined ? [] : {}
+                    const subArr = _flattenToEntries(obj[key], level + 1)
+                    acc.push({ level, key, value })
+                    acc.push(...subArr)
+                }
+                
             } else {
-                // array / struct, continue to flatten
-                const value = obj.length !== undefined ? [] : {}
-                const subArr = _flattenToEntries(obj[key], level + 1)
-                acc.push({ level, key, value })
-                acc.push(...subArr)
+                acc.push({ level, key, value: obj[key] })
             }
             
-        } else {
-            acc.push({ level, key, value: obj[key] })
-        }
-        
-        return acc
-    }, []);
+            return acc
+        }, []);
+    } else {
+        return [];
+    }
 }
 
 function _toMultiLineJSON(obj: any) {

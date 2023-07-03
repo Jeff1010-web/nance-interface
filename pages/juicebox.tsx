@@ -23,13 +23,13 @@ import { useMultisigTransactionOf } from '../hooks/SafeHooks';
 import fetchMetadata, { consolidateMetadata, ProjectMetadataV4 } from '../libs/projectMetadata';
 import Footer from '../components/Footer';
 
-function v1metadata2args(m: V1FundingCycleMetadata): MetadataArgs {
+function v1metadata2args(m: V1FundingCycleMetadata | undefined): MetadataArgs | undefined {
   if (!m) return undefined;
   return {
     redemptionRate: BigNumber.from(m.bondingCurveRate),
     reservedRate: BigNumber.from(m.reservedRate),
-    pausePay: m.payIsPaused,
-    allowMinting: m.ticketPrintingIsAllowed,
+    pausePay: !!m.payIsPaused,
+    allowMinting: !!m.ticketPrintingIsAllowed,
     allowTerminalMigration: false,
     allowControllerMigration: false
   }
@@ -57,14 +57,14 @@ export default function JuiceboxPage() {
   const version = query.version;
   const role = query.role;
   // state
-  const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>(undefined);
-  const [metadata, setMetadata] = useState<ProjectMetadataV4>(undefined);
+  const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>();
+  const [metadata, setMetadata] = useState<ProjectMetadataV4>();
   // FIXME remove me on endpoint and here
-  const [currentTime, setCurrentTime] = useState<string>(undefined);
+  const [currentTime, setCurrentTime] = useState<string>();
 
   // external hooks
   const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(version, project);
-  const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : undefined;
+  const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
   const { data: specifiedSafeTx } = useMultisigTransactionOf(owner, query.safeTxHash, query.safeTxHash !== "");
 
   const setSelectedTxOption = (tx: TxOption) => {
@@ -79,7 +79,7 @@ export default function JuiceboxPage() {
     space: "juicebox",
     version: `V${version}`,
     address: address || '0x0000000000000000000000000000000000000000',
-    datetime: currentTime,
+    datetime: currentTime || "",
     network: 'mainnet'
   }, currentTime !== undefined && project === 1);
   const reconfigData = reconfig?.data
@@ -92,22 +92,22 @@ export default function JuiceboxPage() {
   }
 
   // nance post safe transaction
-  const [nonce, setNonce] = useState<string>(undefined);
-  const [error, setError] = useState<string>(undefined)
+  const [nonce, setNonce] = useState<string>();
+  const [error, setError] = useState<string>()
   const [gnosisLoading, setGnosisLoading] = useState(false)
-  const [gnosisResponse, setGnosisResponse] = useState({ success: undefined, data: undefined })
+  const [gnosisResponse, setGnosisResponse] = useState<{ success: boolean, data: any }>()
   const postTransaction = async () => {
     setGnosisLoading(true);
     const gnosis = new GnosisHandler(owner, 'mainnet');
     const txnPartial = {
-      to: reconfigData?.transaction?.address,
+      to: reconfigData?.transaction?.address || "",
       value: 0,
-      data: reconfigData?.transaction?.bytes,
-      nonce: nonce || reconfigData?.nonce
+      data: reconfigData?.transaction?.bytes || "",
+      nonce: nonce || reconfigData?.nonce || ""
     };
     const { safeTxGas } = await gnosis.getEstimate(txnPartial);
     const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
-    const signature = await walletClient.signMessage({
+    const signature = await walletClient?.signMessage({
       account: (await walletClient.getAddresses())[0],
       message: { raw: message }
     }).then((sig) => {
@@ -120,10 +120,10 @@ export default function JuiceboxPage() {
     if (signature === 'signature rejected') { return }
     const txn: QueueSafeTransaction = {
       ...txnPartial,
-      address,
+      address: address || "",
       safeTxGas,
       transactionHash,
-      signature
+      signature: signature || ""
     };
     const res = await gnosis.queueTransaction(txn)
     setGnosisLoading(false);
@@ -238,20 +238,22 @@ export default function JuiceboxPage() {
   )
 }
 
-function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
+const ZERO_BN = BigNumber.from(0);
+
+function V1Compare({ projectId, tx, rawData = "" }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
   // state
-  const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
+  const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>();
 
   // for compare
   const { value: fc, loading: fcIsLoading } = useCurrentFundingCycle({ projectId });
   const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentPayoutMods(projectId, fc?.configured);
   const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentTicketMods(projectId, fc?.configured);
-  const metadata = parseV1Metadata(fc?.metadata);
-  const currentConfig: FundingCycleConfigProps = {
+  const metadata = parseV1Metadata(fc?.metadata || ZERO_BN);
+  const currentConfig: any = {
     version: 1,
     fundingCycle: {
       ...fc,
-      configuration: fc?.configured
+      configuration: fc?.configured || ZERO_BN
     },
     metadata: v1metadata2args(metadata),
     payoutMods: payoutMods?.map(payoutMod2Split),
@@ -262,7 +264,7 @@ function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
   useEffect(() => {
-    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 1), tx?.data || rawData, tx?.submissionDate, fc?.fee, fc?.configured);
+    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 1), tx?.data || rawData, tx?.submissionDate || "", fc?.fee || BigNumber.from(0), fc?.configured || BigNumber.from(0));
     if (newConfig) {
       setPreviewConfig(newConfig);
     }
@@ -275,9 +277,9 @@ function V1Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   )
 }
 
-function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
+function V2Compare({ projectId, tx, rawData = "" }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
   // state
-  const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
+  const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>();
 
   // for compare
   const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId });
@@ -288,7 +290,7 @@ function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.ETH);
   const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN);
   //const metadata = parseV1Metadata(fc?.metadata);
-  const currentConfig: FundingCycleConfigProps = {
+  const currentConfig: any = {
     version: 2,
     fundingCycle: {
       ...fc,
@@ -306,7 +308,7 @@ function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
   useEffect(() => {
-    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 2), tx?.data || rawData, tx?.submissionDate, fee, fc?.configuration);
+    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 2), tx?.data || rawData, tx?.submissionDate || "", fee || BigNumber.from(0), fc?.configuration || BigNumber.from(0));
     if (newConfig) {
       setPreviewConfig(newConfig);
     }
@@ -319,10 +321,10 @@ function V2Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   )
 }
 
-function V3Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
+function V3Compare({ projectId, tx, rawData = "" }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
   const isV3 = true;
   // state
-  const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>(undefined);
+  const [previewConfig, setPreviewConfig] = useState<FundingCycleConfigProps>();
 
   // for compare
   const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId, isV3 });
@@ -333,7 +335,7 @@ function V3Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.ETH, isV3);
   const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN, isV3);
   //const metadata = parseV1Metadata(fc?.metadata);
-  const currentConfig: FundingCycleConfigProps = {
+  const currentConfig: any = {
     version: 2,
     fundingCycle: {
       ...fc,
@@ -351,7 +353,7 @@ function V3Compare({ projectId, tx, rawData }: { projectId: number, tx?: SafeMul
   const dataIsEmpty = !fc || !payoutMods || !ticketMods
 
   useEffect(() => {
-    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 3), tx?.data || rawData, tx?.submissionDate, fee, fc?.configuration);
+    const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 3), tx?.data || rawData, tx?.submissionDate || "", fee || BigNumber.from(0), fc?.configuration || BigNumber.from(0));
     if (newConfig) {
       setPreviewConfig(newConfig);
     }

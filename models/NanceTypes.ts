@@ -39,10 +39,10 @@ interface BaseRequest {
 }
 
 export interface ProposalsRequest extends BaseRequest {
-  cycle: number | undefined;
-  keyword: string | undefined;
-  limit: number | undefined;
-  page: number | undefined;
+  cycle: number | null | undefined;
+  keyword: string | null | undefined;
+  limit: number | null | undefined;
+  page: number | null | undefined;
 }
 
 export type SpaceInfoRequest = BaseRequest;
@@ -187,7 +187,7 @@ export type CustomTransaction = {
   tenderlyId: string;
 }
 
-export function extractFunctionName(str) {
+export function extractFunctionName(str: string) {
   return str.split("(")[0].split(" ").slice(-1)
 }
 
@@ -202,7 +202,7 @@ export function parseFunctionAbiWithNamedArgs(functionAbi: string, args: any[] |
 
   const ethersInterface = new Interface([abi]);
   const paramNames = ethersInterface.fragments[0].inputs.map(p => p.name || "_")
-  let dict = [];
+  let dict: any = [];
   Object.values(args).forEach((val, index) => dict.push([paramNames[index] || '_', val]));
 
   return dict;

@@ -2,10 +2,10 @@ import { JBConstants, JBSplit } from "../../models/JuiceboxTypes";
 import FormattedAddress from "../FormattedAddress";
 // unionBy([2.1], [1.2, 2.3], Math.floor);
 // => [2.1, 1.2]
+// @ts-ignore
 import unionBy from 'lodash.unionby';
 import { BigNumber, utils } from "ethers";
 import ResolvedProject from "../ResolvedProject";
-import { amountSubFee, amountSubFeeV2 } from "../../libs/math";
 import { formatDistanceToNow, fromUnixTime } from "date-fns";
 
 // 'projectId-beneficiary-allocator': mod
@@ -18,7 +18,7 @@ const splits2map = (splits: JBSplit[]) => {
   return map
 }
 const keyOfSplit = (mod: JBSplit) => `${mod.beneficiary}-${mod.projectId}-${mod.allocator}`;
-function orderByPercent(a: { percent: number; }, b: { percent: number; }) {
+function orderByPercent(a: JBSplit, b: JBSplit) {
   if (a.percent > b.percent) {
     return -1;
   }
@@ -29,12 +29,12 @@ function orderByPercent(a: { percent: number; }, b: { percent: number; }) {
   return 0;
 }
 const formatter = new Intl.NumberFormat('en-GB', { style: "decimal" });
-const formatNumber = (num) => formatter.format(num);
+const formatNumber = (num: number) => formatter.format(num);
 // In v1, ETH = 0, USD = 1
 // In v2, ETH = 1, USD = 2, we subtract 1 to get the same value
 const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
   const symbol = currency.toNumber() == 0 ? "Ξ" : "$";
-  const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatNumber(utils.formatEther(amount ?? 0));
+  const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatNumber(parseInt(utils.formatEther(amount ?? 0)));
   return symbol + formatted;
 }
 
@@ -205,14 +205,14 @@ export default function ReconfigurationCompare({ currentFC, previewFC }: Reconfi
 
                     <CompareCell
                       oldVal={formattedSplit(
-                        currentPayoutMaps.get(keyOfSplit(mod))?.percent,
+                        currentPayoutMaps.get(keyOfSplit(mod))?.percent || BigNumber.from(0),
                         currentFC.fundingCycle.currency,
                         currentFC.fundingCycle.target,
                         currentFC.fundingCycle.fee,
                         currentFC.version
                       )}
                       newVal={formattedSplit(
-                        previewPayoutMaps.get(keyOfSplit(mod))?.percent,
+                        previewPayoutMaps.get(keyOfSplit(mod))?.percent || BigNumber.from(0),
                         previewFC.fundingCycle.currency,
                         previewFC.fundingCycle.target,
                         previewFC.fundingCycle.fee,
@@ -244,8 +244,8 @@ export default function ReconfigurationCompare({ currentFC, previewFC }: Reconfi
                     </th>
 
                     <CompareCell
-                      oldVal={currentTicketMaps.has(keyOfSplit(mod)) ? `${(currentTicketMaps.get(keyOfSplit(mod)).percent.toNumber() / JBConstants.TotalPercent.Splits[currentFC.version - 1] * 100).toFixed(2)}%` : undefined}
-                      newVal={previewTicketMaps.has(keyOfSplit(mod)) ? `${(previewTicketMaps.get(keyOfSplit(mod)).percent.toNumber() / JBConstants.TotalPercent.Splits[previewFC.version - 1] * 100).toFixed(2)}%` : undefined} />
+                      oldVal={currentTicketMaps.has(keyOfSplit(mod)) ? `${(currentTicketMaps.get(keyOfSplit(mod))?.percent.toNumber() ?? 0 / JBConstants.TotalPercent.Splits[currentFC.version - 1] * 100).toFixed(2)}%` : undefined}
+                      newVal={previewTicketMaps.has(keyOfSplit(mod)) ? `${(previewTicketMaps.get(keyOfSplit(mod))?.percent.toNumber() ?? 0 / JBConstants.TotalPercent.Splits[previewFC.version - 1] * 100).toFixed(2)}%` : undefined} />
                   </tr>
                 ))}
               </>

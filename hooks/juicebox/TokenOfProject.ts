@@ -22,7 +22,7 @@ export function useTokenAddressOfProject(version: number, projectId: BigNumberis
 export function useSymbolOfERC20(tokenAddress: string | undefined) {
   const provider = useEthersProvider();
   let contract = new Contract(
-    invalidateZeroAddress(tokenAddress), 
+    invalidateZeroAddress(tokenAddress) || "", 
     erc20ABI,
     provider
   )

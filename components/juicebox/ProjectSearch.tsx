@@ -3,10 +3,7 @@ import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
 import { Combobox } from '@headlessui/react'
 import useProjectSearch, { ProjectSearchEntry } from '../../hooks/juicebox/ProjectSearch'
 import useProjectMetadata from '../../hooks/juicebox/ProjectMetadata'
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
+import { classNames } from '../../libs/tailwind'
 
 export interface ProjectOption {
   id: string
@@ -38,9 +35,9 @@ export default function ProjectSearch({ val, setVal, inputStyle = "" }:
           <ChevronDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
         </Combobox.Button>
 
-        {projects?.length > 0 && (
+        {(projects?.length ?? 0) > 0 && (
           <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-            {projects.map((p) => (
+            {projects?.map((p) => (
               <Combobox.Option
                 key={p.id}
                 value={p.projectId}

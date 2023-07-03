@@ -14,7 +14,7 @@ export default function MarkdownWithTOC({ body }: { body: string }) {
             <ReactMarkdown remarkPlugins={[remarkGfm, remarkToc]} 
                 rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeSlug, 
                     [rehypeAutolinkHeadings, {
-                        content(node) {
+                        content(node: any) {
                             return [
                               h('span.mr-1', '#')
                             ]

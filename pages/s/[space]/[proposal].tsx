@@ -31,13 +31,10 @@ import { BigNumber } from "ethers";
 import NewVoteButton from "../../../components/NewVoteButton";
 import MarkdownWithTOC from "../../../components/MarkdownWithTOC";
 import { useSession } from "next-auth/react";
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
+import { classNames } from "../../../libs/tailwind";
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "short" });
-const formatNumber = (num) => formatter.format(num);
+const formatNumber = (num: number) => formatter.format(num);
 
 const getColorOfChoice = (choice: string) => {
   if (choice == 'For') {
@@ -51,7 +48,7 @@ const getColorOfChoice = (choice: string) => {
   }
 }
 
-function openInDiscord(url) {
+function openInDiscord(url: string) {
   try {
     // use URL object to replace https:// with discord://
     const discordUrl = new URL(url);
@@ -62,14 +59,14 @@ function openInDiscord(url) {
   }
 }
 
-function getDomain(url) {
+function getDomain(url: string) {
   // parse data between https:// and .<ending> to get name of domain, dont include www. or .<ending> in the name
   const domain = url.replace(/(https?:\/\/)?(www\.)?/i, '').split('.')[0];
   return domain;
 }
 
-export async function getServerSideProps({ req, params }) {
-  let snapshotProposal: SnapshotProposal;
+export async function getServerSideProps({ req, params }: any) {
+  let snapshotProposal: SnapshotProposal | undefined = undefined;
   let proposal: Proposal;
 
   // check proposal parameter type
@@ -94,7 +91,7 @@ export async function getServerSideProps({ req, params }) {
     props: {
       space: spaceParam,
       proposal: proposal || null,
-      snapshotProposal: snapshotProposal || null
+      snapshotProposal: snapshotProposal
     }
   }
 }
@@ -119,7 +116,10 @@ interface ProposalCommonProps {
   proposalId: number;
 }
 
-const ProposalContext = createContext<{ commonProps: ProposalCommonProps, proposalInfo: SnapshotProposal }>(undefined);
+const ProposalContext = createContext<{ commonProps: ProposalCommonProps | undefined, proposalInfo: SnapshotProposal | undefined }>({
+  commonProps: undefined,
+  proposalInfo: undefined
+});
 
 const ProposalStatus = [
   {title: "Archive", description: "Archive your proposal and exit from governance process."},
@@ -146,7 +146,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
   const error = uploadError || deleteError;
 
   const archiveProposal = async () => {
-    const payload: Pick<Proposal, "hash" | "title" | "body" | "notification" | "actions" | "status"> = {
+    const payload: any = {
       ...proposal,
       status: "Archived"
     };
@@ -159,7 +159,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
     }
     console.debug("📗 Nance.archiveProposal.submit ->", req);
     trigger(req)
-      .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res.data.hash}` : `/s/${space}/${res.data.hash}`))
+      .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res?.data.hash}` : `/s/${space}/${res?.data.hash}`))
       .catch((err) => {
         console.warn("📗 Nance.archiveProposal.onUploadError ->", err);
       });
@@ -168,15 +168,17 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
   const deleteProposal = async () => {
     const hash = proposal?.hash;
     deleteReset();
-    const req: ProposalDeleteRequest = {
-      hash
+    if (hash) {
+      const req: ProposalDeleteRequest = {
+        hash
+      }
+      console.debug("📗 Nance.deleteProposal.onDelete ->", req);
+      deleteTrigger(req)
+        .then(() => router.push(space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`))
+        .catch((err) => {
+          console.warn("📗 Nance.deleteProposal.onDeleteError ->", err);
+        });
     }
-    console.debug("📗 Nance.deleteProposal.onDelete ->", req);
-    deleteTrigger(req)
-      .then(() => router.push(space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`))
-      .catch((err) => {
-        console.warn("📗 Nance.deleteProposal.onDeleteError ->", err);
-      });
   }
 
   // this page need proposal to work
@@ -189,10 +191,10 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
     snapshotSpace: spaceInfo?.data?.snapshotSpace || "",
     status: snapshotProposal?.state || proposal.status,
     title: snapshotProposal?.title || proposal.title,
-    author: snapshotProposal?.author || proposal.authorAddress,
+    author: snapshotProposal?.author || proposal.authorAddress || "",
     coauthors: proposal?.coauthors || [],
-    body: snapshotProposal?.body || proposal.body,
-    created: snapshotProposal?.start || Math.floor(new Date(proposal.date).getTime() / 1000),
+    body: snapshotProposal?.body || proposal.body || "",
+    created: snapshotProposal?.start || (proposal.date ? Math.floor(new Date(proposal.date).getTime() / 1000) : 0),
     end: snapshotProposal?.end || 0,
     snapshot: snapshotProposal?.snapshot || "",
     snapshotHash: proposal?.voteURL || "",
@@ -201,7 +203,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
     governanceCycle: proposal.governanceCycle || 0,
     uuid: proposal.hash || "",
     actions: proposal.actions,
-    proposalId: proposal.proposalId
+    proposalId: proposal.proposalId || 0
   }
 
   return (
@@ -394,7 +396,8 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
 }
 
 function ProposalContent({ body }: { body: string }) {
-  const { commonProps } = useContext(ProposalContext);
+  let { commonProps } = useContext(ProposalContext);
+  commonProps = commonProps as ProposalCommonProps;
 
   return (
     <div className="">
@@ -418,7 +421,7 @@ function ProposalContent({ body }: { body: string }) {
             {commonProps.coauthors.map((coauthor, i) => (
               <Fragment key={i}>
                 <FormattedAddress address={coauthor} style="text-gray-500" overrideURLPrefix="/u/" openInNewWindow={false} />
-                {i < commonProps.coauthors.length - 1 && ', '}
+                {i < commonProps!.coauthors.length - 1 && ', '}
               </Fragment>
             ))}
           </p>
@@ -494,7 +497,7 @@ function ProposalContent({ body }: { body: string }) {
                           
                           <span>{"("}</span>
                           <span>
-                            {parseFunctionAbiWithNamedArgs((action.payload as CustomTransaction).functionName, (action.payload as CustomTransaction).args).map((pair, index) => (
+                            {parseFunctionAbiWithNamedArgs((action.payload as CustomTransaction).functionName, (action.payload as CustomTransaction).args).map((pair: any, index: number) => (
                               <span key={index} className="ml-1 first:ml-0 after:content-[','] last:after:content-[''] text-gray-500 ">
                                 <span className="inline-block">{pair[0]}</span>
                                 <span>{`: ${pair[1]}`}</span>
@@ -540,48 +543,48 @@ function ProposalContent({ body }: { body: string }) {
                   {open ? "See less" : "See more"}
                 </Disclosure.Button>
                 <Disclosure.Panel className="grid grid-cols-2 gaps-4" as="div">
-                  {commonProps.governanceCycle && (
+                  {commonProps!.governanceCycle && (
                     <>
                       <span className="font-medium">Governance Cycle:</span>
-                      <span>{commonProps.governanceCycle}</span>
+                      <span>{commonProps!.governanceCycle}</span>
                     </>
                   )}
 
                   <span className="font-medium">Start date:</span>
-                  <span>{format(toDate(commonProps.created * 1000), "LLL dd, u KK:mm a")}</span>
+                  <span>{format(toDate(commonProps!.created * 1000), "LLL dd, u KK:mm a")}</span>
 
-                  {commonProps.end > 0 && (
+                  {commonProps!.end > 0 && (
                     <>
                       <span className="font-medium">End date:</span>
-                      <span>{format(toDate(commonProps.end * 1000), "LLL dd, u KK:mm a")}</span>
+                      <span>{format(toDate(commonProps!.end * 1000), "LLL dd, u KK:mm a")}</span>
                     </>
                   )}
 
-                  {commonProps.snapshotSpace && commonProps.snapshotHash && (
+                  {commonProps!.snapshotSpace && commonProps!.snapshotHash && (
                     <>
                       <span className="font-medium">Snapshot:</span>
-                      <a target="_blank" rel="noreferrer" href={`https://snapshot.org/#/${commonProps.snapshotSpace}/proposal/${commonProps.snapshotHash}`}>{commonProps.snapshotHash.substring(0, 8)}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
+                      <a target="_blank" rel="noreferrer" href={`https://snapshot.org/#/${commonProps!.snapshotSpace}/proposal/${commonProps!.snapshotHash}`}>{commonProps!.snapshotHash.substring(0, 8)}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
                     </>
                   )}
 
-                  {commonProps.snapshot && (
+                  {commonProps!.snapshot && (
                     <>
                       <span className="font-medium">Block:</span>
-                      <a target="_blank" rel="noreferrer" href={`https://etherscan.io/block/${commonProps.snapshot}`}>{commonProps.snapshot}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
+                      <a target="_blank" rel="noreferrer" href={`https://etherscan.io/block/${commonProps!.snapshot}`}>{commonProps!.snapshot}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
                     </>
                   )}
 
-                  {commonProps.discussion && (
+                  {commonProps!.discussion && (
                     <>
                       <span className="font-medium">Discussion:</span>
-                      <a target="_blank" rel="noreferrer" href={openInDiscord(commonProps.discussion)}>{getDomain(commonProps.discussion)}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
+                      <a target="_blank" rel="noreferrer" href={openInDiscord(commonProps!.discussion)}>{getDomain(commonProps!.discussion)}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
                     </>
                   )}
 
-                  {commonProps.ipfs && (
+                  {commonProps!.ipfs && (
                     <>
                       <span className="font-medium">IPFS:</span>
-                      <a target="_blank" rel="noreferrer" href={`https://snapshot.mypinata.cloud/ipfs/${commonProps.ipfs}`}>{getLastSlash(commonProps.ipfs).slice(0,7)}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
+                      <a target="_blank" rel="noreferrer" href={`https://snapshot.mypinata.cloud/ipfs/${commonProps!.ipfs}`}>{getLastSlash(commonProps!.ipfs).slice(0,7)}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
                     </>
                   )}
                 </Disclosure.Panel>
@@ -611,7 +614,9 @@ function getContractLabel(address: string) {
 
 function ProposalNavigator() {
   // pre load prev and next proposal
-  const { commonProps } = useContext(ProposalContext);
+  let { commonProps } = useContext(ProposalContext);
+  commonProps = commonProps as ProposalCommonProps;
+
   const proposalId = commonProps.proposalId;
   
   const { data: prevProp } = useProposal({space: NANCE_DEFAULT_SPACE, hash: (proposalId-1).toString()}, !!proposalId);
@@ -652,7 +657,7 @@ function ProposalOptions({ proposal, isOverview = false }:
   let votesGroupByChoice: { [choice: string]: number } = {};
   if (!isOverview && displayVotesByGroup) {
     // iterate votesData and group by choice
-    votesGroupByChoice = data?.votesData.reduce((acc, vote) => {
+    votesGroupByChoice = data?.votesData.reduce((acc: { [choice: string]: number }, vote) => {
       const choice = vote.choice;
       if (!acc[choice]) {
         acc[choice] = 0;
@@ -713,7 +718,7 @@ function ProposalVotes() {
 
   const { loading, data, error, refetch } = useProposalVotes(proposalInfo, Math.max((query.page - 1) * VOTES_PER_PAGE, 0), query.sortBy as "created" | "vp", query.withField as "reason" | "app" | "");
 
-  const proposalType = proposalInfo.type;
+  const proposalType = proposalInfo?.type ?? "";
   const isSimpleVoting = !['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(proposalType);
 
   let votes = data?.votesData;
@@ -740,7 +745,7 @@ function ProposalVotes() {
                   if(query.filterBy === "for") setQuery({filterBy: ""})
                   else setQuery({filterBy: "for"})
                 }}>
-                  FOR {formatNumber(proposalInfo.scores[0] || 0)}
+                  FOR {formatNumber(proposalInfo?.scores[0] || 0)}
                 </p>
 
                 <p className={classNames(
@@ -750,13 +755,13 @@ function ProposalVotes() {
                   if(query.filterBy === "against") setQuery({filterBy: ""})
                   else setQuery({filterBy: "against"})
                 }}>
-                  AGAINST {formatNumber(proposalInfo.scores[1] || 0)}
+                  AGAINST {formatNumber(proposalInfo?.scores[1] || 0)}
                 </p>
 
               </div>
 
               <div className='p-3 text-sm text-gray-500'>
-                <ColorBar greenScore={proposalInfo.scores[0] || 0} redScore={proposalInfo.scores[1] || 0} noTooltip />
+                <ColorBar greenScore={proposalInfo?.scores[0] || 0} redScore={proposalInfo?.scores[1] || 0} noTooltip />
               </div>
             </>
           )}
@@ -764,18 +769,18 @@ function ProposalVotes() {
           {!isSimpleVoting && (
             <>
               <div className="flex justify-between">
-                <p className="text-green-500 text-sm">VOTES {formatNumber(proposalInfo.scores_total || 0)}</p>
+                <p className="text-green-500 text-sm">VOTES {formatNumber(proposalInfo?.scores_total || 0)}</p>
               </div>
 
               <div className='p-3 text-sm text-gray-500'>
-                <ColorBar greenScore={proposalInfo.scores_total || 0} redScore={0} noTooltip />
+                <ColorBar greenScore={proposalInfo?.scores_total || 0} redScore={0} noTooltip />
               </div>
             </>
           )}
 
           <div className="flex justify-between">
-            <p className="text-sm">QUORUM {formatNumber(proposalInfo.quorum || 0)}</p>
-            <p className="text-sm">VOTER {formatNumber(proposalInfo.votes || 0)}</p>
+            <p className="text-sm">QUORUM {formatNumber(proposalInfo?.quorum || 0)}</p>
+            <p className="text-sm">VOTER {formatNumber(proposalInfo?.votes || 0)}</p>
           </div>
         </div>
 
@@ -797,15 +802,15 @@ function ProposalVotes() {
 
                         &nbsp;
                         <span className={classNames(
-                          getColorOfChoice(processChoices(proposalInfo.type, vote.choice) as string),
+                          getColorOfChoice(processChoices(proposalInfo?.type, vote.choice) as string),
                           ''
                         )}>
-                          voted {processChoices(proposalInfo.type, vote.choice) as string}
+                          voted {processChoices(proposalInfo?.type, vote.choice) as string}
                         </span>
                       </div>
 
                       <div>
-                        {`${formatNumber(vote.vp)} (${(vote.vp * 100 / proposalInfo?.scores_total).toFixed()}%)`}
+                        {`${formatNumber(vote.vp)} (${(vote.vp * 100 / (proposalInfo?.scores_total ?? 1)).toFixed()}%)`}
                       </div>
 
                     </div>
@@ -818,11 +823,11 @@ function ProposalVotes() {
                       </div>
 
                       <div className="text-xs text-slate-700 font-semibold">
-                        {`${formatNumber(vote.vp)} (${(vote.vp * 100 / proposalInfo?.scores_total).toFixed()}%)`} total
+                        {`${formatNumber(vote.vp)} (${(vote.vp * 100 / (proposalInfo?.scores_total ?? 1)).toFixed()}%)`} total
                       </div>
 
                       <div className="text-sm text-gray-600 py-2">
-                        {(processChoices(proposalInfo.type, vote.choice) as string[]).map((choice, idx) => (
+                        {(processChoices(proposalInfo?.type, vote.choice) as string[]).map((choice, idx) => (
                           <p key={`${vote.id} - ${idx}`}>{choice}</p>
                         ))}
                       </div>
@@ -839,7 +844,7 @@ function ProposalVotes() {
                   }
                 </div>
 
-                <VoterProfile space="jbdao.eth" proposal={proposalInfo.id} voter={vote.voter} isOpen={vote.voter === selectedVoter} />
+                <VoterProfile space="jbdao.eth" proposal={proposalInfo?.id || ""} voter={vote.voter} isOpen={vote.voter === selectedVoter} />
               </div>
             </li>
           ))}

@@ -1,22 +1,18 @@
 import { useEffect, useState } from "react";
 import fetchProjectInfo, { ProjectInfo } from "../hooks/juicebox/Project";
-
+import { classNames } from '../libs/tailwind';
 
 export interface Props {
-    version: number;
-    projectId: number;
+    version: number | undefined;
+    projectId: number | undefined;
     style?: string;
-}
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
 }
 
 export default function ResolvedProject({ version, projectId, style }: Props) {
     // state
     const [isError, setError] = useState<boolean>(false);
     const [isLoading, setLoading] = useState<boolean>(false);
-    const [projectInfo, setProjectInfo] = useState<ProjectInfo>(undefined);
+    const [projectInfo, setProjectInfo] = useState<ProjectInfo>();
 
     useEffect(() => {
         if(!version || !projectId) {

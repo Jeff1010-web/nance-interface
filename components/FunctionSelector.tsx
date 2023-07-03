@@ -3,10 +3,7 @@ import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
 import { Combobox } from '@headlessui/react'
 import { useEtherscanContractABI } from '../hooks/EtherscanHooks'
 import { FunctionFragment, Interface } from 'ethers/lib/utils'
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
+import { classNames } from '../libs/tailwind'
 
 export default function FunctionSelector({ address, val, setVal, setFunctionFragment, inputStyle = "" }:
   {
@@ -19,7 +16,7 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
   const { data: abi, isLoading, error, isProxy } = useEtherscanContractABI(address, address.length === 42)
 
   const ethersInterface = new Interface(abi || []);
-  const fragmentMap = {};
+  const fragmentMap: {[key: string]: FunctionFragment} = {};
   Object.values(ethersInterface.functions || {}).forEach(f => fragmentMap[f.format("full")] = f)
 
   const filteredOption =

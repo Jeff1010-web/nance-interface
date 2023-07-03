@@ -7,11 +7,11 @@ export type TxOption = Option & { tx: SafeMultisigTransaction }
 
 export type AddressMap = { [address: string]: string }
 
-export function SafeTransactionSelector({safeAddress, val, setVal, shouldRun = true, addressMap = {}} : {safeAddress: string, val: TxOption, setVal: (val: TxOption) => void, shouldRun?: boolean, addressMap?: AddressMap}) {
+export function SafeTransactionSelector({safeAddress, val, setVal, shouldRun = true, addressMap = {}} : {safeAddress: string, val: TxOption | undefined, setVal: (val: TxOption) => void, shouldRun?: boolean, addressMap?: AddressMap}) {
     const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 20, shouldRun)
-    const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count, 10, historyTxs?.count !== undefined)
+    const { data: queuedTxs, isLoading: queuedTxsLoading } = useQueuedTransactions(safeAddress, historyTxs?.count ?? 0, 10, historyTxs?.count !== undefined)
 
-    const convertToOptions = (res: SafeMultisigTransactionResponse, status: boolean) => {
+    const convertToOptions = (res: SafeMultisigTransactionResponse | undefined, status: boolean) => {
         if(!res) return []
         return res.results.map((tx) => {
             const addressLabel = addressMap[tx.to] ? `${addressMap[tx.to]}.` : ''

@@ -92,7 +92,7 @@ async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRe
     return json
 }
 
-export function useProposalUpload(space: string, proposalId: string, shouldFetch: boolean = true) {
+export function useProposalUpload(space: string, proposalId: string | undefined, shouldFetch: boolean = true) {
     let url = `${NANCE_PROXY_API_URL}/${space}/proposals`
     let fetcher = uploader
     if(proposalId) {
@@ -105,7 +105,7 @@ export function useProposalUpload(space: string, proposalId: string, shouldFetch
     );
 }
 
-export function useProposalDelete(space: string, uuid: string, shouldFetch: boolean = true) {
+export function useProposalDelete(space: string, uuid: string | undefined, shouldFetch: boolean = true) {
     let url = `${NANCE_PROXY_API_URL}/${space}/proposal/${uuid}`
     let fetcher = deleter
     return useSWRMutation(
@@ -150,12 +150,15 @@ export function getPath(space: string, command: string) {
     return `${NANCE_PROXY_API_URL}/${space}/${command}`;
 }
 
-export async function fetchCreatedProposals(space: string, author: string) {
+export async function fetchCreatedProposals(space: string | undefined, author: string | undefined) {
     if(!space || !author) {
         return {
             success: true,
             data: {
-                proposalInfo: {},
+                proposalInfo: {
+                    proposalIdPrefix: "",
+                    minTokenPassingAmount: 0
+                },
                 proposals: []
             }
         } as APIResponse<ProposalsPacket>;

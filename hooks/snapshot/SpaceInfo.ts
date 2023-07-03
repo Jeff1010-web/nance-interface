@@ -39,7 +39,7 @@ export async function fetchSpaceInfo(spaceId: string): Promise<SpaceInfo> {
     }).then(res => res.json()).then(json => json.data.space)
   }
 
-export default function useSnapshotSpaceInfo(spaceId: string): {data: SpaceInfo, loading: boolean} {
+export default function useSnapshotSpaceInfo(spaceId: string): {data: SpaceInfo | undefined, loading: boolean} {
     const { loading, data } = useQuery<{space: SpaceInfo}>(QUERY, {
         variables: {
           spaceId

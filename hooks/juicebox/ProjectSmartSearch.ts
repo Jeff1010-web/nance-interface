@@ -41,8 +41,8 @@ export default function useJuiceboxProjects(params: Params) {
   const queryString = useCallback(() => {
     let query = "";
     for (const key in queryParams) {
-      if (queryParams[key] !== undefined) {
-        query += `&${key}=${queryParams[key]}`;
+      if ((queryParams as any)[key] !== undefined) {
+        query += `&${key}=${(queryParams as any)[key]}`;
       }
     }
     return query;

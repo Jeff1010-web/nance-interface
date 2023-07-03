@@ -2,10 +2,7 @@ import { useState } from 'react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
 import { Combobox } from '@headlessui/react'
 import { useEnsAddress } from 'wagmi'
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
+import { classNames } from '../libs/tailwind'
 
 export default function ENSAddressInput({ val, setVal, inputStyle = "" }:
   { val: string, setVal: (v: any) => void, inputStyle?: string }) {

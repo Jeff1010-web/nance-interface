@@ -43,7 +43,7 @@ export default function useCurrentFundingCycle({
     contract,
     functionName: 'currentOf',
     args: projectId ? [BigNumber.from(projectId).toHexString()] : null,
-    valueDidChange: useCallback((a, b) => !deepEqFundingCycles(a, b), [])
+    valueDidChange: useCallback((a: any, b: any) => !deepEqFundingCycles(a, b), [])
   })
 }
 

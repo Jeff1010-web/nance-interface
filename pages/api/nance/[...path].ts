@@ -10,6 +10,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Extract the dynamic route path from the request
     let { path } = req.query;
+    if (!path) {
+      path = "";
+    }
     if (!Array.isArray(path)) {
       path = [path];
     }

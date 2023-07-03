@@ -1,6 +1,7 @@
 import { Address } from "wagmi";
 import { useEffect, useState } from "react";
 import { useEtherscanContract } from "../hooks/EtherscanHooks";
+import { classNames } from '../libs/tailwind';
 
 export interface Props {
     address: string;
@@ -8,10 +9,6 @@ export interface Props {
     overrideURLPrefix?: string;
     openInNewWindow?: boolean;
     noLink?: boolean;
-}
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
 }
 
 export default function ResolvedContract({ address, style, overrideURLPrefix, openInNewWindow = true, noLink = false }: Props) {
