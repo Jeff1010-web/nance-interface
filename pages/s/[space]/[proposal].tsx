@@ -66,7 +66,7 @@ function getDomain(url: string) {
 }
 
 export async function getServerSideProps({ req, params }: any) {
-  let snapshotProposal: SnapshotProposal | undefined = undefined;
+  let snapshotProposal: SnapshotProposal | null = null;
   let proposal: Proposal;
 
   // check proposal parameter type
@@ -126,7 +126,7 @@ const ProposalStatus = [
   {title: "Delete", description: "Delete your proposal and this can't be undo."},
 ]
 
-export default function NanceProposalPage({ space, proposal, snapshotProposal }: { space: string, proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }) {
+export default function NanceProposalPage({ space, proposal, snapshotProposal }: { space: string, proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | null }) {
   const router = useRouter();
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
@@ -218,7 +218,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
 
       <div className="min-h-full">
         <main className="py-2">
-          <ProposalContext.Provider value={{ commonProps, proposalInfo: snapshotProposal }}>
+          <ProposalContext.Provider value={{ commonProps, proposalInfo: snapshotProposal || undefined }}>
             <div className="mx-auto mt-4 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
               <div className="space-y-6 lg:col-span-2 lg:col-start-1">
                 {/* Content */}
