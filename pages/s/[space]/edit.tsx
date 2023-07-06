@@ -111,6 +111,7 @@ type ProposalFormValues = Omit<ProposalUploadRequest, "signature">
 const ProposalStatus = [
   {title: "Publish", description: "Publish your proposal and let people join the discussion.", value: "Discussion", display: "Publish"},
   {title: "Draft", description: "Save your proposal as draft, you can publish it later.", value: "Draft", display: "Save as Draft"},
+  {title: "Private Draft", description: "Save your proposal as private, you can publish it later for discussion.", value: "Private", display: "Save as Private"},
 ]
 
 function Form({ space }: { space: string }) {

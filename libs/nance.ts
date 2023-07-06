@@ -24,6 +24,7 @@ export function canEditProposal(status: string) {
         'Discussion',
         'Draft',
         'Temperature Check',
+        'Private',
         undefined,
     ].includes(status));
 };
