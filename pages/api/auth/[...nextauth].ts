@@ -76,6 +76,12 @@ export default async function auth(req: any, res: any) {
         session.user.image = "https://www.fillmurray.com/128/128"
         return session
       },
+      async signIn() {
+        return true;
+      },
+      async redirect({ url }: { url: string }) {
+        return url
+      },
     },
   })
 }

@@ -11,6 +11,7 @@ import {
   WagmiConfig, createConfig,
   configureChains, mainnet
 } from 'wagmi'
+import { watchAccount } from '@wagmi/core'
 import { infuraProvider } from 'wagmi/providers/infura'
 
 import { NextQueryParamProvider } from 'next-query-params';
@@ -19,7 +20,7 @@ import { Flowbite } from 'flowbite-react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
 
-import { SessionProvider } from 'next-auth/react';
+import { SessionProvider, signOut, useSession } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
 
 const graphqlClient = new GraphQLClient({
@@ -57,6 +58,14 @@ const theme = {
 }
 
 function MyApp({ Component, pageProps }: any) {
+  // check for user wallet switch and logout
+  // TODO: refetch proposals on login, but how?
+  const { data: session, status } = useSession();
+  watchAccount((account) => {
+    if (session?.user && account.address !== session?.user?.name) {
+      signOut();
+    }
+  });
   return (
     <>
       <WagmiConfig config={wagmiConfig}>
