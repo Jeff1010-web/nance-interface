@@ -57,7 +57,7 @@ const theme = {
   }
 }
 
-function MyApp({ Component, pageProps }: any) {
+function AccountWatcher() {
   // check for user wallet switch and logout
   // TODO: refetch proposals on login, but how?
   const { data: session, status } = useSession();
@@ -66,10 +66,15 @@ function MyApp({ Component, pageProps }: any) {
       signOut();
     }
   });
+  return null;
+}
+
+function MyApp({ Component, pageProps }: any) {
   return (
     <>
       <WagmiConfig config={wagmiConfig}>
         <SessionProvider refetchInterval={0} session={pageProps.session}>
+          <AccountWatcher />
           <RainbowKitSiweNextAuthProvider>
             <RainbowKitProvider
               chains={chains}
