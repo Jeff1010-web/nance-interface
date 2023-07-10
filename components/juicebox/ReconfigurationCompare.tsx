@@ -242,10 +242,9 @@ export default function ReconfigurationCompare({ currentFC, previewFC }: Reconfi
                                     <FormattedAddress address={mod.beneficiary} />:&nbsp; */}
                       <SplitEntry mod={mod} projectVersion={currentTicketMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} />
                     </th>
-
                     <CompareCell
-                      oldVal={currentTicketMaps.has(keyOfSplit(mod)) ? `${(currentTicketMaps.get(keyOfSplit(mod))?.percent.toNumber() ?? 0 / JBConstants.TotalPercent.Splits[currentFC.version - 1] * 100).toFixed(2)}%` : undefined}
-                      newVal={previewTicketMaps.has(keyOfSplit(mod)) ? `${(previewTicketMaps.get(keyOfSplit(mod))?.percent.toNumber() ?? 0 / JBConstants.TotalPercent.Splits[previewFC.version - 1] * 100).toFixed(2)}%` : undefined} />
+                      oldVal={currentTicketMaps.has(keyOfSplit(mod)) ? `${(currentTicketMaps.get(keyOfSplit(mod))!.percent.toNumber() / 10000000 ?? 0 / JBConstants.TotalPercent.Splits[currentFC.version - 1] * 100).toFixed(2)}%` : undefined}
+                      newVal={previewTicketMaps.has(keyOfSplit(mod)) ? `${(previewTicketMaps.get(keyOfSplit(mod))!.percent.toNumber() / 10000000 ?? 0 / JBConstants.TotalPercent.Splits[previewFC.version - 1] * 100).toFixed(2)}%` : undefined} />
                   </tr>
                 ))}
               </>

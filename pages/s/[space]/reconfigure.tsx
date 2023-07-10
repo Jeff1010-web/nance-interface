@@ -1,27 +1,27 @@
 import { BigNumber, utils } from 'ethers'
 import { useEffect, useState } from "react";
-import SiteNav from "../components/SiteNav";
-import useCurrentFundingCycle, { useCurrentFundingCycleV2 } from '../hooks/juicebox/CurrentFundingCycle';
-import { useCurrentPayoutMods, useCurrentTicketMods } from '../hooks/juicebox/CurrentMods';
-import { JBConstants, parseV1Metadata, payoutMod2Split, ticketMod2Split, V1FundingCycleMetadata } from '../models/JuiceboxTypes'
+import SiteNav from "../../../components/SiteNav";
+import useCurrentFundingCycle, { useCurrentFundingCycleV2 } from '../../../hooks/juicebox/CurrentFundingCycle';
+import { useCurrentPayoutMods, useCurrentTicketMods } from '../../../hooks/juicebox/CurrentMods';
+import { JBConstants, parseV1Metadata, payoutMod2Split, ticketMod2Split, V1FundingCycleMetadata } from '../../../models/JuiceboxTypes'
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
-import { AddressMap, SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
-import useProjectInfo from '../hooks/juicebox/ProjectInfo';
-import ProjectSearch from "../components/juicebox/ProjectSearch";
-import ResolvedProject from "../components/ResolvedProject";
-import ReconfigurationCompare, { FundingCycleConfigProps, MetadataArgs } from '../components/juicebox/ReconfigurationCompare';
-import { useCurrentSplits } from '../hooks/juicebox/CurrentSplits';
-import { useDistributionLimit } from '../hooks/juicebox/DistributionLimit';
-import useTerminalFee from '../hooks/juicebox/TerminalFee';
-import { useReconfigureRequest } from '../hooks/NanceHooks';
+import { AddressMap, SafeTransactionSelector, TxOption } from '../../../components/safe/SafeTransactionSelector';
+import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
+import ProjectSearch from "../../../components/juicebox/ProjectSearch";
+import ResolvedProject from "../../../components/ResolvedProject";
+import ReconfigurationCompare, { FundingCycleConfigProps, MetadataArgs } from '../../../components/juicebox/ReconfigurationCompare';
+import { useCurrentSplits } from '../../../hooks/juicebox/CurrentSplits';
+import { useDistributionLimit } from '../../../hooks/juicebox/DistributionLimit';
+import useTerminalFee from '../../../hooks/juicebox/TerminalFee';
+import { useReconfigureRequest } from '../../../hooks/NanceHooks';
 import { useAccount, useWalletClient } from 'wagmi';
-import { GnosisHandler } from '../libs/gnosis';
-import { QueueSafeTransaction, SafeMultisigTransaction } from '../models/SafeTypes';
-import parseSafeJuiceboxTx, { getVersionOfTx } from '../libs/SafeJuiceboxParser';
-import Tabs from '../components/Tabs';
-import { useMultisigTransactionOf } from '../hooks/SafeHooks';
-import fetchMetadata, { consolidateMetadata, ProjectMetadataV4 } from '../libs/projectMetadata';
-import Footer from '../components/Footer';
+import { GnosisHandler } from '../../../libs/gnosis';
+import { QueueSafeTransaction, SafeMultisigTransaction } from '../../../models/SafeTypes';
+import parseSafeJuiceboxTx, { getVersionOfTx } from '../../../libs/SafeJuiceboxParser';
+import Tabs from '../../../components/Tabs';
+import { useMultisigTransactionOf } from '../../../hooks/SafeHooks';
+import fetchMetadata, { consolidateMetadata, ProjectMetadataV4 } from '../../../libs/projectMetadata';
+import Footer from '../../../components/Footer';
 
 function v1metadata2args(m: V1FundingCycleMetadata | undefined): MetadataArgs | undefined {
   if (!m) return undefined;
