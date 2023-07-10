@@ -1,5 +1,6 @@
 import { BigNumber, utils } from 'ethers'
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import SiteNav from "../../../components/SiteNav";
 import useCurrentFundingCycle, { useCurrentFundingCycleV2 } from '../../../hooks/juicebox/CurrentFundingCycle';
 import { useCurrentPayoutMods, useCurrentTicketMods } from '../../../hooks/juicebox/CurrentMods';
@@ -22,6 +23,8 @@ import Tabs from '../../../components/Tabs';
 import { useMultisigTransactionOf } from '../../../hooks/SafeHooks';
 import fetchMetadata, { consolidateMetadata, ProjectMetadataV4 } from '../../../libs/projectMetadata';
 import Footer from '../../../components/Footer';
+import { useSpaceInfo } from '../../../hooks/NanceHooks';
+import { JB_IPFS_GATEWAY } from '../../../constants/Juicebox';
 
 function v1metadata2args(m: V1FundingCycleMetadata | undefined): MetadataArgs | undefined {
   if (!m) return undefined;
@@ -58,6 +61,7 @@ export async function getServerSideProps(context: any) {
 
 export default function JuiceboxPage(spaceProps: { space: string }) {
   // router
+  const router = useRouter();
   const [query, setQuery] = useQueryParams({
     project: withDefault(NumberParam, 1),
     version: withDefault(NumberParam, 3),
@@ -73,17 +77,8 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
   // FIXME remove me on endpoint and here
   const [currentTime, setCurrentTime] = useState<string>();
 
-  // external hooks
-  const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(version, project);
-  const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
-  const { data: specifiedSafeTx } = useMultisigTransactionOf(owner, query.safeTxHash, query.safeTxHash !== "");
-
-  const setSelectedTxOption = (tx: TxOption) => {
-    setSelectedSafeTx(tx);
-    setQuery({ safeTxHash: tx?.tx?.safeTxHash });
-  }
-
   // nance
+  const { data: infoData, isLoading: infoLoading, error: infoError } = useSpaceInfo({ space: spaceProps.space }, router.isReady);
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient()
   const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest({
@@ -94,6 +89,16 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
     network: 'mainnet'
   }, currentTime !== undefined && project === 1);
   const reconfigData = reconfig?.data
+
+  // external hooks
+  const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, Number(infoData?.data?.juiceboxProjectId));
+  const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
+  const { data: specifiedSafeTx } = useMultisigTransactionOf(owner, query.safeTxHash, query.safeTxHash !== "");
+
+  const setSelectedTxOption = (tx: TxOption) => {
+    setSelectedSafeTx(tx);
+    setQuery({ safeTxHash: tx?.tx?.safeTxHash });
+  }
 
   // this will override selectedSafeTx from options
   const rawData = reconfig?.data?.transaction?.bytes
@@ -163,17 +168,17 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
   }, [projectInfo]);
 
   const notSupportedByNance = project !== 1 && role === "Bookkeeper";
-
+  const logo = (metadata?.logoUri?.includes('ipfs://')) ? `${JB_IPFS_GATEWAY}/${metadata?.logoUri?.split('ipfs://')[1]}` : metadata?.logoUri;
   return (
     <>
       <SiteNav pageTitle="Juicebox Reconfiguration Helper" withWallet />
       <Tabs tabs={TABS} currentTab={role} setCurrentTab={(tab) => setQuery({ role: tab })} />
       <div className="bg-white">
         <div id="project-info" className="flex flex-col items-center py-2 mx-6">
-          <img className="mx-auto h-32 w-32 flex-shrink-0 rounded-full" src={metadata?.logoUri || '/images/juiceboxdao_logo.gif'} alt="project logo" />
+          <img className="mx-auto h-32 w-32 flex-shrink-0 rounded-full" src={logo || '/images/juiceboxdao_logo.gif'} alt="project logo" />
           <p className="text-base font-medium text-gray-900">{metadata?.name || `Untitled Project (${project})`}</p>
           <dd className="text-gray-700 break-words line-clamp-3 w-1/3">{metadata?.description || 'Loading metadata...'}</dd>
-          <ResolvedProject projectId={project} version={version} />
+          <ResolvedProject projectId={Number(infoData?.data.juiceboxProjectId)} version={version} />
         </div>
 
         <div id="project-selector" className="flex flex-col items-center gap-x-3 pt-2 mx-6">

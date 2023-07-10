@@ -1,3 +1,5 @@
+import { JB_IPFS_GATEWAY } from "../constants/Juicebox"
+
 type TokenRef = {
     value: string
     type: 'project' | 'erc20'
@@ -60,6 +62,6 @@ export const consolidateMetadata = (
 }
 
 export default async function fetchMetadata(uri: string) {
-  const res = await fetch(`https://jbx.mypinata.cloud/ipfs/${uri}`)
+  const res = await fetch(`${JB_IPFS_GATEWAY}/${uri}`)
   return await res.json()
 }

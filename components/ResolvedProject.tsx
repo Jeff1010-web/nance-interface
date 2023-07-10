@@ -56,7 +56,7 @@ export default function ResolvedProject({ version, projectId, style }: Props) {
                     "text-xs text-gray-500",
                     style,
                 )}>
-                {`Project #${projectId} (V${version})`}
+                {`Project #${projectId}`}
             </span>
         )
     }
@@ -68,7 +68,7 @@ export default function ResolvedProject({ version, projectId, style }: Props) {
                 style,
             )}
             href={version == 1 ? `https://juicebox.money/p/${projectInfo?.handle}` : `https://juicebox.money/${projectInfo?.handle ? `@${projectInfo?.handle}` : `v2/p/${projectId}`}`}>
-            {projectInfo?.handle ? `@${projectInfo.handle} (V${version})` : `Project #${projectId} (V${version})`}
+            {projectInfo?.handle ? `@${projectInfo.handle}` : `Project #${projectId}`}
         </a>
     )
 }
