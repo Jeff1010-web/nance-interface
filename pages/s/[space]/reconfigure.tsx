@@ -45,7 +45,18 @@ const CONTRACT_MAP: AddressMap = {
   "0xB9E4B658298C7A36BdF4C2832042A5D6700c3Ab8": "ModStore"
 }
 
-export default function JuiceboxPage() {
+export async function getServerSideProps(context: any) {
+  const spaceParam: string = context.params.space;
+
+  // Pass data to the page via props
+  return {
+    props: {
+      space: spaceParam
+    }
+  }
+}
+
+export default function JuiceboxPage(spaceProps: { space: string }) {
   // router
   const [query, setQuery] = useQueryParams({
     project: withDefault(NumberParam, 1),
@@ -76,7 +87,7 @@ export default function JuiceboxPage() {
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient()
   const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest({
-    space: "juicebox",
+    space: spaceProps.space,
     version: `V${version}`,
     address: address || '0x0000000000000000000000000000000000000000',
     datetime: currentTime || "",
