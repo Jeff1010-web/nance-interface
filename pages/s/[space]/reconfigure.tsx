@@ -91,7 +91,7 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
   const reconfigData = reconfig?.data
 
   // external hooks
-  const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, Number(infoData?.data?.juiceboxProjectId));
+  const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, parseInt(infoData?.data?.juiceboxProjectId ?? ""));
   const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
   const { data: specifiedSafeTx } = useMultisigTransactionOf(owner, query.safeTxHash, query.safeTxHash !== "");
 
@@ -167,6 +167,16 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
     }
   }, [projectInfo]);
 
+  // sync current projectId as default value in ProjectSearch
+  useEffect(() => {
+    const pid = infoData?.data?.juiceboxProjectId;
+    if (pid) {
+      setQuery({
+        project: parseInt(pid)
+      })
+    }
+  }, [infoData])
+
   const notSupportedByNance = project !== 1 && role === "Bookkeeper";
   const logo = (metadata?.logoUri?.includes('ipfs://')) ? `${JB_IPFS_GATEWAY}/${metadata?.logoUri?.split('ipfs://')[1]}` : metadata?.logoUri;
   return (
@@ -178,7 +188,7 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
           <img className="mx-auto h-32 w-32 flex-shrink-0 rounded-full" src={logo || '/images/juiceboxdao_logo.gif'} alt="project logo" />
           <p className="text-base font-medium text-gray-900">{metadata?.name || `Untitled Project (${project})`}</p>
           <dd className="text-gray-700 break-words line-clamp-3 w-1/3">{metadata?.description || 'Loading metadata...'}</dd>
-          <ResolvedProject projectId={Number(infoData?.data.juiceboxProjectId)} version={version} />
+          <ResolvedProject projectId={parseInt(infoData?.data?.juiceboxProjectId ?? "1")} version={version} />
         </div>
 
         <div id="project-selector" className="flex flex-col items-center gap-x-3 pt-2 mx-6">
