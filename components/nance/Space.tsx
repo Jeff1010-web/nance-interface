@@ -1,5 +1,5 @@
 import { DocumentMagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { formatDistanceToNowStrict, parseISO } from "date-fns";
+import { formatDistanceToNowStrict, parseISO, format } from "date-fns";
 import { useQueryParams, StringParam, withDefault, BooleanParam, NumberParam } from "next-query-params";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -9,6 +9,7 @@ import SearchableComboBox, { Option } from "../SearchableComboBox";
 import ProposalCards from "./ProposalCards";
 import { getLastSlash } from "../../libs/nance";
 import Pagination from "../Pagination";
+import { Tooltip } from "flowbite-react";
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
     // State
@@ -35,8 +36,10 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     
     // Data process
     let remainingTime = "-";
+    let endTime;
     try {
-      remainingTime = formatDistanceToNowStrict(parseISO(infoData?.data?.currentEvent?.end ?? ""));
+      endTime = parseISO(infoData?.data?.currentEvent?.end ?? "")
+      remainingTime = formatDistanceToNowStrict(endTime);
     } catch (error) {
       //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
     }
@@ -95,7 +98,11 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
                 </div>
   
                 <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-blue-600 bg-indigo-100">
-                  <p className="text-2xl font-semibold">{remainingTime} remaining</p>
+                  <Tooltip content={format(endTime ?? 0, 'EEE MMM dd yyyy HH:mm a')}>
+                    <span className="tooltip-trigger">
+                      <p className="text-2xl font-semibold">{remainingTime} remaining</p>
+                    </span>
+                  </Tooltip>
                   <a className="text-sm text-gray-900"
                     href="https://info.juicebox.money/dao/process/" target="_blank" rel="noopener noreferrer">
                     {infoData?.data?.currentEvent?.title || "Unknown"} of GC{infoData?.data?.currentCycle}
