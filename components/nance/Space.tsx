@@ -37,8 +37,10 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     // Data process
     let remainingTime = "-";
     let endTime;
+    let formattedEndTime = "-";
     try {
       endTime = parseISO(infoData?.data?.currentEvent?.end ?? "")
+      formattedEndTime = endTime ? format(endTime, 'EEE MMM dd yyyy HH:mm a') : '-';
       remainingTime = formatDistanceToNowStrict(endTime);
     } catch (error) {
       //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
@@ -98,7 +100,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
                 </div>
   
                 <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-blue-600 bg-indigo-100">
-                  <Tooltip content={format(endTime ?? 0, 'EEE MMM dd yyyy HH:mm a')}>
+                  <Tooltip content={formattedEndTime}>
                     <span className="tooltip-trigger">
                       <p className="text-2xl font-semibold">{remainingTime} remaining</p>
                     </span>
