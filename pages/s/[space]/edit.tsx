@@ -180,7 +180,7 @@ function Form({ space }: { space: string }) {
 
   return (
     <FormProvider {...methods} >
-      <Notification title="Success" description={`${isNew ? "Created" : "Updated"} proposal ${data?.data.hash}`} show={data !== undefined} close={reset} checked={true} />
+      <Notification title="Success" description={`${isNew ? "Created" : "Updated"} proposal ${data?.data?.hash}`} show={data !== undefined} close={reset} checked={true} />
       {error &&
         <Notification title="Error" description={error.error_description || error.message || error} show={true} close={reset} checked={false} />
       }
