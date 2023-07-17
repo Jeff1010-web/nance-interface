@@ -10,12 +10,15 @@ import ProposalCards from "./ProposalCards";
 import { getLastSlash } from "../../libs/nance";
 import Pagination from "../Pagination";
 import { Tooltip } from "flowbite-react";
+import { Switch } from "@headlessui/react";
+import { classNames } from "../../libs/tailwind";
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
     // State
     const [cycleOption, setCycleOption] = useState<Option>();
     const [options, setOptions] = useState<Option[]>([{ id: "Loading", label: `Loading...`, status: true }]);
     const [keywordInput, setKeywordInput] = useState<string>();
+    const [showDrafts, setShowDrafts] = useState(true);
     // QueryParams
     const router = useRouter();
     const [query, setQuery] = useQueryParams({
@@ -33,6 +36,9 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     const { data: proposalData, isLoading: proposalsLoading, error: proposalError } = useProposals({ space, cycle, keyword, page, limit }, router.isReady);
     const currentCycle = cycle || infoData?.data?.currentCycle;
     const allCycle = { id: "All", label: `All`, status: true };
+
+    // Flag
+    const hasDrafts = (proposalData?.data?.privateProposals?.length ?? 0) > 0
     
     // Data process
     let remainingTime = "-";
@@ -114,7 +120,34 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             </div>
   
             <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">
-              <div className="md:w-1/5">
+              {hasDrafts && (
+                <div className="md:w-1/12">
+                  <Switch.Group as="div" className="flex flex-col">
+                    <Switch.Label as="span" className="text-sm">
+                      <span className="font-medium text-gray-900">Show drafts</span>
+                    </Switch.Label>
+                    <Switch
+                      checked={showDrafts}
+                      onChange={setShowDrafts}
+                      className={classNames(
+                        showDrafts ? 'bg-indigo-600' : 'bg-gray-200',
+                        'relative mt-2 inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2'
+                      )}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={classNames(
+                          showDrafts ? 'translate-x-5' : 'translate-x-0',
+                          'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out'
+                        )}
+                      />
+                    </Switch>
+                  </Switch.Group>
+                </div>
+              )}
+              
+
+              <div className={hasDrafts ? "md:w-2/12" : "md:w-3/12"}>
                 <SearchableComboBox val={cycleOption} setVal={(o) => {
                   let opt = o as Option;
                   setCycleOption(opt);
@@ -126,7 +159,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
               </div>
   
               {/* Search bar and limit */}
-              <div className="md:w-4/5">
+              <div className="md:w-9/12">
                 <label htmlFor="keyword" className="block text-sm font-medium text-gray-700">
                   Search proposals
                 </label>
@@ -158,7 +191,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             </div>
   
             <div className="">
-              <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={infoLoading || proposalsLoading} proposalsPacket={proposalData?.data} query={query as any} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} />
+              <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={infoLoading || proposalsLoading} proposalsPacket={proposalData?.data} query={query as any} setQuery={setQuery} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} showDrafts={showDrafts} />
             </div>
 
             <Pagination page={page} setPage={(p) => setQuery({page: p})} limit={limit} total={0} infinite />

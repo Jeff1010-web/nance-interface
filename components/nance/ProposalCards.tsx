@@ -49,12 +49,13 @@ function getRandomInt(max: number) {
     return Math.floor(Math.random() * max);
 }
 
-export default function ProposalCards({ loading, proposalsPacket, query, setQuery, maxCycle, proposalUrlPrefix }:
+export default function ProposalCards({ loading, proposalsPacket, query, setQuery, maxCycle, proposalUrlPrefix, showDrafts }:
     {
       loading: boolean, proposalsPacket: ProposalsPacket | undefined,
       query: { cycle: number, keyword: string, sortBy: string, sortDesc: boolean, page: number, limit: number },
       setQuery: (o: object) => void, maxCycle: number,
-      proposalUrlPrefix: string
+      proposalUrlPrefix: string,
+      showDrafts: boolean
     }) {
     const router = useRouter();
     const [infoText, setInfoText] = useState('');
@@ -214,6 +215,105 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                 </tr>
               </thead>
               <tbody>
+                {showDrafts && !query.keyword && proposalsPacket?.privateProposals?.map((proposal, proposalIdx) => (   
+                  <tr key={proposal.hash} className="hover:bg-slate-100">
+                    <td
+                      className={classNames(
+                        proposalIdx === 0 ? '' : 'border-t border-transparent',
+                        'relative py-4 pl-6 pr-3 text-sm hidden md:table-cell'
+                      )}
+                    >
+                      <Link href={`${proposalUrlPrefix}${proposal.proposalId || proposal.hash}`} className="font-medium text-gray-900">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                          Private
+                        </span>
+                      </Link>
+  
+                      {proposalIdx !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-gray-200" /> : null}
+                    </td>
+                    <td
+                      className={classNames(
+                        proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                        'px-3 py-3.5 text-sm text-gray-500'
+                      )}
+                    >
+                      <Link href={`${proposalUrlPrefix}${proposal.proposalId || proposal.hash}`} className="flex flex-col space-y-1">
+                        <div className="text-gray-900 block md:hidden">
+                          {(proposal.status === 'Discussion' || proposal.status === 'Draft' || proposal.status === 'Revoked') && (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                              {proposal.status}
+                            </span>
+                          )}
+                          {proposal.status === 'Approved' && (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              Approved
+                            </span>
+                          )}
+                          {proposal.status === 'Cancelled' && (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                              Cancelled
+                            </span>
+                          )}
+                          {(proposal.status !== 'Discussion' && proposal.status !== 'Approved' && proposal.status !== 'Cancelled' && proposal.status !== 'Draft' && proposal.status !== 'Revoked') && (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                              {proposal.status}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs">
+                          {`GC-${proposal.governanceCycle}, ${proposalsPacket?.proposalInfo.proposalIdPrefix}${proposal.proposalId || "tbd"} - by `}
+                          <FormattedAddress address={proposal.authorAddress} noLink />
+                        </span>
+  
+                        <p className="break-words text-base text-black">
+                          {proposal.title}
+                        </p>
+
+                        <div className="md:hidden">
+                          <VotesBar proposal={proposal} snapshotProposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} />
+                        </div>
+                      </Link>
+  
+                    </td>
+                    <td
+                      className={classNames(
+                        proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                        'hidden px-3 py-3.5 text-sm text-gray-500 md:table-cell'
+                      )}
+                    >
+                      <VotesBar proposal={proposal} snapshotProposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} />
+                    </td>
+                    <td
+                      className={classNames(
+                        proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                        'hidden px-3 py-3.5 text-sm text-black md:table-cell text-center'
+                      )}
+                    >
+                      <Link href={`${proposalUrlPrefix}${proposal.proposalId || proposal.hash}`}>
+                        {proposal?.voteResults?.votes || '-'}
+                      </Link>
+                    </td>
+                    <td
+                      className={classNames(
+                        proposalIdx === 0 ? '' : 'border-t border-gray-200',
+                        'px-3 py-3.5 text-sm text-gray-500 hidden md:table-cell text-center'
+                      )}
+                    >
+                      {!votedData?.[getLastSlash(proposal.voteURL)] && snapshotProposalDict[getLastSlash(proposal.voteURL)] ?
+                        <NewVoteButton proposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} refetch={refetch} isSmall />
+                      : <div className="flex justify-center">{getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}</div>}
+                    </td>
+                  </tr>
+                ))}
+
+                {showDrafts && !query.keyword && (proposalsPacket?.privateProposals?.length ?? 0) > 0 && ( 
+                  <tr>
+                    <td colSpan={5}>
+                      <hr className="border-dashed border-2" />
+                    </td>
+                  </tr>
+                )}
+
                 {sortedProposals.map((proposal, proposalIdx) => (   
                   <tr key={proposal.hash} className="hover:bg-slate-100">
                     <td
