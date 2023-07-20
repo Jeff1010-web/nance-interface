@@ -795,16 +795,19 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="isolate inline-flex rounded-md col-span-4">
-        <div
-          className="relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300"
-        >
-          <ClipboardDocumentCheckIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
-          Simulation
-        </div>
         <button
           type="button"
-          className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
+          className={classNames(
+            "relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300",
+            shouldSimulate ? "" : "hover:bg-gray-50 focus:z-10"
+          )}
           onClick={() => setShouldSimulate(true)}
+        >
+          <ClipboardDocumentCheckIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+          Simulate
+        </button>
+        <div
+          className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300"
         >
           {shouldSimulate ? 
           (isLoading ? 
@@ -812,7 +815,7 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
             <CheckCircleIcon className="-ml-0.5 h-5 w-5 text-green-400" aria-hidden="true" /> : 
             <XCircleIcon className="-ml-0.5 h-5 w-5 text-red-400" aria-hidden="true" />) )
           : <CursorArrowRaysIcon className="-ml-0.5 h-5 w-5 text-blue-400" aria-hidden="true" />}
-        </button>
+        </div>
       </div>
 
       <div className="col-span-4 sm:col-span-2">
