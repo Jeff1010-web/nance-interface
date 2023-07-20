@@ -60,6 +60,10 @@ export function useTendelySimulate(args: TenderlySimulateArgs, shouldFetch: bool
 };
 
 export function encodeTransactionInput(functionName: string, args: any[]) {
+    if (!functionName || !args) {
+        return "";
+    }
+
     try {
       const iface = new Interface([functionName]);
       return iface.encodeFunctionData(functionName.split('function ')[1], args);

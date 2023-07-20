@@ -757,7 +757,7 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
   const [functionFragment, setFunctionFragment] = useState<FunctionFragment>();
   const [shouldSimulate, setShouldSimulate] = useState<boolean>();
 
-  const { watch, control, formState: { errors }, getValues, getFieldState, formState: { isDirty }} = useFormContext();
+  const { watch, control, formState: { errors }, getValues, getFieldState, formState: { isDirty }, setValue } = useFormContext();
   const { replace } = useFieldArray<{
     args: any[];
     [key: string]: any;
@@ -781,6 +781,7 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
     })
   
   useEffect(() => {
+    // clear args of last selected function
     if(functionFragment?.inputs && replace) {
       console.debug(functionFragment)
       replace(functionFragment.inputs.map(p => ""))
@@ -791,6 +792,14 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
     // if the function input changed, we need to re-run simulation
     setShouldSimulate(false);
   }, [getFieldState(genFieldName("args")).isDirty, getValues(genFieldName("functionName"))])
+
+  useEffect(() => {
+    // set simulationId which will be uploaded within action
+    const simulationId = data?.simulation?.id;
+    if (simulationId) {
+      setValue(genFieldName("tenderlyId"), simulationId);
+    }
+  }, [data])
 
   return (
     <div className="grid grid-cols-4 gap-6">
