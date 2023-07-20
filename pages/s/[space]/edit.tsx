@@ -17,11 +17,11 @@ import { Editor } from '@tinymce/tinymce-react';
 
 import { markdownToHtml, htmlToMarkdown } from '../../../libs/markdown';
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { CheckIcon, ChevronDownIcon, CurrencyDollarIcon, BoltIcon, PlusIcon, ArrowsUpDownIcon, UserGroupIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { CheckIcon, ChevronDownIcon, CurrencyDollarIcon, BoltIcon, PlusIcon, ArrowsUpDownIcon, UserGroupIcon, XMarkIcon, ClipboardDocumentCheckIcon, XCircleIcon, ArrowPathIcon, CursorArrowRaysIcon } from "@heroicons/react/24/solid";
 import { Combobox, Dialog, Disclosure, Listbox, Transition } from '@headlessui/react';
 import { ErrorMessage } from "@hookform/error-message";
 import FunctionSelector from "../../../components/FunctionSelector";
-import { FunctionFragment } from "ethers/lib/utils";
+import { FormatTypes, FunctionFragment } from "ethers/lib/utils";
 import { CONTRACT_MAP, ZERO_ADDRESS } from "../../../constants/Contract";
 import { useCurrentFundingCycleV2 } from "../../../hooks/juicebox/CurrentFundingCycle";
 import { useCurrentSplits } from "../../../hooks/juicebox/CurrentSplits";
@@ -38,6 +38,9 @@ import Footer from "../../../components/Footer";
 import { getToken } from "next-auth/jwt";
 import { useSession } from "next-auth/react";
 import { classNames } from "../../../libs/tailwind";
+import { encodeTransactionInput, useTendelySimulate } from "../../../hooks/TenderlyHooks";
+import { utils } from "ethers";
+import useProjectInfo from "../../../hooks/juicebox/ProjectInfo";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -351,11 +354,17 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
   const [open, setOpen] = useState(false)
   const [selectedAction, setSelectedAction] = useState<ActionItem>()
 
-  const { register } = useFormContext();
+  const { register, getValues } = useFormContext();
   const { fields, append, remove, replace } = useFieldArray<{
     actions: Action[];
     [key: string]: any;
   }>({ name: "proposal.actions" });
+
+  const {space} = useContext(ProposalMetadataContext);
+  const { data: spaceInfo } = useSpaceInfo({space});
+  const projectId = spaceInfo?.data?.juiceboxProjectId;
+  const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, parseInt(projectId ?? ""));
+  const projectOwner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
 
   const newAction = (a: ActionItem) => {
     setOpen(false)
@@ -434,7 +443,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
                 {...register(`proposal.actions.${index}.type`, { shouldUnregister: true, value: field.type })}
                 className="hidden"
               />
-              <CustomTransactionActionForm genFieldName={genFieldName(index)} />
+              <CustomTransactionActionForm genFieldName={genFieldName(index)} projectOwner={projectOwner} />
             </div>
           )
         } else {
@@ -742,16 +751,34 @@ function ReserveActionForm({ genFieldName }:
   )
 }
 
-function CustomTransactionActionForm({ genFieldName }:
-  { genFieldName: (field: string) => any }) {
+function CustomTransactionActionForm({ genFieldName, projectOwner }:
+  { genFieldName: (field: string) => any, projectOwner: string | undefined }) {
 
   const [functionFragment, setFunctionFragment] = useState<FunctionFragment>();
+  const [shouldSimulate, setShouldSimulate] = useState<boolean>();
 
-  const { watch, control, formState: { errors } } = useFormContext();
+  const { watch, control, formState: { errors }, getValues, getFieldState, formState: { isDirty }} = useFormContext();
   const { replace } = useFieldArray<{
     args: any[];
     [key: string]: any;
   }>({ name: genFieldName("args") });
+
+  const args = functionFragment?.inputs?.map((param, index) => getValues(genFieldName(`args.${index}`)));
+  const input = encodeTransactionInput(functionFragment?.format(FormatTypes.minimal) || "", args || []);
+  const simulateArgs = {
+    from: projectOwner || "",
+    to: getValues(genFieldName("contract")) as string,
+    value: parseInt(getValues(genFieldName("value"))),
+    input
+  };
+  const { data, isLoading } = useTendelySimulate(simulateArgs, !!projectOwner && !!input && shouldSimulate);
+
+  console.log("CustomTransactionActionForm.tenderly", 
+    {
+      args: simulateArgs, 
+      formValues: getValues(),
+      data: data
+    })
   
   useEffect(() => {
     if(functionFragment?.inputs && replace) {
@@ -760,8 +787,34 @@ function CustomTransactionActionForm({ genFieldName }:
     }
   }, [functionFragment, replace])
 
+  useEffect(() => {
+    // if the function input changed, we need to re-run simulation
+    setShouldSimulate(false);
+  }, [getFieldState(genFieldName("args")).isDirty, getValues(genFieldName("functionName"))])
+
   return (
     <div className="grid grid-cols-4 gap-6">
+      <div className="isolate inline-flex rounded-md col-span-4">
+        <div
+          className="relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300"
+        >
+          <ClipboardDocumentCheckIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+          Simulation
+        </div>
+        <button
+          type="button"
+          className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
+          onClick={() => setShouldSimulate(true)}
+        >
+          {shouldSimulate ? 
+          (isLoading ? 
+            <ArrowPathIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" /> : (data?.simulation.status ? 
+            <CheckCircleIcon className="-ml-0.5 h-5 w-5 text-green-400" aria-hidden="true" /> : 
+            <XCircleIcon className="-ml-0.5 h-5 w-5 text-red-400" aria-hidden="true" />) )
+          : <CursorArrowRaysIcon className="-ml-0.5 h-5 w-5 text-blue-400" aria-hidden="true" />}
+        </button>
+      </div>
+
       <div className="col-span-4 sm:col-span-2">
         <AddressForm label="Contract" fieldName={genFieldName("contract")} />
       </div>

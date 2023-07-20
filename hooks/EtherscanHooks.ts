@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import { usePublicClient } from 'wagmi'
-import { parseAbi } from 'viem'
 import { Interface } from 'ethers/lib/utils'
 
 const API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_KEY

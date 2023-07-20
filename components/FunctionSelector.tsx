@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
 import { Combobox } from '@headlessui/react'
 import { useEtherscanContractABI } from '../hooks/EtherscanHooks'
@@ -8,7 +8,8 @@ import { classNames } from '../libs/tailwind'
 export default function FunctionSelector({ address, val, setVal, setFunctionFragment, inputStyle = "" }:
   {
     address: string, val: string,
-    setVal: (v: any) => void, setFunctionFragment: (v: FunctionFragment) => void,
+    setVal: (v: any) => void, 
+    setFunctionFragment: (v: FunctionFragment) => void,
     inputStyle?: string
   }) {
 
@@ -26,8 +27,10 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
         return functionName.toLowerCase().includes(query.toLowerCase())
       })
 
+
   return (
-    <Combobox as="div" value={val} onChange={(val) => {
+    <Combobox as="div" value={val} onChange={(val: string) => {
+      console.debug("set functionSelector val", val)
       setVal(val)
       try {
         setFunctionFragment(fragmentMap[val])

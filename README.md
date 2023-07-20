@@ -48,7 +48,11 @@ Env:
 
 #### WalletConnect V2 ProjectId
 
-`WALLETCONNECT_PROJECT_ID`
+`NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
+
+#### Tenderly Simulation
+
+`TENDERLY_ACCESS_KEY`, this will be used to run simulation.
 
 ### Framework & Library
 

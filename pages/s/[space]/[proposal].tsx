@@ -515,6 +515,10 @@ function ProposalContent({ body }: { body: string }) {
                             </span>
                           )}
 
+                          <a href={`${NANCE_API_URL}/${commonProps?.space}/simulate/${action.uuid}`} className="ml-2">
+                            <ArrowTopRightOnSquareIcon  className="h-4 w-4 inline" />
+                          </a>
+
                         </span>
                       )}
 
