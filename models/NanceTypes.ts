@@ -185,6 +185,7 @@ export type CustomTransaction = {
   functionName: string;
   args: any[];
   tenderlyId: string;
+  tenderlyStatus: string;
 }
 
 export function extractFunctionName(str: string) {

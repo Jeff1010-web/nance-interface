@@ -9,7 +9,7 @@ import GenericButton from "../../../components/GenericButton";
 import { useProposalUpload, useSpaceInfo } from "../../../hooks/NanceHooks";
 import { imageUpload } from "../../../hooks/ImageUpload";
 import { fileDrop } from "../../../hooks/FileDrop";
-import { Proposal, ProposalUploadRequest, Action, JBSplitNanceStruct } from "../../../models/NanceTypes";
+import { Proposal, ProposalUploadRequest, Action, JBSplitNanceStruct, CustomTransaction } from "../../../models/NanceTypes";
 import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import Link from "next/link";
 
@@ -41,6 +41,7 @@ import { classNames } from "../../../libs/tailwind";
 import { encodeTransactionInput, useTendelySimulate } from "../../../hooks/TenderlyHooks";
 import { utils } from "ethers";
 import useProjectInfo from "../../../hooks/juicebox/ProjectInfo";
+import MiddleStepModal from "../../../components/MiddleStepModal";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -125,6 +126,8 @@ function Form({ space }: { space: string }) {
   // state
   const [formErrors, setFormErrors] = useState<string>("");
   const [selected, setSelected] = useState(ProposalStatus[0])
+  const [txnsMayFail, setTxnsMayFail] = useState(false);
+  const [formDataPayload, setFormDataPayload] = useState<ProposalFormValues>();
 
   // hooks
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, !metadata.fork && metadata.loadedProposal?.hash || undefined, router.isReady);
@@ -136,8 +139,21 @@ function Form({ space }: { space: string }) {
 
   // form
   const methods = useForm<ProposalFormValues>();
-  const { register, handleSubmit, control, formState } = methods;
+  const { register, handleSubmit, control, formState, getValues } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
+    const _allSimulated = getValues("proposal.actions")
+      .filter((a) => a.type === "Custom Transaction" && (a.payload as CustomTransaction).tenderlyStatus !== "true")
+      .length === 0;
+    console.debug("check simulations", _allSimulated, getValues("proposal.actions"))
+    setTxnsMayFail(!_allSimulated);
+
+    if (_allSimulated) {
+      return await processAndUploadProposal(formData);
+    } else {
+      setFormDataPayload(formData);
+    }
+  }
+  const processAndUploadProposal: SubmitHandler<ProposalFormValues> = async (formData) => {
     let hash;
     if (!metadata.fork && metadata?.loadedProposal) {
       hash = metadata.loadedProposal.hash;
@@ -187,6 +203,10 @@ function Form({ space }: { space: string }) {
       {error &&
         <Notification title="Error" description={error.error_description || error.message || error} show={true} close={reset} checked={false} />
       }
+      <MiddleStepModal open={txnsMayFail} setOpen={setTxnsMayFail} 
+        title="SimulationCheck" description="You have some transactions may failed based on simulations, do you wish to continue?" 
+        payload={formDataPayload}
+        onContinue={(f) => processAndUploadProposal(f)} />
       <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
         <Actions loadedActions={((metadata.fork) ? metadata.loadedProposal?.actions?.map(({ uuid, ...rest }) => rest) : metadata.loadedProposal?.actions) || []} />
 
@@ -800,6 +820,16 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
       setValue(genFieldName("tenderlyId"), simulationId);
     }
   }, [data])
+
+  useEffect(() => {
+    // save simulation status so we can check when user submit proposals
+    const simulationStatus = data?.simulation?.status;
+    if (shouldSimulate) {
+      setValue(genFieldName("tenderlyStatus"), simulationStatus ? "true" : "false");
+    } else {
+      setValue(genFieldName("tenderlyStatus"), "false");
+    }
+  }, [data, shouldSimulate])
 
   return (
     <div className="grid grid-cols-4 gap-6">
