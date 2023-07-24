@@ -17,7 +17,7 @@ import { Editor } from '@tinymce/tinymce-react';
 
 import { markdownToHtml, htmlToMarkdown } from '../../../libs/markdown';
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { CheckIcon, ChevronDownIcon, CurrencyDollarIcon, BoltIcon, PlusIcon, ArrowsUpDownIcon, UserGroupIcon, XMarkIcon, ClipboardDocumentCheckIcon, XCircleIcon, ArrowPathIcon, CursorArrowRaysIcon } from "@heroicons/react/24/solid";
+import { CheckIcon, ChevronDownIcon, CurrencyDollarIcon, BoltIcon, PlusIcon, ArrowsUpDownIcon, UserGroupIcon, XMarkIcon, XCircleIcon, ArrowPathIcon, CursorArrowRaysIcon } from "@heroicons/react/24/solid";
 import { Combobox, Dialog, Disclosure, Listbox, Transition } from '@headlessui/react';
 import { ErrorMessage } from "@hookform/error-message";
 import FunctionSelector from "../../../components/FunctionSelector";
@@ -812,7 +812,6 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
           )}
           onClick={() => setShouldSimulate(true)}
         >
-          <ClipboardDocumentCheckIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
           Simulate
         </button>
         <div
