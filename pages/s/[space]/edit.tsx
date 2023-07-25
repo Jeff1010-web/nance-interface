@@ -791,7 +791,7 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
     value: parseInt(getValues(genFieldName("value"))),
     input
   };
-  const { data, isLoading } = useTendelySimulate(simulateArgs, !!projectOwner && !!input && shouldSimulate);
+  const { data, isLoading, error } = useTendelySimulate(simulateArgs, !!projectOwner && !!input && shouldSimulate);
 
   console.log("CustomTransactionActionForm.tenderly", 
     {
@@ -849,7 +849,7 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
         >
           {shouldSimulate ? 
           (isLoading ? 
-            <ArrowPathIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" /> : (data?.simulation.status ? 
+            <ArrowPathIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" /> : (data?.simulation?.status ? 
             <CheckCircleIcon className="-ml-0.5 h-5 w-5 text-green-400" aria-hidden="true" /> : 
             <XCircleIcon className="-ml-0.5 h-5 w-5 text-red-400" aria-hidden="true" />) )
           : <CursorArrowRaysIcon className="-ml-0.5 h-5 w-5 text-blue-400" aria-hidden="true" />}
