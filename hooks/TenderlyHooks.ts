@@ -13,6 +13,7 @@ export interface TenderlySimulationAPIResponse {
         status: boolean;
     }
     simulation: {
+        error_message: string;
         id: string;
         project_id: string;
         owner_id: string;
@@ -43,9 +44,12 @@ async function fetchWithArgs([url, args]: [string, TenderlySimulateArgs]) {
         method: 'POST',
         body: JSON.stringify(simulationConfig),
     });
-    const json: TenderlySimulationAPIResponse = await resp.json();
+    const json: any = await resp.json();
+    if (json.error) {
+        throw new Error(json.error.message)
+    }
 
-    return json;
+    return json as TenderlySimulationAPIResponse;
 }
 
 export function useTendelySimulate(args: TenderlySimulateArgs, shouldFetch: boolean = false) {

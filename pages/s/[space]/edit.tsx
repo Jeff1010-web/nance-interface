@@ -42,6 +42,7 @@ import { encodeTransactionInput, useTendelySimulate } from "../../../hooks/Tende
 import { utils } from "ethers";
 import useProjectInfo from "../../../hooks/juicebox/ProjectInfo";
 import MiddleStepModal from "../../../components/MiddleStepModal";
+import { Tooltip } from "flowbite-react";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -840,7 +841,12 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
             "relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300",
             shouldSimulate ? "" : "hover:bg-gray-50 focus:z-10"
           )}
-          onClick={() => setShouldSimulate(true)}
+          onClick={() => {
+            if (shouldSimulate) {
+              setShouldSimulate(false);
+            }
+            setShouldSimulate(true);
+          }}
         >
           Simulate
         </button>
@@ -848,11 +854,16 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
           className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300"
         >
           {shouldSimulate ? 
-          (isLoading ? 
-            <ArrowPathIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" /> : (data?.simulation?.status ? 
-            <CheckCircleIcon className="-ml-0.5 h-5 w-5 text-green-400" aria-hidden="true" /> : 
-            <XCircleIcon className="-ml-0.5 h-5 w-5 text-red-400" aria-hidden="true" />) )
-          : <CursorArrowRaysIcon className="-ml-0.5 h-5 w-5 text-blue-400" aria-hidden="true" />}
+            (isLoading ? 
+              <ArrowPathIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" /> : 
+                (data?.simulation?.status ? 
+                  <CheckCircleIcon className="-ml-0.5 h-5 w-5 text-green-400" aria-hidden="true" /> : 
+                  <Tooltip content={`Error: ${error ? error.message : (data?.simulation?.error_message || "Not enough args")}`}>
+                    <XCircleIcon className="-ml-0.5 h-5 w-5 text-red-400" aria-hidden="true" />
+                  </Tooltip>
+                ) 
+            )
+            : <CursorArrowRaysIcon className="-ml-0.5 h-5 w-5 text-blue-400" aria-hidden="true" />}
         </div>
       </div>
 
