@@ -61,24 +61,24 @@ export type V1FundingCycleMetadata =
   | FundingCycleMetadataV1
 
 function hexToBytes(hex: string) {
-    for (var bytes = [], c = 0; c < hex.length; c += 2)
-        bytes.push(parseInt(hex.substr(c, 2), 16));
-    return bytes;
+  for (var bytes = [], c = 0; c < hex.length; c += 2)
+    bytes.push(parseInt(hex.substr(c, 2), 16));
+  return bytes;
 }
 
 export function parseV1Metadata(raw: BigNumber): V1FundingCycleMetadata | undefined {
-    if(!raw) return;
-    const bytes = hexToBytes(raw.toHexString()).reverse();
-    let ret: V1FundingCycleMetadata = {
-        version: bytes[0] as any,
-        reservedRate: bytes[1],
-        bondingCurveRate: bytes[2],
-        reconfigurationBondingCurveRate: bytes[3],
-        payIsPaused: bytes[0] == 1 && !!bytes[4],
-        ticketPrintingIsAllowed: bytes[0] == 1 && !!bytes[5],
-        treasuryExtension: ''
-    }
-    return ret;
+  if(!raw) return;
+  const bytes = hexToBytes(raw.toHexString()).reverse();
+  let ret: V1FundingCycleMetadata = {
+    version: bytes[0] as any,
+    reservedRate: bytes[1],
+    bondingCurveRate: bytes[2],
+    reconfigurationBondingCurveRate: bytes[3],
+    payIsPaused: bytes[0] == 1 && !!bytes[4],
+    ticketPrintingIsAllowed: bytes[0] == 1 && !!bytes[5],
+    treasuryExtension: ''
+  };
+  return ret;
 }
 
 // === V2 ===
@@ -176,37 +176,37 @@ export type V2V3FundingCycleMetadata =
 // Generic
 
 export const JBConstants = {
-    SplitGroup: V2SplitGroup,
-    TotalPercent: {
-        Splits: [10000, 1000000000, 1000000000],
-        ReservedRate: [200, 10000, 10000],
-        RedemptionRate: [200, 10000, 10000],
-        DiscountRate: [1000, 1000000000, 1000000000],
-    },
-    UintMax: BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"),
-    DurationUnit: [1, 86400, 86400]
-}
+  SplitGroup: V2SplitGroup,
+  TotalPercent: {
+    Splits: [10000, 1000000000, 1000000000],
+    ReservedRate: [200, 10000, 10000],
+    RedemptionRate: [200, 10000, 10000],
+    DiscountRate: [1000, 1000000000, 1000000000],
+  },
+  UintMax: BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"),
+  DurationUnit: [1, 86400, 86400]
+};
 
 export function payoutMod2Split(payoutMod: PayoutModV1): JBSplit {
-    return {
-        preferClaimed: payoutMod.preferUnstaked,
-        preferAddToBalance: false,
-        percent: BigNumber.from(payoutMod.percent),
-        lockedUntil: BigNumber.from(payoutMod.lockedUntil),
-        beneficiary: payoutMod.beneficiary,
-        projectId: payoutMod.projectId,
-        allocator: payoutMod.allocator
-    }
+  return {
+    preferClaimed: payoutMod.preferUnstaked,
+    preferAddToBalance: false,
+    percent: BigNumber.from(payoutMod.percent),
+    lockedUntil: BigNumber.from(payoutMod.lockedUntil),
+    beneficiary: payoutMod.beneficiary,
+    projectId: payoutMod.projectId,
+    allocator: payoutMod.allocator
+  };
 }
 
 export function ticketMod2Split(ticketMod: TicketModV1): JBSplit {
-    return {
-        preferClaimed: ticketMod.preferUnstaked,
-        preferAddToBalance: true,
-        percent: BigNumber.from(ticketMod.percent),
-        lockedUntil: BigNumber.from(ticketMod.lockedUntil),
-        beneficiary: ticketMod.beneficiary,
-        projectId: BigNumber.from(0),
-        allocator: constants.AddressZero
-    }
+  return {
+    preferClaimed: ticketMod.preferUnstaked,
+    preferAddToBalance: true,
+    percent: BigNumber.from(ticketMod.percent),
+    lockedUntil: BigNumber.from(ticketMod.lockedUntil),
+    beneficiary: ticketMod.beneficiary,
+    projectId: BigNumber.from(0),
+    allocator: constants.AddressZero
+  };
 }

@@ -9,8 +9,8 @@ import { useEthersProvider } from '../ViemAdapter';
 import { Contract } from 'ethers';
 
 const deepEqFundingCycles = (a?: FundingCycleV1, b?: FundingCycleV1) => {
-  if (a && !b) return false
-  if (b && !a) return false
+  if (a && !b) return false;
+  if (b && !a) return false;
   return (
     a?.ballot === b?.ballot &&
     a?.configured.eq(b?.configured ?? -1) &&
@@ -28,8 +28,8 @@ const deepEqFundingCycles = (a?: FundingCycleV1, b?: FundingCycleV1) => {
     a?.tapped.eq(b?.tapped ?? -1) &&
     a?.target.eq(b?.target ?? -1) &&
     a?.weight.eq(b?.weight ?? -1)
-  )
-}
+  );
+};
 
 export default function useCurrentFundingCycle({
   projectId
@@ -44,7 +44,7 @@ export default function useCurrentFundingCycle({
     functionName: 'currentOf',
     args: projectId ? [BigNumber.from(projectId).toHexString()] : null,
     valueDidChange: useCallback((a: any, b: any) => !deepEqFundingCycles(a, b), [])
-  })
+  });
 }
 
 export function useCurrentFundingCycleV2({
@@ -62,5 +62,5 @@ export function useCurrentFundingCycleV2({
     contract,
     functionName: 'currentFundingCycleOf',
     args: projectId ? [BigNumber.from(projectId).toHexString()] : null
-  })
+  });
 }

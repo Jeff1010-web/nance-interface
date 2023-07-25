@@ -1,10 +1,10 @@
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, utils } from 'ethers';
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import SiteNav from "../../../components/SiteNav";
 import useCurrentFundingCycle, { useCurrentFundingCycleV2 } from '../../../hooks/juicebox/CurrentFundingCycle';
 import { useCurrentPayoutMods, useCurrentTicketMods } from '../../../hooks/juicebox/CurrentMods';
-import { JBConstants, parseV1Metadata, payoutMod2Split, ticketMod2Split, V1FundingCycleMetadata } from '../../../models/JuiceboxTypes'
+import { JBConstants, parseV1Metadata, payoutMod2Split, ticketMod2Split, V1FundingCycleMetadata } from '../../../models/JuiceboxTypes';
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
 import { AddressMap, SafeTransactionSelector, TxOption } from '../../../components/safe/SafeTransactionSelector';
 import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
@@ -35,10 +35,10 @@ function v1metadata2args(m: V1FundingCycleMetadata | undefined): MetadataArgs | 
     allowMinting: !!m.ticketPrintingIsAllowed,
     allowTerminalMigration: false,
     allowControllerMigration: false
-  }
+  };
 }
 
-const TABS = ["Multisig", "Bookkeeper"]
+const TABS = ["Multisig", "Bookkeeper"];
 
 const CONTRACT_MAP: AddressMap = {
   "0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98": "JBController_V3",
@@ -46,7 +46,7 @@ const CONTRACT_MAP: AddressMap = {
   "0x7Ae63FBa045Fec7CaE1a75cF7Aa14183483b8397": "JBETHPaymentTerminal_V2",
   "0xd569D3CCE55b71a8a3f3C418c329A66e5f714431": "TerminalV1",
   "0xB9E4B658298C7A36BdF4C2832042A5D6700c3Ab8": "ModStore"
-}
+};
 
 export async function getServerSideProps(context: any) {
   const spaceParam: string = context.params.space;
@@ -56,7 +56,7 @@ export async function getServerSideProps(context: any) {
     props: {
       space: spaceParam
     }
-  }
+  };
 }
 
 export default function JuiceboxPage(spaceProps: { space: string }) {
@@ -80,7 +80,7 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
   // nance
   const { data: infoData, isLoading: infoLoading, error: infoError } = useSpaceInfo({ space: spaceProps.space }, router.isReady);
   const { address } = useAccount();
-  const { data: walletClient } = useWalletClient()
+  const { data: walletClient } = useWalletClient();
   const { data: reconfig, isLoading: reconfigLoading, error: reconfigError } = useReconfigureRequest({
     space: spaceProps.space,
     version: `V${version}`,
@@ -88,7 +88,7 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
     datetime: currentTime || "",
     network: 'mainnet'
   }, currentTime !== undefined && project === 1);
-  const reconfigData = reconfig?.data
+  const reconfigData = reconfig?.data;
 
   // external hooks
   const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, parseInt(infoData?.data?.juiceboxProjectId ?? ""));
@@ -98,20 +98,20 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
   const setSelectedTxOption = (tx: TxOption) => {
     setSelectedSafeTx(tx);
     setQuery({ safeTxHash: tx?.tx?.safeTxHash });
-  }
+  };
 
   // this will override selectedSafeTx from options
-  const rawData = reconfig?.data?.transaction?.bytes
-  let _txForComponent = selectedSafeTx?.tx
+  const rawData = reconfig?.data?.transaction?.bytes;
+  let _txForComponent = selectedSafeTx?.tx;
   if (role === "Multisig" && specifiedSafeTx?.results?.[0]) {
-    _txForComponent = selectedSafeTx?.tx || specifiedSafeTx?.results?.[0]
+    _txForComponent = selectedSafeTx?.tx || specifiedSafeTx?.results?.[0];
   }
 
   // nance post safe transaction
   const [nonce, setNonce] = useState<string>();
-  const [error, setError] = useState<string>()
-  const [gnosisLoading, setGnosisLoading] = useState(false)
-  const [gnosisResponse, setGnosisResponse] = useState<{ success: boolean, data: any }>()
+  const [error, setError] = useState<string>();
+  const [gnosisLoading, setGnosisLoading] = useState(false);
+  const [gnosisResponse, setGnosisResponse] = useState<{ success: boolean, data: any }>();
   const postTransaction = async () => {
     setGnosisLoading(true);
     const gnosis = new GnosisHandler(owner, 'mainnet');
@@ -127,13 +127,15 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
       account: (await walletClient.getAddresses())[0],
       message: { raw: message }
     }).then((sig) => {
-      return sig.replace(/1b$/, '1f').replace(/1c$/, '20')
+      return sig.replace(/1b$/, '1f').replace(/1c$/, '20');
     }).catch(() => {
-      setGnosisLoading(false)
+      setGnosisLoading(false);
       setError('signature rejected');
-      return 'signature rejected'
-    })
-    if (signature === 'signature rejected') { return }
+      return 'signature rejected';
+    });
+    if (signature === 'signature rejected') {
+      return; 
+    }
     const txn: QueueSafeTransaction = {
       ...txnPartial,
       address: address || "",
@@ -141,14 +143,14 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
       transactionHash,
       signature: signature || ""
     };
-    const res = await gnosis.queueTransaction(txn)
+    const res = await gnosis.queueTransaction(txn);
     setGnosisLoading(false);
-    setGnosisResponse(res)
-  }
+    setGnosisResponse(res);
+  };
 
   useEffect(() => {
-    setCurrentTime(new Date().toISOString())
-  }, [projectInfo, owner])
+    setCurrentTime(new Date().toISOString());
+  }, [projectInfo, owner]);
 
   useEffect(() => {
     if (projectInfo?.metadataUri) {
@@ -158,13 +160,13 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
         })
         .catch(e => {
           console.error('📗 Juicebox.loadMetadata >', { e });
-        })
+        });
     }
 
     // cleanup
     return () => {
       setMetadata(undefined);
-    }
+    };
   }, [projectInfo]);
 
   // sync current projectId as default value in ProjectSearch
@@ -173,9 +175,9 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
     if (pid) {
       setQuery({
         project: parseInt(pid)
-      })
+      });
     }
-  }, [infoData])
+  }, [infoData]);
 
   const notSupportedByNance = project !== 1 && role === "Bookkeeper";
   const logo = (metadata?.logoUri?.includes('ipfs://')) ? `${JB_IPFS_GATEWAY}/${metadata?.logoUri?.split('ipfs://')[1]}` : metadata?.logoUri;
@@ -261,7 +263,7 @@ export default function JuiceboxPage(spaceProps: { space: string }) {
       </div>
       <Footer />
     </>
-  )
+  );
 }
 
 const ZERO_BN = BigNumber.from(0);
@@ -287,7 +289,7 @@ function V1Compare({ projectId, tx, rawData = "" }: { projectId: number, tx?: Sa
   };
 
   const loading = fcIsLoading || payoutModsIsLoading || ticketModsIsLoading;
-  const dataIsEmpty = !fc || !payoutMods || !ticketMods
+  const dataIsEmpty = !fc || !payoutMods || !ticketMods;
 
   useEffect(() => {
     const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 1), tx?.data || rawData, tx?.submissionDate || "", fc?.fee || BigNumber.from(0), fc?.configured || BigNumber.from(0));
@@ -300,7 +302,7 @@ function V1Compare({ projectId, tx, rawData = "" }: { projectId: number, tx?: Sa
     (loading || dataIsEmpty)
       ? <div className="text-center">Loading...</div>
       : <ReconfigurationCompare currentFC={currentConfig} previewFC={previewConfig || currentConfig} />
-  )
+  );
 }
 
 function V2Compare({ projectId, tx, rawData = "" }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
@@ -331,20 +333,20 @@ function V2Compare({ projectId, tx, rawData = "" }: { projectId: number, tx?: Sa
   };
 
   const loading = fcIsLoading || feeIsLoading || targetIsLoading || payoutModsIsLoading || ticketModsIsLoading;
-  const dataIsEmpty = !fc || !payoutMods || !ticketMods
+  const dataIsEmpty = !fc || !payoutMods || !ticketMods;
 
   useEffect(() => {
     const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 2), tx?.data || rawData, tx?.submissionDate || "", fee || BigNumber.from(0), fc?.configuration || BigNumber.from(0));
     if (newConfig) {
       setPreviewConfig(newConfig);
     }
-  }, [tx, fc, rawData])
+  }, [tx, fc, rawData]);
 
   return (
     (loading || dataIsEmpty)
       ? <div className="text-center">Loading...</div>
       : <ReconfigurationCompare currentFC={currentConfig} previewFC={previewConfig || currentConfig} />
-  )
+  );
 }
 
 function V3Compare({ projectId, tx, rawData = "" }: { projectId: number, tx?: SafeMultisigTransaction, rawData?: string }) {
@@ -376,18 +378,18 @@ function V3Compare({ projectId, tx, rawData = "" }: { projectId: number, tx?: Sa
   };
 
   const loading = fcIsLoading || feeIsLoading || targetIsLoading || payoutModsIsLoading || ticketModsIsLoading;
-  const dataIsEmpty = !fc || !payoutMods || !ticketMods
+  const dataIsEmpty = !fc || !payoutMods || !ticketMods;
 
   useEffect(() => {
     const newConfig = parseSafeJuiceboxTx(getVersionOfTx(tx, 3), tx?.data || rawData, tx?.submissionDate || "", fee || BigNumber.from(0), fc?.configuration || BigNumber.from(0));
     if (newConfig) {
       setPreviewConfig(newConfig);
     }
-  }, [tx, fc, rawData])
+  }, [tx, fc, rawData]);
 
   return (
     (loading || dataIsEmpty)
       ? <div className="text-center">Loading...</div>
       : <ReconfigurationCompare currentFC={currentConfig} previewFC={previewConfig || currentConfig} />
-  )
+  );
 }

@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
-import { Combobox } from '@headlessui/react'
-import useProjectSearch, { ProjectSearchEntry } from '../../hooks/juicebox/ProjectSearch'
-import useProjectMetadata from '../../hooks/juicebox/ProjectMetadata'
-import { classNames } from '../../libs/tailwind'
+import { useState } from 'react';
+import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { Combobox } from '@headlessui/react';
+import useProjectSearch, { ProjectSearchEntry } from '../../hooks/juicebox/ProjectSearch';
+import useProjectMetadata from '../../hooks/juicebox/ProjectMetadata';
+import { classNames } from '../../libs/tailwind';
 
 export interface ProjectOption {
   id: string
@@ -15,7 +15,7 @@ export interface ProjectOption {
 
 export default function ProjectSearch({ val, setVal, inputStyle = "" }: 
 { val: number, setVal: (v: number) => void, inputStyle?: string }) {
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState('');
 
   const { data: projects, loading } = useProjectSearch(query);
 
@@ -70,11 +70,11 @@ export default function ProjectSearch({ val, setVal, inputStyle = "" }:
         )}
       </div>
     </Combobox>
-  )
+  );
 }
 
 function ProjectInfoEntry({ project }: { project: ProjectSearchEntry }) {
-  const { data, loading, error } = useProjectMetadata(project.metadataUri)
+  const { data, loading, error } = useProjectMetadata(project.metadataUri);
 
   return (
     <div className="flex flex-col">
@@ -94,5 +94,5 @@ function ProjectInfoEntry({ project }: { project: ProjectSearchEntry }) {
         {` @id: ${project.projectId}` || ""}
       </p>
     </div>
-  )
+  );
 }

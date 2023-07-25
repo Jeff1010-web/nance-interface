@@ -1,4 +1,4 @@
-import { useQuery } from 'graphql-hooks'
+import { useQuery } from 'graphql-hooks';
 import { format } from 'date-fns';
 
 const PROPOSALS_QUERY = `
@@ -18,7 +18,7 @@ query {
     scores_total
   }
 }
-`
+`;
 
 const VOTES_QUERY = `
 query {
@@ -35,7 +35,7 @@ query {
     choice
   }
 }
-`
+`;
 
 // Proposal:
 // 1. Group proposals by funding cycle
@@ -79,17 +79,17 @@ function useProposalsExtended() {
   // { [proposalId]: { [choice]: score } }
   const votes = voteData?.votes.reduce((acc, vote) => {
     if(!acc[vote.proposal.id]) {
-      acc[vote.proposal.id] = [0,0,0]
+      acc[vote.proposal.id] = [0,0,0];
     }
 
     // 1-index, 1 means affirmative
     acc[vote.proposal.id][vote.choice-1] += vote.vp;
-    return acc
+    return acc;
   }, {});
 
   const proposalExtended = proposalData?.proposals.map((proposal) => {
     if(votes === undefined || votes[proposal.id] === undefined) {
-      return { ...proposal }
+      return { ...proposal };
     }
 
     return {
@@ -104,7 +104,7 @@ function useProposalsExtended() {
         proposal.votes
       ),
       ...proposal
-    }
+    };
   });
 
   return { data: proposalExtended, loading };
@@ -143,8 +143,8 @@ export function useProposalParticipations() {
     return {
       'key': format(new Date(time * 1000), 'LLL, yy'),
       'vote_percentage': 100.0 * groups[time]['totalVotes'] / 3501
-    }
-  })
+    };
+  });
 
   return { data: chartData, loading };
 }
@@ -171,7 +171,7 @@ export function useApprovalGroups() {
 
     acc[start]['total'] += 1;
     if (proposal.approved) {
-      acc[start]['approved'] +=1
+      acc[start]['approved'] +=1;
     }
     return acc;
   }, {});
@@ -185,8 +185,8 @@ export function useApprovalGroups() {
       'key': format(new Date(time * 1000), 'LLL, yy'),
       'approval_rate': 100.0 * groups[time].approved / groups[time].total,
       'total_proposals': groups[time].total
-    }
-  })
+    };
+  });
 
   return { data: chartData, loading };
 }

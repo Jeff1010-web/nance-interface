@@ -10,13 +10,13 @@ import { formatDistanceToNow, fromUnixTime } from "date-fns";
 
 // 'projectId-beneficiary-allocator': mod
 const splits2map = (splits: JBSplit[]) => {
-  const map = new Map<string, JBSplit>()
+  const map = new Map<string, JBSplit>();
   for (const split of splits) {
-    const key = `${split.beneficiary}-${split.projectId}-${split.allocator}`
-    map.set(key, split)
+    const key = `${split.beneficiary}-${split.projectId}-${split.allocator}`;
+    map.set(key, split);
   }
-  return map
-}
+  return map;
+};
 const keyOfSplit = (mod: JBSplit) => `${mod.beneficiary}-${mod.projectId}-${mod.allocator}`;
 function orderByPercent(a: JBSplit, b: JBSplit) {
   if (a.percent > b.percent) {
@@ -36,11 +36,11 @@ const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
   const symbol = currency.toNumber() == 0 ? "Ξ" : "$";
   const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatNumber(parseInt(utils.formatEther(amount ?? 0)));
   return symbol + formatted;
-}
+};
 
 const almostEqual = (a: BigNumber, b: BigNumber) => {
   return a.sub(b).abs().lte(a.div(100));
-}
+};
 
 export interface FundingCycleArgs {
   configuration: BigNumber,
@@ -82,16 +82,16 @@ export default function ReconfigurationCompare({ currentFC, previewFC }: Reconfi
     name: string;
     getFunc: (fc: FundingCycleConfigProps) => any;
   }[] = [
-      { name: 'Reserve rate', getFunc: (fc) => fc.metadata.reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[fc.version - 1] * 100 + "%" },
-      { name: 'Rdemption rate', getFunc: (fc) => fc.metadata.redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[fc.version - 1] * 100 + "%" },
-      { name: 'Discount rate', getFunc: (fc) => fc.fundingCycle.discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[fc.version - 1] * 100 + "%" },
-      { name: 'Payments', getFunc: (fc) => fc.metadata.pausePay ? "Disabled" : "Enabled" },
-      { name: 'Token minting', getFunc: (fc) => fc.metadata.allowMinting ? "Enabled" : "Disabled" },
-      { name: 'Terminal migration', getFunc: (fc) => fc.metadata.allowTerminalMigration ? "Enabled" : "Disabled" },
-      { name: 'Controller migration', getFunc: (fc) => fc.metadata.allowControllerMigration ? "Enabled" : "Disabled" },
-      { name: 'Reconfiguration strategy', getFunc: (fc) => <FormattedAddress key={fc.fundingCycle.ballot} address={fc.fundingCycle.ballot} /> },
-      //{name: 'Reconfiguration strategy', getFunc: (fc) => fc.fundingCycle.ballot},
-    ]
+    { name: 'Reserve rate', getFunc: (fc) => fc.metadata.reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[fc.version - 1] * 100 + "%" },
+    { name: 'Rdemption rate', getFunc: (fc) => fc.metadata.redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[fc.version - 1] * 100 + "%" },
+    { name: 'Discount rate', getFunc: (fc) => fc.fundingCycle.discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[fc.version - 1] * 100 + "%" },
+    { name: 'Payments', getFunc: (fc) => fc.metadata.pausePay ? "Disabled" : "Enabled" },
+    { name: 'Token minting', getFunc: (fc) => fc.metadata.allowMinting ? "Enabled" : "Disabled" },
+    { name: 'Terminal migration', getFunc: (fc) => fc.metadata.allowTerminalMigration ? "Enabled" : "Disabled" },
+    { name: 'Controller migration', getFunc: (fc) => fc.metadata.allowControllerMigration ? "Enabled" : "Disabled" },
+    { name: 'Reconfiguration strategy', getFunc: (fc) => <FormattedAddress key={fc.fundingCycle.ballot} address={fc.fundingCycle.ballot} /> },
+    //{name: 'Reconfiguration strategy', getFunc: (fc) => fc.fundingCycle.ballot},
+  ];
 
   const payouts: JBSplit[] = unionBy(currentFC.payoutMods, previewFC.payoutMods, keyOfSplit).sort(orderByPercent);
   const currentPayoutMaps = splits2map(currentFC.payoutMods);
@@ -253,7 +253,7 @@ export default function ReconfigurationCompare({ currentFC, previewFC }: Reconfi
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumber, fee: BigNumber, version: number) {
@@ -263,11 +263,11 @@ function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumb
   const _percent = percent.toNumber();
 
   if (target.eq(JBConstants.UintMax)) {
-    return `${(_percent / _totalPercent * 100).toFixed(2)}%`
+    return `${(_percent / _totalPercent * 100).toFixed(2)}%`;
   }
 
   const _amount = target; //version == 1 ? amountSubFee(target, fee) : amountSubFeeV2(target, fee);
-  return `${(_percent / _totalPercent * 100).toFixed(2)}% (${formatCurrency(currency, _amount.mul(percent).div(_totalPercent))})`
+  return `${(_percent / _totalPercent * 100).toFixed(2)}% (${formatCurrency(currency, _amount.mul(percent).div(_totalPercent))})`;
 }
 
 function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersion: number }) {
@@ -303,7 +303,7 @@ function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersion: num
         </>
       )}
     </>
-  )
+  );
 }
 
 function CompareCell({ oldVal, newVal, isSame = false }: { oldVal: any, newVal: any, isSame?: boolean }) {
@@ -345,5 +345,5 @@ function CompareCell({ oldVal, newVal, isSame = false }: { oldVal: any, newVal: 
         //<MinusIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
       )}
     </>
-  )
+  );
 }

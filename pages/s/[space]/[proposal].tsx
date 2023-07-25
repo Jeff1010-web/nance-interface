@@ -46,7 +46,7 @@ const getColorOfChoice = (choice: string) => {
   } else {
     return '';
   }
-}
+};
 
 function openInDiscord(url: string) {
   try {
@@ -79,7 +79,7 @@ export async function getServerSideProps({ req, params }: any) {
     Authorization: `Bearer ${token}`,
   };
 
-  const proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, {headers}).then(res => res.json())
+  const proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, {headers}).then(res => res.json());
   proposal = proposalResponse.data;
   const proposalHash = getLastSlash(proposal?.voteURL);
   if (proposalHash) {
@@ -93,7 +93,7 @@ export async function getServerSideProps({ req, params }: any) {
       proposal: proposal || null,
       snapshotProposal: snapshotProposal
     }
-  }
+  };
 }
 
 interface ProposalCommonProps {
@@ -124,7 +124,7 @@ const ProposalContext = createContext<{ commonProps: ProposalCommonProps | undef
 const ProposalStatus = [
   {title: "Archive", description: "Archive your proposal and exit from governance process."},
   {title: "Delete", description: "Delete your proposal and this can't be undo."},
-]
+];
 
 export default function NanceProposalPage({ space, proposal, snapshotProposal }: { space: string, proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | null }) {
   const router = useRouter();
@@ -139,8 +139,8 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
   };
 
   const { data: session, status } = useSession();
-  const [selected, setSelected] = useState(ProposalStatus[0])
-  const { data: spaceInfo } = useSpaceInfo({space})
+  const [selected, setSelected] = useState(ProposalStatus[0]);
+  const { data: spaceInfo } = useSpaceInfo({space});
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, proposal?.hash, router.isReady);
   const { trigger: deleteTrigger, reset: deleteReset, error: deleteError } = useProposalDelete(space, proposal?.hash, router.isReady);
   const error = uploadError || deleteError;
@@ -150,20 +150,20 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
       ...proposal,
       status: "Archived"
     };
-    console.debug("📚 Nance.archiveProposal.onSubmit ->", { payload })
+    console.debug("📚 Nance.archiveProposal.onSubmit ->", { payload });
 
     // send to API endpoint
     reset();
     const req: ProposalUploadRequest = {
       proposal: payload
-    }
+    };
     console.debug("📗 Nance.archiveProposal.submit ->", req);
     trigger(req)
       .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res?.data.hash}` : `/s/${space}/${res?.data.hash}`))
       .catch((err) => {
         console.warn("📗 Nance.archiveProposal.onUploadError ->", err);
       });
-  }
+  };
 
   const deleteProposal = async () => {
     const hash = proposal?.hash;
@@ -171,7 +171,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
     if (hash) {
       const req: ProposalDeleteRequest = {
         hash
-      }
+      };
       console.debug("📗 Nance.deleteProposal.onDelete ->", req);
       deleteTrigger(req)
         .then(() => router.push(space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`))
@@ -179,11 +179,11 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
           console.warn("📗 Nance.deleteProposal.onDeleteError ->", err);
         });
     }
-  }
+  };
 
   // this page need proposal to work
   if (!proposal) {
-    return <Custom404 errMsg="Proposal not found on Nance platform, you can reach out in Discord or explore on the home page." />
+    return <Custom404 errMsg="Proposal not found on Nance platform, you can reach out in Discord or explore on the home page." />;
   }
 
   const commonProps: ProposalCommonProps = {
@@ -204,7 +204,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
     uuid: proposal.hash || "",
     actions: proposal.actions,
     proposalId: proposal.proposalId || 0
-  }
+  };
 
   return (
     <>
@@ -244,9 +244,9 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
 
                   <button onClick={() => {
                     if (query.sortBy === "time") {
-                      setQuery({ sortBy: "vp" })
+                      setQuery({ sortBy: "vp" });
                     } else {
-                      setQuery({ sortBy: "time" })
+                      setQuery({ sortBy: "time" });
                     }
                   }} className="text-lg font-medium">
 
@@ -260,7 +260,9 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                   {!snapshotProposal && (
                     <div className="mt-2 space-y-4">
                       {error &&
-                        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={() => {reset(); deleteReset()}} checked={false} />
+                        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={() => {
+                          reset(); deleteReset();
+                        }} checked={false} />
                       }
 
                       <ColorBar greenScore={proposal?.temperatureCheckVotes?.[0] || 0} redScore={proposal?.temperatureCheckVotes?.[1] || 0} threshold={10} />
@@ -291,68 +293,68 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
 
                       {canEditProposal(proposal.status) && status === "authenticated" && (
                         <Listbox value={selected} onChange={setSelected} as="div">
-                        {({ open }) => (
-                          <>
-                            <Listbox.Label className="sr-only">Change published status</Listbox.Label>
-                            <div className="relative">
-                              <div className="inline-flex divide-x divide-gray-700 rounded-md shadow-sm w-full">
-                                <button onClick={() => {
-                                  if(selected.title === "Archive") {
-                                    archiveProposal();
-                                  } else if(selected.title === "Delete") {
-                                    deleteProposal();
-                                  }
-                                }} className="inline-flex items-center justify-center rounded-none rounded-l-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
-                                  {selected.title}
-                                </button>
-                                <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-gray-600 p-2 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-gray-50">
-                                  <span className="sr-only">Change proposal status</span>
-                                  <ChevronDownIcon className="h-5 w-5 text-white" aria-hidden="true" />
-                                </Listbox.Button>
-                              </div>
+                          {({ open }) => (
+                            <>
+                              <Listbox.Label className="sr-only">Change published status</Listbox.Label>
+                              <div className="relative">
+                                <div className="inline-flex divide-x divide-gray-700 rounded-md shadow-sm w-full">
+                                  <button onClick={() => {
+                                    if(selected.title === "Archive") {
+                                      archiveProposal();
+                                    } else if(selected.title === "Delete") {
+                                      deleteProposal();
+                                    }
+                                  }} className="inline-flex items-center justify-center rounded-none rounded-l-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full">
+                                    {selected.title}
+                                  </button>
+                                  <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-gray-600 p-2 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-gray-50">
+                                    <span className="sr-only">Change proposal status</span>
+                                    <ChevronDownIcon className="h-5 w-5 text-white" aria-hidden="true" />
+                                  </Listbox.Button>
+                                </div>
           
-                              <Transition
-                                show={open}
-                                as={Fragment}
-                                leave="transition ease-in duration-100"
-                                leaveFrom="opacity-100"
-                                leaveTo="opacity-0"
-                              >
-                                <Listbox.Options className="absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                  {ProposalStatus.map((option) => (
-                                    <Listbox.Option
-                                      key={option.title}
-                                      className={({ active }) =>
-                                        classNames(
-                                          active ? 'bg-gray-600 text-white' : 'text-gray-900',
-                                          'cursor-default select-none p-4 text-sm'
-                                        )
-                                      }
-                                      value={option}
-                                    >
-                                      {({ selected, active }) => (
-                                        <div className="flex flex-col">
-                                          <div className="flex justify-between">
-                                            <p className={selected ? 'font-semibold' : 'font-normal'}>{option.title}</p>
-                                            {selected ? (
-                                              <span className={active ? 'text-white' : 'text-gray-600'}>
-                                                <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                                              </span>
-                                            ) : null}
+                                <Transition
+                                  show={open}
+                                  as={Fragment}
+                                  leave="transition ease-in duration-100"
+                                  leaveFrom="opacity-100"
+                                  leaveTo="opacity-0"
+                                >
+                                  <Listbox.Options className="absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                    {ProposalStatus.map((option) => (
+                                      <Listbox.Option
+                                        key={option.title}
+                                        className={({ active }) =>
+                                          classNames(
+                                            active ? 'bg-gray-600 text-white' : 'text-gray-900',
+                                            'cursor-default select-none p-4 text-sm'
+                                          )
+                                        }
+                                        value={option}
+                                      >
+                                        {({ selected, active }) => (
+                                          <div className="flex flex-col">
+                                            <div className="flex justify-between">
+                                              <p className={selected ? 'font-semibold' : 'font-normal'}>{option.title}</p>
+                                              {selected ? (
+                                                <span className={active ? 'text-white' : 'text-gray-600'}>
+                                                  <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                                </span>
+                                              ) : null}
+                                            </div>
+                                            <p className={classNames(active ? 'text-gray-200' : 'text-gray-500', 'mt-2')}>
+                                              {option.description}
+                                            </p>
                                           </div>
-                                          <p className={classNames(active ? 'text-gray-200' : 'text-gray-500', 'mt-2')}>
-                                            {option.description}
-                                          </p>
-                                        </div>
-                                      )}
-                                    </Listbox.Option>
-                                  ))}
-                                </Listbox.Options>
-                              </Transition>
-                            </div>
-                          </>
-                        )}
-                      </Listbox>
+                                        )}
+                                      </Listbox.Option>
+                                    ))}
+                                  </Listbox.Options>
+                                </Transition>
+                              </div>
+                            </>
+                          )}
+                        </Listbox>
                       )}
 
                       {proposal.status === "Cancelled" && (
@@ -392,7 +394,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
 
       <Footer />
     </>
-  )
+  );
 }
 
 function ProposalContent({ body }: { body: string }) {
@@ -606,14 +608,14 @@ function ProposalContent({ body }: { body: string }) {
         <ProposalNavigator />
       </div>
     </div>
-  )
+  );
 }
 
 function getContractLabel(address: string) {
-  if(CONTRACT_MAP.ETH === address) return "ETH"
-  else if(CONTRACT_MAP.JBX === address) return "JBX"
-  else if(CONTRACT_MAP.USDC === address) return "USDC"
-  else return `Unknown(${address})`
+  if(CONTRACT_MAP.ETH === address) return "ETH";
+  else if(CONTRACT_MAP.JBX === address) return "JBX";
+  else if(CONTRACT_MAP.USDC === address) return "USDC";
+  else return `Unknown(${address})`;
 }
 
 function ProposalNavigator() {
@@ -640,11 +642,11 @@ function ProposalNavigator() {
         </a>
       )}
     </div>
-  )
+  );
 }
 
 // BasicVoting: For Against Abstain
-const SUPPORTED_VOTING_TYPES_FOR_GROUP = ["basic", "single-choice", "approval"]
+const SUPPORTED_VOTING_TYPES_FOR_GROUP = ["basic", "single-choice", "approval"];
 
 function ProposalOptions({ proposal, isOverview = false }:
   { proposal: SnapshotProposal, isOverview?: boolean }) {
@@ -652,10 +654,12 @@ function ProposalOptions({ proposal, isOverview = false }:
   const { loading, data, error } = useProposalVotes(proposal, 0, "created", "", isOverview, proposal.votes);
 
   let scores = proposal?.scores
-    ?.map((score, index) => { return { score, index } })
+    ?.map((score, index) => {
+      return { score, index }; 
+    })
     .filter((o) => o.score > 0)
     // sort by score desc
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => b.score - a.score);
 
   const displayVotesByGroup = SUPPORTED_VOTING_TYPES_FOR_GROUP.includes(proposal.type);
   let votesGroupByChoice: { [choice: string]: number } = {};
@@ -706,7 +710,7 @@ function ProposalOptions({ proposal, isOverview = false }:
           </div>
         ))}
     </dl>
-  )
+  );
 }
 
 function ProposalVotes() {
@@ -727,9 +731,9 @@ function ProposalVotes() {
 
   let votes = data?.votesData;
   if (query.filterBy === "for") {
-    votes = votes.filter((v) => v.choice === "For")
+    votes = votes.filter((v) => v.choice === "For");
   } else if (query.filterBy === "against") {
-    votes = votes.filter((v) => v.choice === "Against")
+    votes = votes.filter((v) => v.choice === "Against");
   }
 
   return (
@@ -746,8 +750,8 @@ function ProposalVotes() {
                   "text-green-500 text-sm cursor-pointer",
                   query.filterBy === "for" ? "underline" : ""
                 )} onClick={() => {
-                  if(query.filterBy === "for") setQuery({filterBy: ""})
-                  else setQuery({filterBy: "for"})
+                  if(query.filterBy === "for") setQuery({filterBy: ""});
+                  else setQuery({filterBy: "for"});
                 }}>
                   FOR {formatNumber(proposalInfo?.scores[0] || 0)}
                 </p>
@@ -756,8 +760,8 @@ function ProposalVotes() {
                   "text-red-500 text-sm cursor-pointer",
                   query.filterBy === "against" ? "underline" : ""
                 )} onClick={() => {
-                  if(query.filterBy === "against") setQuery({filterBy: ""})
-                  else setQuery({filterBy: "against"})
+                  if(query.filterBy === "against") setQuery({filterBy: ""});
+                  else setQuery({filterBy: "against"});
                 }}>
                   AGAINST {formatNumber(proposalInfo?.scores[1] || 0)}
                 </p>
@@ -857,5 +861,5 @@ function ProposalVotes() {
 
       <NewVoteButton proposal={proposalInfo} refetch={refetch} />
     </div>
-  )
+  );
 }

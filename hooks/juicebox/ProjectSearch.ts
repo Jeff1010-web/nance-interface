@@ -67,5 +67,5 @@ export default function useProjectSearch(keyword: string, limit: number = 10) {
   const { data, error } = useSWR({ keyword, limit }, fetcher);
   const loading = !error && !data;
 
-  return { data, loading, error }
+  return { data, loading, error };
 }

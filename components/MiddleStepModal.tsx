@@ -1,6 +1,6 @@
-import { Fragment, useRef } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { Fragment, useRef } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export default function MiddleStepModal({ open, setOpen, title, description, onContinue, payload = undefined }: {
     open: boolean, setOpen: (o: boolean) => void,
@@ -8,7 +8,7 @@ export default function MiddleStepModal({ open, setOpen, title, description, onC
     onContinue: (payload: any) => void,
     payload?: any
 }) {
-  const cancelButtonRef = useRef(null)
+  const cancelButtonRef = useRef(null);
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -78,5 +78,5 @@ export default function MiddleStepModal({ open, setOpen, title, description, onC
         </div>
       </Dialog>
     </Transition.Root>
-  )
+  );
 }

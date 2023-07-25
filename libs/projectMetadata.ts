@@ -1,4 +1,4 @@
-import { JB_IPFS_GATEWAY } from "../constants/Juicebox"
+import { JB_IPFS_GATEWAY } from "../constants/Juicebox";
 
 type TokenRef = {
     value: string
@@ -58,10 +58,10 @@ export const consolidateMetadata = (
       (metadata as ProjectMetadataV3).payButton ??
       (metadata as ProjectMetadataV2).payText,
     version: 4,
-  }
-}
+  };
+};
 
 export default async function fetchMetadata(uri: string) {
-  const res = await fetch(`${JB_IPFS_GATEWAY}/${uri}`)
-  return await res.json()
+  const res = await fetch(`${JB_IPFS_GATEWAY}/${uri}`);
+  return await res.json();
 }

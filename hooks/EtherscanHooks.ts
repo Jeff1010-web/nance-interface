@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import useSWR from 'swr'
-import { usePublicClient } from 'wagmi'
-import { Interface } from 'ethers/lib/utils'
+import { useEffect, useState } from 'react';
+import useSWR from 'swr';
+import { usePublicClient } from 'wagmi';
+import { Interface } from 'ethers/lib/utils';
 
-const API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_KEY
+const API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_KEY;
 
 interface EtherscanAPIResponse {
   status: "1" | "0"
@@ -13,9 +13,9 @@ interface EtherscanAPIResponse {
 
 const fetcher = (url: string) => fetch(url).then(res => res.json()).then((j: EtherscanAPIResponse) => {
   if(j.status != "1") {
-    throw new Error(`Etherscan API Error: ${j.result}`)
+    throw new Error(`Etherscan API Error: ${j.result}`);
   }
-  return j.result
+  return j.result;
 });
 
 export function useEtherscanContractABI(initialAddress: string, shouldFetch: boolean = true) {
@@ -47,15 +47,15 @@ export function useEtherscanContractABI(initialAddress: string, shouldFetch: boo
           setAddress(proxyAddress);
         }
       }
-    })()
-  }, [address, abi, client])
+    })();
+  }, [address, abi, client]);
 
   return {
     data: abi,
     isLoading,
     error,
     isProxy: address === initialAddress
-  }
+  };
 }
 
 interface EtherscanContractSource {

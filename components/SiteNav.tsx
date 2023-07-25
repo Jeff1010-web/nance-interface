@@ -1,6 +1,6 @@
-import { Disclosure } from '@headlessui/react'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import Head from 'next/head'
+import { Disclosure } from '@headlessui/react';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import Head from 'next/head';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -25,19 +25,19 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
     { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
     { name: 'Support us', href: 'https://juicebox.money/v2/p/477' },
     { name: 'Other spaces', href: '/s' }
-  ]
+  ];
 
   const meta = {
     title: `${pageTitle} | Nance`,
     description: description || "Nance platform for automatic governance.",
     url: `https://jbdao.org${router.asPath}`,
     image: image || "/images/unsplash_application.jpeg",
-  }
+  };
 
   const canForkProposal = !!proposalId;
   let editProposalUrl = space ? `/s/${space}/edit` : "/edit";
   if (canForkProposal) {
-    editProposalUrl = editProposalUrl + `?&proposalId=${proposalId}&fork=true`
+    editProposalUrl = editProposalUrl + `?&proposalId=${proposalId}&fork=true`;
   }
 
   return (
@@ -136,8 +136,8 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                     type="button"
                     className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-[#0E76FD] px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
                     onClick={() => router.push(editProposalUrl)}>
-                      {canForkProposal ? "Fork Proposal" : "New Proposal"}
-                    </button>
+                    {canForkProposal ? "Fork Proposal" : "New Proposal"}
+                  </button>
                   { withWallet && <ConnectButton /> }
                 </div>
 
@@ -147,5 +147,5 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
         </Disclosure>
       </header>
     </>
-  )
+  );
 }

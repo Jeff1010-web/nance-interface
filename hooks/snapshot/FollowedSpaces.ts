@@ -1,4 +1,4 @@
-import { useQuery } from 'graphql-hooks'
+import { useQuery } from 'graphql-hooks';
 
 const SPACES_QUERY = `
 query Spaces($address: String) {
@@ -15,7 +15,7 @@ query Spaces($address: String) {
         created
     }
 }
-`
+`;
 
 const ACTIVE_PROPOSALS_QUERY = `
 query Proposals($spaceIds: [String]) {
@@ -35,7 +35,7 @@ query Proposals($spaceIds: [String]) {
       id
     }
   }
-`
+`;
 
 export interface FollowedSpacesData {
     id: string,
@@ -44,49 +44,49 @@ export interface FollowedSpacesData {
 }
 
 export default function useFollowedSpaces(address: string): {data: FollowedSpacesData[], loading: boolean} {
-    // Load spaces
-    const { loading: spacesLoading, data: spacesData } = useQuery(SPACES_QUERY, {
-        variables: {
-            address: address
-        }
-    });
-    const spaceMap: { [id: string]: {name: string, activeProposals: number} } = 
+  // Load spaces
+  const { loading: spacesLoading, data: spacesData } = useQuery(SPACES_QUERY, {
+    variables: {
+      address: address
+    }
+  });
+  const spaceMap: { [id: string]: {name: string, activeProposals: number} } = 
         spacesData?.follows.reduce((
-            acc: { [id: string]: {name: string, activeProposals: number} }, 
-            follow: { space: { id: string; name: string; }, created: number }) => {
-                acc[follow.space.id] = {
-                    name: follow.space.name,
-                    activeProposals: 0
-                };
-                return acc;
-            }, {}) || {};
+          acc: { [id: string]: {name: string, activeProposals: number} }, 
+          follow: { space: { id: string; name: string; }, created: number }) => {
+          acc[follow.space.id] = {
+            name: follow.space.name,
+            activeProposals: 0
+          };
+          return acc;
+        }, {}) || {};
     // Load related active proposals
-    const { loading: proposalsLoading, data: proposalsData } = useQuery(ACTIVE_PROPOSALS_QUERY, {
-        variables: {
-            spaceIds: Object.keys(spaceMap)
-        }
-    });
+  const { loading: proposalsLoading, data: proposalsData } = useQuery(ACTIVE_PROPOSALS_QUERY, {
+    variables: {
+      spaceIds: Object.keys(spaceMap)
+    }
+  });
 
-    // Calculate count of active proposals in each space
-    // { space: 3 }
-    const activeProposalCounts: { [id: string]: {name: string, activeProposals: number} } = 
+  // Calculate count of active proposals in each space
+  // { space: 3 }
+  const activeProposalCounts: { [id: string]: {name: string, activeProposals: number} } = 
         proposalsData?.proposals.reduce((
-            acc: { [id: string]: {name: string, activeProposals: number} }, 
-            proposal: { space: {id: string}, id: string }) => {
-                acc[proposal.space.id] && acc[proposal.space.id].activeProposals++;
-                return acc;
-            }, spaceMap);
-    const ret = activeProposalCounts ? Object.entries(activeProposalCounts).map(([id, entry]) => ({id, name: entry.name, activeProposals: entry.activeProposals})) : [];
-    ret.sort((a, b) => {
-        if (a.activeProposals > b.activeProposals) {
-            return -1;
-          }
-          if (a.activeProposals < b.activeProposals) {
-            return 1;
-          }
-          // a must be equal to b
-          return 0;
-    })
+          acc: { [id: string]: {name: string, activeProposals: number} }, 
+          proposal: { space: {id: string}, id: string }) => {
+          acc[proposal.space.id] && acc[proposal.space.id].activeProposals++;
+          return acc;
+        }, spaceMap);
+  const ret = activeProposalCounts ? Object.entries(activeProposalCounts).map(([id, entry]) => ({id, name: entry.name, activeProposals: entry.activeProposals})) : [];
+  ret.sort((a, b) => {
+    if (a.activeProposals > b.activeProposals) {
+      return -1;
+    }
+    if (a.activeProposals < b.activeProposals) {
+      return 1;
+    }
+    // a must be equal to b
+    return 0;
+  });
 
-    return { loading: spacesLoading || proposalsLoading, data: ret };
+  return { loading: spacesLoading || proposalsLoading, data: ret };
 }

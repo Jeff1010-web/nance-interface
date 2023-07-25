@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json()).then(j => j.USD);
 

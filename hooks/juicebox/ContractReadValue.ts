@@ -1,14 +1,14 @@
 // Copied from https://github.com/jbx-protocol/juice-interface/blob/10ba3e0e04/src/hooks/ContractReader/ContractReadValue.ts
-import { Contract } from '@ethersproject/contracts'
-import { useCallback, useState } from 'react'
-import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
+import { Contract } from '@ethersproject/contracts';
+import { useCallback, useState } from 'react';
+import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect';
 
 /**
  * Calls the `readContract` to be read from `contracts` in `functionName`.
  *
  * This is done in pureJS.
  */
- export async function callContractRead({
+export async function callContractRead({
   readContract,
   functionName,
   args,
@@ -17,11 +17,11 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
   functionName: string | undefined
   args: unknown[] | null | undefined
 }) {
-  if (!readContract || !functionName || args === null) return
+  if (!readContract || !functionName || args === null) return;
 
   try {
-    console.debug(`📚 Read >`, functionName)
-    return await readContract[functionName](...(args ?? []))
+    console.debug(`📚 Read >`, functionName);
+    return await readContract[functionName](...(args ?? []));
   } catch (err) {
     console.warn(
       `📕 Read error >`,
@@ -29,9 +29,9 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
       { args },
       { err },
       { contract: readContract.address },
-    )
+    );
 
-    throw err
+    throw err;
   }
 }
 
@@ -45,7 +45,7 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
  * @returns value - Value returned from the contract.
  * @returns loading - Whether the contract is currently being read.
  */
- export function useContractReadValue<V>({
+export function useContractReadValue<V>({
   contract,
   functionName,
   args,
@@ -58,28 +58,28 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
   formatter?: (val?: any) => V | undefined // eslint-disable-line @typescript-eslint/no-explicit-any
   valueDidChange?: (oldVal?: V, newVal?: V) => boolean
 }) {
-  const [value, setValue] = useState<V | undefined>()
-  const [loading, setLoading] = useState<boolean>(true)
+  const [value, setValue] = useState<V | undefined>();
+  const [loading, setLoading] = useState<boolean>(true);
 
   const _formatter = useCallback(
     (val: any) => (formatter ? formatter(val) : val), // eslint-disable-line @typescript-eslint/no-explicit-any
     [formatter],
-  )
+  );
   const _valueDidChange = useCallback(
     (a?: any, b?: any) => (valueDidChange ? valueDidChange(a, b) : a !== b), // eslint-disable-line @typescript-eslint/no-explicit-any
     [valueDidChange],
-  )
+  );
 
   const fetchValue = useCallback(async () => {
-    const readContract = contract
+    const readContract = contract;
     try {
-      setLoading(true)
+      setLoading(true);
       const result = await callContractRead({
         readContract,
         functionName,
         args,
-      })
-      const newValue = _formatter(result)
+      });
+      const newValue = _formatter(result);
 
       if (_valueDidChange(value, newValue)) {
         console.debug(
@@ -88,17 +88,17 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
           { args },
           { newValue },
           { contract: readContract?.address },
-        )
-        setValue(newValue)
+        );
+        setValue(newValue);
       }
     } catch (err) {
       console.warn('Read contract >', {
         functionName,
         error: err,
-      })
-      setValue(_formatter(undefined))
+      });
+      setValue(_formatter(undefined));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }, [
     _formatter,
@@ -108,16 +108,16 @@ import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect'
     functionName,
     setValue,
     value,
-  ])
+  ]);
 
   // Fetch the value on load or when args change.
   useDeepCompareEffectNoCheck(() => {
-    fetchValue()
+    fetchValue();
 
     // args and contracts may initially be not defined, so we want to keep
     // calling until they are
-  }, [args, functionName, contract?.address])
+  }, [args, functionName, contract?.address]);
   //}, [args, functionName, contract])
 
-  return { refetchValue: fetchValue, value, loading }
+  return { refetchValue: fetchValue, value, loading };
 }

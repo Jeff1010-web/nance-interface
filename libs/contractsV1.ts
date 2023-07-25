@@ -4,21 +4,21 @@ import Projects from '@jbx-protocol/contracts-v1/deployments/mainnet/Projects.js
 import TerminalV1 from '@jbx-protocol/contracts-v1/deployments/mainnet/TerminalV1.json';
 
 export const FundingCycleContract = {
-    addressOrName: FundingCycles.address,
-    contractInterface: FundingCycles.abi
-}
+  addressOrName: FundingCycles.address,
+  contractInterface: FundingCycles.abi
+};
 
 export const ModStoreContract = {
-    addressOrName: ModStore.address,
-    contractInterface: ModStore.abi
-}
+  addressOrName: ModStore.address,
+  contractInterface: ModStore.abi
+};
 
 export const ProjectsContract = {
-    addressOrName: Projects.address,
-    contractInterface: Projects.abi
-}
+  addressOrName: Projects.address,
+  contractInterface: Projects.abi
+};
 
 export const TerminalV1Contract = {
-    addressOrName: TerminalV1.address,
-    contractInterface: TerminalV1.abi
-}
+  addressOrName: TerminalV1.address,
+  contractInterface: TerminalV1.abi
+};

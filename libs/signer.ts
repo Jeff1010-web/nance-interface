@@ -25,6 +25,6 @@ export async function signPayload(signer: JsonRpcSigner, space: string, command:
       address,
       signature,
       timestamp
-    }
+    };
   });
 }

@@ -1,8 +1,8 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useEffect } from 'react'
-import { Transition } from '@headlessui/react'
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Fragment, useEffect } from 'react';
+import { Transition } from '@headlessui/react';
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 export default function Notification({title, description, show, close, checked, autoClose = false}:
     {title: string, description: string, show: boolean, close: () => void, checked: boolean, autoClose?: boolean}) {
@@ -10,10 +10,10 @@ export default function Notification({title, description, show, close, checked, 
   // close notification after 5 seconds
   useEffect(() => {
     if(show && autoClose) {
-      const timeout = setTimeout(close, 5000)
-      return () => clearTimeout(timeout)
+      const timeout = setTimeout(close, 5000);
+      return () => clearTimeout(timeout);
     }
-  }, [title, description, show, close, checked])
+  }, [title, description, show, close, checked]);
 
   return (
     <>
@@ -39,7 +39,7 @@ export default function Notification({title, description, show, close, checked, 
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
                     {checked ? <CheckCircleIcon className="h-6 w-6 text-green-400" aria-hidden="true" />
-                        : <XCircleIcon className="h-6 w-6 text-red-400" aria-hidden="true" />}
+                      : <XCircleIcon className="h-6 w-6 text-red-400" aria-hidden="true" />}
                   </div>
                   <div className="ml-3 w-0 flex-1 pt-0.5">
                     <p className="text-sm font-medium text-gray-900">{title}</p>
@@ -62,5 +62,5 @@ export default function Notification({title, description, show, close, checked, 
         </div>
       </div>
     </>
-  )
+  );
 }

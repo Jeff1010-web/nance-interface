@@ -1,7 +1,7 @@
 import { getProjects } from 'juice-sdk-v1';
 import { useContractReadValue } from './ContractReadValue';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import { parseBytes32String } from '@ethersproject/strings'
+import { parseBytes32String } from '@ethersproject/strings';
 import { useEthersProvider } from '../ViemAdapter';
 
 export default function useHandleOfProject({

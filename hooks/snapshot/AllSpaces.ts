@@ -12,10 +12,10 @@ export interface AllSpacesResponse {
 }
 
 export async function fetchAllSpaces(): Promise<AllSpacesResponse> {
-    return fetch('https://hub.snapshot.org/api/explore', {
-      method: "GET",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then(res => res.json()).then(json => json.spaces)
-  }
+  return fetch('https://hub.snapshot.org/api/explore', {
+    method: "GET",
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }).then(res => res.json()).then(json => json.spaces);
+}

@@ -19,5 +19,5 @@ export default function Custom404({ errMsg }: { errMsg?: string }) {
         </div>
       </div>
     </section>
-  )
+  );
 }

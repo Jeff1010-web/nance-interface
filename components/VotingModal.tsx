@@ -1,13 +1,13 @@
-import { useState, Fragment, useEffect } from "react"
-import useVotingPower from "../hooks/snapshot/VotingPower"
-import { Dialog, RadioGroup, Transition } from '@headlessui/react'
-import { SnapshotProposal } from "../hooks/snapshot/Proposals"
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import { CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid'
-import Notification from "./Notification"
-import useVote from "../hooks/snapshot/Vote"
-import { useForm } from "react-hook-form"
-import { classNames } from '../libs/tailwind'
+import { useState, Fragment, useEffect } from "react";
+import useVotingPower from "../hooks/snapshot/VotingPower";
+import { Dialog, RadioGroup, Transition } from '@headlessui/react';
+import { SnapshotProposal } from "../hooks/snapshot/Proposals";
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
+import Notification from "./Notification";
+import useVote from "../hooks/snapshot/Vote";
+import { useForm } from "react-hook-form";
+import { classNames } from '../libs/tailwind';
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "short" });
 const formatNumber = (num: number) => formatter.format(num);
@@ -22,7 +22,7 @@ interface VotingProps {
   refetch: (option?: any) => void
 }
 
-const SUPPORTED_VOTING_TYPES = ['single-choice', 'basic', 'weighted']
+const SUPPORTED_VOTING_TYPES = ['single-choice', 'basic', 'weighted'];
 
 export default function VotingModal({ modalIsOpen, closeModal, address, spaceId, spaceHideAbstain, proposal, refetch }: VotingProps) {
   // state
@@ -37,15 +37,15 @@ export default function VotingModal({ modalIsOpen, closeModal, address, spaceId,
   const submitVote = () => {
     //setNotificationEnabled(true);
     trigger().then(close).then(refetch);
-  }
+  };
   const close = () => {
     setNotificationEnabled(false);
     reset();
     closeModal();
-  }
+  };
 
   if (proposal === undefined) {
-    return <div className="hidden">Proposal not selected</div>
+    return <div className="hidden">Proposal not selected</div>;
   }
 
   const hideAbstain = spaceHideAbstain && proposal.type === "basic";
@@ -62,7 +62,7 @@ export default function VotingModal({ modalIsOpen, closeModal, address, spaceId,
     } else if (loading) {
       label = "Loading...";
     } else if (!SUPPORTED_VOTING_TYPES.includes(proposal.type)) {
-      label = "Not supported"
+      label = "Not supported";
     } else if (choice === undefined) {
       label = "You need to select a choice";
     } else if (vp > 0) {
@@ -81,8 +81,8 @@ export default function VotingModal({ modalIsOpen, closeModal, address, spaceId,
       >
         {label}
       </button>
-    )
-  }
+    );
+  };
 
   return (
     <Transition.Root show={modalIsOpen} as={Fragment}>
@@ -222,7 +222,7 @@ export default function VotingModal({ modalIsOpen, closeModal, address, spaceId,
         </div>
       </Dialog>
     </Transition.Root>
-  )
+  );
 }
 
 interface SelectorProps {
@@ -272,7 +272,7 @@ function BasicChoiceSelector({ value, setValue, choices }: SelectorProps) {
         ))}
       </div>
     </RadioGroup>
-  )
+  );
 }
 
 function WeightedChoiceSelector({ value, setValue, choices }: Omit<SelectorProps, 'value'> & { value: { [key: string]: number } | undefined }) {
@@ -285,7 +285,7 @@ function WeightedChoiceSelector({ value, setValue, choices }: Omit<SelectorProps
       const newValue: {[key: string]: any} = {};
       // remove empty values
       for (const key in values) {
-        const val = values[key]
+        const val = values[key];
         if (!isNaN(val) && val > 0) {
           newValue[key] = val;
         }
@@ -312,5 +312,5 @@ function WeightedChoiceSelector({ value, setValue, choices }: Omit<SelectorProps
         </div>
       ))}
     </div>
-  )
+  );
 }

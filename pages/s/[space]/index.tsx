@@ -1,5 +1,5 @@
-import SiteNav from "../../../components/SiteNav"
-import Footer from "../../../components/Footer"
+import SiteNav from "../../../components/SiteNav";
+import Footer from "../../../components/Footer";
 import NanceSpace from "../../../components/nance/Space";
 
 export async function getServerSideProps(context: any) {
@@ -10,7 +10,7 @@ export async function getServerSideProps(context: any) {
     props: {
       space: spaceParam
     }
-  }
+  };
 }
 
 export default function NanceSpacePage({ space } : { space: string }) {
@@ -20,5 +20,5 @@ export default function NanceSpacePage({ space } : { space: string }) {
       <NanceSpace space={space} proposalUrlPrefix={`/s/${space}/`} />
       <Footer />
     </>
-  )
+  );
 }

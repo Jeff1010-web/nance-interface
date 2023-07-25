@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const destinationPath = path.join('/');
 
     // extract params
-    const params = new URLSearchParams(req.query as any)
+    const params = new URLSearchParams(req.query as any);
     params.delete("path");
 
     // Attach the JWT token to the request headers

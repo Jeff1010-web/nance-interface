@@ -15758,4 +15758,4 @@ export const gnosisSafeInterface = {
     license: "LGPL-3.0-only"
   },
   id: 9
-}
+};

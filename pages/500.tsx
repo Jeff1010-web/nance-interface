@@ -21,5 +21,5 @@ export default function Custom500({ errMsg }: { errMsg?: string }) {
         </div>
       </div>
     </section>
-  )
+  );
 }

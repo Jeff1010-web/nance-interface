@@ -1,4 +1,4 @@
-import useSWR, { Fetcher } from 'swr'
+import useSWR, { Fetcher } from 'swr';
 import { consolidateMetadata, ProjectMetadata } from '../../libs/projectMetadata';
 import { JB_IPFS_GATEWAY } from "../../constants/Juicebox";
 

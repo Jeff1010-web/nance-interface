@@ -34,7 +34,7 @@ query ProposalsOverview($first: Int, $space: String, $address: String) {
       }
     }
 }
-`
+`;
 
 interface ProposalOverviewQueryModel {
     proposals: {
@@ -65,28 +65,28 @@ export interface SnapshotProposalsOverview {
 
 export function useProposalsOverview(space: string, first: number, address: string) {
 
-    console.debug("🔧 useProposalsOverview.args ->", {space, first, address});
-    const { loading, error, data } = useQuery<ProposalOverviewQueryModel>(QUERY, {
-        skip: !space || !first,
-        variables: { first, space, address }
-    })
+  console.debug("🔧 useProposalsOverview.args ->", {space, first, address});
+  const { loading, error, data } = useQuery<ProposalOverviewQueryModel>(QUERY, {
+    skip: !space || !first,
+    variables: { first, space, address }
+  });
 
-    const ret: SnapshotProposalsOverview = {}
-    data?.proposals.forEach(p => {
-        ret[p.id] = {
-            state: p.state,
-            quorum: p.quorum,
-            scores_total: p.scores_total,
-            voted: false
-        }
-    })
-    if (address) {
-        data?.votes.forEach(v => {
-            const pid = v.proposal.id
-            ret[pid].voted = true
-        })
-    }
-
-    console.debug("🔧 useProposalsOverview.return ->", {ret});
-    return { loading, error, data: ret }
+  const ret: SnapshotProposalsOverview = {};
+  data?.proposals.forEach(p => {
+    ret[p.id] = {
+      state: p.state,
+      quorum: p.quorum,
+      scores_total: p.scores_total,
+      voted: false
+    };
+  });
+  if (address) {
+    data?.votes.forEach(v => {
+      const pid = v.proposal.id;
+      ret[pid].voted = true;
+    });
   }
+
+  console.debug("🔧 useProposalsOverview.return ->", {ret});
+  return { loading, error, data: ret };
+}

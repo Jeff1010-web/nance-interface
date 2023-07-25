@@ -1,7 +1,7 @@
-import '../styles/globals.css'
+import '../styles/globals.css';
 import '@rainbow-me/rainbowkit/styles.css';
-import { GraphQLClient, ClientContext } from 'graphql-hooks'
-import memCache from 'graphql-hooks-memcache'
+import { GraphQLClient, ClientContext } from 'graphql-hooks';
+import memCache from 'graphql-hooks-memcache';
 
 import {
   getDefaultWallets,
@@ -10,9 +10,9 @@ import {
 import {
   WagmiConfig, createConfig,
   configureChains, mainnet
-} from 'wagmi'
-import { watchAccount } from '@wagmi/core'
-import { infuraProvider } from 'wagmi/providers/infura'
+} from 'wagmi';
+import { watchAccount } from '@wagmi/core';
+import { infuraProvider } from 'wagmi/providers/infura';
 
 import { NextQueryParamProvider } from 'next-query-params';
 
@@ -26,7 +26,7 @@ import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next
 const graphqlClient = new GraphQLClient({
   url: 'https://hub.snapshot.org/graphql',
   cache: memCache({ size: 200 })
-})
+});
 
 // WAGMI and RainbowKit configuration
 const { chains, publicClient } = configureChains(
@@ -34,7 +34,7 @@ const { chains, publicClient } = configureChains(
   [
     infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY || "" }),
   ],
-)
+);
 
 const { connectors } = getDefaultWallets({
   appName: "Nance Interface",
@@ -46,7 +46,7 @@ const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
   publicClient
-})
+});
 
 const theme = {
   theme: {
@@ -55,7 +55,7 @@ const theme = {
       content: 'relative z-20 max-w-[200px] lg:max-w-[300px] 2xl:max-w-[500px] break-words'
     }
   }
-}
+};
 
 function AccountWatcher() {
   // check for user wallet switch and logout
@@ -97,7 +97,7 @@ function MyApp({ Component, pageProps }: any) {
       </WagmiConfig>
       <Analytics />
     </>
-  )
+  );
 }
 
-export default MyApp
+export default MyApp;

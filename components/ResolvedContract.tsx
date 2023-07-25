@@ -12,35 +12,35 @@ export interface Props {
 }
 
 export default function ResolvedContract({ address, style, overrideURLPrefix, openInNewWindow = true, noLink = false }: Props) {
-    const addr = address as Address;
-    const hasAddr = addr && addr.length == 42;
-    const urlPrefix = overrideURLPrefix || "https://etherscan.io/address/";
-    const anchorTarget = openInNewWindow ? "_blank" : "_self";
+  const addr = address as Address;
+  const hasAddr = addr && addr.length == 42;
+  const urlPrefix = overrideURLPrefix || "https://etherscan.io/address/";
+  const anchorTarget = openInNewWindow ? "_blank" : "_self";
 
-    const [label, setLabel] = useState<string>(address);
-    const { data: contractSources } = useEtherscanContract(addr, hasAddr);
+  const [label, setLabel] = useState<string>(address);
+  const { data: contractSources } = useEtherscanContract(addr, hasAddr);
 
-    useEffect(() => {
-        if (contractSources?.[0]) {
-            setLabel(contractSources[0].ContractName);
-        }
-    }, [contractSources]);
-
-    if(noLink) {
-        return (
-            <span className={style}>
-                {label}
-            </span>
-        )
+  useEffect(() => {
+    if (contractSources?.[0]) {
+      setLabel(contractSources[0].ContractName);
     }
+  }, [contractSources]);
 
+  if(noLink) {
     return (
-        <a target={anchorTarget} rel="noopener noreferrer"
-            className={classNames(
-                style,
-                'hover:underline'
-            )} href={`${urlPrefix}${encodeURIComponent(address)}`}>
-            {label}
-        </a>
-    )
+      <span className={style}>
+        {label}
+      </span>
+    );
+  }
+
+  return (
+    <a target={anchorTarget} rel="noopener noreferrer"
+      className={classNames(
+        style,
+        'hover:underline'
+      )} href={`${urlPrefix}${encodeURIComponent(address)}`}>
+      {label}
+    </a>
+  );
 }

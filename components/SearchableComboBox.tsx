@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
-import { Combobox } from '@headlessui/react'
-import { classNames } from '../libs/tailwind'
+import { useState } from 'react';
+import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { Combobox } from '@headlessui/react';
+import { classNames } from '../libs/tailwind';
 
 export interface Option {
     id: string
@@ -11,14 +11,14 @@ export interface Option {
 }
 
 export default function SearchableComboBox<T extends Option>({val, setVal, options, label}: {val: T | undefined, setVal: (v: T) => void, options: T[], label: string}) {
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState('');
 
   const filteredOption =
     query === ''
       ? options
       : options.filter((option) => {
-          return option.label.toLowerCase().includes(query.toLowerCase())
-        })
+        return option.label.toLowerCase().includes(query.toLowerCase());
+      });
 
   return (
     <Combobox as="div" value={val} onChange={setVal}>
@@ -82,5 +82,5 @@ export default function SearchableComboBox<T extends Option>({val, setVal, optio
         )}
       </div>
     </Combobox>
-  )
+  );
 }

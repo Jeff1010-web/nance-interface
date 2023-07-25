@@ -1,5 +1,5 @@
 import { Interface } from 'ethers/lib/utils';
-import useSWR from 'swr'
+import useSWR from 'swr';
 
 export interface TenderlySimulateArgs {
     from: string;
@@ -27,52 +27,52 @@ export interface TenderlySimulationAPIResponse {
 }
 
 async function fetchWithArgs([url, args]: [string, TenderlySimulateArgs]) {
-    const simulationConfig = {
-        save: false,
-        save_if_fails: false,
-        simulation_type: 'quick',
-        network_id: '1',
-        from: args.from,
-        to: args.to,
-        input: args.input,
-        gas: 8000000,
-        gas_price: 0,
-        value: args.value,
-    };
+  const simulationConfig = {
+    save: false,
+    save_if_fails: false,
+    simulation_type: 'quick',
+    network_id: '1',
+    from: args.from,
+    to: args.to,
+    input: args.input,
+    gas: 8000000,
+    gas_price: 0,
+    value: args.value,
+  };
 
-    const resp = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(simulationConfig),
-    });
-    const json: any = await resp.json();
-    if (json.error) {
-        throw new Error(json.error.message)
-    }
+  const resp = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(simulationConfig),
+  });
+  const json: any = await resp.json();
+  if (json.error) {
+    throw new Error(json.error.message);
+  }
 
-    return json as TenderlySimulationAPIResponse;
+  return json as TenderlySimulationAPIResponse;
 }
 
 export function useTendelySimulate(args: TenderlySimulateArgs, shouldFetch: boolean = false) {
-    const { data, isLoading, error } = useSWR<TenderlySimulationAPIResponse>(
-        shouldFetch ? ["/api/tenderly", args] : null,
-        fetchWithArgs
-    );
+  const { data, isLoading, error } = useSWR<TenderlySimulationAPIResponse>(
+    shouldFetch ? ["/api/tenderly", args] : null,
+    fetchWithArgs
+  );
 
-    return {
-        data, isLoading, error
-    }
+  return {
+    data, isLoading, error
+  };
 };
 
 export function encodeTransactionInput(functionName: string, args: any[]) {
-    if (!functionName || !args) {
-        return "";
-    }
-
-    try {
-      const iface = new Interface([functionName]);
-      return iface.encodeFunctionData(functionName.split('function ')[1], args);
-    } catch (e) {
-      console.warn("❎ encodeCustomTransaction", e, functionName, args);
-      return "";
-    }
+  if (!functionName || !args) {
+    return "";
   }
+
+  try {
+    const iface = new Interface([functionName]);
+    return iface.encodeFunctionData(functionName.split('function ')[1], args);
+  } catch (e) {
+    console.warn("❎ encodeCustomTransaction", e, functionName, args);
+    return "";
+  }
+}

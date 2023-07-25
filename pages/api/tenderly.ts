@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { method, body } = req;
 
     const headers = {
-        'X-Access-Key': TENDERLY_ACCESS_KEY as string,
+      'X-Access-Key': TENDERLY_ACCESS_KEY as string,
     };
 
     // Forward the request to the destination URL

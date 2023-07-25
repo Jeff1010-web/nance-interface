@@ -29,14 +29,14 @@ export interface ProjectInfo {
 }
 
 const fetcher: Fetcher<ProjectInfo, {version: number, projectId: number}> = ({version, projectId}) => fetch(SUBGRAPH_URL, {
-    method: "POST",
-    body: JSON.stringify({ query: projectQuery, variables: { id: `${version}-${projectId}` } }),
+  method: "POST",
+  body: JSON.stringify({ query: projectQuery, variables: { id: `${version}-${projectId}` } }),
 }).then(res => res.json()).then(res => res.data.project);
 
 export default function useProjectInfo(version: number, projectId: number) {
 
-    const { data, error } = useSWR({version: version === 3 ? 2 : version, projectId}, fetcher);
-    const loading = !error && !data;
+  const { data, error } = useSWR({version: version === 3 ? 2 : version, projectId}, fetcher);
+  const loading = !error && !data;
 
-    return { data, loading, error }
+  return { data, loading, error };
 }

@@ -25,7 +25,7 @@ export function useSymbolOfERC20(tokenAddress: string | undefined) {
     invalidateZeroAddress(tokenAddress) || "", 
     erc20ABI,
     provider
-  )
+  );
 
   return useContractReadValue<string>({
     contract,

@@ -20,7 +20,7 @@ export function useTerminalBalanceV1({
     contract,
     functionName: 'balanceOf',
     args: projectId ? [projectId] : null
-  })
+  });
 }
 
 export function useTerminalBalance({
@@ -37,5 +37,5 @@ export function useTerminalBalance({
     contract,
     functionName: 'balanceOf',
     args: terminal && projectId ? [terminal, projectId] : null
-  })
+  });
 }

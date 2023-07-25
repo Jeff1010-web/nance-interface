@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
-import { Combobox } from '@headlessui/react'
-import { useEtherscanContractABI } from '../hooks/EtherscanHooks'
-import { FunctionFragment, Interface } from 'ethers/lib/utils'
-import { classNames } from '../libs/tailwind'
+import { useEffect, useState } from 'react';
+import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { Combobox } from '@headlessui/react';
+import { useEtherscanContractABI } from '../hooks/EtherscanHooks';
+import { FunctionFragment, Interface } from 'ethers/lib/utils';
+import { classNames } from '../libs/tailwind';
 
 export default function FunctionSelector({ address, val, setVal, setFunctionFragment, inputStyle = "" }:
   {
@@ -13,29 +13,29 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
     inputStyle?: string
   }) {
 
-  const [query, setQuery] = useState('')
-  const { data: abi, isLoading, error, isProxy } = useEtherscanContractABI(address, address.length === 42)
+  const [query, setQuery] = useState('');
+  const { data: abi, isLoading, error, isProxy } = useEtherscanContractABI(address, address.length === 42);
 
   const ethersInterface = new Interface(abi || []);
   const fragmentMap: {[key: string]: FunctionFragment} = {};
-  Object.values(ethersInterface.functions || {}).forEach(f => fragmentMap[f.format("full")] = f)
+  Object.values(ethersInterface.functions || {}).forEach(f => fragmentMap[f.format("full")] = f);
 
   const filteredOption =
     query === ''
       ? Object.keys(fragmentMap)
       : Object.keys(fragmentMap).filter((functionName) => {
-        return functionName.toLowerCase().includes(query.toLowerCase())
-      })
+        return functionName.toLowerCase().includes(query.toLowerCase());
+      });
 
 
   return (
     <Combobox as="div" value={val} onChange={(val: string) => {
-      console.debug("set functionSelector val", val)
-      setVal(val)
+      console.debug("set functionSelector val", val);
+      setVal(val);
       try {
-        setFunctionFragment(fragmentMap[val])
+        setFunctionFragment(fragmentMap[val]);
       } catch (e) {
-        console.warn("FunctionSelector.getFunction error", e)
+        console.warn("FunctionSelector.getFunction error", e);
       }
     }}>
       <div className="relative">
@@ -96,5 +96,5 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
         )}
       </div>
     </Combobox>
-  )
+  );
 }

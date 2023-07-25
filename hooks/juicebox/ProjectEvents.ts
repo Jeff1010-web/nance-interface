@@ -78,7 +78,7 @@ const Query = `query ProjectEvents($first: Int, $skip: Int) {
       memo
     }
   }
-}`
+}`;
 
 // model for graphql response
 export interface ProjectEventResponse {
@@ -165,139 +165,139 @@ export interface ProjectEvent {
 }
 
 export default async function fetchProjectEvents(first: number = 20, skip: number = 0): Promise<ProjectEvent[]> {
-    const response = await fetch(SUBGRAPH_URL, {
-        method: "POST",
-        body: JSON.stringify({ 
-            query: Query, 
-            variables: { 
-                first,
-                skip
-            } 
-        }),
-    });
-    const { data } = await response.json();
+  const response = await fetch(SUBGRAPH_URL, {
+    method: "POST",
+    body: JSON.stringify({ 
+      query: Query, 
+      variables: { 
+        first,
+        skip
+      } 
+    }),
+  });
+  const { data } = await response.json();
 
-    const events: ProjectEvent[] = (data.projectEvents as ProjectEventResponse[]).map(eventRes => {
-      if (eventRes.payEvent) {
-        return {
-          id: eventRes.id,
-          project: eventRes.project,
-          timestamp: eventRes.timestamp,
-          caller: eventRes.payEvent.caller,
-          eventType: 'Pay',
-          txHash: eventRes.payEvent.txHash,
-          ethAmount: eventRes.payEvent.amount,
-          tokenAmount: '0',
-          memo: eventRes.payEvent.note
+  const events: ProjectEvent[] = (data.projectEvents as ProjectEventResponse[]).map(eventRes => {
+    if (eventRes.payEvent) {
+      return {
+        id: eventRes.id,
+        project: eventRes.project,
+        timestamp: eventRes.timestamp,
+        caller: eventRes.payEvent.caller,
+        eventType: 'Pay',
+        txHash: eventRes.payEvent.txHash,
+        ethAmount: eventRes.payEvent.amount,
+        tokenAmount: '0',
+        memo: eventRes.payEvent.note
+      };
+    } else if (eventRes.redeemEvent) {
+      return {
+        id: eventRes.id,
+        project: eventRes.project,
+        timestamp: eventRes.timestamp,
+        caller: eventRes.redeemEvent.holder,
+        eventType: 'Redeem',
+        txHash: eventRes.redeemEvent.txHash,
+        ethAmount: eventRes.redeemEvent.returnAmount,
+        tokenAmount: eventRes.redeemEvent.amount,
+      };
+    } else if (eventRes.deployedERC20Event) {
+      return {
+        id: eventRes.id,
+        project: eventRes.project,
+        timestamp: eventRes.timestamp,
+        caller: '',
+        eventType: 'DeployERC20',
+        txHash: eventRes.deployedERC20Event.txHash,
+        ethAmount: '0',
+        tokenAmount: '0',
+        payload: {
+          address: eventRes.deployedERC20Event.address,
+          symbol: eventRes.deployedERC20Event.symbol
         }
-      } else if (eventRes.redeemEvent) {
-        return {
-          id: eventRes.id,
-          project: eventRes.project,
-          timestamp: eventRes.timestamp,
-          caller: eventRes.redeemEvent.holder,
-          eventType: 'Redeem',
-          txHash: eventRes.redeemEvent.txHash,
-          ethAmount: eventRes.redeemEvent.returnAmount,
-          tokenAmount: eventRes.redeemEvent.amount,
-        }
-      } else if (eventRes.deployedERC20Event) {
-        return {
-          id: eventRes.id,
-          project: eventRes.project,
-          timestamp: eventRes.timestamp,
-          caller: '',
-          eventType: 'DeployERC20',
-          txHash: eventRes.deployedERC20Event.txHash,
-          ethAmount: '0',
-          tokenAmount: '0',
-          payload: {
-            address: eventRes.deployedERC20Event.address,
-            symbol: eventRes.deployedERC20Event.symbol
-          }
-        }
-      } else if (eventRes.projectCreateEvent) {
-        return {
-          id: eventRes.id,
-          project: eventRes.project,
-          timestamp: eventRes.timestamp,
-          caller: eventRes.projectCreateEvent.caller,
-          eventType: 'CreateProject',
-          txHash: eventRes.projectCreateEvent.txHash,
-          ethAmount: '0',
-          tokenAmount: '0',
-        }
-      } else if (eventRes.tapEvent) {
-        return {
-          id: eventRes.id,
-          project: eventRes.project,
-          timestamp: eventRes.timestamp,
-          caller: eventRes.tapEvent.caller,
-          eventType: 'Tap',
-          txHash: eventRes.tapEvent.txHash,
-          ethAmount: eventRes.tapEvent.netTransferAmount,
-          tokenAmount: '0',
-        }
-      } else if (eventRes.distributePayoutsEvent) {
-        return {
-          id: eventRes.id,
-          project: eventRes.project,
-          timestamp: eventRes.timestamp,
-          caller: eventRes.distributePayoutsEvent.caller,
-          eventType: 'DistributePayouts',
-          txHash: eventRes.distributePayoutsEvent.txHash,
-          ethAmount: BigNumber.from(eventRes.distributePayoutsEvent.distributedAmount).add(eventRes.distributePayoutsEvent.fee).toString(),
-          tokenAmount: '0',
-          memo: eventRes.distributePayoutsEvent.memo
-        }
-      } else if (eventRes.printReservesEvent) {
-        return {
-          id: eventRes.id,
-          project: eventRes.project,
-          timestamp: eventRes.timestamp,
-          caller: eventRes.printReservesEvent.caller,
-          eventType: 'PrintReserves',
-          txHash: eventRes.printReservesEvent.txHash,
-          ethAmount: '0',
-          tokenAmount: eventRes.printReservesEvent.count,
-        }
-      } else if (eventRes.distributeReservedTokensEvent) {
-        return {
-          id: eventRes.id,
-          project: eventRes.project,
-          timestamp: eventRes.timestamp,
-          caller: eventRes.distributeReservedTokensEvent.caller,
-          eventType: 'DistributeReservedTokens',
-          txHash: eventRes.distributeReservedTokensEvent.txHash,
-          ethAmount: '0',
-          tokenAmount: eventRes.distributeReservedTokensEvent.tokenCount,
-          memo: eventRes.distributeReservedTokensEvent.memo
-        }
-      } else if (eventRes.deployETHERC20ProjectPayerEvent) {
-        return {
-          id: eventRes.id,
-          project: eventRes.project,
-          timestamp: eventRes.timestamp,
-          caller: eventRes.deployETHERC20ProjectPayerEvent.caller,
-          eventType: 'DeployETHERC20ProjectPayer',
-          txHash: eventRes.deployETHERC20ProjectPayerEvent.txHash,
-          ethAmount: '0',
-          tokenAmount: '0',
-          memo: `Deployed ETHERC20 project payer at ${shortenAddress(eventRes.deployETHERC20ProjectPayerEvent.address)} | memo: ${eventRes.deployETHERC20ProjectPayerEvent.memo}`
-        }
-      } else {
-        console.warn('Unknown event type', eventRes)
-        return {
-          id: eventRes.id,
-          project: eventRes.project,
-          timestamp: eventRes.timestamp,
-          caller: '',
-          eventType: 'Unknown',
-          txHash: '',
-          ethAmount: '0',
-          tokenAmount: '0'
-        }
-      }
-    })
-    return events.filter(event => event.eventType !== 'Unknown');
+      };
+    } else if (eventRes.projectCreateEvent) {
+      return {
+        id: eventRes.id,
+        project: eventRes.project,
+        timestamp: eventRes.timestamp,
+        caller: eventRes.projectCreateEvent.caller,
+        eventType: 'CreateProject',
+        txHash: eventRes.projectCreateEvent.txHash,
+        ethAmount: '0',
+        tokenAmount: '0',
+      };
+    } else if (eventRes.tapEvent) {
+      return {
+        id: eventRes.id,
+        project: eventRes.project,
+        timestamp: eventRes.timestamp,
+        caller: eventRes.tapEvent.caller,
+        eventType: 'Tap',
+        txHash: eventRes.tapEvent.txHash,
+        ethAmount: eventRes.tapEvent.netTransferAmount,
+        tokenAmount: '0',
+      };
+    } else if (eventRes.distributePayoutsEvent) {
+      return {
+        id: eventRes.id,
+        project: eventRes.project,
+        timestamp: eventRes.timestamp,
+        caller: eventRes.distributePayoutsEvent.caller,
+        eventType: 'DistributePayouts',
+        txHash: eventRes.distributePayoutsEvent.txHash,
+        ethAmount: BigNumber.from(eventRes.distributePayoutsEvent.distributedAmount).add(eventRes.distributePayoutsEvent.fee).toString(),
+        tokenAmount: '0',
+        memo: eventRes.distributePayoutsEvent.memo
+      };
+    } else if (eventRes.printReservesEvent) {
+      return {
+        id: eventRes.id,
+        project: eventRes.project,
+        timestamp: eventRes.timestamp,
+        caller: eventRes.printReservesEvent.caller,
+        eventType: 'PrintReserves',
+        txHash: eventRes.printReservesEvent.txHash,
+        ethAmount: '0',
+        tokenAmount: eventRes.printReservesEvent.count,
+      };
+    } else if (eventRes.distributeReservedTokensEvent) {
+      return {
+        id: eventRes.id,
+        project: eventRes.project,
+        timestamp: eventRes.timestamp,
+        caller: eventRes.distributeReservedTokensEvent.caller,
+        eventType: 'DistributeReservedTokens',
+        txHash: eventRes.distributeReservedTokensEvent.txHash,
+        ethAmount: '0',
+        tokenAmount: eventRes.distributeReservedTokensEvent.tokenCount,
+        memo: eventRes.distributeReservedTokensEvent.memo
+      };
+    } else if (eventRes.deployETHERC20ProjectPayerEvent) {
+      return {
+        id: eventRes.id,
+        project: eventRes.project,
+        timestamp: eventRes.timestamp,
+        caller: eventRes.deployETHERC20ProjectPayerEvent.caller,
+        eventType: 'DeployETHERC20ProjectPayer',
+        txHash: eventRes.deployETHERC20ProjectPayerEvent.txHash,
+        ethAmount: '0',
+        tokenAmount: '0',
+        memo: `Deployed ETHERC20 project payer at ${shortenAddress(eventRes.deployETHERC20ProjectPayerEvent.address)} | memo: ${eventRes.deployETHERC20ProjectPayerEvent.memo}`
+      };
+    } else {
+      console.warn('Unknown event type', eventRes);
+      return {
+        id: eventRes.id,
+        project: eventRes.project,
+        timestamp: eventRes.timestamp,
+        caller: '',
+        eventType: 'Unknown',
+        txHash: '',
+        ethAmount: '0',
+        tokenAmount: '0'
+      };
+    }
+  });
+  return events.filter(event => event.eventType !== 'Unknown');
 }

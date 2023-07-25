@@ -1,7 +1,7 @@
-import NextAuth from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { getCsrfToken } from "next-auth/react"
-import { SiweMessage } from "siwe"
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { getCsrfToken } from "next-auth/react";
+import { SiweMessage } from "siwe";
 
 // For more information on each option (and a full list of options) go to
 // https://next-auth.js.org/configuration/options
@@ -23,43 +23,43 @@ export default async function auth(req: any, res: any) {
       },
       async authorize(credentials) {
         try {
-          const siwe = new SiweMessage(JSON.parse(credentials?.message || "{}"))
+          const siwe = new SiweMessage(JSON.parse(credentials?.message || "{}"));
           const nextAuthDomains = process.env.NEXTAUTH_DOMAINS?.split(',') || "";
-          const csrf = await getCsrfToken({ req })
-          const domain = JSON.parse(credentials?.message || "")?.domain
+          const csrf = await getCsrfToken({ req });
+          const domain = JSON.parse(credentials?.message || "")?.domain;
 
           if (!nextAuthDomains.includes(domain)) {
-            console.warn("❌ NextAuth.authorize.error", "Invalid domain", domain)
-            return null
+            console.warn("❌ NextAuth.authorize.error", "Invalid domain", domain);
+            return null;
           }
 
-          console.debug("📚 NextAuth.authorize", credentials, domain, csrf)
+          console.debug("📚 NextAuth.authorize", credentials, domain, csrf);
           const result = await siwe.verify({
             signature: credentials?.signature || "",
             domain,
             nonce: csrf,
-          })
+          });
 
           if (result.success) {
             return {
               id: siwe.address,
-            }
+            };
           }
-          return null
+          return null;
         } catch (e) {
-          console.warn("❌ NextAuth.authorize.error", e)
-          return null
+          console.warn("❌ NextAuth.authorize.error", e);
+          return null;
         }
       },
     }),
-  ]
+  ];
 
   const isDefaultSigninPage =
-    req.method === "GET" && req.query.nextauth.includes("signin")
+    req.method === "GET" && req.query.nextauth.includes("signin");
 
   // Hide Sign-In with Ethereum from default sign page
   if (isDefaultSigninPage) {
-    providers.pop()
+    providers.pop();
   }
 
   return await NextAuth(req, res, {
@@ -71,17 +71,17 @@ export default async function auth(req: any, res: any) {
     secret: process.env.NEXTAUTH_SECRET,
     callbacks: {
       async session({ session, token }: { session: any; token: any }) {
-        session.address = token.sub
-        session.user.name = token.sub
-        session.user.image = "https://www.fillmurray.com/128/128"
-        return session
+        session.address = token.sub;
+        session.user.name = token.sub;
+        session.user.image = "https://www.fillmurray.com/128/128";
+        return session;
       },
       async signIn() {
         return true;
       },
       async redirect({ url }: { url: string }) {
-        return url
+        return url;
       },
     },
-  })
+  });
 }

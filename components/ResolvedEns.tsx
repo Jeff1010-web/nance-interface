@@ -10,48 +10,48 @@ export interface Props {
 }
 
 export default function ResolvedEns({ ens, style, hook }: Props) {
-    const { data: address, isError, isLoading } = useEnsAddress({
-        name: ens,
-        enabled: ens.endsWith('.eth')
-    })
+  const { data: address, isError, isLoading } = useEnsAddress({
+    name: ens,
+    enabled: ens.endsWith('.eth')
+  });
 
-    if(isLoading) {
-        return (
-            <p className={classNames(
-                "mt-2 text-xs text-gray-500",
-                style
-            )}>
+  if(isLoading) {
+    return (
+      <p className={classNames(
+        "mt-2 text-xs text-gray-500",
+        style
+      )}>
                 Loading...
-            </p>
-        )
-    }
+      </p>
+    );
+  }
 
-    if(hook) {
-        hook(ens.endsWith('.eth') ? (address ?? "") : ens);
-    }
+  if(hook) {
+    hook(ens.endsWith('.eth') ? (address ?? "") : ens);
+  }
 
-    if(ens.endsWith('.eth')) {
-        if(isError || !address) {
-            return (
-                <p className={classNames(
-                    "mt-2 text-xs text-red-500",
-                    style
-                )}>
+  if(ens.endsWith('.eth')) {
+    if(isError || !address) {
+      return (
+        <p className={classNames(
+          "mt-2 text-xs text-red-500",
+          style
+        )}>
                     Can&apos;t resolve {ens}
-                </p>
-            )
-        } else {
-            return (
-                <Tooltip content={address}>
-                    <a target="_blank" rel="noopener noreferrer"
-                        className={classNames(
-                            "text-xs text-gray-500 hover:underline truncate",
-                            style,
-                        )} href={`https://etherscan.io/address/${encodeURIComponent(address)}`}>
+        </p>
+      );
+    } else {
+      return (
+        <Tooltip content={address}>
+          <a target="_blank" rel="noopener noreferrer"
+            className={classNames(
+              "text-xs text-gray-500 hover:underline truncate",
+              style,
+            )} href={`https://etherscan.io/address/${encodeURIComponent(address)}`}>
                         Resolved to {shortenAddress(address)}
-                    </a>
-                </Tooltip>
-            )
-        }
+          </a>
+        </Tooltip>
+      );
     }
+  }
 }

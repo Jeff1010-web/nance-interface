@@ -4,11 +4,11 @@ import { commify } from "ethers/lib/utils";
 import { BooleanParam, useQueryParam, withDefault } from "next-query-params";
 import FormattedAddress from "../components/FormattedAddress";
 import ResolvedProject from "../components/ResolvedProject";
-import SiteNav from "../components/SiteNav"
+import SiteNav from "../components/SiteNav";
 import { useCurrentFundingCycleV2 } from "../hooks/juicebox/CurrentFundingCycle";
 import { useCurrentSplits } from "../hooks/juicebox/CurrentSplits";
 import { useDistributionLimit } from "../hooks/juicebox/DistributionLimit";
-import { useTerminalBalance, useTerminalBalanceV1 } from "../hooks/juicebox/TerminalBalance"
+import { useTerminalBalance, useTerminalBalanceV1 } from "../hooks/juicebox/TerminalBalance";
 import useTerminalFee from "../hooks/juicebox/TerminalFee";
 import { useTokenBalanceOfProject, useTotalSupplyOfProject } from "../hooks/juicebox/TotalSupplyOfProject";
 import { useTokenUsdPrice } from "../hooks/PriceHook";
@@ -39,28 +39,28 @@ function usdOfSplit(percent: BigNumber | undefined, target: BigNumber | undefine
   return amount.gte(JBConstants.UintMax) ? -1 : amount.div(constants.WeiPerEther).toNumber();
 }
 
-const JBDAO_SAFE = "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e"
+const JBDAO_SAFE = "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e";
 
 export default function TreasuryPage() {
   // state
   const [excludeJBX, setExcludeJBX] = useQueryParam("excludeJBX", withDefault(BooleanParam, true));
 
   // read project balance from JBETHTerminal
-  const { data: _jbxPrice, isLoading: jbxPriceLoading } = useTokenUsdPrice("JBX", !excludeJBX)
+  const { data: _jbxPrice, isLoading: jbxPriceLoading } = useTokenUsdPrice("JBX", !excludeJBX);
   const { value: v1ETHBalance, loading: v1ETHBalanceLoading } = useTerminalBalanceV1({ projectId: 1 });
   const { value: v2ETHBalance, loading: v2ETHBalanceLoading } = useTerminalBalance({ projectId: 1, isV2: true });
   const { value: v3ETHBalance, loading: v3ETHBalanceLoading } = useTerminalBalance({ projectId: 1 });
   const { data: safeAssets, isLoading: safeAssetsLoading } = useMultisigAssets(JBDAO_SAFE);
   
-  const ethPrice = parseFloat(safeAssets?.find((o) => o.token === null)?.fiatConversion || "0")
-  const jbxPrice = _jbxPrice || 0
+  const ethPrice = parseFloat(safeAssets?.find((o) => o.token === null)?.fiatConversion || "0");
+  const jbxPrice = _jbxPrice || 0;
 
   console.debug("TreasuryPage.stats", {
     v1: v1ETHBalance?.div(constants.WeiPerEther).toNumber(),
     v2: v2ETHBalance?.div(constants.WeiPerEther).toNumber(),
     v3: v3ETHBalance?.div(constants.WeiPerEther).toNumber(),
     ethPrice, jbxPrice
-  })
+  });
 
   // get all current payouts
   const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId: 1, isV3: true });
@@ -87,7 +87,7 @@ export default function TreasuryPage() {
   if (assets.find(a => a.key === 'ETH')) {
     assets.find(a => a.key === 'ETH')!.val += usdInProjects;
   } else {
-    assets.push({ key: 'ETH', val: usdInProjects })
+    assets.push({ key: 'ETH', val: usdInProjects });
   }
   // add jbxInProjects in addition to safe assets
   if (assets.find(a => a.key === 'JBX')) {
@@ -97,7 +97,7 @@ export default function TreasuryPage() {
       assets.find(a => a.key === 'JBX')!.val += _jbxInProjects * jbxPrice;
     }
   } else if (!excludeJBX) {
-    assets.push({ key: 'JBX', val: _jbxInProjects * jbxPrice })
+    assets.push({ key: 'JBX', val: _jbxInProjects * jbxPrice });
   }
 
   const usdInTotal = assets?.filter(asset => !excludeJBX || asset.key !== 'JBX').reduce((acc, asset) => acc + asset.val, 0) || 0;
@@ -186,7 +186,7 @@ export default function TreasuryPage() {
       <Footer />
     </>
 
-  )
+  );
 }
 
 interface Entry {
@@ -239,7 +239,7 @@ function Entries({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function PayoutSplitName({ mod }: { mod: JBSplit }) {
@@ -276,5 +276,5 @@ function PayoutSplitName({ mod }: { mod: JBSplit }) {
         </>
       )}
     </>
-  )
+  );
 }

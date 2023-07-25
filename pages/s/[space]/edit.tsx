@@ -64,14 +64,14 @@ export async function getServerSideProps({ req, query, params}: any) {
 
   let proposalResponse = null;
   if (proposalParam) {
-    proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, {headers}).then(res => res.json())
+    proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, {headers}).then(res => res.json());
     if (proposalResponse?.data) {
-      proposalResponse.data.body = await markdownToHtml(proposalResponse.data.body)
+      proposalResponse.data.body = await markdownToHtml(proposalResponse.data.body);
     }
   }
 
   // Pass data to the page via props
-  return { props: { space: spaceParam, loadedProposal: proposalResponse?.data || null, fork: forkParam === "true" } }
+  return { props: { space: spaceParam, loadedProposal: proposalResponse?.data || null, fork: forkParam === "true" } };
 }
 
 export default function NanceEditProposal({ space, loadedProposal, fork }: { space: string, loadedProposal: Proposal, fork: boolean }) {
@@ -83,7 +83,7 @@ export default function NanceEditProposal({ space, loadedProposal, fork }: { spa
   const { proposalId } = query;
 
   if (!router.isReady) {
-    return <p className="mt-2 text-xs text-gray-500 text-center">loading...</p>
+    return <p className="mt-2 text-xs text-gray-500 text-center">loading...</p>;
   }
 
   return (
@@ -108,7 +108,7 @@ export default function NanceEditProposal({ space, loadedProposal, fork }: { spa
 
       <Footer />
     </>
-  )
+  );
 }
 
 type ProposalFormValues = Omit<ProposalUploadRequest, "signature">
@@ -117,7 +117,7 @@ const ProposalStatus = [
   {title: "Publish", description: "Publish your proposal and let people join the discussion.", value: "Discussion", display: "Publish"},
   {title: "Draft", description: "Save your proposal as draft, you can publish it later.", value: "Draft", display: "Save as Draft"},
   {title: "Private Draft", description: "Save your proposal as private, you can publish it later for discussion.", value: "Private", display: "Save as Private"},
-]
+];
 
 function Form({ space }: { space: string }) {
   // query and context
@@ -126,7 +126,7 @@ function Form({ space }: { space: string }) {
 
   // state
   const [formErrors, setFormErrors] = useState<string>("");
-  const [selected, setSelected] = useState(ProposalStatus[0])
+  const [selected, setSelected] = useState(ProposalStatus[0]);
   const [txnsMayFail, setTxnsMayFail] = useState(false);
   const [formDataPayload, setFormDataPayload] = useState<ProposalFormValues>();
 
@@ -145,7 +145,7 @@ function Form({ space }: { space: string }) {
     const _allSimulated = getValues("proposal.actions")
       .filter((a) => a.type === "Custom Transaction" && (a.payload as CustomTransaction).tenderlyStatus !== "true")
       .length === 0;
-    console.debug("check simulations", _allSimulated, getValues("proposal.actions"))
+    console.debug("check simulations", _allSimulated, getValues("proposal.actions"));
     setTxnsMayFail(!_allSimulated);
 
     if (_allSimulated) {
@@ -153,7 +153,7 @@ function Form({ space }: { space: string }) {
     } else {
       setFormDataPayload(formData);
     }
-  }
+  };
   const processAndUploadProposal: SubmitHandler<ProposalFormValues> = async (formData) => {
     let hash;
     if (!metadata.fork && metadata?.loadedProposal) {
@@ -166,18 +166,18 @@ function Form({ space }: { space: string }) {
       body: await htmlToMarkdown(formData.proposal.body ?? ""),
       hash
     };
-    console.debug("📚 Nance.editProposal.onSubmit ->", { formData, payload })
+    console.debug("📚 Nance.editProposal.onSubmit ->", { formData, payload });
 
     const req: ProposalUploadRequest = {
       proposal: payload as any
-    }
+    };
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req)
       .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res?.data.hash}` : `/s/${space}/${res?.data.hash}`))
       .catch((err) => {
         console.warn("📗 Nance.editProposal.onSignError ->", err);
       });
-  }
+  };
 
   // shortcut
   const isSubmitting = isMutating;
@@ -191,12 +191,12 @@ function Form({ space }: { space: string }) {
         if (e) {
           arr.push(i);
         }
-      })
-      setFormErrors("in actions " + arr.join(', '))
+      });
+      setFormErrors("in actions " + arr.join(', '));
     } else {
-      setFormErrors("")
+      setFormErrors("");
     }
-  }, [formState])
+  }, [formState]);
 
   return (
     <FormProvider {...methods} >
@@ -368,12 +368,12 @@ function Form({ space }: { space: string }) {
         </div>
       </form>
     </FormProvider>
-  )
+  );
 }
 
 function Actions({ loadedActions }: { loadedActions: Action[] }) {
-  const [open, setOpen] = useState(false)
-  const [selectedAction, setSelectedAction] = useState<ActionItem>()
+  const [open, setOpen] = useState(false);
+  const [selectedAction, setSelectedAction] = useState<ActionItem>();
 
   const { register, getValues } = useFormContext();
   const { fields, append, remove, replace } = useFieldArray<{
@@ -388,20 +388,20 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
   const projectOwner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
 
   const newAction = (a: ActionItem) => {
-    setOpen(false)
-    append({ type: a.name, payload: {} })
-  }
+    setOpen(false);
+    append({ type: a.name, payload: {} });
+  };
 
   const genFieldName = (index: number) => {
-    return (field: string) => `proposal.actions.${index}.payload.${field}` as const
-  }
+    return (field: string) => `proposal.actions.${index}.payload.${field}` as const;
+  };
 
   useEffect(() => {
     // load actions
     if (fields.length === 0) {
-      replace(loadedActions)
+      replace(loadedActions);
     }
-  }, [replace])
+  }, [replace]);
 
   return (
     <div>
@@ -421,7 +421,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
               />
               <PayoutActionForm genFieldName={genFieldName(index)} />
             </div>
-          )
+          );
         } else if (field.type === "Transfer") {
           return (
             <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
@@ -436,7 +436,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
               />
               <TransferActionForm genFieldName={genFieldName(index)} />
             </div>
-          )
+          );
         } else if (field.type === "Reserve") {
           return (
             <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
@@ -451,7 +451,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
               />
               <ReserveActionForm genFieldName={genFieldName(index)} />
             </div>
-          )
+          );
         } else if (field.type === "Custom Transaction") {
           return (
             <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
@@ -466,7 +466,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
               />
               <CustomTransactionActionForm genFieldName={genFieldName(index)} projectOwner={projectOwner} />
             </div>
-          )
+          );
         } else {
           return (
             <div key={field.id} className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
@@ -475,7 +475,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
                 <XMarkIcon className="w-5 h-5 cursor-pointer" onClick={() => remove(index)} />
               </div>
             </div>
-          )
+          );
         }
       })}
 
@@ -483,7 +483,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
         onClick={() => setOpen(true)}>
         <div className="w-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-8">
           <SquaresPlusIcon className="w-14 h-14 text-gray-400" />
-            <p className="mt-2 font-medium text-l">Add an action</p>
+          <p className="mt-2 font-medium text-l">Add an action</p>
           <p className="text-gray-500 text-sm mt-6">
             {/* <InformationCircleIcon className="h-5 w-5 inline mr-1 mb-0.5" /> */}
             Specify this proposal{"'"}s onchain actions
@@ -493,7 +493,7 @@ function Actions({ loadedActions }: { loadedActions: Action[] }) {
 
       <ActionPalettes open={open} setOpen={setOpen} selectedAction={selectedAction} setSelectedAction={newAction} />
     </div>
-  )
+  );
 }
 
 interface ActionItem {
@@ -539,7 +539,7 @@ const items: ActionItem[] = [
     icon: BoltIcon,
   },
   // More items...
-]
+];
 
 function ActionPalettes({ open, setOpen, selectedAction, setSelectedAction }: any) {
 
@@ -613,12 +613,12 @@ function ActionPalettes({ open, setOpen, selectedAction, setSelectedAction }: an
         </div>
       </Dialog>
     </Transition.Root>
-  )
+  );
 }
 
 function PayoutActionForm({ genFieldName }:
   { genFieldName: (field: string) => any }) {
-    const { watch, getValues } = useFormContext();
+  const { watch, getValues } = useFormContext();
 
   return (
     <div className="grid grid-cols-4 gap-6">
@@ -646,7 +646,7 @@ function PayoutActionForm({ genFieldName }:
         <AddressForm label={watch(genFieldName("type")) === "project" ? "Token Beneficiary" : "Receiver Address"} fieldName={genFieldName("address")} />
       </div>
     </div>
-  )
+  );
 }
 
 function TransferActionForm({ genFieldName }:
@@ -670,7 +670,7 @@ function TransferActionForm({ genFieldName }:
         ]} defaultValue={CONTRACT_MAP.ETH} />
       </div>
     </div>
-  )
+  );
 }
 
 function ReserveActionForm({ genFieldName }:
@@ -704,11 +704,11 @@ function ReserveActionForm({ genFieldName }:
           beneficiary: ticket.beneficiary,
           lockedUntil: ticket.lockedUntil.toNumber(),
           allocator: ticket.allocator || ""
-        }
-        append(split)
-      })
+        };
+        append(split);
+      });
     }
-  }, [ticketMods, append, fields])
+  }, [ticketMods, append, fields]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -769,7 +769,7 @@ function ReserveActionForm({ genFieldName }:
         </Disclosure>
       ))}
     </div>
-  )
+  );
 }
 
 function CustomTransactionActionForm({ genFieldName, projectOwner }:
@@ -799,20 +799,20 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
       args: simulateArgs, 
       formValues: getValues(),
       data: data
-    })
+    });
   
   useEffect(() => {
     // clear args of last selected function
     if(functionFragment?.inputs && replace) {
-      console.debug(functionFragment)
-      replace(functionFragment.inputs.map(p => ""))
+      console.debug(functionFragment);
+      replace(functionFragment.inputs.map(p => ""));
     }
-  }, [functionFragment, replace])
+  }, [functionFragment, replace]);
 
   useEffect(() => {
     // if the function input changed, we need to re-run simulation
     setShouldSimulate(false);
-  }, [getFieldState(genFieldName("args")).isDirty, getValues(genFieldName("functionName"))])
+  }, [getFieldState(genFieldName("args")).isDirty, getValues(genFieldName("functionName"))]);
 
   useEffect(() => {
     // set simulationId which will be uploaded within action
@@ -820,7 +820,7 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
     if (simulationId) {
       setValue(genFieldName("tenderlyId"), simulationId);
     }
-  }, [data])
+  }, [data]);
 
   useEffect(() => {
     // save simulation status so we can check when user submit proposals
@@ -830,7 +830,7 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
     } else {
       setValue(genFieldName("tenderlyStatus"), "false");
     }
-  }, [data, shouldSimulate])
+  }, [data, shouldSimulate]);
 
   return (
     <div className="grid grid-cols-4 gap-6">
@@ -856,12 +856,12 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
           {shouldSimulate ? 
             (isLoading ? 
               <ArrowPathIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" /> : 
-                (data?.simulation?.status ? 
-                  <CheckCircleIcon className="-ml-0.5 h-5 w-5 text-green-400" aria-hidden="true" /> : 
-                  <Tooltip content={`Error: ${error ? error.message : (data?.simulation?.error_message || "Not enough args")}`}>
-                    <XCircleIcon className="-ml-0.5 h-5 w-5 text-red-400" aria-hidden="true" />
-                  </Tooltip>
-                ) 
+              (data?.simulation?.status ? 
+                <CheckCircleIcon className="-ml-0.5 h-5 w-5 text-green-400" aria-hidden="true" /> : 
+                <Tooltip content={`Error: ${error ? error.message : (data?.simulation?.error_message || "Not enough args")}`}>
+                  <XCircleIcon className="-ml-0.5 h-5 w-5 text-red-400" aria-hidden="true" />
+                </Tooltip>
+              ) 
             )
             : <CursorArrowRaysIcon className="-ml-0.5 h-5 w-5 text-blue-400" aria-hidden="true" />}
         </div>
@@ -923,7 +923,7 @@ function CustomTransactionActionForm({ genFieldName, projectOwner }:
       }
 
     </div >
-  )
+  );
 }
 
-const TEMPLATE = `<h2>Synopsis</h2><p><em>State what the proposal does in one sentence.</em></p><p></p><h2>Motivation</h2><p><em>What problem does this solve? Why now?</em></p><p></p><h2>Specification</h2><p><em>How exactly will this be executed? Be specific and leave no ambiguity.</em></p><p></p><h2>Rationale</h2><p><em>Why is this specification appropriate?</em></p><p></p><h2>Risks</h2><p><em>What might go wrong?</em></p><p></p><h2>Timeline</h2><p><em>When exactly should this proposal take effect? When exactly should this proposal end?</em></p>`
+const TEMPLATE = `<h2>Synopsis</h2><p><em>State what the proposal does in one sentence.</em></p><p></p><h2>Motivation</h2><p><em>What problem does this solve? Why now?</em></p><p></p><h2>Specification</h2><p><em>How exactly will this be executed? Be specific and leave no ambiguity.</em></p><p></p><h2>Rationale</h2><p><em>Why is this specification appropriate?</em></p><p></p><h2>Risks</h2><p><em>What might go wrong?</em></p><p></p><h2>Timeline</h2><p><em>When exactly should this proposal take effect? When exactly should this proposal end?</em></p>`;

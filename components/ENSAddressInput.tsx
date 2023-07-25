@@ -1,22 +1,22 @@
-import { useState } from 'react'
-import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
-import { Combobox } from '@headlessui/react'
-import { useEnsAddress } from 'wagmi'
-import { classNames } from '../libs/tailwind'
+import { useState } from 'react';
+import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { Combobox } from '@headlessui/react';
+import { useEnsAddress } from 'wagmi';
+import { classNames } from '../libs/tailwind';
 
 export default function ENSAddressInput({ val, setVal, inputStyle = "" }:
   { val: string, setVal: (v: any) => void, inputStyle?: string }) {
 
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState('');
   const { data: address, isLoading } = useEnsAddress({
     name: query,
     enabled: query.endsWith('.eth')
-  })
+  });
 
   const filteredOption =
     query.endsWith('.eth') && address
       ? [address]
-      : []
+      : [];
 
   return (
     <Combobox as="div" value={val} onChange={setVal} className="w-full">
@@ -28,9 +28,9 @@ export default function ENSAddressInput({ val, setVal, inputStyle = "" }:
             inputStyle
           )}
           onChange={(event) => {
-            setQuery(event.target.value)
+            setQuery(event.target.value);
             if (!query.endsWith('.eth')) {
-              setVal(event.target.value)
+              setVal(event.target.value);
             }
           }}
           displayValue={(option: string) => option}
@@ -83,5 +83,5 @@ export default function ENSAddressInput({ val, setVal, inputStyle = "" }:
         )}
       </div>
     </Combobox>
-  )
+  );
 }

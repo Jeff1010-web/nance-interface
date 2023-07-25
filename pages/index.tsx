@@ -1,12 +1,12 @@
-import SiteNav from "../components/SiteNav"
-import { useTotalSupplyOfProject } from "../hooks/juicebox/TotalSupplyOfProject"
-import { formatTokenBalance } from "../libs/NumberFormatter"
-import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo"
+import SiteNav from "../components/SiteNav";
+import { useTotalSupplyOfProject } from "../hooks/juicebox/TotalSupplyOfProject";
+import { formatTokenBalance } from "../libs/NumberFormatter";
+import useSnapshotSpaceInfo from "../hooks/snapshot/SpaceInfo";
 
-import { NANCE_DEFAULT_SPACE } from "../constants/Nance"
+import { NANCE_DEFAULT_SPACE } from "../constants/Nance";
 
-import Footer from "../components/Footer"
-import NanceSpace from "../components/nance/Space"
+import Footer from "../components/Footer";
+import NanceSpace from "../components/nance/Space";
 
 export default function NanceProposals() {
   let space = NANCE_DEFAULT_SPACE;
@@ -17,7 +17,7 @@ export default function NanceProposals() {
       <NanceSpace space={space} />
       <Footer />
     </>
-  )
+  );
 }
 
 function SpaceStats() {
@@ -63,5 +63,5 @@ function SpaceStats() {
         </div>
       </div>
     </>
-  )
+  );
 }

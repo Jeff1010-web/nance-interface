@@ -1,4 +1,4 @@
-import { useQuery } from 'graphql-hooks'
+import { useQuery } from 'graphql-hooks';
 
 const QUERY = `
 query VotingPowerQuery($voter: String!, $space: String!, $proposal: String) {
@@ -12,7 +12,7 @@ query VotingPowerQuery($voter: String!, $space: String!, $proposal: String) {
       vp_state
     }
 }
-`
+`;
 
 export interface SnapshotVotingPower {
   vp: number;
@@ -45,15 +45,15 @@ export async function fetchVotingPower(voter: string, space: string, proposal: s
       query: QUERY,
       variables: { voter, space, proposal }
     }),
-  }).then(res => res.json())
+  }).then(res => res.json());
   
   if(ret.errors) {
-    console.warn("fetchVotingPower errors occurred: ", ret.errors)
+    console.warn("fetchVotingPower errors occurred: ", ret.errors);
     return {
       vp: 0,
       vp_by_strategy: [],
       vp_state: "error"
-    }
+    };
   } else {
     return ret.data.vp;
   }
