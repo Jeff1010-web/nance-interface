@@ -1,3 +1,8 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "brace-style": ["warn", "1tbs"],
+    "indent": ["warn", 2],
+    "semi": ["warn", "always", { "omitLastInOneLineBlock": true}]
+  }
 }
