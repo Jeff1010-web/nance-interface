@@ -625,8 +625,8 @@ function ProposalNavigator() {
 
   const proposalId = commonProps.proposalId;
   
-  const { data: prevProp } = useProposal({space: NANCE_DEFAULT_SPACE, hash: (proposalId-1).toString()}, !!proposalId);
-  const { data: nextProp } = useProposal({space: NANCE_DEFAULT_SPACE, hash: (proposalId+1).toString()}, !!proposalId);
+  const { data: prevProp } = useProposal({space: commonProps.space, hash: (proposalId-1).toString()}, !!proposalId);
+  const { data: nextProp } = useProposal({space: commonProps.space, hash: (proposalId+1).toString()}, !!proposalId);
 
   return (
     <div className="flex flex-col space-y-2 space-x-0 md:flex-row md:space-y-0 md:space-x-4 justify-between text-gray-500">
