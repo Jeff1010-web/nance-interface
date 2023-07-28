@@ -162,7 +162,7 @@ function Form({ space }: { space: string }) {
 
     const payload = {
       ...formData.proposal,
-      status: (metadata.loadedProposal?.status !== 'Private') ? metadata.loadedProposal?.status || selected.value : selected.value,
+      status: selected.value,
       body: await htmlToMarkdown(formData.proposal.body ?? ""),
       hash
     };
