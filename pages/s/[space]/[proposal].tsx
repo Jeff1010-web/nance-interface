@@ -14,7 +14,7 @@ import Link from "next/link";
 import Custom404 from "../../404";
 import VoterProfile from "../../../components/VoterProfile";
 import ScrollToBottom from "../../../components/ScrollToBottom";
-import { CheckIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
+import { CheckIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon } from "@heroicons/react/24/solid";
 import ResolvedProject from "../../../components/ResolvedProject";
 import { NANCE_API_URL, NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import { CONTRACT_MAP } from "../../../constants/Contract";
@@ -545,8 +545,8 @@ function ProposalContent({ body }: { body: string }) {
             {({ open }) => (
               /* Use the `open` state to conditionally change the direction of an icon. */
               <>
-                <Disclosure.Button className="my-2 p-1 w-full text-center text-white bg-blue-600 hover:bg-blue-500 rounded-md">
-                  {open ? "See less" : "See more"}
+                <Disclosure.Button className="mt-4 mb-2 p-1 rounded-md bg-blue-600 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                  {open ? <ArrowsPointingInIcon className="h-5 w-5" /> : <ArrowsPointingOutIcon className="h-5 w-5" />}
                 </Disclosure.Button>
                 <Disclosure.Panel className="grid grid-cols-2 gaps-4" as="div">
                   {commonProps!.governanceCycle && (

@@ -16,7 +16,7 @@ export async function getServerSideProps(context: any) {
 export default function NanceSpacePage({ space } : { space: string }) {
   return (
     <>
-      <SiteNav pageTitle={`${space} Governance`} description={`${space} Governance Platform`} image="/images/opengraph/homepage.png" space={space} withWallet />
+      <SiteNav pageTitle={`${space} Governance`} description={`${space} Governance Platform`} image="/images/opengraph/homepage.png" space={space} withWallet withProposalButton={false} />
       <NanceSpace space={space} proposalUrlPrefix={`/s/${space}/`} />
       <Footer />
     </>

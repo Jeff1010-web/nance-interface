@@ -13,9 +13,10 @@ interface SiteNavProps {
   withWallet?: boolean;
   space?: string;
   proposalId?: string;
+  withProposalButton?: boolean
 }
 
-export default function SiteNav({ pageTitle, description, image, withWallet, space, proposalId }: SiteNavProps) {
+export default function SiteNav({ pageTitle, description, image, withWallet, space, proposalId, withProposalButton = true }: SiteNavProps) {
   const router = useRouter();
 
   const navigation = [
@@ -93,12 +94,14 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                   </div>
 
                   <div className="hidden xl:ml-6 xl:flex xl:items-center xl:space-x-6">
-                    <button
-                      type="button"
-                      className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-[#0E76FD] px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
-                      onClick={() => router.push(editProposalUrl)}>
-                      {canForkProposal ? "Fork Proposal" : "New Proposal"}
-                    </button>
+                    { withProposalButton && (
+                      <button
+                        type="button"
+                        className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-[#0E76FD] px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
+                        onClick={() => router.push(editProposalUrl)}>
+                        {canForkProposal ? "Fork Proposal" : "New Proposal"}
+                      </button>
+                    )}
 
                     { withWallet && <ConnectButton /> }
                   </div>
@@ -132,12 +135,15 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                 </div>
 
                 <div className="py-2 mx-2 border-t border-gray-200 space-y-3">
-                  <button
-                    type="button"
-                    className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-[#0E76FD] px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
-                    onClick={() => router.push(editProposalUrl)}>
-                    {canForkProposal ? "Fork Proposal" : "New Proposal"}
-                  </button>
+                  { withProposalButton && (
+                    <button
+                      type="button"
+                      className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-[#0E76FD] px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
+                      onClick={() => router.push(editProposalUrl)}>
+                      {canForkProposal ? "Fork Proposal" : "New Proposal"}
+                    </button>
+                  )}
+                  
                   { withWallet && <ConnectButton /> }
                 </div>
 

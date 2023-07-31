@@ -13,7 +13,7 @@ export default function NanceProposals() {
 
   return (
     <>
-      <SiteNav pageTitle="JuiceboxDAO Governance" description="JuiceboxDAO Governance Platform" image="/images/opengraph/homepage.png" withWallet />
+      <SiteNav pageTitle="JuiceboxDAO Governance" description="JuiceboxDAO Governance Platform" image="/images/opengraph/homepage.png" withWallet withProposalButton={false} />
       <NanceSpace space={space} />
       <Footer />
     </>
