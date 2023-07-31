@@ -12,6 +12,8 @@ import Pagination from "../Pagination";
 import { Tooltip } from "flowbite-react";
 import { Switch } from "@headlessui/react";
 import { classNames } from "../../libs/tailwind";
+import { DocumentTextIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
+import QueueExecutionModal from "./QueueExecutionModal";
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
   // State
@@ -19,6 +21,8 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   const [options, setOptions] = useState<Option[]>([{ id: "Loading", label: `Loading...`, status: true }]);
   const [keywordInput, setKeywordInput] = useState<string>();
   const [showDrafts, setShowDrafts] = useState(true);
+  const [showQueueModal, setShowQueueModal] = useState(false);
+
   // QueryParams
   const router = useRouter();
   const [query, setQuery] = useQueryParams({
@@ -117,6 +121,28 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
               </a>
             </div>
           </div>
+        </div>
+
+        <div className="max-w-7xl flex flex-col space-y-2 md:flex-row md:space-x-5 md:space-y-0 bg-white mt-2 p-2 shadow rounded-md">
+          <button
+            type="button"
+            onClick={() => router.push(`/s/${space}/edit`)}
+            className="md:ml-2 inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <DocumentTextIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+            New Proposal
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowQueueModal(true)}
+            className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <Square3Stack3DIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+            Queue Execution
+          </button>
+
+          <QueueExecutionModal open={showQueueModal} setOpen={setShowQueueModal} juiceboxProjectId={parseInt(infoData?.data?.juiceboxProjectId || "1")} proposals={proposalData?.data} />
         </div>
   
         <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">

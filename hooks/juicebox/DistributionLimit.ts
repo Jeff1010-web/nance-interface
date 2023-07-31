@@ -2,7 +2,7 @@ import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { getJBController, getJBETHPaymentTerminal } from "juice-sdk";
 import { useContractReadValue } from "./ContractReadValue";
 import JBFundAccessConstraintsStore from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBFundAccessConstraintsStore.json';
-import JBETHPaymentTerminalV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal3_1.json';
+import JBETHPaymentTerminalV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal3_1_1.json';
 import { useEthersProvider } from '../ViemAdapter';
 import { Contract } from 'ethers';
 

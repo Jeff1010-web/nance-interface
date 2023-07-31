@@ -39,10 +39,10 @@ interface BaseRequest {
 }
 
 export interface ProposalsRequest extends BaseRequest {
-  cycle: number | null | undefined;
-  keyword: string | null | undefined;
-  limit: number | null | undefined;
-  page: number | null | undefined;
+  cycle?: number | null | undefined;
+  keyword?: string | null | undefined;
+  limit?: number | null | undefined;
+  page?: number | null | undefined;
 }
 
 export type SpaceInfoRequest = BaseRequest;

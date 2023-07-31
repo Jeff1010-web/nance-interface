@@ -30,6 +30,7 @@ export default async function auth(req: any, res: any) {
 
           if (!nextAuthDomains.includes(domain)) {
             console.warn("❌ NextAuth.authorize.error", "Invalid domain", domain);
+            // FIXME to return meaningful error message
             return null;
           }
 

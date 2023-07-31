@@ -17,7 +17,7 @@ const splits2map = (splits: JBSplit[]) => {
   }
   return map;
 };
-const keyOfSplit = (mod: JBSplit) => `${mod.beneficiary}-${mod.projectId}-${mod.allocator}`;
+export const keyOfSplit = (mod: JBSplit) => `${mod.beneficiary}-${mod.projectId}-${mod.allocator}`;
 function orderByPercent(a: JBSplit, b: JBSplit) {
   if (a.percent > b.percent) {
     return -1;
@@ -32,7 +32,7 @@ const formatter = new Intl.NumberFormat('en-GB', { style: "decimal" });
 const formatNumber = (num: number) => formatter.format(num);
 // In v1, ETH = 0, USD = 1
 // In v2, ETH = 1, USD = 2, we subtract 1 to get the same value
-const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
+export const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
   const symbol = currency.toNumber() == 0 ? "Ξ" : "$";
   const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatNumber(parseInt(utils.formatEther(amount ?? 0)));
   return symbol + formatted;
@@ -256,7 +256,7 @@ export default function ReconfigurationCompare({ currentFC, previewFC }: Reconfi
   );
 }
 
-function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumber, fee: BigNumber, version: number) {
+export function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumber, fee: BigNumber, version: number) {
   if (!percent) return undefined;
 
   const _totalPercent = JBConstants.TotalPercent.Splits[version - 1];
@@ -270,7 +270,7 @@ function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumb
   return `${(_percent / _totalPercent * 100).toFixed(2)}% (${formatCurrency(currency, _amount.mul(percent).div(_totalPercent))})`;
 }
 
-function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersion: number }) {
+export function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersion: number }) {
   let splitMode = "address";
   if (mod.allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
   else if (mod.projectId.toNumber() !== 0) splitMode = "project";
