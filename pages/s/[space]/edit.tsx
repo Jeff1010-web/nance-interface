@@ -162,7 +162,7 @@ function Form({ space }: { space: string }) {
 
     const payload = {
       ...formData.proposal,
-      status: selected.value,
+      status: (metadata.loadedProposal?.status === 'Temperature Check') ? 'Temperature Check' : selected.value,
       body: await htmlToMarkdown(formData.proposal.body ?? ""),
       hash
     };
