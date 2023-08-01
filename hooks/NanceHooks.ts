@@ -14,6 +14,7 @@ import {
   ProposalUploadPayload,
   ProposalDeleteRequest,
   ProposalsPacket,
+  SQLPayout,
 } from '../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -37,6 +38,13 @@ export function useAllSpaceInfo(shouldFetch: boolean = true) {
 export function useSpaceInfo(args: SpaceInfoRequest, shouldFetch: boolean = true) {
   return useSWR<APIResponse<SpaceInfo>, string>(
     shouldFetch ? `${NANCE_PROXY_API_URL}/${args.space}` : null,
+    jsonFetcher()
+  );
+}
+
+export function useCurrentPayouts(space: string, shouldFetch: boolean = true) {
+  return useSWR<APIResponse<SQLPayout[]>, string>(
+    shouldFetch ? `${NANCE_PROXY_API_URL}/${space}/payouts` : null,
     jsonFetcher()
   );
 }

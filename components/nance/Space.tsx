@@ -142,7 +142,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             Queue Execution
           </button>
 
-          <QueueExecutionModal open={showQueueModal} setOpen={setShowQueueModal} juiceboxProjectId={parseInt(infoData?.data?.juiceboxProjectId || "1")} proposals={proposalData?.data} />
+          <QueueExecutionModal open={showQueueModal} setOpen={setShowQueueModal} juiceboxProjectId={parseInt(infoData?.data?.juiceboxProjectId || "1")} proposals={proposalData?.data} space={space} currentCycle={currentCycle} />
         </div>
   
         <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">
