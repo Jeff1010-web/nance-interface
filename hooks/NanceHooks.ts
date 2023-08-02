@@ -164,6 +164,7 @@ export async function fetchCreatedProposals(space: string | undefined, author: s
       success: true,
       data: {
         proposalInfo: {
+          snapshotSpace: "",
           proposalIdPrefix: "",
           minTokenPassingAmount: 0
         },
