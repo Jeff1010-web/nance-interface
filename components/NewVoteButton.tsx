@@ -7,8 +7,8 @@ import { classNames } from "../libs/tailwind";
 
 
 export default function NewVoteButton(
-  { proposal, refetch, isSmall = false }: 
-    { proposal: SnapshotProposal | undefined, refetch: (option?: any) => void, isSmall?: boolean}) {
+  { proposal, snapshotSpace, refetch, isSmall = false }:
+    { proposal: SnapshotProposal | undefined, snapshotSpace: string, refetch: (option?: any) => void, isSmall?: boolean}) {
   // state
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [buttonLabel, setButtonLabel] = useState('Vote');
@@ -47,7 +47,7 @@ export default function NewVoteButton(
       </button>
   
       {proposal?.choices && (
-        <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId='jbdao.eth' proposal={proposal} spaceHideAbstain={true} refetch={refetch} />
+        <VotingModal modalIsOpen={modalIsOpen} closeModal={() => setModalIsOpen(false)} address={address} spaceId={snapshotSpace} proposal={proposal} spaceHideAbstain={true} refetch={refetch} />
       )}
     </div>
   );

@@ -300,7 +300,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                     )}
                   >
                     {!votedData?.[getLastSlash(proposal.voteURL)] && snapshotProposalDict[getLastSlash(proposal.voteURL)] ?
-                      <NewVoteButton proposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} refetch={refetch} isSmall />
+                      <NewVoteButton snapshotSpace={proposalsPacket.proposalInfo.snapshotSpace} proposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} refetch={refetch} isSmall />
                       : <div className="flex justify-center">{getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}</div>}
                   </td>
                 </tr>
@@ -420,8 +420,8 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                       'px-3 py-3.5 text-sm text-gray-500 hidden md:table-cell text-center'
                     )}
                   >
-                    {!votedData?.[getLastSlash(proposal.voteURL)] && snapshotProposalDict[getLastSlash(proposal.voteURL)] ?
-                      <NewVoteButton proposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} refetch={refetch} isSmall />
+                    {!votedData?.[getLastSlash(proposal.voteURL)] && snapshotProposalDict[getLastSlash(proposal.voteURL)] && proposalsPacket?.proposalInfo.snapshotSpace ?
+                      <NewVoteButton snapshotSpace={proposalsPacket.proposalInfo.snapshotSpace} proposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} refetch={refetch} isSmall />
                       : <div className="flex justify-center">{getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}</div>}
                   </td>
                 </tr>

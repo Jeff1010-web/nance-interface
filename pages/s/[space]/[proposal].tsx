@@ -381,7 +381,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                   )}
 
                   {snapshotProposal && (
-                    <ProposalVotes />
+                    <ProposalVotes snapshotSpace={commonProps.snapshotSpace} />
                   )}
                 </div>
               </section>
@@ -713,7 +713,7 @@ function ProposalOptions({ proposal, isOverview = false }:
   );
 }
 
-function ProposalVotes() {
+function ProposalVotes({ snapshotSpace } : {snapshotSpace: string}) {
 
   const { proposalInfo } = useContext(ProposalContext);
   const [selectedVoter, setSelectedVoter] = useState<string>('');
@@ -859,7 +859,7 @@ function ProposalVotes() {
         </ul>
       </div>
 
-      <NewVoteButton proposal={proposalInfo} refetch={refetch} />
+      <NewVoteButton snapshotSpace={snapshotSpace} proposal={proposalInfo} refetch={refetch} />
     </div>
   );
 }

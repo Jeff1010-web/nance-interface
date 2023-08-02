@@ -20,6 +20,7 @@ export type SpaceInfo = {
 };
 
 export type ProposalInfo = {
+  snapshotSpace: string;
   proposalIdPrefix: string;
   minTokenPassingAmount: number;
 };
