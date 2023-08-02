@@ -18,7 +18,7 @@ export async function getServerSideProps(context: any) {
 export default function NanceSpacePage({ space } : { space: string }) {
   const router = useRouter();
   const { data } = useSpaceInfo({ space }, router.isReady);
-  const spaceImage = data?.data.name === 'juicebox' ? '/images/opengraph/homepage.png' : `https://cdn.stamp.fyi/space/${data?.data?.snapshotSpace}?s=500`;
+  const spaceImage = data?.data?.name === 'juicebox' ? '/images/opengraph/homepage.png' : `https://cdn.stamp.fyi/space/${data?.data?.snapshotSpace}?s=500`;
   return (
     <>
       <SiteNav pageTitle={`${space} Governance`} description={`${space} Governance Platform`} image={spaceImage} space={space} withWallet withProposalButton={false} />
