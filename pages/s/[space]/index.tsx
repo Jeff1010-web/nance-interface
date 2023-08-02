@@ -15,11 +15,11 @@ export async function getServerSideProps(context: any) {
 }
 
 export default function NanceSpacePage({ space } : { space: string }) {
-  const { data, error } = useSpaceInfo({ space });
-
+  const { data } = useSpaceInfo({ space });
+  const spaceImage = data?.data.name === 'juicebox' ? '/images/opengraph/homepage.png' : `https://cdn.stamp.fyi/space/${data?.data.snapshotSpace}?s=500`;
   return (
     <>
-      <SiteNav pageTitle={`${space} Governance`} description={`${space} Governance Platform`} image={`https://cdn.stamp.fyi/space/${data?.data.snapshotSpace}?s=500`} space={space} withWallet withProposalButton={false} />
+      <SiteNav pageTitle={`${space} Governance`} description={`${space} Governance Platform`} image={spaceImage} space={space} withWallet withProposalButton={false} />
       <NanceSpace space={space} proposalUrlPrefix={`/s/${space}/`} />
       <Footer />
     </>
