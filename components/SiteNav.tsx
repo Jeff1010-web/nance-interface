@@ -31,7 +31,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
   const meta = {
     title: `${pageTitle} | Nance`,
     description: description || "Nance platform for automatic governance.",
-    url: `https://jbdao.org${router.asPath}`,
+    url: `https://nance.app${router.asPath}`,
     image: image || "/images/unsplash_application.jpeg",
   };
 
@@ -40,7 +40,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
   if (canForkProposal) {
     editProposalUrl = editProposalUrl + `?&proposalId=${proposalId}&fork=true`;
   }
-
+  console.log('meta', meta);
   return (
     <>
       <Head>
