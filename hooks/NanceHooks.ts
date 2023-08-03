@@ -158,7 +158,7 @@ export function getPath(space: string, command: string) {
   return `${NANCE_PROXY_API_URL}/${space}/${command}`;
 }
 
-export async function fetchCreatedProposals(space: string | undefined, author: string | undefined) {
+export async function fetchCreatedProposals(space: string | undefined, author: string | undefined, prefix: string = "") {
   if(!space || !author) {
     return {
       success: true,
@@ -175,7 +175,7 @@ export async function fetchCreatedProposals(space: string | undefined, author: s
   }
 
   const url = `${NANCE_PROXY_API_URL}/${space}/proposals/?author=${author}`;
-  const res = await fetch(url);
+  const res = await fetch(prefix + url);
   const json: APIResponse<ProposalsPacket> = await res.json();
   if (json.success === false) {
     console.warn("fetchCreatedProposals errors occurred: ", json.error);

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useClearDelegate, useDelegated, useSetDelegate } from '../hooks/snapshot/Delegations';
+import { ZERO_ADDRESS } from '../constants/Contract';
 
 interface VoterProfileProps {
   voter: string
@@ -125,7 +126,7 @@ const BUTTON_STYLE = "w-fit m-2 inline-flex items-center justify-center rounded-
 function DelegateActions({ delegate }: { delegate: string }) {
   const { address, isConnecting, isDisconnected } = useAccount();
   const { openConnectModal } = useConnectModal();
-  const { data: delegatedAddress } = useDelegated('jbdao.eth', address || "");
+  const { data: delegatedAddress } = useDelegated('jbdao.eth', address || ZERO_ADDRESS);
 
   // Wallet: connecting / not connected
   // Delegate: delegate / undelegate

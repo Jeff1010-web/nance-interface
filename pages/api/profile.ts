@@ -23,7 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const voter = req.query.voter as string;
   const space = req.query.space as string;
   const proposal = req.query.proposal as string;
-  console.debug('api.profile', { query: req.query });
+  const prefix = process.env.NODE_ENV === "production" ? `https://${req.headers.host}` : `http://${req.headers.host}`
+  console.debug('api.profile', { query: req.query, prefix: prefix });
 
   const nanceSpace = NANCE_MAPPING[space];
 
@@ -31,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const vp = await fetchVotingPower(voter, space, proposal);
     const votes = await fetchAllVotesOfAddress(voter, 1000, space);
     const delegators = await fetchDelegators(voter, space);
-    const proposals = await fetchCreatedProposals(nanceSpace, voter);
+    const proposals = await fetchCreatedProposals(nanceSpace, voter, prefix);
 
     const response: ProfileResponse = {
       vp: vp?.vp ?? 0,
