@@ -64,8 +64,8 @@ export default function ResolvedProject({ version, projectId, style }: Props) {
   return (
     <a target="_blank" rel="noopener noreferrer"
       className={classNames(
-        "text-xs text-gray-500 hover:underline",
         style,
+        'hover:underline'
       )}
       href={version == 1 ? `https://juicebox.money/p/${projectInfo?.handle}` : `https://juicebox.money/${projectInfo?.handle ? `@${projectInfo?.handle}` : `v2/p/${projectId}`}`}>
       {projectInfo?.handle ? `@${projectInfo.handle}` : `Project #${projectId}`}

@@ -288,7 +288,7 @@ export function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersi
   if (mod.allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
   else if (mod.projectId.toNumber() !== 0) splitMode = "project";
 
-  const mainStyle = "text-sm font-semibold";
+  const mainStyle = "text-sm";
   const subStyle = "text-xs italic";
 
   return (
@@ -297,15 +297,15 @@ export function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersi
         <>
           <FormattedAddress address={mod.allocator} style={mainStyle} />
           <a href="https://info.juicebox.money/dev/learn/glossary/split-allocator/" target="_blank" rel="noreferrer">(Allocator)</a>
-          <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={subStyle} />
-          <FormattedAddress address={mod.beneficiary} style={subStyle} />
+          {/* <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={subStyle} />
+          <FormattedAddress address={mod.beneficiary} style={subStyle} /> */}
         </>
       )}
 
       {splitMode === "project" && (
         <>
           <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={mainStyle} />
-          <FormattedAddress address={mod.beneficiary} style={subStyle} />
+          {/* <FormattedAddress address={mod.beneficiary} style={subStyle} /> */}
         </>
       )}
 
