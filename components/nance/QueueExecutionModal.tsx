@@ -83,6 +83,7 @@ function payoutsDiffOf(config: FundingCycleConfigProps, currentCycle: number | u
   const actionPayoutMap = new Map<string, {pid: number, action: Action}>();
   registeredPayouts.forEach(payout => registeredPayoutMap.set(keyOfNancePayout2Split(payout), payout));
   actionPayouts.forEach(action => actionPayoutMap.set(keyOfPayout2Split((action.action.payload as Payout)), action));
+  //console.debug("payoutsDiffOf.start", onchainPayouts, registeredPayoutMap, actionPayoutMap);
 
   // Calculate diff
   //  abc.eth 20% => 100u
@@ -93,7 +94,6 @@ function payoutsDiffOf(config: FundingCycleConfigProps, currentCycle: number | u
     const key = keyOfSplit(split);
     const registeredPayout = registeredPayoutMap.get(key);
     const actionPayout = actionPayoutMap.get(key);
-    //console.debug("payoutsDiffOf.start.iterate", key, split, registeredPayout, actionPayout);
 
     if (actionPayout) {
       // Amount change or refresh
@@ -221,7 +221,7 @@ function payoutsDiffOf(config: FundingCycleConfigProps, currentCycle: number | u
   Object.values(diff.new).forEach(updatePercentAndNewVal);
   Object.values(diff.change).forEach(updatePercentAndNewVal);
 
-  console.debug("payoutsDiffOf.final", { diff, isInfiniteLimit, oldLimit, newLimit });
+  //console.debug("payoutsDiffOf.final", { diff, isInfiniteLimit, oldLimit, newLimit });
   return diff;
 }
 

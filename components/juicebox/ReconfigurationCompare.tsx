@@ -9,6 +9,7 @@ import ResolvedProject from "../ResolvedProject";
 import { formatDistanceToNow, fromUnixTime } from "date-fns";
 import { Payout, SQLPayout } from "../../models/NanceTypes";
 import { ZERO_ADDRESS } from "../../constants/Contract";
+import { getAddress } from "viem";
 
 // 'projectId-beneficiary-allocator': mod
 const splits2map = (splits: JBSplit[]) => {
@@ -21,7 +22,7 @@ const splits2map = (splits: JBSplit[]) => {
 };
 export const keyOfSplit = (mod: JBSplit) => `${mod.beneficiary}-${mod.projectId}-${mod.allocator}`;
 export const keyOfPayout2Split = (mod: Payout) => `${mod.address}-${mod.project}-${ZERO_ADDRESS}`;
-export const keyOfNancePayout2Split = (mod: SQLPayout) => `${mod.payAddress}-${mod.payProject ?? 0}-${ZERO_ADDRESS}`;
+export const keyOfNancePayout2Split = (mod: SQLPayout) => `${getAddress(mod.payAddress || ZERO_ADDRESS)}-${mod.payProject ?? 0}-${ZERO_ADDRESS}`;
 function orderByPercent(a: JBSplit, b: JBSplit) {
   if (a.percent > b.percent) {
     return -1;
