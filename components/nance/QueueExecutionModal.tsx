@@ -5,12 +5,13 @@ import useTerminalFee from '../../hooks/juicebox/TerminalFee';
 import { useDistributionLimit } from '../../hooks/juicebox/DistributionLimit';
 import { useCurrentSplits } from '../../hooks/juicebox/CurrentSplits';
 import { JBConstants, JBSplit } from '../../models/JuiceboxTypes';
-import { FundingCycleConfigProps, SplitEntry, calculateSplitAmount, formatCurrency, formattedSplit, keyOfNancePayout2Split, keyOfPayout2Split, keyOfSplit } from '../juicebox/ReconfigurationCompare';
+import { FundingCycleConfigProps, SplitEntry, calculateSplitAmount, formatCurrency, formattedSplit, keyOfNancePayout2Split, keyOfPayout2Split, keyOfSplit, splitAmount2Percent } from '../juicebox/ReconfigurationCompare';
 import FormattedAddress from '../FormattedAddress';
 import { BigNumber, utils } from 'ethers';
 import { Action, Payout, ProposalsPacket, SQLPayout } from '../../models/NanceTypes';
 import { useCurrentPayouts } from '../../hooks/NanceHooks';
 import { ZERO_ADDRESS } from '../../constants/Contract';
+import TableWithSection, { SectionTableData, Status } from '../form/TableWithSection';
 
 const configFormatter: {
     name: string;
@@ -63,7 +64,8 @@ interface SplitDiff {
   },
   keep: {
     [key: string]: SplitDiffEntry
-  }
+  },
+  newDistributionLimit: BigNumber
 }
 
 const BIG_ZERO = BigNumber.from(0);
@@ -72,7 +74,8 @@ function payoutsDiffOf(config: FundingCycleConfigProps, currentCycle: number | u
     expire: {},
     new: {},
     change: {},
-    keep: {}
+    keep: {},
+    newDistributionLimit: config.fundingCycle.target
   }
 
   // Maps
@@ -177,13 +180,7 @@ function payoutsDiffOf(config: FundingCycleConfigProps, currentCycle: number | u
       split,
       proposalId: action.pid,
       oldVal: "",
-      newVal: formattedSplit(
-        split.percent || BIG_ZERO,
-        config.fundingCycle.currency,
-        config.fundingCycle.target,
-        config.fundingCycle.fee,
-        config.version
-      ) || "",
+      newVal: "",
       amountUSD: payout.amountUSD
     }
   })
@@ -199,10 +196,33 @@ function payoutsDiffOf(config: FundingCycleConfigProps, currentCycle: number | u
     newLimit -= calculateSplitAmount(v[1].split.percent, config.fundingCycle.target);
     newLimit += v[1].amountUSD;
   })
+  const newLimitBG = utils.parseEther(newLimit.toFixed(0));
+  diff.newDistributionLimit = newLimitBG;
 
-  // Attention: remining funds should be allocated to project owner
+  // FIXME: remining funds should be allocated to project owner
 
-  console.debug("payoutsDiffOf.middle", { diff, isInfiniteLimit, oldLimit, newLimit });
+  // Update percent in JBSplit struct, because we have new distributionLimit
+  function updatePercentAndNewVal(entry: SplitDiffEntry) {
+    const newPercent = splitAmount2Percent(newLimitBG, entry.amountUSD);
+    entry.split = {
+      ...entry.split,
+      percent: newPercent
+    };
+    entry.newVal = formattedSplit(
+      newPercent,
+      config.fundingCycle.currency,
+      newLimitBG,
+      config.fundingCycle.fee,
+      config.version
+    ) || "";
+  }
+
+  Object.values(diff.keep).forEach(updatePercentAndNewVal);
+  Object.values(diff.new).forEach(updatePercentAndNewVal);
+  Object.values(diff.change).forEach(updatePercentAndNewVal);
+
+  console.debug("payoutsDiffOf.final", { diff, isInfiniteLimit, oldLimit, newLimit });
+  return diff;
 }
 
 export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, proposals, space, currentCycle }: {
@@ -255,7 +275,59 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   })
 
   // Splits with changes
-  payoutsDiffOf(currentConfig, currentCycle, payoutMods || [], nancePayouts?.data || [], actionWithPIDArray?.filter((v) => v.action.type === "Payout") || []);
+  const diff = payoutsDiffOf(currentConfig, currentCycle, payoutMods || [], nancePayouts?.data || [], actionWithPIDArray?.filter((v) => v.action.type === "Payout") || []);
+
+  // Table data
+  const tableData: SectionTableData[] = [
+    {
+      section: "Overall",
+      entries: [
+        {
+          id: "distributionLimit",
+          title: "Distribution Limit",
+          proposal: 0,
+          oldVal: formatCurrency(currentConfig.fundingCycle.currency, currentConfig.fundingCycle.target),
+          newVal: formatCurrency(currentConfig.fundingCycle.currency, diff.newDistributionLimit),
+          status: diff.newDistributionLimit.eq(currentConfig.fundingCycle.target) ? "Keep" : "Edit"
+        }
+      ]
+    },
+    {
+      section: "Distribution",
+      entries: []
+    },
+    {
+      section: "Reserve Token",
+      entries: ticketMods?.map(mod => {
+        return {
+          id: keyOfSplit(mod),
+          title: <SplitEntry mod={mod} projectVersion={3} />,
+          oldVal: `${(mod.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
+          newVal: `${(mod.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
+          proposal: 0,
+          status: "Keep" as Status
+        }
+      }).sort(((a, b) => b.oldVal.localeCompare(a.oldVal))) || []
+    }
+  ];
+
+  function diff2TableEntry(status: Status) {
+    return (v: SplitDiffEntry) => {
+      tableData[1].entries.push({
+        id: keyOfSplit(v.split),
+        title: <SplitEntry mod={v.split} projectVersion={3} />,
+        proposal: v.proposalId,
+        oldVal: v.oldVal,
+        newVal: v.newVal,
+        status
+      })
+    }
+  }
+  Object.values(diff.new).forEach(diff2TableEntry("Add"));
+  Object.values(diff.change).forEach(diff2TableEntry("Edit"));
+  Object.values(diff.expire).forEach(diff2TableEntry("Remove"));
+  Object.values(diff.keep).forEach(diff2TableEntry("Keep"));
+  tableData[1].entries.sort((a, b) => b.newVal.localeCompare(a.newVal))
 
   const loading = fcIsLoading || feeIsLoading || targetIsLoading || payoutModsIsLoading || ticketModsIsLoading || nancePayoutsLoading;
   if (!loading) {
@@ -294,76 +366,18 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
                     <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
                       Queue Juicebox Cycle
                     </Dialog.Title>
-                    <div className="mt-2 ml-2 space-y-2">
-                        <p className="rounded-sm bg-gray-300 p-2">Overall</p>
-                        <p>
-                            <span className="mr-2">
-                                Distribution Limit
-                            </span>
-
-                            <span>
-                                {formatCurrency(currentConfig.fundingCycle.currency, currentConfig.fundingCycle.target)}
-                            </span>
-                        </p>
-
-                        {/* {!loading && configFormatter.map((config) => (
-                            <p key={config.name}>
-                                <span className="mr-2">
-                                    {config.name}
-                                </span>
-
-                                <span>
-                                    {config.getFunc(currentConfig)}
-                                </span>
-                            </p>
-                        ))}
-                        {loading && (
-                            <div className="animate-pulse w-full h-5">
-                            </div>
-                        )} */}
-                        
-                        <p className="rounded-sm bg-gray-300 p-2">Distribution</p>
-                        {!loading && payoutMods?.map((mod) => (
-                            <p key={keyOfSplit(mod)}>
-                                <span className="mr-2">
-                                    <SplitEntry mod={mod} projectVersion={3} />
-                                </span>
-
-                                <span>
-                                    {formattedSplit(
-                                        mod?.percent || BigNumber.from(0),
-                                        currentConfig.fundingCycle.currency,
-                                        currentConfig.fundingCycle.target,
-                                        currentConfig.fundingCycle.fee,
-                                        currentConfig.version
-                                    )}
-                                </span>
-                            </p>
-                        ))}
-
-                        <p className="rounded-sm bg-gray-300 p-2">Reserve Tokens</p>
-                        {!loading && ticketMods?.map((mod) => (
-                            <p key={keyOfSplit(mod)}>
-                                <span className="mr-2">
-                                    <SplitEntry mod={mod} projectVersion={3} />
-                                </span>
-
-                                <span>
-                                    {`${(mod.percent.toNumber() / 10000000 ?? 0 / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`}
-                                </span>
-                            </p>
-                        ))}
-                    </div>
+                    
+                    <TableWithSection space={space} tableData={tableData} />
                   </div>
                 </div>
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                  <button
+                  {/* <button
                     type="button"
                     className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
                     onClick={() => setOpen(false)}
                   >
                     Next
-                  </button>
+                  </button> */}
                   <button
                     type="button"
                     className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"

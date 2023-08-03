@@ -264,6 +264,10 @@ export function calculateSplitAmount(percent: BigNumber, target: BigNumber) {
   return parseInt(utils.formatEther(target.mul(percent).div(JBConstants.TotalPercent.Splits[2]) ?? 0));
 }
 
+export function splitAmount2Percent(target: BigNumber, amount: number) {
+  return utils.parseEther(amount.toFixed(0)).mul(JBConstants.TotalPercent.Splits[2]).div(target);
+}
+
 export function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumber, fee: BigNumber, version: number) {
   if (!percent) return undefined;
 
