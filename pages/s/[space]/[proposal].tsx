@@ -396,7 +396,7 @@ export default function NanceProposalPage({ space, proposal, snapshotProposal }:
                         </Listbox>
                       )}
 
-                      {proposal.status === "Archived" && (
+                      {proposal.status === "Archived" && status === "authenticated" && (
                         <button className="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full"
                           onClick={() => unarchiveProposal()}
                           disabled={nanceAPILoading}
