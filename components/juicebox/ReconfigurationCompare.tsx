@@ -7,7 +7,7 @@ import unionBy from 'lodash.unionby';
 import { BigNumber, utils } from "ethers";
 import ResolvedProject from "../ResolvedProject";
 import { formatDistanceToNow, fromUnixTime } from "date-fns";
-import { Payout, SQLPayout } from "../../models/NanceTypes";
+import { JBSplitNanceStruct, Payout, SQLPayout } from "../../models/NanceTypes";
 import { ZERO_ADDRESS } from "../../constants/Contract";
 import { getAddress } from "viem";
 
@@ -22,7 +22,8 @@ const splits2map = (splits: JBSplit[]) => {
 };
 export const keyOfSplit = (mod: JBSplit) => `${mod.beneficiary}-${mod.projectId}-${mod.allocator}`;
 export const keyOfPayout2Split = (mod: Payout) => `${mod.address}-${mod.project}-${ZERO_ADDRESS}`;
-export const keyOfNancePayout2Split = (mod: SQLPayout) => `${getAddress(mod.payAddress || ZERO_ADDRESS)}-${mod.payProject ?? 0}-${ZERO_ADDRESS}`;
+export const keyOfNanceSplit2Split = (mod: JBSplitNanceStruct) => `${mod.beneficiary}-${mod.projectId}-${mod.allocator}`;
+export const keyOfNancePayout2Split = (mod: SQLPayout) => `${getAddress(mod.payAddress || ZERO_ADDRESS)}-${mod.payProject ?? 0}-${mod.payAllocator || ZERO_ADDRESS}`;
 function orderByPercent(a: JBSplit, b: JBSplit) {
   if (a.percent > b.percent) {
     return -1;
@@ -266,6 +267,9 @@ export function calculateSplitAmount(percent: BigNumber, target: BigNumber) {
 }
 
 export function splitAmount2Percent(target: BigNumber, amount: number) {
+  if (amount <= 0) {
+    return BigNumber.from(0);
+  }
   return utils.parseEther(amount.toFixed(0)).mul(JBConstants.TotalPercent.Splits[2]).div(target);
 }
 
