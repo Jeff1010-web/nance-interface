@@ -74,8 +74,8 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                         <a>
                           <img
                             className="block h-8 w-auto"
-                            src="/favicon.svg"
-                            alt="JBDAO logo"
+                            src="/images/logo-min.svg"
+                            alt="nance logo"
                           />
                         </a>
                       </Link>
