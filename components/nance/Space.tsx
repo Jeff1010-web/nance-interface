@@ -60,6 +60,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   useEffect(() => {
     // if we can retrieve the current cycle from infoData, then we can populate the options
     const _currentCycle = infoData?.data?.currentCycle;
+    console.log("🟢 NanceSpace.useEffect -> _currentCycle", _currentCycle);
     const newOptions: Option[] = [];
     if (_currentCycle) {
       newOptions.push(allCycle);
