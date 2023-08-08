@@ -3,6 +3,7 @@
   "rules": {
     "brace-style": ["warn", "1tbs"],
     "indent": ["warn", 2],
-    "semi": ["warn", "always", { "omitLastInOneLineBlock": true}]
+    "semi": ["warn", "always", { "omitLastInOneLineBlock": true}],
+    "max-lines": ["warn", 300]
   }
 }
