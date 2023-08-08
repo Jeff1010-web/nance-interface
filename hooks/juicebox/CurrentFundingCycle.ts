@@ -7,6 +7,7 @@ import { FundingCycleV1, V2V3FundingCycle, V2V3FundingCycleMetadata } from '../.
 import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController3_1.json';
 import { useEthersProvider } from '../ViemAdapter';
 import { Contract } from 'ethers';
+import useControllerOfProject from './ControllerOfProject';
 
 const deepEqFundingCycles = (a?: FundingCycleV1, b?: FundingCycleV1) => {
   if (a && !b) return false;
@@ -60,6 +61,16 @@ export function useCurrentFundingCycleV2({
 
   return useContractReadValue<[V2V3FundingCycle, V2V3FundingCycleMetadata]>({
     contract,
+    functionName: 'currentFundingCycleOf',
+    args: projectId ? [BigNumber.from(projectId).toHexString()] : null
+  });
+}
+
+export function useCurrentFundingCycleV3(projectId: BigNumberish | undefined) {
+  const { value: controller, version } = useControllerOfProject(projectId);
+
+  return useContractReadValue<[V2V3FundingCycle, V2V3FundingCycleMetadata]>({
+    contract: controller,
     functionName: 'currentFundingCycleOf',
     args: projectId ? [BigNumber.from(projectId).toHexString()] : null
   });

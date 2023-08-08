@@ -35,6 +35,7 @@ interface Entry {
   proposal: number;
   oldVal: string;
   newVal: string;
+  valueToBeSorted: number;
   status: Status;
 }
 

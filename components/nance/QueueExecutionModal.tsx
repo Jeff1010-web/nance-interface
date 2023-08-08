@@ -1,330 +1,20 @@
 import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { useCurrentFundingCycleV2 } from '../../hooks/juicebox/CurrentFundingCycle';
-import useTerminalFee from '../../hooks/juicebox/TerminalFee';
+import { useCurrentFundingCycleV3 } from '../../hooks/juicebox/CurrentFundingCycle';
 import { useDistributionLimit } from '../../hooks/juicebox/DistributionLimit';
 import { useCurrentSplits } from '../../hooks/juicebox/CurrentSplits';
-import { JBConstants, JBSplit } from '../../models/JuiceboxTypes';
-import { FundingCycleConfigProps, SplitEntry, calculateSplitAmount, formatCurrency, formattedSplit, keyOfNancePayout2Split, keyOfNanceSplit2Split, keyOfPayout2Split, keyOfSplit, splitAmount2Percent } from '../juicebox/ReconfigurationCompare';
-import FormattedAddress from '../FormattedAddress';
+import { CURRENCY_USD, ETH_TOKEN_ADDRESS, JBConstants, JBFundingCycleData } from '../../models/JuiceboxTypes';
+import { FundingCycleConfigProps, diff2TableEntry, formatCurrency } from '../juicebox/ReconfigurationCompare';
 import { BigNumber, utils } from 'ethers';
-import { Action, JBSplitNanceStruct, Payout, ProposalsPacket, Reserve, SQLPayout } from '../../models/NanceTypes';
+import { ProposalsPacket, Reserve } from '../../models/NanceTypes';
 import { useCurrentPayouts } from '../../hooks/NanceHooks';
+import TableWithSection, { SectionTableData } from '../form/TableWithSection';
+import SafeTransactionCreator from '../safe/SafeTransactionCreator';
+import { payoutsDiffOf, reservesDiffOf } from '../../libs/juicebox';
+import useControllerOfProject from '../../hooks/juicebox/ControllerOfProject';
 import { ZERO_ADDRESS } from '../../constants/Contract';
-import TableWithSection, { SectionTableData, Status } from '../form/TableWithSection';
-
-const configFormatter: {
-    name: string;
-    getFunc: (fc: FundingCycleConfigProps) => any;
-  }[] = [
-    { name: 'Reserve rate', getFunc: (fc) => fc.metadata.reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[fc.version - 1] * 100 + "%" },
-    { name: 'Rdemption rate', getFunc: (fc) => fc.metadata.redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[fc.version - 1] * 100 + "%" },
-    { name: 'Discount rate', getFunc: (fc) => fc.fundingCycle.discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[fc.version - 1] * 100 + "%" },
-    { name: 'Payments', getFunc: (fc) => fc.metadata.pausePay ? "Disabled" : "Enabled" },
-    { name: 'Token minting', getFunc: (fc) => fc.metadata.allowMinting ? "Enabled" : "Disabled" },
-    { name: 'Terminal migration', getFunc: (fc) => fc.metadata.allowTerminalMigration ? "Enabled" : "Disabled" },
-    { name: 'Controller migration', getFunc: (fc) => fc.metadata.allowControllerMigration ? "Enabled" : "Disabled" },
-    { name: 'Reconfiguration strategy', getFunc: (fc) => <FormattedAddress key={fc.fundingCycle.ballot} address={fc.fundingCycle.ballot} /> },
-    //{name: 'Reconfiguration strategy', getFunc: (fc) => fc.fundingCycle.ballot},
-  ];
-
-interface JuiceboxReconfigurationStruct {
-    overall: {
-        distributionLimit: number,
-        discountRate: number,
-        redemptionRate: number,
-        reserveRate: number,
-        reconfigurationStrategy: string,
-        pausePay: boolean,
-        allowMinting: boolean,
-        allowTerminalMigration: boolean,
-        allowControllerMigration: boolean
-    },
-    payouts: JBSplit[],
-    reserves: JBSplit[]
-}
-
-interface SplitDiffEntry {
-  split: JBSplit;
-  oldVal: string;
-  newVal: string;
-  proposalId: number;
-  amount: number;
-}
-
-interface SplitDiff {
-  expire: {
-    [key: string]: SplitDiffEntry
-  },
-  new: {
-    [key: string]: SplitDiffEntry
-  },
-  change: {
-    [key: string]: SplitDiffEntry
-  },
-  keep: {
-    [key: string]: SplitDiffEntry
-  },
-  newTotal: BigNumber
-}
-
-const BIG_ZERO = BigNumber.from(0);
-function payoutsDiffOf(config: FundingCycleConfigProps, currentCycle: number | undefined, onchainPayouts: JBSplit[], registeredPayouts: SQLPayout[], actionPayouts: {pid: number, action: Action}[]) {
-  const diff: SplitDiff = {
-    expire: {},
-    new: {},
-    change: {},
-    keep: {},
-    newTotal: config.fundingCycle.target
-  }
-
-  // Maps
-  const registeredPayoutMap = new Map<string, SQLPayout>();
-  const actionPayoutMap = new Map<string, {pid: number, action: Action}>();
-  registeredPayouts.forEach(payout => registeredPayoutMap.set(keyOfNancePayout2Split(payout), payout));
-  actionPayouts.forEach(action => actionPayoutMap.set(keyOfPayout2Split((action.action.payload as Payout)), action));
-  //console.debug("payoutsDiffOf.start", onchainPayouts, registeredPayoutMap, actionPayoutMap);
-
-  // Calculate diff
-  //  abc.eth 20% => 100u
-  //  1. expired: numberOfPayouts == (currentCycle - governanceCycleStart + 1)
-  //  2. added: split not existed before
-  //  3. changed: payouts amount changed
-  onchainPayouts.forEach(split => {
-    const key = keyOfSplit(split);
-    const registeredPayout = registeredPayoutMap.get(key);
-    const actionPayout = actionPayoutMap.get(key);
-
-    if (actionPayout) {
-      // Amount change or refresh
-      diff.change[key] = {
-        split,
-        proposalId: actionPayout.pid,
-        oldVal: formattedSplit(
-            split.percent || BigNumber.from(0),
-            config.fundingCycle.currency,
-            config.fundingCycle.target,
-            config.fundingCycle.fee,
-            config.version
-        ) || "",
-        newVal: "",
-        amount: (actionPayout.action.payload as Payout).amountUSD
-      }
-    } else if (registeredPayout) {
-      // Will it expire?
-      const willExpire = currentCycle && registeredPayout.numberOfPayouts < (currentCycle - registeredPayout.governanceCycleStart + 1)
-      if (willExpire) {
-        diff.expire[key] = {
-          split,
-          proposalId: registeredPayout.proposalId || 0,
-          oldVal: formattedSplit(
-            split.percent || BIG_ZERO,
-            config.fundingCycle.currency,
-            config.fundingCycle.target,
-            config.fundingCycle.fee,
-            config.version
-          ) || "",
-          newVal: "",
-          amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
-        }
-      } else {
-        // keep it
-        diff.keep[key] = {
-          split,
-          proposalId: registeredPayout.proposalId || 0,
-          oldVal: formattedSplit(
-            split.percent || BIG_ZERO,
-            config.fundingCycle.currency,
-            config.fundingCycle.target,
-            config.fundingCycle.fee,
-            config.version
-          ) || "",
-          newVal: "",
-          amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
-        }
-      }
-    } else {
-      // keep it
-      diff.keep[key] = {
-        split,
-        proposalId: 0,
-        oldVal: formattedSplit(
-          split.percent || BIG_ZERO,
-          config.fundingCycle.currency,
-          config.fundingCycle.target,
-          config.fundingCycle.fee,
-          config.version
-        ) || "",
-        newVal: "",
-        amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
-      }
-    }
-
-    // Remove map entry so it won't get calculated twice later
-    actionPayoutMap.delete(key);
-  })
-
-  actionPayoutMap.forEach((action, key) => {
-    // New entry
-    const payout = action.action.payload as Payout;
-    const split: JBSplit = {
-      preferClaimed: false,
-      preferAddToBalance: false,
-      percent: BIG_ZERO,
-      lockedUntil: BIG_ZERO,
-      beneficiary: payout.address,
-      projectId: BigNumber.from(payout.project || 0),
-      allocator: ZERO_ADDRESS
-    }
-    diff.new[key] = {
-      split,
-      proposalId: action.pid,
-      oldVal: "",
-      newVal: "",
-      amount: payout.amountUSD
-    }
-  })
-
-  // Calculate new distributionLimit and percentages for all payouts if there are changes.
-  // FIXME here we assume all project will use USD-based payout, otherwise we need to handle currency
-  const isInfiniteLimit = config.fundingCycle.target.gte(JBConstants.UintMax);
-  const oldLimit = parseInt(utils.formatEther(config.fundingCycle.target ?? 0));
-  let newLimit = oldLimit;
-  Object.entries(diff.new).forEach((v) => newLimit += v[1].amount)
-  Object.entries(diff.expire).forEach((v) => newLimit -= v[1].amount)
-  Object.entries(diff.change).forEach((v) => {
-    newLimit -= calculateSplitAmount(v[1].split.percent, config.fundingCycle.target);
-    newLimit += v[1].amount;
-  })
-  const newLimitBG = utils.parseEther(newLimit.toFixed(0));
-  diff.newTotal = newLimitBG;
-
-  // FIXME: remining funds should be allocated to project owner
-
-  // Update percent in JBSplit struct, because we have new distributionLimit
-  function updatePercentAndNewVal(entry: SplitDiffEntry) {
-    const newPercent = splitAmount2Percent(newLimitBG, entry.amount);
-    entry.split = {
-      ...entry.split,
-      percent: newPercent
-    };
-    entry.newVal = formattedSplit(
-      newPercent,
-      config.fundingCycle.currency,
-      newLimitBG,
-      config.fundingCycle.fee,
-      config.version
-    ) || "";
-  }
-
-  Object.values(diff.keep).forEach(updatePercentAndNewVal);
-  Object.values(diff.new).forEach(updatePercentAndNewVal);
-  Object.values(diff.change).forEach(updatePercentAndNewVal);
-
-  //console.debug("payoutsDiffOf.final", { diff, isInfiniteLimit, oldLimit, newLimit });
-  return diff;
-}
-
-function reservesDiffOf(onchainReserves: JBSplit[], actionReserve: Reserve, pid: number) {
-  const actionReserveMap = new Map<string, JBSplitNanceStruct>();
-  actionReserve?.splits.forEach(splitStruct => actionReserveMap.set(keyOfNanceSplit2Split(splitStruct), splitStruct));
-  const diff: SplitDiff = {
-    expire: {},
-    new: {},
-    change: {},
-    keep: {},
-    newTotal: BIG_ZERO
-  }
-  // entry.concat(onchainReserves.map(ticket => {
-  //   return {
-  //     split: ticket,
-  //     oldVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-  //     newVal: "",
-  //     proposalId: 0,
-  //     amount: ticket.percent.toNumber()
-  //   }
-  // }))
-
-  function splitStruct2JBSplit(v: JBSplitNanceStruct) {
-    const split: JBSplit = {
-      preferClaimed: v.preferClaimed,
-      preferAddToBalance: v.preferAddToBalance,
-      percent: BigNumber.from(v.percent),
-      lockedUntil: BigNumber.from(v.lockedUntil),
-      beneficiary: v.beneficiary,
-      projectId: BigNumber.from(v.projectId || 0),
-      allocator: v.allocator
-    }
-    return split
-  }
-
-  onchainReserves.forEach(ticket => {
-    const key = keyOfSplit(ticket);
-    const reserve = actionReserveMap.get(key);
-
-    if (actionReserve) {
-      if (reserve) {
-        const reserveAsJBSplit = splitStruct2JBSplit(reserve);
-        const equal = JSON.stringify(ticket) == JSON.stringify(reserveAsJBSplit);
-        diff.newTotal = diff.newTotal.add(BigNumber.from(reserveAsJBSplit.percent));
-  
-        if (equal) {
-          // keep
-          diff.keep[key] = {
-            split: ticket,
-            oldVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-            newVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-            proposalId: 0,
-            amount: ticket.percent.toNumber()
-          }
-        } else {
-          // change
-          diff.change[key] = {
-            split: reserveAsJBSplit,
-            oldVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-            newVal: `${(reserve.percent / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-            proposalId: pid,
-            amount: reserve.percent
-          }
-        }
-      } else {
-        // remove
-        diff.expire[key] = {
-          split: ticket,
-          oldVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-          newVal: "",
-          proposalId: pid,
-          amount: ticket.percent.toNumber()
-        }
-      } 
-    } else {
-      diff.keep[key] = {
-        split: ticket,
-        oldVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-        newVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-        proposalId: 0,
-        amount: ticket.percent.toNumber()
-      }
-    }
-
-    actionReserveMap.delete(key);
-  })
-
-  actionReserveMap.forEach((v, k) => {
-    const reserveAsJBSplit = splitStruct2JBSplit(v);
-    diff.newTotal = diff.newTotal.add(BigNumber.from(reserveAsJBSplit.percent));
-    diff.new[k] = {
-      split: reserveAsJBSplit,
-      oldVal: `${(v.percent / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-      newVal: "",
-      proposalId: pid,
-      amount: v.percent
-    }
-  })
-
-  console.debug("reservesDiffOf.final", diff);
-  return diff;
-}
+import useTerminalOfProject from '../../hooks/juicebox/TerminalOfProject';
+import useProjectInfo from '../../hooks/juicebox/ProjectInfo';
 
 export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, proposals, space, currentCycle }: {
     open: boolean, setOpen: (o: boolean) => void,
@@ -338,9 +28,12 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   // Get configuration of current fundingCycle
   const isV3 = true;
   const projectId = juiceboxProjectId;
-  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId, isV3 });
+  const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, projectId);
+  const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
+  const { value: controller, version } = useControllerOfProject(projectId);
+  const { value: terminal } = useTerminalOfProject(projectId);
+  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV3(projectId);
   const [fc, metadata] = _fc || [];
-  const { value: fee, loading: feeIsLoading } = useTerminalFee({ version: "3" });
   const { value: _limit, loading: targetIsLoading } = useDistributionLimit(projectId, fc?.configuration, isV3);
   const [target, currency] = _limit || [];
   const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.ETH, isV3);
@@ -355,7 +48,7 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
     //@ts-ignore
     fundingCycle: {
       ...fc,
-      fee: fee || zero,
+      fee: zero,
       currency: currency?.sub(1) || zero,
       target: target || zero,
       configuration: fc?.configuration || zero
@@ -391,7 +84,8 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
           proposal: 0,
           oldVal: formatCurrency(currentConfig.fundingCycle.currency, currentConfig.fundingCycle.target),
           newVal: formatCurrency(currentConfig.fundingCycle.currency, payoutsDiff.newTotal),
-          status: payoutsDiff.newTotal.eq(currentConfig.fundingCycle.target) ? "Keep" : "Edit"
+          status: payoutsDiff.newTotal.eq(currentConfig.fundingCycle.target) ? "Keep" : "Edit",
+          valueToBeSorted: 0
         }
       ]
     },
@@ -404,36 +98,64 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
       entries: []
     }
   ];
-
-  function diff2TableEntry(index: number, status: Status) {
-    return (v: SplitDiffEntry) => {
-      tableData[index].entries.push({
-        id: keyOfSplit(v.split),
-        title: <SplitEntry mod={v.split} projectVersion={3} />,
-        proposal: v.proposalId,
-        oldVal: v.oldVal,
-        newVal: v.newVal,
-        status
-      })
-    }
-  }
+  
   // Payout Diff
-  Object.values(payoutsDiff.new).forEach(diff2TableEntry(1, "Add"));
-  Object.values(payoutsDiff.change).forEach(diff2TableEntry(1, "Edit"));
-  Object.values(payoutsDiff.expire).forEach(diff2TableEntry(1, "Remove"));
-  Object.values(payoutsDiff.keep).forEach(diff2TableEntry(1, "Keep"));
-  tableData[1].entries.sort((a, b) => b.newVal.localeCompare(a.newVal))
+  Object.values(payoutsDiff.new).forEach(diff2TableEntry(1, "Add", tableData));
+  Object.values(payoutsDiff.change).forEach(diff2TableEntry(1, "Edit", tableData));
+  Object.values(payoutsDiff.expire).forEach(diff2TableEntry(1, "Remove", tableData));
+  Object.values(payoutsDiff.keep).forEach(diff2TableEntry(1, "Keep", tableData));
+  tableData[1].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
   // Reserve Diff
-  Object.values(reservesDiff.new).forEach(diff2TableEntry(2, "Add"));
-  Object.values(reservesDiff.change).forEach(diff2TableEntry(2, "Edit"));
-  Object.values(reservesDiff.expire).forEach(diff2TableEntry(2, "Remove"));
-  Object.values(reservesDiff.keep).forEach(diff2TableEntry(2, "Keep"));
-  tableData[2].entries.sort((a, b) => b.newVal.localeCompare(a.newVal))
+  Object.values(reservesDiff.new).forEach(diff2TableEntry(2, "Add", tableData));
+  Object.values(reservesDiff.change).forEach(diff2TableEntry(2, "Edit", tableData));
+  Object.values(reservesDiff.expire).forEach(diff2TableEntry(2, "Remove", tableData));
+  Object.values(reservesDiff.keep).forEach(diff2TableEntry(2, "Keep", tableData));
+  tableData[2].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
 
-  const loading = fcIsLoading || feeIsLoading || targetIsLoading || payoutModsIsLoading || ticketModsIsLoading || nancePayoutsLoading;
+  const loading = fcIsLoading || metadata === undefined || targetIsLoading || payoutModsIsLoading || ticketModsIsLoading || nancePayoutsLoading;
   if (!loading) {
     console.debug("QueueExecutionModal.currentConfig", currentConfig, actionWithPIDArray);
   }
+
+  // Construct reconfiguration function data
+  const BIG_ZERO = BigNumber.from(0);
+  const jbFundingCycleData: JBFundingCycleData = {
+    duration: fc?.duration || BIG_ZERO,
+    weight: fc?.weight || BIG_ZERO,
+    discountRate: fc?.discountRate || BIG_ZERO,
+    ballot: fc?.ballot || ZERO_ADDRESS
+  }
+  const reconfigurationRawData = [
+    BigNumber.from(projectId),                       // _projectId
+    jbFundingCycleData,                              // _data
+    metadata,                                        // _metadata
+    BigNumber.from(Math.floor(Date.now() / 1000)),   // _mustStartAtOrAfter
+    [                                                // _groupedSplits
+      {
+        group: JBConstants.SplitGroup.ETH,
+        // gather JBSplit of payoutsDiff.new .change .keep
+        splits: Object.values(payoutsDiff.new).concat(Object.values(payoutsDiff.change)).concat(Object.values(payoutsDiff.keep)).map(v => v.split)
+      },
+      {
+        group: JBConstants.SplitGroup.RESERVED_TOKEN,
+        // gather JBSplit of reservesDiff.new .change .keep
+        splits: Object.values(reservesDiff.new).concat(Object.values(reservesDiff.change)).concat(Object.values(reservesDiff.keep)).map(v => v.split)
+      }
+    ],
+    [{                                                // _fundAccessConstraints
+      terminal: terminal.address,
+      token: ETH_TOKEN_ADDRESS,
+      distributionLimit: payoutsDiff.newTotal,
+      distributionLimitCurrency: CURRENCY_USD,
+      overflowAllowance: BIG_ZERO,
+      overflowAllowanceCurrency: BIG_ZERO
+    }],
+    "Queued from Nance.QueueExecutionFlow"           // _memo
+  ];
+  console.debug("QueueExecutionModal.reconfigurationData.raw", reconfigurationRawData)
+  const encodeReconfiguration = !loading ? controller?.interface?.encodeFunctionData("reconfigureFundingCyclesOf", reconfigurationRawData) || "" : "";
+  const decodeReconfiguration = !loading ? controller?.interface?.decodeFunctionData("reconfigureFundingCyclesOf", encodeReconfiguration) : "";
+  console.debug("QueueExecutionModal.reconfigurationData", { raw: reconfigurationRawData, encode: encodeReconfiguration, decode: decodeReconfiguration })
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -479,6 +201,10 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
                   >
                     Next
                   </button> */}
+                  <div className="sm:ml-3 sm:w-auto">
+                    <SafeTransactionCreator safeAddress={owner} data={encodeReconfiguration} value={0} defaultNonce="0" />
+                  </div>
+
                   <button
                     type="button"
                     className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"

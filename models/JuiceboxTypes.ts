@@ -103,6 +103,13 @@ export type JBSplit = {
     allocator: string | undefined // address, If an allocator is specified, funds will be sent to the allocator contract along with the projectId, beneficiary, preferClaimed properties.
 }
 
+export type JBFundingCycleData = {
+  duration: BigNumber;
+  weight: BigNumber;
+  discountRate: BigNumber;
+  ballot: string;
+}
+
 export type JBFundAccessConstraints = {
     terminal: string;
     token: string;
@@ -187,7 +194,9 @@ export const JBConstants = {
   DurationUnit: [1, 86400, 86400]
 };
 
-export const ETH_TOKEN_ADDRESS = '0x000000000000000000000000000000000000eeee'
+export const ETH_TOKEN_ADDRESS = '0x000000000000000000000000000000000000eeee';
+export const CURRENCY_ETH = BigNumber.from(1);
+export const CURRENCY_USD = BigNumber.from(2);
 
 export function payoutMod2Split(payoutMod: PayoutModV1): JBSplit {
   return {

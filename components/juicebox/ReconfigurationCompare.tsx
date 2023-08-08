@@ -10,6 +10,8 @@ import { formatDistanceToNow, fromUnixTime } from "date-fns";
 import { JBSplitNanceStruct, Payout, SQLPayout } from "../../models/NanceTypes";
 import { ZERO_ADDRESS } from "../../constants/Contract";
 import { getAddress } from "viem";
+import { SplitDiffEntry } from "../../libs/juicebox";
+import { Status, SectionTableData } from "../form/TableWithSection";
 
 // 'projectId-beneficiary-allocator': mod
 const splits2map = (splits: JBSplit[]) => {
@@ -214,14 +216,12 @@ export default function ReconfigurationCompare({ currentFC, previewFC }: Reconfi
                         currentPayoutMaps.get(keyOfSplit(mod))?.percent || BigNumber.from(0),
                         currentFC.fundingCycle.currency,
                         currentFC.fundingCycle.target,
-                        currentFC.fundingCycle.fee,
                         currentFC.version
                       )}
                       newVal={formattedSplit(
                         previewPayoutMaps.get(keyOfSplit(mod))?.percent || BigNumber.from(0),
                         previewFC.fundingCycle.currency,
                         previewFC.fundingCycle.target,
-                        previewFC.fundingCycle.fee,
                         previewFC.version
                       )}
                       isSame={almostEqual(currentFC.fundingCycle.target.mul(currentPayoutMaps.get(keyOfSplit(mod))?.percent ?? 0), previewFC.fundingCycle.target.mul(previewPayoutMaps.get(keyOfSplit(mod))?.percent ?? 0))} />
@@ -273,7 +273,7 @@ export function splitAmount2Percent(target: BigNumber, amount: number) {
   return utils.parseEther(amount.toFixed(0)).mul(JBConstants.TotalPercent.Splits[2]).div(target);
 }
 
-export function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumber, fee: BigNumber, version: number) {
+export function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumber, version: number) {
   if (!percent) return undefined;
 
   const _totalPercent = JBConstants.TotalPercent.Splits[version - 1];
@@ -285,6 +285,20 @@ export function formattedSplit(percent: BigNumber, currency: BigNumber, target: 
 
   const finalAmount = target.mul(percent).div(_totalPercent);
   return `${(_percent / _totalPercent * 100).toFixed(2)}% (${formatCurrency(currency, finalAmount)})`;
+}
+
+export function diff2TableEntry(index: number, status: Status, tableData: SectionTableData[]) {
+  return (v: SplitDiffEntry) => {
+    tableData[index].entries.push({
+      id: keyOfSplit(v.split),
+      proposal: v.proposalId,
+      oldVal: v.oldVal,
+      newVal: v.newVal,
+      valueToBeSorted: parseFloat(v.oldVal.split("%")[0]) || 0,
+      status,
+      title: (<SplitEntry mod={v.split} projectVersion={3} />)
+    });
+  }
 }
 
 export function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersion: number }) {
