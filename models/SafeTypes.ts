@@ -27,6 +27,7 @@ export interface SafeMultisigTransaction {
 
 export interface SafeMultisigTransactionResponse {
   count: number;
+  countUniqueNonce: number;
   next?: string;
   previous?: string;
   results: SafeMultisigTransaction[];
