@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { fetchProposalInfo, SnapshotProposal, useProposalVotes, VOTES_PER_PAGE } from "../../../hooks/snapshot/Proposals";
 import SiteNav from "../../../components/SiteNav";
 import { Tooltip } from 'flowbite-react';
@@ -635,6 +636,19 @@ function ProposalContent({ body }: { body: string }) {
                     <>
                       <span className="font-medium">Discussion:</span>
                       <a target="_blank" rel="noreferrer" href={openInDiscord(commonProps!.discussion)}>{getDomain(commonProps!.discussion)}<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
+                    </>
+                  )}
+
+                  {!commonProps!.discussion && commonProps!.status === 'Discussion' && (
+                    <>
+                      <span className="font-medium">Discussion:</span>
+                      <a target="_blank" rel="noreferrer" className="cursor-pointer text-sky-800" onClick={() => {
+                        fetch(`${NANCE_API_URL}/${commonProps!.space}/discussion/${commonProps?.uuid}`).then((response) => {
+                          response.json().then((data) => {
+                            if (data.success) window.location.reload();
+                          });
+                        });
+                      }}>start discussion<ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" /></a>
                     </>
                   )}
 
