@@ -6,8 +6,8 @@ import { ArrowPathIcon } from "@heroicons/react/24/solid";
 
 
 export default function SafeTransactionCreator(
-  { safeAddress, data, value, defaultNonce }: 
-  { safeAddress: string, data: string, value: number, defaultNonce: string }) {
+  { safeAddress, toContract, data, value, defaultNonce }: 
+  { safeAddress: string, toContract: string, data: string, value: number, defaultNonce: string }) {
   const [nonce, setNonce] = useState<string>(defaultNonce);
   const [error, setError] = useState<string>();
   const [gnosisLoading, setGnosisLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function SafeTransactionCreator(
   const postTransaction = async () => {
     setGnosisLoading(true);
     const gnosis = new GnosisHandler(safeAddress, 'mainnet');
-    const txnPartial: SafeTransactionPartial = { to: safeAddress, value, data, nonce };
+    const txnPartial: SafeTransactionPartial = { to: toContract, value, data, nonce };
     console.debug('txnPartial', txnPartial)
     const { safeTxGas } = await gnosis.getEstimate(txnPartial);
     const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);

@@ -33,7 +33,7 @@ export class GnosisHandler {
       headers: { "Content-type": "application/json" },
       body: JSON.stringify({
         to: txn.to,
-        value: 0,
+        value: txn.value,
         data: txn.data,
         operation: 0 // 0 CALL, 1 DELEGATE_CALL
       }),
@@ -49,7 +49,7 @@ export class GnosisHandler {
   getGnosisMessageToSign = async (safeGas: number, txn: SafeTransactionPartial) => {
     const transactionHash = await this.safe.getTransactionHash(
       txn.to,                         // to: string
-      0,                              // value: BigNumberish
+      txn.value,                      // value: BigNumberish
       txn.data,                       // data: BytesLike
       0,                              // operation: BigNumberish, 0 = CALL, 1 = DELEGATE
       safeGas,                        // safeTxGas: BigNumberish
@@ -70,7 +70,7 @@ export class GnosisHandler {
       headers: { "Content-type": "application/json" },
       body: JSON.stringify({
         to: txn.to,
-        value: 0,
+        value: txn.value,
         data: txn.data,
         operation: 0,
         safeTxGas: txn.safeTxGas,

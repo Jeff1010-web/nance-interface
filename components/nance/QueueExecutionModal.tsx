@@ -113,9 +113,6 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   tableData[2].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
 
   const loading = fcIsLoading || metadata === undefined || targetIsLoading || payoutModsIsLoading || ticketModsIsLoading || nancePayoutsLoading;
-  if (!loading) {
-    console.debug("QueueExecutionModal.currentConfig", currentConfig, actionWithPIDArray);
-  }
 
   // Construct reconfiguration function data
   const BIG_ZERO = BigNumber.from(0);
@@ -152,10 +149,7 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
     }],
     "Queued from Nance.QueueExecutionFlow"           // _memo
   ];
-  console.debug("QueueExecutionModal.reconfigurationData.raw", reconfigurationRawData)
   const encodeReconfiguration = !loading ? controller?.interface?.encodeFunctionData("reconfigureFundingCyclesOf", reconfigurationRawData) || "" : "";
-  const decodeReconfiguration = !loading ? controller?.interface?.decodeFunctionData("reconfigureFundingCyclesOf", encodeReconfiguration) : "";
-  console.debug("QueueExecutionModal.reconfigurationData", { raw: reconfigurationRawData, encode: encodeReconfiguration, decode: decodeReconfiguration })
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -202,7 +196,7 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
                     Next
                   </button> */}
                   <div className="sm:ml-3 sm:w-auto">
-                    <SafeTransactionCreator safeAddress={owner} data={encodeReconfiguration} value={0} defaultNonce="0" />
+                    <SafeTransactionCreator safeAddress={owner} toContract={controller?.address || ""} data={encodeReconfiguration} value={0} defaultNonce="0" />
                   </div>
 
                   <button
