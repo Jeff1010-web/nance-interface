@@ -2,9 +2,9 @@ import useSWR, { Fetcher } from 'swr';
 import { QueueSafeTransaction, SafeBalanceUsdResponse, SafeDelegatesResponse, SafeInfoResponse, SafeMultisigTransactionResponse, SafeTransactionPartial } from '../models/SafeTypes';
 import { useState } from 'react';
 import { GnosisHandler } from '../libs/gnosis';
-import { useWalletClient } from 'wagmi';
+import { useAccount, useWalletClient } from 'wagmi';
 
-const SAFE_API_V1_ROOT = "https://safe-transaction-mainnet.gnosis.io/api/v1/";
+const SAFE_API_V1_ROOT = "https://safe-transaction-mainnet.safe.global/api/v1/";
 const SAFE_API = SAFE_API_V1_ROOT + "safes/";
 
 function jsonFetcher(): Fetcher<SafeMultisigTransactionResponse, string> {
@@ -113,9 +113,10 @@ export function useSafeDelegates(address: string, shouldFetch: boolean = true) {
 export function useQueueTransaction(safeAddress: string, toContract: string, data: string, txValue: number, nonce: string) {
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
-  const [value, setValue] = useState<{ success: boolean, data: any }>();
+  const [value, setValue] = useState<{safeTxHash: string, nonce: string}>();
 
   const { data: walletClient } = useWalletClient();
+  const { address, isConnecting, isDisconnected } = useAccount();
 
   const gnosis = new GnosisHandler(safeAddress, 'mainnet');
   const txnPartial: SafeTransactionPartial = { to: toContract, value: txValue, data, nonce: nonce || "0" };
@@ -136,13 +137,16 @@ export function useQueueTransaction(safeAddress: string, toContract: string, dat
       // Post transaction
       const txn: QueueSafeTransaction = {
         ...txnPartial,
-        address: safeAddress,
+        address: address || "",
         safeTxGas,
         transactionHash,
         signature: signature || ""
       };
-      const res = await gnosis.queueTransaction(txn);
-      setValue(res);
+      await gnosis.queueTransaction(txn);
+      setValue({
+        safeTxHash: transactionHash,
+        nonce: txn.nonce
+      });
     } catch(e: any) {
       setError(e.message);
     } finally {

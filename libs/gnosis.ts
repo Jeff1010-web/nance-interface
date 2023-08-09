@@ -2,6 +2,10 @@ import { ethers, Contract} from "ethers";
 import { SafeTransactionPartial, QueueSafeTransaction } from "../models/SafeTypes";
 import { gnosisSafeInterface } from "./abi/GnosisSafe";
 
+export function getSafeTxUrl(address: string, hash: string) {
+  return `https://app.safe.global/transactions/tx?safe=eth:${address}&id=multisig_${address}_${hash}`;
+}
+
 export class GnosisHandler {
   provider;
   baseUrl: string;
