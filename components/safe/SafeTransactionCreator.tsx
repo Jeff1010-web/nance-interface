@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { GnosisHandler } from "../../libs/gnosis";
 import { useWalletClient } from "wagmi";
-import { QueueSafeTransaction, SafeTransactionPartial } from "../../models/SafeTypes";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
-import { useHistoryTransactions } from "../../hooks/SafeHooks";
+import { useHistoryTransactions, useQueueTransaction } from "../../hooks/SafeHooks";
 
 
 export default function SafeTransactionCreator(
@@ -11,45 +9,10 @@ export default function SafeTransactionCreator(
   { safeAddress: string, toContract: string, data: string, value: number, defaultNonce: string }) {
 
   const [nonce, setNonce] = useState<string>("");
-  const [error, setError] = useState<string>();
-  const [gnosisLoading, setGnosisLoading] = useState(false);
-  const [gnosisResponse, setGnosisResponse] = useState<{ success: boolean, data: any }>();
 
+  const { value: queueRes, loading, error, trigger } = useQueueTransaction(safeAddress, toContract, data, value, nonce);
   const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 1, safeAddress !== "");
-
   const { data: walletClient } = useWalletClient();
-
-  const postTransaction = async () => {
-    setGnosisLoading(true);
-    const gnosis = new GnosisHandler(safeAddress, 'mainnet');
-    const txnPartial: SafeTransactionPartial = { to: toContract, value, data, nonce: nonce || "0" };
-    console.debug('txnPartial', txnPartial)
-    const { safeTxGas } = await gnosis.getEstimate(txnPartial);
-    const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
-    const signature = await walletClient?.signMessage({
-      account: (await walletClient.getAddresses())[0],
-      message: { raw: message }
-    }).then((sig) => {
-      return sig.replace(/1b$/, '1f').replace(/1c$/, '20');
-    }).catch(() => {
-      setGnosisLoading(false);
-      setError('signature rejected');
-      return 'signature rejected';
-    });
-    if (signature === 'signature rejected') {
-      return; 
-    }
-    const txn: QueueSafeTransaction = {
-      ...txnPartial,
-      address: safeAddress,
-      safeTxGas,
-      transactionHash,
-      signature: signature || ""
-    };
-    const res = await gnosis.queueTransaction(txn);
-    setGnosisLoading(false);
-    setGnosisResponse(res);
-  };
 
   useEffect(() => {
     if (nonce === "" && historyTxs?.countUniqueNonce) {
@@ -62,10 +25,10 @@ export default function SafeTransactionCreator(
       <button
         type="button"
         disabled={!walletClient || !data}
-        onClick={postTransaction}
+        onClick={trigger}
         className="relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 disabled:opacity-50"
       >      
-        {gnosisLoading && <ArrowPathIcon className="animate-spin -ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />}
+        {loading && <ArrowPathIcon className="animate-spin -ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />}
         Queue with nonce
       </button>
       <input

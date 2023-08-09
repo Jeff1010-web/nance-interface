@@ -1,7 +1,11 @@
 import useSWR, { Fetcher } from 'swr';
-import { SafeBalanceUsdResponse, SafeMultisigTransactionResponse } from '../models/SafeTypes';
+import { QueueSafeTransaction, SafeBalanceUsdResponse, SafeDelegatesResponse, SafeInfoResponse, SafeMultisigTransactionResponse, SafeTransactionPartial } from '../models/SafeTypes';
+import { useState } from 'react';
+import { GnosisHandler } from '../libs/gnosis';
+import { useWalletClient } from 'wagmi';
 
-const SAFE_API = 'https://safe-transaction-mainnet.safe.global/api/v1/safes/';
+const SAFE_API_V1_ROOT = "https://safe-transaction-mainnet.gnosis.io/api/v1/";
+const SAFE_API = SAFE_API_V1_ROOT + "safes/";
 
 function jsonFetcher(): Fetcher<SafeMultisigTransactionResponse, string> {
   return async (url) => {
@@ -64,4 +68,89 @@ export function useMultisigAssets(address: string, shouldFetch: boolean = true) 
     shouldFetch ? `${SAFE_API}${address}/balances/usd/?trusted=true&exclude_spam=true` : null,
     balanceJsonFetcher(),
   );
+}
+
+function safeInfoJsonFetcher(): Fetcher<SafeInfoResponse, string> {
+  return async (url) => {
+    const res = await fetch(url);
+    if (res.status == 404) {
+      throw new Error('Safe not found.');
+    } else if (res.status == 422) {
+      throw new Error('Safe address checksum not valid.');
+    }
+    const json = await res.json();
+
+    return json;
+  };
+}
+
+export function useSafeInfo(address: string, shouldFetch: boolean = true) {
+  return useSWR(
+    shouldFetch ? `${SAFE_API}${address}` : null,
+    safeInfoJsonFetcher(),
+  );
+}
+
+function delegatesJsonFetcher(): Fetcher<SafeDelegatesResponse, string> {
+  return async (url) => {
+    const res = await fetch(url);
+    if (res.status == 400) {
+      throw new Error("Data not valid.");
+    }
+    const json = await res.json();
+
+    return json;
+  };
+}
+
+export function useSafeDelegates(address: string, shouldFetch: boolean = true) {
+  return useSWR(
+    shouldFetch ? `${SAFE_API_V1_ROOT}/delegates/?safe=${address}` : null,
+    delegatesJsonFetcher(),
+  );
+}
+
+export function useQueueTransaction(safeAddress: string, toContract: string, data: string, txValue: number, nonce: string) {
+  const [error, setError] = useState<string>();
+  const [loading, setLoading] = useState(false);
+  const [value, setValue] = useState<{ success: boolean, data: any }>();
+
+  const { data: walletClient } = useWalletClient();
+
+  const gnosis = new GnosisHandler(safeAddress, 'mainnet');
+  const txnPartial: SafeTransactionPartial = { to: toContract, value: txValue, data, nonce: nonce || "0" };
+
+  const trigger = async () => {
+    setLoading(true);
+
+    try {
+      // Estimate gas
+      const { safeTxGas } = await gnosis.getEstimate(txnPartial);
+      // Request user signature
+      const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
+      const signatureRaw = await walletClient?.signMessage({
+        account: (await walletClient.getAddresses())[0],
+        message: { raw: message }
+      });
+      const signature = signatureRaw?.replace(/1b$/, '1f').replace(/1c$/, '20');
+      // Post transaction
+      const txn: QueueSafeTransaction = {
+        ...txnPartial,
+        address: safeAddress,
+        safeTxGas,
+        transactionHash,
+        signature: signature || ""
+      };
+      const res = await gnosis.queueTransaction(txn);
+      setValue(res);
+    } catch(e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    value, error, loading, trigger
+  }
 }

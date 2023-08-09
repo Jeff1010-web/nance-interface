@@ -39,14 +39,19 @@ export class GnosisHandler {
       }),
       method: "POST"
     };
-    return fetch(this.baseUrl + endpoint, data).then((res) => {
-      return res.json().then((json) => {
-        return json; 
-      });
-    }).catch((e) => console.error(e));
+    const res = await fetch(this.baseUrl + endpoint, data);
+    if (res.status === 400) throw new Error("Data not valid");
+    else if (res.status === 404) throw new Error("Safe not found");
+    else if (res.status === 422) throw new Error("Transaction not valid");
+
+    const estimateResponse: {
+      safeTxGas: string;
+    } = await res.json();
+
+    return estimateResponse;
   };
 
-  getGnosisMessageToSign = async (safeGas: number, txn: SafeTransactionPartial) => {
+  getGnosisMessageToSign = async (safeGas: string, txn: SafeTransactionPartial) => {
     const transactionHash = await this.safe.getTransactionHash(
       txn.to,                         // to: string
       txn.value,                      // value: BigNumberish
@@ -87,9 +92,12 @@ export class GnosisHandler {
       method: "POST"
     };
     const res = await fetch(this.baseUrl + `api/v1/safes/${this.safeAddress}/multisig-transactions/`, data);
-    if (res.status === 201) return { success: true, data: '' };
+
+    if (res.status === 400) throw new Error("Data not valid");
+    else if (res.status === 201) return { success: true, data: "Created or signature updated" };
+
     const json = await res.json();
-    return { success: false, data: json.nonFieldErrors[0] };
+    throw new Error(json.nonFieldErrors[0]);
   };
 }
 
