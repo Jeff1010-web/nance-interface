@@ -38,6 +38,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   // External Hooks
   const { data: infoData, isLoading: infoLoading, error: infoError } = useSpaceInfo({ space }, router.isReady);
   const { data: proposalData, isLoading: proposalsLoading, error: proposalError } = useProposals({ space, cycle, keyword, page, limit }, router.isReady);
+  const { data: currentProposalData } = useProposals({ space, cycle: infoData?.data?.currentCycle }, router.isReady);
   const currentCycle = cycle || infoData?.data?.currentCycle;
   const allCycle = { id: "All", label: `All`, status: true };
 
@@ -143,7 +144,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             Queue Execution
           </button>
 
-          <QueueExecutionModal open={showQueueModal} setOpen={setShowQueueModal} juiceboxProjectId={parseInt(infoData?.data?.juiceboxProjectId || "1")} proposals={proposalData?.data} space={space} currentCycle={currentCycle} />
+          <QueueExecutionModal open={showQueueModal} setOpen={setShowQueueModal} juiceboxProjectId={parseInt(infoData?.data?.juiceboxProjectId || "1")} proposals={currentProposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />
         </div>
   
         <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">
