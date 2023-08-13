@@ -19,9 +19,6 @@ export async function htmlToMarkdown(raw: string, failSilently: boolean = false)
           svg(h, node) {
             return h(node, 'html', toHtml(node));
           },
-          pre(h, node) {
-            return h(node, 'html', toHtml(node));
-          },
           span(h, node) {
             return h(node, 'html', toHtml(node));
           },
