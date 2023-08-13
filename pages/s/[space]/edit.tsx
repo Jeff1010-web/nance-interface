@@ -198,6 +198,22 @@ function Form({ space }: { space: string }) {
     }
   }, [formState]);
 
+  function getButtonLabel(selected: {title: string, description: string, value: string, display: string}) {
+    //{status === "loading" ? 
+    //(isMutating ? "Submitting..." : "Connecting...") : 
+    //(formErrors.length > 0 ? "Error in form" : selected.display)}
+
+    if (formErrors.length > 0) {
+      return "Error in form";
+    } else if (status === "loading") {
+      return "Connecting...";
+    } else if (isMutating) {
+      return "Submitting...";
+    } else {
+      return selected.display;
+    }
+  }
+
   return (
     <FormProvider {...methods} >
       <Notification title="Success" description={`${isNew ? "Created" : "Updated"} proposal ${data?.data?.hash}`} show={data !== undefined} close={reset} checked={true} />
@@ -310,11 +326,10 @@ function Form({ space }: { space: string }) {
                           isSubmitting || formErrors.length > 0
                           //|| (!isNew && hasVoting)
                         }
-                        className="ml-3 inline-flex justify-center rounded-none rounded-l-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
+                        className="ml-3 inline-flex justify-center rounded-none rounded-l-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400"
                       >
-                        {status === "loading" ? 
-                          (isMutating ? "Submitting..." : "Connecting...") : 
-                          (formErrors.length > 0 ? "Error in form" : selected.display)}
+                        {(status === "loading" || isMutating) && <ArrowPathIcon className="animate-spin mr-1 h-5 w-5 text-white" aria-hidden="true" />}
+                        {getButtonLabel(selected)}
                       </button>
                       <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-blue-600 p-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-gray-50">
                         <span className="sr-only">Change proposal status</span>
