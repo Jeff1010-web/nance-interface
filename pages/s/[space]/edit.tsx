@@ -4,7 +4,6 @@ import { useForm, FormProvider, useFormContext, Controller, SubmitHandler, useFi
 import { useQueryParams, StringParam } from "next-query-params";
 import React from "react";
 import { useRouter } from "next/router";
-import Notification from "../../../components/Notification";
 import GenericButton from "../../../components/GenericButton";
 import { useProposalUpload, useSpaceInfo } from "../../../hooks/NanceHooks";
 import { imageUpload } from "../../../hooks/ImageUpload";
@@ -43,6 +42,7 @@ import { utils } from "ethers";
 import useProjectInfo from "../../../hooks/juicebox/ProjectInfo";
 import MiddleStepModal from "../../../components/MiddleStepModal";
 import { Tooltip } from "flowbite-react";
+import ResultModal from "../../../components/modal/ResultModal";
 
 const ProposalMetadataContext = React.createContext({
   loadedProposal: null as Proposal | null,
@@ -173,7 +173,7 @@ function Form({ space }: { space: string }) {
     };
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req)
-      .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res?.data.hash}` : `/s/${space}/${res?.data.hash}`))
+      //.then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res?.data.hash}` : `/s/${space}/${res?.data.hash}`))
       .catch((err) => {
         console.warn("📗 Nance.editProposal.onSignError ->", err);
       });
@@ -216,10 +216,10 @@ function Form({ space }: { space: string }) {
 
   return (
     <FormProvider {...methods} >
-      <Notification title="Success" description={`${isNew ? "Created" : "Updated"} proposal ${data?.data?.hash}`} show={data !== undefined} close={reset} checked={true} />
-      {error &&
-        <Notification title="Error" description={error.error_description || error.message || error} show={true} close={reset} checked={false} />
-      }
+
+      {!error && <ResultModal title="Success" description={`Proposal "${getValues("proposal.title")}" ${isNew ? "created" : "updated"} by ${session?.user?.name || "unknown"}`} buttonText="Go to proposal page" onClick={() => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${data?.data.hash}` : `/s/${space}/${data?.data.hash}`)} isSuccessful={true} shouldOpen={data !== undefined} close={reset} />}
+      {error && <ResultModal title="Error" description={error.error_description || error.message || error} buttonText="Close" onClick={reset} isSuccessful={false} shouldOpen={true} close={reset} />}
+
       <MiddleStepModal open={txnsMayFail} setOpen={setTxnsMayFail} 
         title="SimulationCheck" description="You have some transactions may failed based on simulations, do you wish to continue?" 
         payload={formDataPayload}
