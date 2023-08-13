@@ -21,7 +21,6 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
 
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Treasury', href: '/treasury' },
     { name: 'Reconfiguration', href: `/s/${space ?? NANCE_DEFAULT_SPACE}/reconfigure` },
     { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
     { name: 'Support us', href: 'https://juicebox.money/v2/p/477' },
