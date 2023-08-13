@@ -74,7 +74,6 @@ export default async function auth(req: any, res: any) {
       async session({ session, token }: { session: any; token: any }) {
         session.address = token.sub;
         session.user.name = token.sub;
-        session.user.image = "https://www.fillmurray.com/128/128";
         return session;
       },
       async signIn() {
