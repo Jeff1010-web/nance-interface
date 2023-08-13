@@ -44,7 +44,7 @@ export default function SafeTransactionCreator(
         className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 w-20"
       />
 
-      {error && <ResultModal title="Error" description={error} buttonText="Understand" onClick={() => setOpen(false)} isSuccessful={false} shouldOpen={open} close={() => setOpen(false)} />}
+      {error && <ResultModal title="Error" description={error} buttonText="Close" onClick={() => setOpen(false)} isSuccessful={false} shouldOpen={open} close={() => setOpen(false)} />}
       {queueRes && <ResultModal title="Success" description={`Transaction queued as txn-${queueRes.safeTxHash} (nonce: ${queueRes.nonce})`} buttonText="Go to Safe App" onClick={() => window.open(getSafeTxUrl(safeAddress, queueRes.safeTxHash), "_blank")} isSuccessful={true} shouldOpen={open} close={() => setOpen(false)} />}
     </span>
   )

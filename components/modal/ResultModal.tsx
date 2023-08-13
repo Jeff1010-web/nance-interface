@@ -1,6 +1,7 @@
 import { Fragment, useRef } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { classNames } from '../../libs/tailwind';
 
 export default function ResultModal(
   { shouldOpen, close, title, description, buttonText, onClick, isSuccessful = true }: 
@@ -38,7 +39,10 @@ export default function ResultModal(
             >
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                 <div>
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                  <div className={classNames(
+                    "mx-auto flex h-12 w-12 items-center justify-center rounded-full",
+                    isSuccessful ? "bg-green-100" : "bg-red-100"
+                  )}>
                     {isSuccessful ? <CheckIcon className="h-6 w-6 text-green-600" aria-hidden="true" /> : <XMarkIcon className="h-6 w-6 text-red-600" aria-hidden="true" />}
                   </div>
                   <div className="mt-3 text-center sm:mt-5">
