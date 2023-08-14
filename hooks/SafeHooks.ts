@@ -1,8 +1,12 @@
 import useSWR, { Fetcher } from 'swr';
-import { QueueSafeTransaction, SafeBalanceUsdResponse, SafeDelegatesResponse, SafeInfoResponse, SafeMultisigTransactionResponse, SafeTransactionPartial } from '../models/SafeTypes';
-import { useState } from 'react';
-import { GnosisHandler } from '../libs/gnosis';
+import { SafeBalanceUsdResponse, SafeDelegatesResponse, SafeInfoResponse, SafeMultisigTransactionResponse } from '../models/SafeTypes';
+import { useEffect, useState } from 'react';
 import { useAccount, useWalletClient } from 'wagmi';
+import SafeApiKit from '@safe-global/api-kit';
+import { useEthersSigner } from './ViemAdapter';
+import Safe, { EthersAdapter } from '@safe-global/protocol-kit';
+import { ethers } from 'ethers';
+import { SafeTransactionDataPartial } from '@safe-global/safe-core-sdk-types';
 
 const SAFE_API_V1_ROOT = "https://safe-transaction-mainnet.safe.global/api/v1/";
 const SAFE_API = SAFE_API_V1_ROOT + "safes/";
@@ -110,6 +114,53 @@ export function useSafeDelegates(address: string, shouldFetch: boolean = true) {
   );
 }
 
+export function useSafeAPIKit() {
+  const [value, setValue] = useState<SafeApiKit>();
+  const signer = useEthersSigner();
+  
+  useEffect(() => {
+    if (!signer) {
+      return;
+    }
+
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: signer!
+    })
+    const safeApiKit = new SafeApiKit({
+      txServiceUrl: 'https://safe-transaction-mainnet.safe.global',
+      ethAdapter
+    });
+    setValue(safeApiKit);
+  }, [signer]);
+
+  return { value, loading: !value };
+}
+
+export function useSafe(safeAddress: string) {
+  const [error, setError] = useState<string>();
+  const [value, setValue] = useState<Safe>();
+  const signer = useEthersSigner();
+  
+  useEffect(() => {
+    if (!signer || !safeAddress) {
+      return;
+    }
+
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: signer
+    })
+    Safe.create({
+      ethAdapter,
+      safeAddress
+    }).then(safe => setValue(safe))
+    .catch(err => setError(err));
+  }, [signer, safeAddress]);
+
+  return { value, loading: !value, error };
+}
+
 export function useQueueTransaction(safeAddress: string, toContract: string, data: string, txValue: number, nonce: string) {
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
@@ -117,35 +168,39 @@ export function useQueueTransaction(safeAddress: string, toContract: string, dat
 
   const { data: walletClient } = useWalletClient();
   const { address, isConnecting, isDisconnected } = useAccount();
+  const { value: safeApiKit } = useSafeAPIKit();
+  const { value: safe } = useSafe(safeAddress);
 
-  const gnosis = new GnosisHandler(safeAddress, 'mainnet');
-  const txnPartial: SafeTransactionPartial = { to: toContract, value: txValue, data, nonce: nonce || "0" };
+  //const gnosis = new GnosisHandler(safeAddress, 'mainnet');
+  
+  const safeTransactionData: SafeTransactionDataPartial = { to: toContract, value: txValue.toString(), data, nonce: parseInt(nonce || "0") };
 
   const trigger = async () => {
+    if (!safe || !walletClient || !safeApiKit || !address) {
+      setError("Not connected to wallet or safe not found.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Estimate gas
-      const { safeTxGas } = await gnosis.getEstimate(txnPartial);
-      // Request user signature
-      const { message, transactionHash } = await gnosis.getGnosisMessageToSign(safeTxGas, txnPartial);
-      const signatureRaw = await walletClient?.signMessage({
-        account: (await walletClient.getAddresses())[0],
-        message: { raw: message }
-      });
-      const signature = signatureRaw?.replace(/1b$/, '1f').replace(/1c$/, '20');
-      // Post transaction
-      const txn: QueueSafeTransaction = {
-        ...txnPartial,
-        address: address || "",
-        safeTxGas,
-        transactionHash,
-        signature: signature || ""
-      };
-      await gnosis.queueTransaction(txn);
+      const safeTransaction = await safe.createTransaction({ safeTransactionData });
+      const senderAddress = address;
+      const safeTxHash = await safe.getTransactionHash(safeTransaction)
+      const signature = await safe.signTransactionHash(safeTxHash)
+
+      // Propose transaction to the service
+      await safeApiKit.proposeTransaction({
+        safeAddress: await safe.getAddress(),
+        safeTransactionData: safeTransaction.data,
+        safeTxHash,
+        senderAddress,
+        senderSignature: signature.data
+      })
+
       setValue({
-        safeTxHash: transactionHash,
-        nonce: txn.nonce
+        safeTxHash: safeTxHash,
+        nonce
       });
     } catch(e: any) {
       setError(e.message);
