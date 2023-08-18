@@ -22,9 +22,9 @@ const splits2map = (splits: JBSplit[]) => {
   }
   return map;
 };
-export const keyOfSplit = (mod: JBSplit) => `${mod.beneficiary}-${mod.projectId}-${mod.allocator}`;
-export const keyOfPayout2Split = (mod: Payout) => `${mod.address}-${mod.project}-${ZERO_ADDRESS}`;
-export const keyOfNanceSplit2Split = (mod: JBSplitNanceStruct) => `${mod.beneficiary}-${mod.projectId}-${mod.allocator}`;
+export const keyOfSplit = (mod: JBSplit) => `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${mod.allocator}`;
+export const keyOfPayout2Split = (mod: Payout) => `${getAddress(mod.address || ZERO_ADDRESS)}-${mod.project ?? 0}-${ZERO_ADDRESS}`;
+export const keyOfNanceSplit2Split = (mod: JBSplitNanceStruct) => `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${mod.allocator}`;
 export const keyOfNancePayout2Split = (mod: SQLPayout) => `${getAddress(mod.payAddress || ZERO_ADDRESS)}-${mod.payProject ?? 0}-${mod.payAllocator || ZERO_ADDRESS}`;
 function orderByPercent(a: JBSplit, b: JBSplit) {
   if (a.percent > b.percent) {
