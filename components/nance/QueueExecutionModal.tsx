@@ -59,13 +59,16 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   };
 
   // Gather all payout and reserve actions in current fundingCycle
-  const actionWithPIDArray = proposals?.proposals?.filter(p => p.actions.length > 0).flatMap(p => {
-    return p.actions?.map(action => {
-      return {
-        pid: p.proposalId || 0,
-        action
-      }
-    })
+  const actionWithPIDArray = proposals?.proposals
+    // only gather approved actions
+    ?.filter(p => p.actions.length > 0 && (p.status === "Voting" || p.status === "Approved"))
+    .flatMap(p => {
+      return p.actions?.map(action => {
+        return {
+          pid: p.proposalId || 0,
+          action
+        }
+      })
   });
 
   // Splits with changes
