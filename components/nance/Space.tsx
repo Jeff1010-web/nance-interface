@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useSpaceInfo, useProposals } from "../../hooks/NanceHooks";
 import ScrollToBottom from "../ScrollToBottom";
 import SearchableComboBox, { Option } from "../SearchableComboBox";
-import ProposalCards from "./ProposalCards";
+import ProposalCards from "./ProposalTable/ProposalCards";
 import { getLastSlash } from "../../libs/nance";
 import Pagination from "../Pagination";
 import { Tooltip } from "flowbite-react";
