@@ -42,9 +42,14 @@ export function useSpaceInfo(args: SpaceInfoRequest, shouldFetch: boolean = true
   );
 }
 
-export function useCurrentPayouts(space: string, shouldFetch: boolean = true) {
+export function useCurrentPayouts(space: string, cycle: string | undefined, shouldFetch: boolean = true) {
+  const urlParams = new URLSearchParams();
+  if (cycle) {
+    urlParams.set('cycle', cycle);
+  }
+
   return useSWR<APIResponse<SQLPayout[]>, string>(
-    shouldFetch ? `${NANCE_PROXY_API_URL}/${space}/payouts` : null,
+    shouldFetch ? `${NANCE_PROXY_API_URL}/${space}/payouts?` + urlParams.toString() : null,
     jsonFetcher()
   );
 }

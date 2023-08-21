@@ -38,8 +38,9 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   const [target, currency] = _limit || [];
   const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.ETH, isV3);
   const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN, isV3);
-  // Get current registered payouts
-  const { data: nancePayouts, isLoading: nancePayoutsLoading } = useCurrentPayouts(space);
+  // Get registered payouts
+  const previousCycle = currentCycle ? (currentCycle-1).toString() : undefined;
+  const { data: nancePayouts, isLoading: nancePayoutsLoading } = useCurrentPayouts(space, previousCycle);
 
   // Prepare fundingCycle data
   const zero = BigNumber.from(0);
