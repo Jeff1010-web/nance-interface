@@ -1,4 +1,4 @@
-import FormattedAddress from '../../../FormattedAddress';
+import FormattedAddress from '../../../ethereum/FormattedAddress';
 import { classNames } from '../../../../libs/tailwind';
 import ProposalBadgeLabel from './ProposalBadgeLabel';
 

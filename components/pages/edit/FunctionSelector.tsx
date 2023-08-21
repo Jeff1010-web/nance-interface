@@ -1,25 +1,43 @@
 import { useState } from 'react';
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Combobox } from '@headlessui/react';
-import { useEnsAddress } from 'wagmi';
-import { classNames } from '../libs/tailwind';
+import { useEtherscanContractABI } from '../../../hooks/EtherscanHooks';
+import { FunctionFragment, Interface } from 'ethers/lib/utils';
+import { classNames } from '../../../libs/tailwind';
 
-export default function ENSAddressInput({ val, setVal, inputStyle = "" }:
-  { val: string, setVal: (v: any) => void, inputStyle?: string }) {
+export default function FunctionSelector({ address, val, setVal, setFunctionFragment, inputStyle = "" }:
+  {
+    address: string, val: string,
+    setVal: (v: any) => void, 
+    setFunctionFragment: (v: FunctionFragment) => void,
+    inputStyle?: string
+  }) {
 
   const [query, setQuery] = useState('');
-  const { data: address, isLoading } = useEnsAddress({
-    name: query,
-    enabled: query.endsWith('.eth')
-  });
+  const { data: abi, isLoading, error, isProxy } = useEtherscanContractABI(address, address.length === 42);
+
+  const ethersInterface = new Interface(abi || []);
+  const fragmentMap: {[key: string]: FunctionFragment} = {};
+  Object.values(ethersInterface.functions || {}).forEach(f => fragmentMap[f.format("full")] = f);
 
   const filteredOption =
-    query.endsWith('.eth') && address
-      ? [address]
-      : [];
+    query === ''
+      ? Object.keys(fragmentMap)
+      : Object.keys(fragmentMap).filter((functionName) => {
+        return functionName.toLowerCase().includes(query.toLowerCase());
+      });
+
 
   return (
-    <Combobox as="div" value={val} onChange={setVal} className="w-full">
+    <Combobox as="div" value={val} onChange={(val: string) => {
+      console.debug("set functionSelector val", val);
+      setVal(val);
+      try {
+        setFunctionFragment(fragmentMap[val]);
+      } catch (e) {
+        console.warn("FunctionSelector.getFunction error", e);
+      }
+    }}>
       <div className="relative">
         <Combobox.Input
           className={classNames(
@@ -27,14 +45,9 @@ export default function ENSAddressInput({ val, setVal, inputStyle = "" }:
             isLoading && "animate-pulse",
             inputStyle
           )}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            if (!query.endsWith('.eth')) {
-              setVal(event.target.value);
-            }
-          }}
+          onChange={(event) => setQuery(event.target.value)}
           displayValue={(option: string) => option}
-          placeholder="Address/ENS"
+          placeholder="Function Selector"
         />
         <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
           <ChevronDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />

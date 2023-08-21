@@ -1,11 +1,11 @@
 import { JBConstants, JBSplit } from "../../models/JuiceboxTypes";
-import FormattedAddress from "../FormattedAddress";
+import FormattedAddress from "../ethereum/FormattedAddress";
 // unionBy([2.1], [1.2, 2.3], Math.floor);
 // => [2.1, 1.2]
 // @ts-ignore
 import unionBy from 'lodash.unionby';
 import { BigNumber, utils } from "ethers";
-import ResolvedProject from "../ResolvedProject";
+import ResolvedProject from "./ResolvedProject";
 import { formatDistanceToNow, fromUnixTime } from "date-fns";
 import { JBSplitNanceStruct, Payout, SQLPayout } from "../../models/NanceTypes";
 import { ZERO_ADDRESS } from "../../constants/Contract";

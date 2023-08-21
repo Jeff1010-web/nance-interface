@@ -9,7 +9,7 @@ import { NumberParam, StringParam, useQueryParams, withDefault } from 'next-quer
 import { AddressMap, SafeTransactionSelector, TxOption } from '../../../components/safe/SafeTransactionSelector';
 import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
 import ProjectSearch from "../../../components/juicebox/ProjectSearch";
-import ResolvedProject from "../../../components/ResolvedProject";
+import ResolvedProject from "../../../components/juicebox/ResolvedProject";
 import ReconfigurationCompare, { FundingCycleConfigProps, MetadataArgs } from '../../../components/juicebox/ReconfigurationCompare';
 import { useCurrentSplits } from '../../../hooks/juicebox/CurrentSplits';
 import { useDistributionLimit } from '../../../hooks/juicebox/DistributionLimit';

@@ -1,43 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Combobox } from '@headlessui/react';
-import { useEtherscanContractABI } from '../hooks/EtherscanHooks';
-import { FunctionFragment, Interface } from 'ethers/lib/utils';
-import { classNames } from '../libs/tailwind';
+import { useEnsAddress } from 'wagmi';
+import { classNames } from '../../libs/tailwind';
 
-export default function FunctionSelector({ address, val, setVal, setFunctionFragment, inputStyle = "" }:
-  {
-    address: string, val: string,
-    setVal: (v: any) => void, 
-    setFunctionFragment: (v: FunctionFragment) => void,
-    inputStyle?: string
-  }) {
+export default function ENSAddressInput({ val, setVal, inputStyle = "" }:
+  { val: string, setVal: (v: any) => void, inputStyle?: string }) {
 
   const [query, setQuery] = useState('');
-  const { data: abi, isLoading, error, isProxy } = useEtherscanContractABI(address, address.length === 42);
-
-  const ethersInterface = new Interface(abi || []);
-  const fragmentMap: {[key: string]: FunctionFragment} = {};
-  Object.values(ethersInterface.functions || {}).forEach(f => fragmentMap[f.format("full")] = f);
+  const { data: address, isLoading } = useEnsAddress({
+    name: query,
+    enabled: query.endsWith('.eth')
+  });
 
   const filteredOption =
-    query === ''
-      ? Object.keys(fragmentMap)
-      : Object.keys(fragmentMap).filter((functionName) => {
-        return functionName.toLowerCase().includes(query.toLowerCase());
-      });
-
+    query.endsWith('.eth') && address
+      ? [address]
+      : [];
 
   return (
-    <Combobox as="div" value={val} onChange={(val: string) => {
-      console.debug("set functionSelector val", val);
-      setVal(val);
-      try {
-        setFunctionFragment(fragmentMap[val]);
-      } catch (e) {
-        console.warn("FunctionSelector.getFunction error", e);
-      }
-    }}>
+    <Combobox as="div" value={val} onChange={setVal} className="w-full">
       <div className="relative">
         <Combobox.Input
           className={classNames(
@@ -45,9 +27,14 @@ export default function FunctionSelector({ address, val, setVal, setFunctionFrag
             isLoading && "animate-pulse",
             inputStyle
           )}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            if (!query.endsWith('.eth')) {
+              setVal(event.target.value);
+            }
+          }}
           displayValue={(option: string) => option}
-          placeholder="Function Selector"
+          placeholder="Address/ENS"
         />
         <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
           <ChevronDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />

@@ -1,32 +1,30 @@
-import { shortenAddress } from "../libs/address";
-import { Address, useEnsName } from "wagmi";
+import { Address } from "wagmi";
 import { useEffect, useState } from "react";
-import { classNames } from '../libs/tailwind';
+import { useEtherscanContract } from "../../hooks/EtherscanHooks";
+import { classNames } from '../../libs/tailwind';
 
 export interface Props {
-    address: string | undefined;
+    address: string;
     style?: string;
     overrideURLPrefix?: string;
     openInNewWindow?: boolean;
     noLink?: boolean;
 }
 
-export default function FormattedAddress({ address, style, overrideURLPrefix, openInNewWindow = true, noLink = false }: Props) {
+export default function ResolvedContract({ address, style, overrideURLPrefix, openInNewWindow = true, noLink = false }: Props) {
   const addr = address as Address;
   const hasAddr = addr && addr.length == 42;
   const urlPrefix = overrideURLPrefix || "https://etherscan.io/address/";
   const anchorTarget = openInNewWindow ? "_blank" : "_self";
 
-  const [label, setLabel] = useState(shortenAddress(address) || "Anon");
-  const { data: ensName } = useEnsName({ address: addr, enabled: hasAddr });
+  const [label, setLabel] = useState<string>(address);
+  const { data: contractSources } = useEtherscanContract(addr, hasAddr);
 
   useEffect(() => {
-    if (ensName) {
-      setLabel(ensName);
-    } else {
-      setLabel(shortenAddress(address) || "Anon");
+    if (contractSources?.[0]) {
+      setLabel(contractSources[0].ContractName);
     }
-  }, [ensName, address]);
+  }, [contractSources]);
 
   if(noLink) {
     return (
@@ -41,7 +39,7 @@ export default function FormattedAddress({ address, style, overrideURLPrefix, op
       className={classNames(
         style,
         'hover:underline'
-      )} href={`${urlPrefix}${address ? encodeURIComponent(address) : ''}`}>
+      )} href={`${urlPrefix}${encodeURIComponent(address)}`}>
       {label}
     </a>
   );

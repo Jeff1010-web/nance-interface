@@ -1,6 +1,6 @@
 import { ErrorMessage } from "@hookform/error-message";
 import { Controller, useFormContext } from "react-hook-form";
-import ENSAddressInput from "../ENSAddressInput";
+import ENSAddressInput from "./ENSAddressInput";
 
 export default function AddressForm(
   { label, fieldName, defaultValue = "" } : { label: string, fieldName: any, defaultValue?: string }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import fetchProjectInfo, { ProjectInfo } from "../hooks/juicebox/Project";
-import { classNames } from '../libs/tailwind';
+import fetchProjectInfo, { ProjectInfo } from "../../hooks/juicebox/Project";
+import { classNames } from '../../libs/tailwind';
 
 export interface Props {
     version: number | undefined;

@@ -1,6 +1,6 @@
 import { JBConstants } from "../../models/JuiceboxTypes";
-import FormattedAddress from "../FormattedAddress";
-import ResolvedProject from "../ResolvedProject";
+import FormattedAddress from "../ethereum/FormattedAddress";
+import ResolvedProject from "./ResolvedProject";
 
 export default function SplitEntry({ beneficiary, projectId, allocator, percent, preferAddToBalance, preferClaimed, style = "flex space-x-6" }: 
     { beneficiary: string, projectId: string, allocator: string, percent: string, preferAddToBalance: boolean, preferClaimed: boolean, style?: string }) {

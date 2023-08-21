@@ -1,5 +1,5 @@
-import useProjectMetadata from "../hooks/juicebox/ProjectMetadata";
-import { classNames } from '../libs/tailwind';
+import useProjectMetadata from "../../hooks/juicebox/ProjectMetadata";
+import { classNames } from '../../libs/tailwind';
 
 export interface Props {
     projectId: string;

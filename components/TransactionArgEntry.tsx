@@ -1,7 +1,7 @@
 import { BigNumber, utils } from "ethers";
 import { useState } from "react";
 import { ArgEntry } from "../libs/TransactionArgFormatter";
-import FormattedAddress from "./FormattedAddress";
+import FormattedAddress from "./ethereum/FormattedAddress";
 
 export default function renderArgEntry(entryStr: string) {
   if(!entryStr) return <p></p>;

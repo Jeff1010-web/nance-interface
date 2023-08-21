@@ -5,7 +5,7 @@ import { formatNumber } from "../../../libs/NumberFormatter";
 import { processChoices } from "../../../libs/snapshotUtil";
 import { classNames } from "../../../libs/tailwind";
 import ColorBar from "../../ColorBar";
-import FormattedAddress from "../../FormattedAddress";
+import FormattedAddress from "../../ethereum/FormattedAddress";
 import NewVoteButton from "../../NewVoteButton";
 import VoterProfile from "../../VoterProfile";
 import { ProposalContext } from "../../../pages/s/[space]/[proposal]";

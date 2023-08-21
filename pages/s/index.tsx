@@ -1,5 +1,5 @@
 import Footer from "../../components/Footer";
-import ResolvedProject from "../../components/ResolvedProject";
+import ResolvedProject from "../../components/juicebox/ResolvedProject";
 import SiteNav from "../../components/SiteNav";
 import { useAllSpaceInfo } from "../../hooks/NanceHooks";
 

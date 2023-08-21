@@ -19,7 +19,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { CheckIcon, ChevronDownIcon, CurrencyDollarIcon, BoltIcon, PlusIcon, ArrowsUpDownIcon, UserGroupIcon, XMarkIcon, XCircleIcon, ArrowPathIcon, CursorArrowRaysIcon } from "@heroicons/react/24/solid";
 import { Combobox, Dialog, Disclosure, Listbox, Transition } from '@headlessui/react';
 import { ErrorMessage } from "@hookform/error-message";
-import FunctionSelector from "../../../components/FunctionSelector";
+import FunctionSelector from "../../../components/pages/edit/FunctionSelector";
 import { FormatTypes, FunctionFragment } from "ethers/lib/utils";
 import { CONTRACT_MAP, ZERO_ADDRESS } from "../../../constants/Contract";
 import { useCurrentFundingCycleV2 } from "../../../hooks/juicebox/CurrentFundingCycle";
@@ -40,7 +40,7 @@ import { classNames } from "../../../libs/tailwind";
 import { encodeTransactionInput, useTendelySimulate } from "../../../hooks/TenderlyHooks";
 import { utils } from "ethers";
 import useProjectInfo from "../../../hooks/juicebox/ProjectInfo";
-import MiddleStepModal from "../../../components/MiddleStepModal";
+import MiddleStepModal from "../../../components/modal/MiddleStepModal";
 import { Tooltip } from "flowbite-react";
 import ResultModal from "../../../components/modal/ResultModal";
 
