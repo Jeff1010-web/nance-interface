@@ -1,8 +1,20 @@
 import { BigNumber, utils } from "ethers";
-import { FundingCycleConfigProps, keyOfNancePayout2Split, keyOfPayout2Split, keyOfSplit, formattedSplit, calculateSplitAmount, splitAmount2Percent, keyOfNanceSplit2Split } from "../components/juicebox/ReconfigurationCompare";
+import { FundingCycleConfigProps, formattedSplit, calculateSplitAmount, splitAmount2Percent } from "../components/juicebox/ReconfigurationCompare";
 import { ZERO_ADDRESS } from "../constants/Contract";
 import { JBConstants, JBSplit } from "../models/JuiceboxTypes";
 import { SQLPayout, Action, Payout, Reserve, JBSplitNanceStruct } from "../models/NanceTypes";
+import { getAddress } from "viem";
+import { formatNumber } from "./NumberFormatter";
+
+// In v1, ETH = 0, USD = 1
+// In v2, ETH = 1, USD = 2, we subtract 1 to get the same value
+export const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
+  const symbol = currency.toNumber() == 0 ? "Ξ" : "$";
+  const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatNumber(parseInt(utils.formatEther(amount ?? 0)));
+  return symbol + formatted;
+};
+
+// ====== Split ======
 
 export function isEqualJBSplit(a: JBSplit, b: JBSplit) {
   return a.allocator === b.allocator
@@ -13,6 +25,11 @@ export function isEqualJBSplit(a: JBSplit, b: JBSplit) {
     && a.preferClaimed === b.preferClaimed
     && a.projectId.eq(b.projectId)
 }
+
+export const keyOfSplit = (mod: JBSplit) => `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${mod.allocator}`;
+export const keyOfPayout2Split = (mod: Payout) => `${getAddress(mod.address || ZERO_ADDRESS)}-${mod.project ?? 0}-${ZERO_ADDRESS}`;
+export const keyOfNanceSplit2Split = (mod: JBSplitNanceStruct) => `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${mod.allocator}`;
+export const keyOfNancePayout2Split = (mod: SQLPayout) => `${getAddress(mod.payAddress || ZERO_ADDRESS)}-${mod.payProject ?? 0}-${mod.payAllocator || ZERO_ADDRESS}`;
 
 // ====== Split Diff ======
 

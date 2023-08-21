@@ -4,17 +4,18 @@ import { useCurrentFundingCycleV3 } from '../../../hooks/juicebox/CurrentFunding
 import { useDistributionLimit } from '../../../hooks/juicebox/DistributionLimit';
 import { useCurrentSplits } from '../../../hooks/juicebox/CurrentSplits';
 import { CURRENCY_USD, ETH_TOKEN_ADDRESS, JBConstants, JBFundingCycleData } from '../../../models/JuiceboxTypes';
-import { FundingCycleConfigProps, diff2TableEntry, formatCurrency } from '../../juicebox/ReconfigurationCompare';
+import { FundingCycleConfigProps } from '../../juicebox/ReconfigurationCompare';
 import { BigNumber, utils } from 'ethers';
 import { ProposalsPacket, Reserve } from '../../../models/NanceTypes';
 import { useCurrentPayouts } from '../../../hooks/NanceHooks';
-import TableWithSection, { SectionTableData } from '../../form/TableWithSection';
+import TableWithSection, { SectionTableData, Status } from '../../form/TableWithSection';
 import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
-import { payoutsDiffOf, reservesDiffOf } from '../../../libs/juicebox';
+import { SplitDiffEntry, formatCurrency, keyOfSplit, payoutsDiffOf, reservesDiffOf } from '../../../libs/juicebox';
 import useControllerOfProject from '../../../hooks/juicebox/ControllerOfProject';
 import { ZERO_ADDRESS } from '../../../constants/Contract';
 import useTerminalOfProject from '../../../hooks/juicebox/TerminalOfProject';
 import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
+import JBSplitEntry from '../../juicebox/JBSplitEntry';
 
 export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, proposals, space, currentCycle }: {
     open: boolean, setOpen: (o: boolean) => void,
@@ -219,4 +220,18 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
       </Dialog>
     </Transition.Root>
   );
+}
+
+function diff2TableEntry(index: number, status: Status, tableData: SectionTableData[]) {
+  return (v: SplitDiffEntry) => {
+    tableData[index].entries.push({
+      id: keyOfSplit(v.split),
+      proposal: v.proposalId,
+      oldVal: v.oldVal,
+      newVal: v.newVal,
+      valueToBeSorted: parseFloat(v.oldVal.split("%")[0]) || 0,
+      status,
+      title: (<JBSplitEntry mod={v.split} projectVersion={3} />)
+    });
+  }
 }

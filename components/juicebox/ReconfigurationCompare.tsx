@@ -6,12 +6,8 @@ import FormattedAddress from "../ethereum/FormattedAddress";
 import unionBy from 'lodash.unionby';
 import { BigNumber, utils } from "ethers";
 import { formatDistanceToNow, fromUnixTime } from "date-fns";
-import { JBSplitNanceStruct, Payout, SQLPayout } from "../../models/NanceTypes";
-import { ZERO_ADDRESS } from "../../constants/Contract";
-import { getAddress } from "viem";
-import { SplitDiffEntry } from "../../libs/juicebox";
-import { Status, SectionTableData } from "../form/TableWithSection";
 import JBSplitEntry from "./JBSplitEntry";
+import { formatCurrency, keyOfSplit } from "../../libs/juicebox";
 
 // 'projectId-beneficiary-allocator': mod
 const splits2map = (splits: JBSplit[]) => {
@@ -22,10 +18,7 @@ const splits2map = (splits: JBSplit[]) => {
   }
   return map;
 };
-export const keyOfSplit = (mod: JBSplit) => `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${mod.allocator}`;
-export const keyOfPayout2Split = (mod: Payout) => `${getAddress(mod.address || ZERO_ADDRESS)}-${mod.project ?? 0}-${ZERO_ADDRESS}`;
-export const keyOfNanceSplit2Split = (mod: JBSplitNanceStruct) => `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${mod.allocator}`;
-export const keyOfNancePayout2Split = (mod: SQLPayout) => `${getAddress(mod.payAddress || ZERO_ADDRESS)}-${mod.payProject ?? 0}-${mod.payAllocator || ZERO_ADDRESS}`;
+
 function orderByPercent(a: JBSplit, b: JBSplit) {
   if (a.percent > b.percent) {
     return -1;
@@ -36,16 +29,8 @@ function orderByPercent(a: JBSplit, b: JBSplit) {
   // a must be equal to b
   return 0;
 }
-const formatter = new Intl.NumberFormat('en-GB', { style: "decimal" });
-const formatNumber = (num: number) => formatter.format(num);
-// In v1, ETH = 0, USD = 1
-// In v2, ETH = 1, USD = 2, we subtract 1 to get the same value
-export const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
-  const symbol = currency.toNumber() == 0 ? "Ξ" : "$";
-  const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatNumber(parseInt(utils.formatEther(amount ?? 0)));
-  return symbol + formatted;
-};
 
+// FIXME shouldn't use magic value 100 here
 const almostEqual = (a: BigNumber, b: BigNumber) => {
   return a.sub(b).abs().lte(a.div(100));
 };
@@ -285,20 +270,6 @@ export function formattedSplit(percent: BigNumber, currency: BigNumber, target: 
 
   const finalAmount = target.mul(percent).div(_totalPercent);
   return `${(_percent / _totalPercent * 100).toFixed(2)}% (${formatCurrency(currency, finalAmount)})`;
-}
-
-export function diff2TableEntry(index: number, status: Status, tableData: SectionTableData[]) {
-  return (v: SplitDiffEntry) => {
-    tableData[index].entries.push({
-      id: keyOfSplit(v.split),
-      proposal: v.proposalId,
-      oldVal: v.oldVal,
-      newVal: v.newVal,
-      valueToBeSorted: parseFloat(v.oldVal.split("%")[0]) || 0,
-      status,
-      title: (<JBSplitEntry mod={v.split} projectVersion={3} />)
-    });
-  }
 }
 
 function CompareCell({ oldVal, newVal, isSame = false }: { oldVal: any, newVal: any, isSame?: boolean }) {
