@@ -13,7 +13,7 @@ import AddressForm from "../../form/AddressForm";
 import BooleanForm from "../../form/BooleanForm";
 import NumberForm from "../../form/NumberForm";
 import ProjectForm from "../../form/ProjectForm";
-import JBSplitEntry from "../../juicebox/JBSplitEntry";
+import JBSplitEntry from "../../juicebox/JBSplitEntryDetailed";
 import { ProposalMetadataContext } from "../../../pages/s/[space]/edit";
 
 export default function ReserveActionForm({ genFieldName }:

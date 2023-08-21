@@ -13,12 +13,11 @@ import { ProposalContext, ProposalCommonProps } from "../../../pages/s/[space]/[
 import FormattedAddress from "../../ethereum/FormattedAddress";
 import MarkdownWithTOC from "../../MarkdownWithTOC";
 import ResolvedContract from "../../ethereum/ResolvedContract";
-import ResolvedProject from "../../juicebox/ResolvedProject";
-import JBSplitEntry from "../../juicebox/JBSplitEntry";
+import JBSplitEntryDetailed from "../../juicebox/JBSplitEntryDetailed";
 import ProposalNavigator from "./ProposalNavigator";
 import { CONTRACT_MAP } from "../../../constants/Contract";
-import { SplitEntry } from "../../juicebox/ReconfigurationCompare";
 import { payout2JBSplit } from "../../../libs/juicebox";
+import JBSplitEntry from "../../juicebox/JBSplitEntry";
 
 function getContractLabel(address: string) {
   if(CONTRACT_MAP.ETH === address) return "ETH";
@@ -111,7 +110,7 @@ export default function ProposalContent({ body }: { body: string }) {
                         <span className="line-clamp-5">
                           ${(action.payload as Payout).amountUSD.toLocaleString()}
                           &nbsp;to
-                          <SplitEntry mod={payout2JBSplit(action.payload as Payout)} />
+                          <JBSplitEntry mod={payout2JBSplit(action.payload as Payout)} />
                           {/* <FormattedAddress address={(action.payload as Payout).address} style="inline ml-1" /> */}
                           {` for ${(action.payload as Payout).count} cycles`}
                         </span>
@@ -156,7 +155,7 @@ export default function ProposalContent({ body }: { body: string }) {
                         <div className="flex flex-col">
                           {(action.payload as Reserve).splits.sort((a, b) => b.percent - a.percent).map(
                             (split, index) => (
-                              <JBSplitEntry key={index} beneficiary={split.beneficiary} allocator={split.allocator} projectId={split.projectId.toString()} percent={split.percent.toString()} preferAddToBalance={split.preferAddToBalance} preferClaimed={split.preferClaimed} style="grid grid-cols-3 gap-6" />
+                              <JBSplitEntryDetailed key={index} beneficiary={split.beneficiary} allocator={split.allocator} projectId={split.projectId.toString()} percent={split.percent.toString()} preferAddToBalance={split.preferAddToBalance} preferClaimed={split.preferClaimed} style="grid grid-cols-3 gap-6" />
                             )
                           )}
                         </div>

@@ -1,47 +1,48 @@
-import { JBConstants } from "../../models/JuiceboxTypes";
+import { classNames } from "../../libs/tailwind";
+import { JBSplit } from "../../models/JuiceboxTypes";
 import FormattedAddress from "../ethereum/FormattedAddress";
 import ResolvedProject from "./ResolvedProject";
 
-export default function SplitEntry({ beneficiary, projectId, allocator, percent, preferAddToBalance, preferClaimed, style = "flex space-x-6" }: 
-    { beneficiary: string, projectId: string, allocator: string, percent: string, preferAddToBalance: boolean, preferClaimed: boolean, style?: string }) {
-  
-  const project = parseInt(projectId);
+export default function JBSplitEntry({ mod, projectVersion = 3 }: { mod: JBSplit, projectVersion?: number }) {
   let splitMode = "address";
-  if (allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
-  else if (project !== 0) splitMode = "project";
-  
-  const mainStyle = "text-sm font-semibold";
-  const subStyle = "text-xs italic";
-  
+  if (mod.allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
+  else if (mod.projectId.toNumber() !== 0) splitMode = "project";
+
+  const mainStyle = "text-sm";
+  const subStyle = "text-xs text-gray-500";
+
   return (
-    <div className={style}>
+    <>
       {splitMode === "allocator" && (
         <>
-          <FormattedAddress address={allocator} style={mainStyle} />
+          <FormattedAddress address={mod.allocator} style={mainStyle} />
           <a href="https://info.juicebox.money/dev/learn/glossary/split-allocator/" target="_blank" rel="noreferrer">(Allocator)</a>
-          <ResolvedProject version={3} projectId={project} style={subStyle} />
-          <FormattedAddress address={beneficiary} style={subStyle} noLink />
+          {/* <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={subStyle} />
+          <FormattedAddress address={mod.beneficiary} style={subStyle} /> */}
         </>
       )}
-  
+
       {splitMode === "project" && (
-        <>
-          <ResolvedProject version={3} projectId={project} style={mainStyle} />
-          <FormattedAddress address={beneficiary} style={subStyle} noLink />
-        </>
+        <div className="inline-block mx-1">
+          <div className="flex flex-col">
+            <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={mainStyle} />
+            <div>
+              <span className={classNames(
+                subStyle,
+                "ml-1"
+              )}>Token: </span>
+              <FormattedAddress address={mod.beneficiary} style={subStyle} />
+            </div>
+          </div>
+        </div>
       )}
-  
+
       {/* Address mode */}
       {splitMode === "address" && (
         <>
-          <FormattedAddress address={beneficiary} style={mainStyle} noLink />
+          <FormattedAddress address={mod.beneficiary} style={mainStyle} />
         </>
       )}
-  
-      <span>{(parseInt(percent) / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%</span>
-  
-      {preferAddToBalance && <span>preferAddToBalance</span>}
-      {preferClaimed && <span>preferClaimed</span>}
-    </div>
+    </>
   );
 }

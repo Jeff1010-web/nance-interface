@@ -5,14 +5,13 @@ import FormattedAddress from "../ethereum/FormattedAddress";
 // @ts-ignore
 import unionBy from 'lodash.unionby';
 import { BigNumber, utils } from "ethers";
-import ResolvedProject from "./ResolvedProject";
 import { formatDistanceToNow, fromUnixTime } from "date-fns";
 import { JBSplitNanceStruct, Payout, SQLPayout } from "../../models/NanceTypes";
 import { ZERO_ADDRESS } from "../../constants/Contract";
 import { getAddress } from "viem";
 import { SplitDiffEntry } from "../../libs/juicebox";
 import { Status, SectionTableData } from "../form/TableWithSection";
-import { classNames } from "../../libs/tailwind";
+import JBSplitEntry from "./JBSplitEntry";
 
 // 'projectId-beneficiary-allocator': mod
 const splits2map = (splits: JBSplit[]) => {
@@ -208,7 +207,7 @@ export default function ReconfigurationCompare({ currentFC, previewFC }: Reconfi
                   <tr key={keyOfSplit(mod)}>
                     <th className="py-5 px-6 text-left text-sm font-normal text-gray-500" scope="row">
                       <div className="flex flex-col">
-                        <SplitEntry mod={mod} projectVersion={currentPayoutMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} />
+                        <JBSplitEntry mod={mod} projectVersion={currentPayoutMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} />
                       </div>
                     </th>
 
@@ -247,7 +246,7 @@ export default function ReconfigurationCompare({ currentFC, previewFC }: Reconfi
                     <th className="py-5 px-6 text-left text-sm font-normal text-gray-500" scope="row">
                       {/* {mod.projectId.toNumber() != 0 && <ResolvedProject version={currentTicketMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} projectId={mod.projectId.toNumber()} />}
                                     <FormattedAddress address={mod.beneficiary} />:&nbsp; */}
-                      <SplitEntry mod={mod} projectVersion={currentTicketMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} />
+                      <JBSplitEntry mod={mod} projectVersion={currentTicketMaps.has(keyOfSplit(mod)) ? currentFC.version : previewFC.version} />
                     </th>
                     <CompareCell
                       oldVal={currentTicketMaps.has(keyOfSplit(mod)) ? `${(currentTicketMaps.get(keyOfSplit(mod))!.percent.toNumber() / 10000000 ?? 0 / JBConstants.TotalPercent.Splits[currentFC.version - 1] * 100).toFixed(2)}%` : undefined}
@@ -297,53 +296,9 @@ export function diff2TableEntry(index: number, status: Status, tableData: Sectio
       newVal: v.newVal,
       valueToBeSorted: parseFloat(v.oldVal.split("%")[0]) || 0,
       status,
-      title: (<SplitEntry mod={v.split} projectVersion={3} />)
+      title: (<JBSplitEntry mod={v.split} projectVersion={3} />)
     });
   }
-}
-
-export function SplitEntry({ mod, projectVersion = 3 }: { mod: JBSplit, projectVersion?: number }) {
-  let splitMode = "address";
-  if (mod.allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
-  else if (mod.projectId.toNumber() !== 0) splitMode = "project";
-
-  const mainStyle = "text-sm";
-  const subStyle = "text-xs text-gray-500";
-
-  return (
-    <>
-      {splitMode === "allocator" && (
-        <>
-          <FormattedAddress address={mod.allocator} style={mainStyle} />
-          <a href="https://info.juicebox.money/dev/learn/glossary/split-allocator/" target="_blank" rel="noreferrer">(Allocator)</a>
-          {/* <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={subStyle} />
-          <FormattedAddress address={mod.beneficiary} style={subStyle} /> */}
-        </>
-      )}
-
-      {splitMode === "project" && (
-        <div className="inline-block mx-1">
-          <div className="flex flex-col">
-            <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={mainStyle} />
-            <div>
-              <span className={classNames(
-                subStyle,
-                "ml-1"
-              )}>Token: </span>
-              <FormattedAddress address={mod.beneficiary} style={subStyle} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Address mode */}
-      {splitMode === "address" && (
-        <>
-          <FormattedAddress address={mod.beneficiary} style={mainStyle} />
-        </>
-      )}
-    </>
-  );
 }
 
 function CompareCell({ oldVal, newVal, isSame = false }: { oldVal: any, newVal: any, isSame?: boolean }) {
