@@ -19,7 +19,7 @@ export function urlOfContent(space: string, hash: string) {
   return `${NANCE_API_URL}/${space}/markdown?hash=${hash}`;
 }
 
-export function canEditProposal(status: string) {
+export function canEditProposal(status: string | undefined) {
   return ([
     'Discussion',
     'Draft',
