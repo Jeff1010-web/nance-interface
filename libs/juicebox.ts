@@ -293,3 +293,17 @@ export function reservesDiffOf(onchainReserves: JBSplit[], actionReserve: Reserv
   console.debug("reservesDiffOf.final", diff);
   return diff;
 }
+
+export function payout2JBSplit(payout: Payout) {
+  // FIXME: this may not work for allocator
+  const split: JBSplit = {
+    preferClaimed: false,
+    preferAddToBalance: false,
+    percent: BigNumber.from(payout.amountUSD),
+    lockedUntil: BIG_ZERO,
+    beneficiary: payout.address,
+    projectId: BigNumber.from(payout.project || 0),
+    allocator: ZERO_ADDRESS
+  }
+  return split;
+}

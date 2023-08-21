@@ -17,6 +17,8 @@ import ResolvedProject from "../../juicebox/ResolvedProject";
 import JBSplitEntry from "../../juicebox/JBSplitEntry";
 import ProposalNavigator from "./ProposalNavigator";
 import { CONTRACT_MAP } from "../../../constants/Contract";
+import { SplitEntry } from "../../juicebox/ReconfigurationCompare";
+import { payout2JBSplit } from "../../../libs/juicebox";
 
 function getContractLabel(address: string) {
   if(CONTRACT_MAP.ETH === address) return "ETH";
@@ -105,20 +107,12 @@ export default function ProposalContent({ body }: { body: string }) {
                         </span>
                       )}
 
-                      {action.type === "Payout" && !(action.payload as Payout).project && (
+                      {action.type === "Payout" && (
                         <span className="line-clamp-5">
                           ${(action.payload as Payout).amountUSD.toLocaleString()}
                           &nbsp;to
-                          <FormattedAddress address={(action.payload as Payout).address} style="inline ml-1" />
-                          &nbsp;{` for ${(action.payload as Payout).count} cycles`}
-                        </span>
-                      )}
-
-                      {action.type === "Payout" && (action.payload as Payout).project && (
-                        <span className="line-clamp-5">
-                          ${(action.payload as Payout).amountUSD.toLocaleString()}
-                          &nbsp;to
-                          <ResolvedProject version={2} projectId={(action.payload as Payout).project} style="inline ml-1" />
+                          <SplitEntry mod={payout2JBSplit(action.payload as Payout)} />
+                          {/* <FormattedAddress address={(action.payload as Payout).address} style="inline ml-1" /> */}
                           {` for ${(action.payload as Payout).count} cycles`}
                         </span>
                       )}

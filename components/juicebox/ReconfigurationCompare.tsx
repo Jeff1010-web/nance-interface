@@ -12,6 +12,7 @@ import { ZERO_ADDRESS } from "../../constants/Contract";
 import { getAddress } from "viem";
 import { SplitDiffEntry } from "../../libs/juicebox";
 import { Status, SectionTableData } from "../form/TableWithSection";
+import { classNames } from "../../libs/tailwind";
 
 // 'projectId-beneficiary-allocator': mod
 const splits2map = (splits: JBSplit[]) => {
@@ -301,13 +302,13 @@ export function diff2TableEntry(index: number, status: Status, tableData: Sectio
   }
 }
 
-export function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersion: number }) {
+export function SplitEntry({ mod, projectVersion = 3 }: { mod: JBSplit, projectVersion?: number }) {
   let splitMode = "address";
   if (mod.allocator !== "0x0000000000000000000000000000000000000000") splitMode = "allocator";
   else if (mod.projectId.toNumber() !== 0) splitMode = "project";
 
   const mainStyle = "text-sm";
-  const subStyle = "text-xs italic";
+  const subStyle = "text-xs text-gray-500";
 
   return (
     <>
@@ -321,10 +322,18 @@ export function SplitEntry({ mod, projectVersion }: { mod: JBSplit, projectVersi
       )}
 
       {splitMode === "project" && (
-        <>
-          <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={mainStyle} />
-          {/* <FormattedAddress address={mod.beneficiary} style={subStyle} /> */}
-        </>
+        <div className="inline-block mx-1">
+          <div className="flex flex-col">
+            <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={mainStyle} />
+            <div>
+              <span className={classNames(
+                subStyle,
+                "ml-1"
+              )}>Token: </span>
+              <FormattedAddress address={mod.beneficiary} style={subStyle} />
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Address mode */}
