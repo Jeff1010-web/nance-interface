@@ -1,6 +1,6 @@
 import SiteNav from "../../../components/SiteNav";
 import Footer from "../../../components/Footer";
-import NanceSpace from "../../../components/nance/Space";
+import NanceSpace from "../../../components/pages/space/Space";
 import { NANCE_API_URL } from "../../../constants/Nance";
 
 export async function getServerSideProps(context: any) {

@@ -1,7 +1,7 @@
 import { formatDistanceToNowStrict, toDate } from "date-fns";
-import ColorBar from "../../ColorBar";
-import { SnapshotProposal } from "../../../hooks/snapshot/Proposals";
-import { Proposal } from "../../../models/NanceTypes";
+import ColorBar from "../../../ColorBar";
+import { SnapshotProposal } from "../../../../hooks/snapshot/Proposals";
+import { Proposal } from "../../../../models/NanceTypes";
 import { ClockIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 
 export default function VotesBar({ snapshotProposal, proposal }: { snapshotProposal: SnapshotProposal, proposal: Proposal }) {

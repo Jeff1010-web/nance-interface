@@ -3,7 +3,7 @@ import SiteNav from "../components/SiteNav";
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance";
 
 import Footer from "../components/Footer";
-import NanceSpace from "../components/nance/Space";
+import NanceSpace from "../components/pages/space/Space";
 
 export default function NanceProposals() {
   let space = NANCE_DEFAULT_SPACE;

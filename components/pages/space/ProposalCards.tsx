@@ -5,8 +5,8 @@ import { useProposalsByID, SnapshotProposal } from "../../../hooks/snapshot/Prop
 import { getLastSlash } from "../../../libs/nance";
 import { Proposal, ProposalsPacket } from "../../../models/NanceTypes";
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
-import ProposalRow from "./ProposalRow";
-import ProposalPrivateRow from "./ProposalPrivateRow";
+import ProposalRow from "./card/ProposalRow";
+import ProposalPrivateRow from "./card/ProposalPrivateRow";
 
 type SortOptions = "" | "status" | "title" | "approval" | "participants" | "voted"
 const SortOptionsArr = ["status", "title", "approval", "participants", "voted"];
