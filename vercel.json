@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/nance-auto/events",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
