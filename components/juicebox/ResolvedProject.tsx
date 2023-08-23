@@ -3,12 +3,12 @@ import fetchProjectInfo, { ProjectInfo } from "../../hooks/juicebox/Project";
 import { classNames } from '../../libs/tailwind';
 
 export interface Props {
-    version: number | undefined;
+    version?: number | undefined;
     projectId: number | undefined;
     style?: string;
 }
 
-export default function ResolvedProject({ version, projectId, style }: Props) {
+export default function ResolvedProject({ version = 3, projectId, style }: Props) {
   // state
   const [isError, setError] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);

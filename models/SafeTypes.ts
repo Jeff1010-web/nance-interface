@@ -1,3 +1,5 @@
+import { SafeMultisigTransactionResponse } from "@safe-global/safe-core-sdk-types"
+
 export interface SafeMultisigConfirmation {
   owner: string
   submissionDate: string
@@ -23,14 +25,6 @@ export interface SafeMultisigTransaction {
   } | null
   isExecuted: boolean
   confirmations?: SafeMultisigConfirmation[]
-}
-
-export interface SafeMultisigTransactionResponse {
-  count: number;
-  countUniqueNonce: number;
-  next?: string;
-  previous?: string;
-  results: SafeMultisigTransaction[];
 }
 
 export interface SafeMultisigTransactionRequest {
@@ -93,3 +87,13 @@ export interface SafeDelegateResponse {
   safe: string;
   label: string;
 }
+
+export type RevisedSafeMultisigTransactionResponse = Omit<SafeMultisigTransactionResponse, 'dataDecoded'> & 
+  { dataDecoded: { 
+    method: string, 
+    parameters: { 
+      name: string,
+      type: string,
+      value: string | string[]
+    }[]
+  } };

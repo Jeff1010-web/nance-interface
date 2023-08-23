@@ -1,21 +1,17 @@
 import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { useCurrentFundingCycleV3 } from '../../../hooks/juicebox/CurrentFundingCycle';
-import { useDistributionLimit } from '../../../hooks/juicebox/DistributionLimit';
-import { useCurrentSplits } from '../../../hooks/juicebox/CurrentSplits';
 import { CURRENCY_USD, ETH_TOKEN_ADDRESS, JBConstants, JBFundingCycleData } from '../../../models/JuiceboxTypes';
-import { FundingCycleConfigProps } from '../../juicebox/ReconfigurationCompare';
 import { BigNumber, utils } from 'ethers';
 import { ProposalsPacket, Reserve } from '../../../models/NanceTypes';
 import { useCurrentPayouts } from '../../../hooks/NanceHooks';
-import TableWithSection, { SectionTableData, Status } from '../../form/TableWithSection';
+import TableWithSection, {  } from '../../form/TableWithSection';
 import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
-import { SplitDiffEntry, formatCurrency, keyOfSplit, payoutsDiffOf, reservesDiffOf } from '../../../libs/juicebox';
+import { calcDiffTableData, payoutsDiffOf, reservesDiffOf, splitStruct2JBSplit } from '../../../libs/juicebox';
 import useControllerOfProject from '../../../hooks/juicebox/ControllerOfProject';
 import { ZERO_ADDRESS } from '../../../constants/Contract';
 import useTerminalOfProject from '../../../hooks/juicebox/TerminalOfProject';
 import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
-import JBSplitEntry from '../../juicebox/JBSplitEntry';
+import { useReconfigurationOfProject } from '../../../hooks/juicebox/ReconfigurationOfProject';
 
 export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, proposals, space, currentCycle }: {
     open: boolean, setOpen: (o: boolean) => void,
@@ -33,32 +29,11 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
   const { value: controller, version } = useControllerOfProject(projectId);
   const { value: terminal } = useTerminalOfProject(projectId);
-  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV3(projectId);
-  const [fc, metadata] = _fc || [];
-  const { value: _limit, loading: targetIsLoading } = useDistributionLimit(projectId, fc?.configuration, isV3);
-  const [target, currency] = _limit || [];
-  const { value: payoutMods, loading: payoutModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.ETH, isV3);
-  const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN, isV3);
+  const { value: currentConfig, loading: configIsLoading } = useReconfigurationOfProject(projectId);
+
   // Get registered payouts
   const previousCycle = currentCycle ? (currentCycle-1).toString() : undefined;
   const { data: nancePayouts, isLoading: nancePayoutsLoading } = useCurrentPayouts(space, previousCycle);
-
-  // Prepare fundingCycle data
-  const zero = BigNumber.from(0);
-  const currentConfig: FundingCycleConfigProps = {
-    version: 2,
-    //@ts-ignore
-    fundingCycle: {
-      ...fc,
-      fee: zero,
-      currency: currency?.sub(1) || zero,
-      target: target || zero,
-      configuration: fc?.configuration || zero
-    },
-    metadata: metadata!,
-    payoutMods: payoutMods || [],
-    ticketMods: ticketMods || [],
-  };
 
   // Gather all payout and reserve actions in current fundingCycle
   const actionWithPIDArray = proposals?.proposals
@@ -74,53 +49,17 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   });
 
   // Splits with changes
-  const payoutsDiff = payoutsDiffOf(currentConfig, currentCycle, payoutMods || [], nancePayouts?.data || [], actionWithPIDArray?.filter((v) => v.action.type === "Payout") || []);
+  const payoutsDiff = payoutsDiffOf(currentConfig, currentCycle, currentConfig.payoutMods || [], nancePayouts?.data || [], actionWithPIDArray?.filter((v) => v.action.type === "Payout") || []);
   const actionReserve = actionWithPIDArray?.find(v => v.action.type === "Reserve");
-  const reservesDiff = reservesDiffOf(ticketMods ?? [], (actionReserve?.action.payload as Reserve), actionReserve?.pid ?? 0)
+  const reservesDiff = reservesDiffOf(currentConfig.ticketMods ?? [], (actionReserve?.action.payload as Reserve)?.splits.map(splitStruct => splitStruct2JBSplit(splitStruct)) || (currentConfig.ticketMods ?? []), actionReserve?.pid ?? 0)
 
-  // Table data
-  const tableData: SectionTableData[] = [
-    {
-      section: "Overall",
-      entries: [
-        {
-          id: "distributionLimit",
-          title: "Distribution Limit",
-          proposal: 0,
-          oldVal: formatCurrency(currentConfig.fundingCycle.currency, currentConfig.fundingCycle.target),
-          newVal: formatCurrency(currentConfig.fundingCycle.currency, payoutsDiff.newTotal),
-          status: payoutsDiff.newTotal.eq(currentConfig.fundingCycle.target) ? "Keep" : "Edit",
-          valueToBeSorted: 0
-        }
-      ]
-    },
-    {
-      section: "Distribution",
-      entries: []
-    },
-    {
-      section: "Reserve Token",
-      entries: []
-    }
-  ];
-  
-  // Payout Diff
-  Object.values(payoutsDiff.new).forEach(diff2TableEntry(1, "Add", tableData));
-  Object.values(payoutsDiff.change).forEach(diff2TableEntry(1, "Edit", tableData));
-  Object.values(payoutsDiff.expire).forEach(diff2TableEntry(1, "Remove", tableData));
-  Object.values(payoutsDiff.keep).forEach(diff2TableEntry(1, "Keep", tableData));
-  tableData[1].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
-  // Reserve Diff
-  Object.values(reservesDiff.new).forEach(diff2TableEntry(2, "Add", tableData));
-  Object.values(reservesDiff.change).forEach(diff2TableEntry(2, "Edit", tableData));
-  Object.values(reservesDiff.expire).forEach(diff2TableEntry(2, "Remove", tableData));
-  Object.values(reservesDiff.keep).forEach(diff2TableEntry(2, "Keep", tableData));
-  tableData[2].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
+  const tableData = calcDiffTableData(currentConfig, payoutsDiff, reservesDiff);
 
-  const loading = fcIsLoading || metadata === undefined || targetIsLoading || payoutModsIsLoading || ticketModsIsLoading || nancePayoutsLoading;
+  const loading = configIsLoading || nancePayoutsLoading;
 
   // Construct reconfiguration function data
   const BIG_ZERO = BigNumber.from(0);
+  const fc = currentConfig.fundingCycle;
   const jbFundingCycleData: JBFundingCycleData = {
     duration: fc?.duration || BIG_ZERO,
     weight: fc?.weight || BIG_ZERO,
@@ -130,7 +69,7 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   const reconfigurationRawData = [
     BigNumber.from(projectId),                       // _projectId
     jbFundingCycleData,                              // _data
-    metadata,                                        // _metadata
+    currentConfig.metadata,                          // _metadata
     BigNumber.from(Math.floor(Date.now() / 1000)),   // _mustStartAtOrAfter
     [                                                // _groupedSplits
       {
@@ -222,16 +161,3 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   );
 }
 
-function diff2TableEntry(index: number, status: Status, tableData: SectionTableData[]) {
-  return (v: SplitDiffEntry) => {
-    tableData[index].entries.push({
-      id: keyOfSplit(v.split),
-      proposal: v.proposalId,
-      oldVal: v.oldVal,
-      newVal: v.newVal,
-      valueToBeSorted: parseFloat(v.oldVal.split("%")[0]) || 0,
-      status,
-      title: (<JBSplitEntry mod={v.split} projectVersion={3} />)
-    });
-  }
-}

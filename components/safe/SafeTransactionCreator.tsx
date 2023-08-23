@@ -13,14 +13,15 @@ export default function SafeTransactionCreator(
   const [nonce, setNonce] = useState<string>("");
 
   const { value: queueRes, loading, error, trigger } = useQueueTransaction(safeAddress, toContract, data, value, nonce);
-  const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 1, safeAddress !== "");
+  const { value: historyTxs, loading: historyTxsLoading } = useHistoryTransactions(safeAddress, safeAddress !== "");
   const { data: walletClient } = useWalletClient();
 
   const queueNotReady = !walletClient || !data || !nonce || !safeAddress || !toContract || loading;
 
   useEffect(() => {
-    if (nonce === "" && historyTxs?.countUniqueNonce) {
-      setNonce(historyTxs.countUniqueNonce.toString());
+    const _historyTxs = historyTxs as any;
+    if (nonce === "" && _historyTxs?.countUniqueNonce) {
+      setNonce(_historyTxs.countUniqueNonce.toString());
     }
   }, [historyTxs])
 

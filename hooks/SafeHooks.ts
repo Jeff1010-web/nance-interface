@@ -1,5 +1,5 @@
 import useSWR, { Fetcher } from 'swr';
-import { SafeBalanceUsdResponse, SafeDelegatesResponse, SafeInfoResponse, SafeMultisigTransactionResponse } from '../models/SafeTypes';
+import { RevisedSafeMultisigTransactionResponse, SafeBalanceUsdResponse, SafeDelegatesResponse, SafeInfoResponse } from '../models/SafeTypes';
 import { useEffect, useState } from 'react';
 import { useAccount, useWalletClient } from 'wagmi';
 import SafeApiKit from '@safe-global/api-kit';
@@ -11,46 +11,60 @@ import { SafeTransactionDataPartial } from '@safe-global/safe-core-sdk-types';
 const SAFE_API_V1_ROOT = "https://safe-transaction-mainnet.safe.global/api/v1/";
 const SAFE_API = SAFE_API_V1_ROOT + "safes/";
 
-function jsonFetcher(): Fetcher<SafeMultisigTransactionResponse, string> {
-  return async (url) => {
-    const res = await fetch(url);
-    if (res.status == 400) {
-      throw new Error('Invalid data.');
-    } else if (res.status == 422) {
-      throw new Error('Invalid ethereum address.');
+export function useMultisigTransactions(address: string, shouldFetch: boolean = true) {
+  return useSafeAPIFunction(async (safeApiKit) => await safeApiKit.getMultisigTransactions(address), shouldFetch);
+}
+
+export function useHistoryTransactions(address: string, shouldFetch: boolean = true) {
+  return useSafeAPIFunction(async (safeApiKit) => await safeApiKit.getAllTransactions(address, {
+    executed: true,
+    trusted: true
+  }), shouldFetch);
+}
+
+export function useQueuedTransactions(address: string, nonceGte?: number | undefined, shouldFetch: boolean = true) {
+  return useSafeAPIFunction(async (safeApiKit) => await safeApiKit.getPendingTransactions(address, nonceGte), shouldFetch);
+}
+
+export function useMultisigTransactionOf(safeTxHash: string, shouldFetch: boolean = true) {
+  return useSafeAPIFunction(async (safeApiKit) => (await safeApiKit.getTransaction(safeTxHash)) as any as RevisedSafeMultisigTransactionResponse, shouldFetch);
+}
+
+// react hook wrapper for safe api kit
+export function useSafeAPIFunction<T>(functionWrapper: (safeApiKit: SafeApiKit) => Promise<T>, shouldFetch: boolean = true) {
+  const [error, setError] = useState<string>();
+  const [loading, setLoading] = useState(false);
+  const [value, setValue] = useState<T>();
+
+  const { value: safeApiKit } = useSafeAPIKit();
+
+  const refetch = async () => {
+    if (!safeApiKit) {
+      setError("Not connected to wallet or safe not found.");
+      return;
     }
-    const json = await res.json();
 
-    return json;
+    try {
+      setLoading(true);
+      const val = await functionWrapper(safeApiKit);
+      setValue(val);
+    } catch(e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
-}
 
-export function useMultisigTransactions(address: string, limit: number = 10, shouldFetch: boolean = true) {
-  return useSWR(
-    shouldFetch ? `${SAFE_API}${address}/multisig-transactions/?trusted=true&limit=${limit}` : null,
-    jsonFetcher(),
-  );
-}
+  useEffect(() => {
+    if (!safeApiKit || !shouldFetch) {
+      return;
+    }
+    refetch();
+  }, [safeApiKit, shouldFetch]);
 
-export function useHistoryTransactions(address: string, limit: number = 10, shouldFetch: boolean = true) {
-  return useSWR(
-    shouldFetch ? `${SAFE_API}${address}/multisig-transactions/?executed=true&trusted=true&limit=${limit}` : null,
-    jsonFetcher(),
-  );
-}
-
-export function useQueuedTransactions(address: string, nonceGte: number, limit: number = 10, shouldFetch: boolean = true) {
-  return useSWR(
-    shouldFetch ? `${SAFE_API}${address}/multisig-transactions/?nonce__gte=${nonceGte}&trusted=true&limit=${limit}` : null,
-    jsonFetcher(),
-  );
-}
-
-export function useMultisigTransactionOf(address: string, safeTxHash: string, shouldFetch: boolean = true) {
-  return useSWR(
-    shouldFetch ? `${SAFE_API}${address}/multisig-transactions/?safe_tx_hash=${safeTxHash}` : null,
-    jsonFetcher(),
-  );
+  return {
+    value, error, loading, refetch
+  }
 }
 
 function balanceJsonFetcher(): Fetcher<SafeBalanceUsdResponse[], string> {

@@ -10,8 +10,7 @@ const ETH_TOKEN_ADDRESS = '0x000000000000000000000000000000000000eeee';
 
 export function useDistributionLimit(
   projectId: BigNumberish | undefined,
-  configured: BigNumberish | undefined,
-  isV3: boolean = false
+  configured: BigNumberish | undefined
 )  {
   const provider = useEthersProvider();
   const { value: controller, version } = useControllerOfProject(projectId);

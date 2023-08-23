@@ -61,7 +61,7 @@ export const consolidateMetadata = (
   };
 };
 
-export default async function fetchMetadata(uri: string) {
+export default async function fetchMetadata(uri: string): Promise<ProjectMetadata> {
   const res = await fetch(`${JB_IPFS_GATEWAY}/${uri}`);
   return await res.json();
 }

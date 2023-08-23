@@ -42,7 +42,8 @@ export interface FundingCycleArgs {
   currency: BigNumber,
   target: BigNumber,
   duration: BigNumber,
-  fee: BigNumber
+  fee: BigNumber,
+  weight: BigNumber
 }
 
 export interface MetadataArgs {

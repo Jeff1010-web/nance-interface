@@ -1,6 +1,8 @@
+import { SplitDiffEntry, keyOfSplit } from "../../libs/juicebox";
 import { classNames } from "../../libs/tailwind";
 import { JBSplit } from "../../models/JuiceboxTypes";
 import FormattedAddress from "../ethereum/FormattedAddress";
+import { Status, SectionTableData } from "../form/TableWithSection";
 import ResolvedProject from "./ResolvedProject";
 
 export default function JBSplitEntry({ mod, projectVersion = 3 }: { mod: JBSplit, projectVersion?: number }) {
@@ -45,4 +47,18 @@ export default function JBSplitEntry({ mod, projectVersion = 3 }: { mod: JBSplit
       )}
     </>
   );
+}
+
+export function diff2TableEntry(index: number, status: Status, tableData: SectionTableData[]) {
+  return (v: SplitDiffEntry) => {
+    tableData[index].entries.push({
+      id: keyOfSplit(v.split),
+      proposal: v.proposalId,
+      oldVal: v.oldVal,
+      newVal: v.newVal,
+      valueToBeSorted: parseFloat(v.oldVal.split("%")[0]) || 0,
+      status,
+      title: (<JBSplitEntry mod={v.split} projectVersion={3} />)
+    });
+  }
 }

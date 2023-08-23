@@ -1,5 +1,6 @@
 import useSWR, { Fetcher } from "swr";
 import { SUBGRAPH_URL } from "../../constants/Juicebox";
+import fetchMetadata, { consolidateMetadata } from "../../libs/projectMetadata";
 
 const projectQuery = `query project($id: ID!) {
     project(id: $id) {
@@ -39,4 +40,11 @@ export default function useProjectInfo(version: number, projectId: number) {
   const loading = !error && !data;
 
   return { data, loading, error };
+}
+
+export function useResolvedProjectMetadata(metadataUri: string) {
+  const { data: metadata, error } = useSWR(metadataUri, fetchMetadata);
+  const loading = !error && !metadata;
+
+  return { data: metadata ? consolidateMetadata(metadata) : undefined, loading, error };
 }
