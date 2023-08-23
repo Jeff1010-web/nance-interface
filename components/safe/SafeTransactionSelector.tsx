@@ -1,5 +1,5 @@
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
-import { useQueuedTransactions } from '../../hooks/SafeHooks';
+import { useMultisigTransactions } from '../../hooks/SafeHooks';
 import SearchableComboBox, { Option } from '../SearchableComboBox';
 import { SafeMultisigTransactionListResponse } from '@safe-global/api-kit';
 import { RevisedSafeMultisigTransactionResponse } from '../../models/SafeTypes';
@@ -7,9 +7,8 @@ import { RevisedSafeMultisigTransactionResponse } from '../../models/SafeTypes';
 export type TxOption = Option & { tx: RevisedSafeMultisigTransactionResponse }
 export type AddressMap = { [address: string]: string }
 
-export function SafeTransactionSelector({safeAddress, val, setVal, shouldRun = true, addressMap = {}} : {safeAddress: string, val: TxOption | undefined, setVal: (val: TxOption) => void, shouldRun?: boolean, addressMap?: AddressMap}) {
-  //const { value: historyTxs, loading: historyTxsLoading } = useHistoryTransactions(safeAddress, shouldRun);
-  const { value: queuedTxs, loading: queuedTxsLoading } = useQueuedTransactions(safeAddress);
+export function SafeTransactionSelector({safeAddress, val, setVal, addressMap = {}} : {safeAddress: string, val: TxOption | undefined, setVal: (val: TxOption) => void, addressMap?: AddressMap}) {
+  const { data: txns, isLoading } = useMultisigTransactions(safeAddress, 15);
 
   const convertToOptions = (res: SafeMultisigTransactionListResponse | undefined, status: boolean) => {
     if(!res) return [];
@@ -25,9 +24,9 @@ export function SafeTransactionSelector({safeAddress, val, setVal, shouldRun = t
       };
     });
   };
-  const options = convertToOptions(queuedTxs, true);
+  const options = convertToOptions(txns, true);
 
   return (
-    <SearchableComboBox val={val} setVal={setVal} options={options} label="Load Safe Transaction" />
+    <SearchableComboBox val={val} setVal={setVal} options={options} label={isLoading ? "loading..." : "Load Safe Transaction"} />
   );
 }

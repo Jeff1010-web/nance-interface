@@ -7,8 +7,8 @@ const projectQuery = `query project($id: ID!) {
         metadataUri
         owner
         handle
-        totalPaid
-        totalRedeemed
+        volume
+        redeemVolume
         trendingPaymentsCount
         trendingVolume
         currentBalance
@@ -21,8 +21,8 @@ export interface ProjectInfo {
     metadataUri: string
     owner: string
     handle: string
-    totalPaid: string
-    totalRedeemed: string
+    volume: string
+    redeemVolume: string
     trendingPaymentsCount: number
     trendingVolume: string
     currentBalance: string
@@ -34,9 +34,9 @@ const fetcher: Fetcher<ProjectInfo, {version: number, projectId: number}> = ({ve
   body: JSON.stringify({ query: projectQuery, variables: { id: `${version}-${projectId}` } }),
 }).then(res => res.json()).then(res => res.data.project);
 
-export default function useProjectInfo(version: number, projectId: number) {
+export default function useProjectInfo(version: number | undefined, projectId: number | undefined) {
 
-  const { data, error } = useSWR({version: version === 3 ? 2 : version, projectId}, fetcher);
+  const { data, error } = useSWR((version && projectId) ? {version: (version === 3 ? 2 : version), projectId} : null, fetcher);
   const loading = !error && !data;
 
   return { data, loading, error };

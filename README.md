@@ -25,7 +25,7 @@ We need [Infura](https://www.infura.io/) RPC to interact with Ethereum. Please s
 
 #### Juicebox Subgraph
 
-To get infomation of Juicebox projects, we need to specify the subgraph url of Juicebox: `NEXT_PUBLIC_SUBGRAPH_ID`
+To get infomation of Juicebox projects, we need to specify the [subgraph url of Juicebox](https://docs.juicebox.money/dev/frontend/subgraph/): `JUICEBOX_SUBGRAPH_KEY`.
 
 #### Snapshot Subgraph
 

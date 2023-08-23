@@ -4,15 +4,15 @@ import { ZERO_ADDRESS } from "../constants/Contract";
 import { JBConstants, JBSplit } from "../models/JuiceboxTypes";
 import { SQLPayout, Action, Payout, JBSplitNanceStruct } from "../models/NanceTypes";
 import { getAddress } from "viem";
-import { formatNumber } from "./NumberFormatter";
 import { SectionTableData } from "../components/form/TableWithSection";
 import { diff2TableEntry } from "../components/juicebox/JBSplitEntry";
 
 // In v1, ETH = 0, USD = 1
 // In v2, ETH = 1, USD = 2, we subtract 1 to get the same value
 export const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
+  const formatter = new Intl.NumberFormat('en-GB');
   const symbol = currency.toNumber() == 0 ? "Ξ" : "$";
-  const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatNumber(parseInt(utils.formatEther(amount ?? 0)));
+  const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatter.format(parseInt(utils.formatEther(amount ?? 0)));
   return symbol + formatted;
 };
 

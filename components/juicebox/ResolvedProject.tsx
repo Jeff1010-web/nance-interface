@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import fetchProjectInfo, { ProjectInfo } from "../../hooks/juicebox/Project";
 import { classNames } from '../../libs/tailwind';
+import useProjectInfo from "../../hooks/juicebox/ProjectInfo";
 
 export interface Props {
     version?: number | undefined;
@@ -9,32 +8,9 @@ export interface Props {
 }
 
 export default function ResolvedProject({ version = 3, projectId, style }: Props) {
-  // state
-  const [isError, setError] = useState<boolean>(false);
-  const [isLoading, setLoading] = useState<boolean>(false);
-  const [projectInfo, setProjectInfo] = useState<ProjectInfo>();
+  const { data: projectInfo, loading, error } = useProjectInfo(3, projectId);
 
-  useEffect(() => {
-    if(!version || !projectId) {
-      setProjectInfo(undefined);
-      setLoading(false);
-      setError(true);
-      return;
-    }
-    // external fetch
-    fetchProjectInfo(version, projectId)
-      .then((res) => {
-        setProjectInfo(res.data.project);
-        setLoading(false);
-        setError(false);
-      })
-      .catch(e => {
-        setLoading(false);
-        setError(true);
-      });
-  }, [version, projectId]);
-
-  if(isLoading) {
+  if(loading) {
     return (
       <p className={classNames(
         "mt-2 text-xs text-gray-500",
@@ -42,22 +18,6 @@ export default function ResolvedProject({ version = 3, projectId, style }: Props
       )}>
                 loading...
       </p>
-    );
-  }
-
-  if(isError) {
-    return <></>;
-  }
-
-  if(version == 1 && !projectInfo?.handle) {
-    return (
-      <span
-        className={classNames(
-          "text-xs text-gray-500",
-          style,
-        )}>
-        {`Project #${projectId}`}
-      </span>
     );
   }
 

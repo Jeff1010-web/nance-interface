@@ -49,7 +49,7 @@ export default function ReviewReconfigurationPage(spaceProps: { space: string })
   // external hooks
   const { data: infoData, isLoading: infoLoading, error: infoError } = useSpaceInfo({ space: spaceProps.space }, router.isReady);
   const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, parseInt(infoData?.data?.juiceboxProjectId ?? ""));
-  const { value: specifiedSafeTx } = useMultisigTransactionOf(query.safeTxHash, query.safeTxHash !== "");
+  const { value: specifiedSafeTx } = useMultisigTransactionOf(query.safeTxHash, query.safeTxHash !== "" && selectedSafeTx === undefined);
 
   const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
   const txForComponent = selectedSafeTx?.tx || specifiedSafeTx;
@@ -83,7 +83,7 @@ export default function ReviewReconfigurationPage(spaceProps: { space: string })
         </div>
         <div id="safetx-loader" className="flex justify-center pt-2 mx-6">
           <div className="w-1/2">
-            <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedTxOption} safeAddress={owner} shouldRun={owner !== undefined} addressMap={CONTRACT_MAP} />
+            <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedTxOption} safeAddress={owner} addressMap={CONTRACT_MAP} />
           </div>
         </div>
         <br />
