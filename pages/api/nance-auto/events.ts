@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-const API = 'https://api.staging.nance.app';
+const API = 'https://nance-ts-production-2d49.up.railway.app';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const status = await fetch(`${API}/auto/events`, {
