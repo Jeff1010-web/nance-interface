@@ -12,9 +12,10 @@ import Pagination from "../../Pagination";
 import { Tooltip } from "flowbite-react";
 import { Switch } from "@headlessui/react";
 import { classNames } from "../../../libs/tailwind";
-import { DocumentTextIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
+import { DocumentTextIcon, ShieldCheckIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
 import QueueExecutionModal from "./QueueExecutionModal";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
   // State
@@ -42,6 +43,8 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   const { data: currentProposalData } = useProposals({ space, cycle: infoData?.data?.currentCycle }, router.isReady);
   const currentCycle = cycle || infoData?.data?.currentCycle;
   const allCycle = { id: "All", label: `All`, status: true };
+
+  const projectId = parseInt(infoData?.data?.juiceboxProjectId || "1");
 
   // Flag
   const hasDrafts = (proposalData?.data?.privateProposals?.length ?? 0) > 0;
@@ -128,14 +131,13 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
         </div>
 
         <div className="max-w-7xl flex flex-col space-y-2 md:flex-row md:space-x-5 md:space-y-0 bg-white mt-2 p-2 shadow rounded-md">
-          <button
-            type="button"
-            onClick={() => router.push(`/s/${space}/edit`)}
+          <Link
+            href={`/s/${space}/edit`}
             className="md:ml-2 inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             <DocumentTextIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
             New Proposal
-          </button>
+          </Link>
 
           <button
             type="button"
@@ -146,7 +148,15 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             Queue Execution
           </button>
 
-          <QueueExecutionModal open={showQueueModal} setOpen={setShowQueueModal} juiceboxProjectId={parseInt(infoData?.data?.juiceboxProjectId || "1")} proposals={currentProposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />
+          <Link
+            href={`/review?project=${projectId}`}
+            className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <ShieldCheckIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+            Review Reconfiguration
+          </Link>
+
+          <QueueExecutionModal open={showQueueModal} setOpen={setShowQueueModal} juiceboxProjectId={projectId} proposals={currentProposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />
         </div>
   
         <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">
