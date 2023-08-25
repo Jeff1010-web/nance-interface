@@ -6,6 +6,7 @@
     "scripts": {
         "remotedev": "NODE_OPTIONS='--inspect' next dev -p 3001",
         "dev": "next dev -p 3001",
+        "prod": "next build && next start -p 3001",
         "build": "next build",
         "export": "next export",
         "start": "next start",
