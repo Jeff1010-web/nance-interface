@@ -24,7 +24,7 @@ const ProposalStatus = [
 
 export default function ProposalSidebar(
   { space, proposal, snapshotProposal }:
-  { space: string, proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | null }
+  { space: string, proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }
 ) {
 
   const router = useRouter();

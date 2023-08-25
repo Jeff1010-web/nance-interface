@@ -65,29 +65,6 @@ query ProposalsByID($first: Int, $proposalIds: [String]) {
 }
 `;
 
-const SINGLE_PROPOSAL_QUERY = `
-query Proposals($id: String) {
-  proposal(id: $id) {
-    id,
-    author,
-    title,
-    body,
-    type,
-    state,
-    created,
-    start,
-    end,
-    choices,
-    scores
-    votes,
-    quorum,
-    scores_total,
-    ipfs,
-    snapshot
-  }
-}
-`;
-
 const VOTES_OF_PROPOSAL_QUERY = `
 query VotesBySingleProposalId($id: String, $skip: Int, $orderBy: String, $first: Int) {
   votes (
@@ -211,19 +188,6 @@ export type SnapshotVotedData = Omit<SnapshotVote & {
     name: string;
   }
 }, 'voter'>;
-
-export async function fetchProposalInfo(proposalId: string): Promise<SnapshotProposal> {
-  return fetch('https://hub.snapshot.org/graphql', {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query: SINGLE_PROPOSAL_QUERY,
-      variables: { id: proposalId }
-    }),
-  }).then(res => res.json()).then(json => json.data.proposal);
-}
 
 export function useProposalsByID(proposalIds: string[], address: string, skip: boolean = false) {
   return useProposalsWithCustomQuery(PROPOSALS_BY_ID_QUERY, {

@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import { fetchProposalInfo, SnapshotProposal } from "../../../hooks/snapshot/Proposals";
+import { SnapshotProposal, useProposalsByID } from "../../../hooks/snapshot/Proposals";
 import SiteNav from "../../../components/SiteNav";
 import { createContext } from "react";
 import { useSpaceInfo } from "../../../hooks/NanceHooks";
@@ -15,7 +15,6 @@ import ProposalContent from "../../../components/pages/proposal/ProposalContent"
 import ProposalOptions from "../../../components/pages/proposal/ProposalOptions";
 
 export async function getServerSideProps({ req, params }: any) {
-  let snapshotProposal: SnapshotProposal | null = null;
   let proposal: Proposal;
 
   // check proposal parameter type
@@ -30,17 +29,12 @@ export async function getServerSideProps({ req, params }: any) {
 
   const proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, {headers}).then(res => res.json());
   proposal = proposalResponse.data;
-  const proposalHash = getLastSlash(proposal?.voteURL);
-  if (proposalHash) {
-    snapshotProposal = await fetchProposalInfo(proposalHash);
-  }
-
+  
   // Pass data to the page via props
   return {
     props: {
       space: spaceParam,
-      proposal: proposal || null,
-      snapshotProposal: snapshotProposal
+      proposal: proposal || null
     }
   };
 }
@@ -88,9 +82,14 @@ export const ProposalContext = createContext<{ commonProps: ProposalCommonProps,
   proposalInfo: undefined
 });
 
-export default function NanceProposalPage({ space, proposal, snapshotProposal }: { space: string, proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | null }) {
+export default function NanceProposalPage({ space, proposal }: { space: string, proposal: Proposal | undefined }) {
   
+  const proposalHash = getLastSlash(proposal?.voteURL);
+
   const { data: spaceInfo } = useSpaceInfo({space});  
+  const { data: { proposalsData, votedData } } = useProposalsByID([proposalHash], "", proposalHash === undefined);
+
+  const snapshotProposal = proposalsData?.[0]
 
   // this page need proposal to work
   if (!proposal) {
