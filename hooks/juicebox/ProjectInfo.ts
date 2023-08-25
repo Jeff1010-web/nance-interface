@@ -41,10 +41,3 @@ export default function useProjectInfo(version: number | undefined, projectId: n
 
   return { data, loading, error };
 }
-
-export function useResolvedProjectMetadata(metadataUri: string) {
-  const { data: metadata, error } = useSWR(metadataUri, fetchMetadata);
-  const loading = !error && !metadata;
-
-  return { data: metadata ? consolidateMetadata(metadata) : undefined, loading, error };
-}

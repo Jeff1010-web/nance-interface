@@ -5,6 +5,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { NANCE_DEFAULT_SPACE } from "../constants/Nance";
+import Image from 'next/image';
 
 interface SiteNavProps {
   pageTitle: string,
@@ -68,14 +69,14 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
                 <div className="flex justify-between h-16">
                   <div className="flex">
                     <div className="flex-shrink-0 flex items-center">
-                      <Link href="/" legacyBehavior>
-                        <a>
-                          <img
-                            className="block h-8 w-auto"
-                            src="/images/logo-min.svg"
-                            alt="nance logo"
-                          />
-                        </a>
+                      <Link href="/">
+                        <Image
+                          className="block h-8 w-auto"
+                          src="/images/logo-min.svg"
+                          alt="nance logo"
+                          width={32}
+                          height={32}
+                        />
                       </Link>
                     </div>
                     <div className="hidden xl:-my-px xl:ml-6 xl:flex xl:space-x-8">

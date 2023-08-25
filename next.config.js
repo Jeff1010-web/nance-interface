@@ -9,6 +9,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'http.cat'
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.stamp.fyi'
+      },
+      {
+        protocol: 'https',
+        hostname: 'jbm.infura-ipfs.io'
+      }
     ],
   },
   async redirects() {

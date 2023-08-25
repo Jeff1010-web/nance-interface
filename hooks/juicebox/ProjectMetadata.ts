@@ -12,8 +12,16 @@ export default function useProjectMetadata(uri: string, shouldFetch: boolean = t
     return { data: null, loading, error };
   }
 
+  const ret = consolidateMetadata(data);
+  if (ret.logoUri?.startsWith("https://jbx.mypinata.cloud/ipfs")) {
+    ret.logoUri = ret.logoUri.replace("https://jbx.mypinata.cloud/ipfs", JB_IPFS_GATEWAY)
+  }
+  else if (ret.logoUri?.startsWith("ipfs://")) {
+    ret.logoUri = ret.logoUri.replace("ipfs://", JB_IPFS_GATEWAY)
+  }
+
   return {
-    data: consolidateMetadata(data),
+    data: ret,
     loading, error
   };
 }

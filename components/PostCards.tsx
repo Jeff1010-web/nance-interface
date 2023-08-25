@@ -1,3 +1,5 @@
+import Image from "next/image"
+
 export interface PostCard {
     title: string
     href: string
@@ -22,7 +24,7 @@ export default function PostCards({posts}: {posts: PostCard[]}) {
       {posts.map((post) => (
         <div key={post.title} className="flex flex-col overflow-hidden rounded-lg shadow-lg">
           <div className="flex-shrink-0">
-            <img className="h-48 w-full object-cover" src={post.imageUrl} alt="" />
+            <Image className="h-48 w-full object-cover" src={post.imageUrl} alt="" height={192} />
           </div>
           <div className="flex flex-1 flex-col justify-between bg-white p-6">
             <div className="flex-1">
@@ -40,7 +42,7 @@ export default function PostCards({posts}: {posts: PostCard[]}) {
               <div className="flex-shrink-0">
                 <a href={post.author.href}>
                   <span className="sr-only">{post.author.name}</span>
-                  <img className="h-10 w-10 rounded-full" src={post.author.imageUrl} alt="" />
+                  <Image className="h-10 w-10 rounded-full" src={post.author.imageUrl} alt="" height={40} width={40} />
                 </a>
               </div>
               <div className="ml-3">

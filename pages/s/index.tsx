@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Footer from "../../components/Footer";
 import ResolvedProject from "../../components/juicebox/ResolvedProject";
 import SiteNav from "../../components/SiteNav";
@@ -28,10 +29,12 @@ function AllSpace() {
           <li key={spaceInfo.name} className="overflow-hidden rounded-xl border border-gray-200">
             <div className="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
               <a href={`/s/${spaceInfo.name}`}>
-                <img
+                <Image
                   src={`https://cdn.stamp.fyi/space/${spaceInfo.snapshotSpace}?s=160`}
                   alt={`${spaceInfo.name} Logo`}
                   className="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
+                  height={48}
+                  width={48}
                 />
               </a>
               <a href={`/s/${spaceInfo.name}`} className="text-sm font-medium leading-6 text-gray-900">{spaceInfo.name}</a>

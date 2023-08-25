@@ -14,6 +14,7 @@ import { Switch } from "@headlessui/react";
 import { classNames } from "../../../libs/tailwind";
 import { DocumentTextIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
 import QueueExecutionModal from "./QueueExecutionModal";
+import Image from "next/image";
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
   // State
@@ -99,10 +100,11 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
         <div className="max-w-7xl md:flex md:space-x-5 bg-white p-6 shadow rounded-md">
           <div className="flex flex-col space-x-0 space-y-6 items-center md:flex-row md:justify-between md:space-x-6 md:space-y-0 w-full">
             <div className="flex-shrink-0 md:w-5/12 flex space-x-3">
-              <img
+              <Image
                 className="h-16 w-16 rounded-full"
                 src={`https://cdn.stamp.fyi/space/${infoData?.data?.snapshotSpace}?s=160`}
                 alt={`${space} Logo`}
+                height={64} width={64}
               />
   
               <div>

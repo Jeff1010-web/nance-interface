@@ -16,6 +16,7 @@ import { ProfileResponse } from "../api/profile";
 import { Disclosure, Listbox, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import Image from "next/image";
 
 const getColorOfChoice = (choice: string) => {
   if (choice == 'For') {
@@ -163,7 +164,11 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
 
                 <a href={`https://etherscan.io/address/${address}`} className="text-gray-500 text-xs">{shortenAddress(address)}</a>
                 <h2 id="applicant-information-title" className="text-3xl font-medium flex">
-                  <img src={`https://cdn.stamp.fyi/avatar/${address}`} className="rounded-full h-10 w-10 p-1" />
+                  <Image 
+                    src={`https://cdn.stamp.fyi/avatar/${address}`} 
+                    alt={`Avatar of ${address}`}
+                    className="rounded-full h-10 w-10 p-1"
+                    height={40} width={40} />
                   {ensInfo?.displayName || address}
                 </h2>
 

@@ -5,6 +5,7 @@ import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useClearDelegate, useDelegated, useSetDelegate } from '../hooks/snapshot/Delegations';
 import { ZERO_ADDRESS } from '../constants/Contract';
+import Image from 'next/image';
 
 interface VoterProfileProps {
   voter: string
@@ -82,7 +83,12 @@ export default function VoterProfile({ voter, space, proposal, isOpen }: VoterPr
         {/* Avatar */}
         <div className='justify-center hidden lg:flex'>
           <a href={`/u/${voter}`} target="_blank" rel="noreferrer">
-            <img src={`https://cdn.stamp.fyi/avatar/${voter}`} className="rounded-full h-10 w-10 p-1" />
+            <Image 
+              src={`https://cdn.stamp.fyi/avatar/${voter}`} 
+              alt={`Avatar of ${voter}`}
+              className="rounded-full h-10 w-10 p-1"
+              width={64}
+              height={64} />
           </a>
         </div>
 
