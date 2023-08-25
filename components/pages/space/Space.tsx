@@ -12,10 +12,14 @@ import Pagination from "../../Pagination";
 import { Tooltip } from "flowbite-react";
 import { Switch } from "@headlessui/react";
 import { classNames } from "../../../libs/tailwind";
-import { DocumentTextIcon, ShieldCheckIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
-import QueueExecutionModal from "./QueueExecutionModal";
+import { ArrowPathIcon, DocumentTextIcon, ShieldCheckIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const QueueExecutionModal = dynamic(() => import("./QueueExecutionModal"), {
+  loading: () => <ArrowPathIcon className="animate-spin -ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />,
+})
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
   // State
@@ -156,7 +160,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             Review Reconfiguration
           </Link>
 
-          <QueueExecutionModal open={showQueueModal} setOpen={setShowQueueModal} juiceboxProjectId={projectId} proposals={currentProposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />
+          {showQueueModal && <QueueExecutionModal open={showQueueModal} setOpen={setShowQueueModal} juiceboxProjectId={projectId} proposals={currentProposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />}
         </div>
   
         <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">
