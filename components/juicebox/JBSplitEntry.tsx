@@ -16,12 +16,12 @@ export default function JBSplitEntry({ mod, projectVersion = 3 }: { mod: JBSplit
   return (
     <>
       {splitMode === "allocator" && (
-        <>
+        <div className="inline-block mx-1">
           <FormattedAddress address={mod.allocator} style={mainStyle} />
           <a href="https://info.juicebox.money/dev/learn/glossary/split-allocator/" target="_blank" rel="noreferrer">(Allocator)</a>
           {/* <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={subStyle} />
           <FormattedAddress address={mod.beneficiary} style={subStyle} /> */}
-        </>
+        </div>
       )}
 
       {splitMode === "project" && (
@@ -41,9 +41,9 @@ export default function JBSplitEntry({ mod, projectVersion = 3 }: { mod: JBSplit
 
       {/* Address mode */}
       {splitMode === "address" && (
-        <>
+        <div className="inline-block mx-1">
           <FormattedAddress address={mod.beneficiary} style={mainStyle} />
-        </>
+        </div>
       )}
     </>
   );

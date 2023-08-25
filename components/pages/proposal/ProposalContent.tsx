@@ -112,7 +112,7 @@ export default function ProposalContent({ body }: { body: string }) {
                           &nbsp;to
                           <JBSplitEntry mod={payout2JBSplit(action.payload as Payout)} />
                           {/* <FormattedAddress address={(action.payload as Payout).address} style="inline ml-1" /> */}
-                          {` for ${(action.payload as Payout).count} cycles`}
+                          {`for ${(action.payload as Payout).count} cycles`}
                         </span>
                       )}
 
