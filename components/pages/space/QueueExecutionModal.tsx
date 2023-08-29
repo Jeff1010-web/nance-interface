@@ -6,7 +6,7 @@ import { ProposalsPacket, Reserve } from '../../../models/NanceTypes';
 import { useCurrentPayouts } from '../../../hooks/NanceHooks';
 import TableWithSection, {  } from '../../form/TableWithSection';
 import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
-import { calcDiffTableData, payoutsDiffOf, reservesDiffOf, splitStruct2JBSplit } from '../../../libs/juicebox';
+import { calcDiffTableData, mergePayouts, compareReserves, splitStruct2JBSplit } from '../../../libs/juicebox';
 import useControllerOfProject from '../../../hooks/juicebox/ControllerOfProject';
 import { ZERO_ADDRESS } from '../../../constants/Contract';
 import useTerminalOfProject from '../../../hooks/juicebox/TerminalOfProject';
@@ -49,9 +49,9 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   });
 
   // Splits with changes
-  const payoutsDiff = payoutsDiffOf(currentConfig, currentCycle, currentConfig.payoutMods || [], nancePayouts?.data || [], actionWithPIDArray?.filter((v) => v.action.type === "Payout") || []);
+  const payoutsDiff = mergePayouts(currentConfig, currentCycle, currentConfig.payoutMods || [], nancePayouts?.data || [], actionWithPIDArray?.filter((v) => v.action.type === "Payout") || []);
   const actionReserve = actionWithPIDArray?.find(v => v.action.type === "Reserve");
-  const reservesDiff = reservesDiffOf(currentConfig.ticketMods ?? [], (actionReserve?.action.payload as Reserve)?.splits.map(splitStruct => splitStruct2JBSplit(splitStruct)) || (currentConfig.ticketMods ?? []), actionReserve?.pid ?? 0)
+  const reservesDiff = compareReserves(currentConfig.ticketMods ?? [], (actionReserve?.action.payload as Reserve)?.splits.map(splitStruct => splitStruct2JBSplit(splitStruct)) || (currentConfig.ticketMods ?? []), actionReserve?.pid ?? 0)
 
   const tableData = calcDiffTableData(currentConfig, payoutsDiff, reservesDiff);
 

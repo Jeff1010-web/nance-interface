@@ -12,7 +12,7 @@ import Footer from '../components/Footer';
 import { useReconfigurationOfProject } from '../hooks/juicebox/ReconfigurationOfProject';
 import JBProjectInfo from '../components/pages/review/JBProjectInfo';
 import TableWithSection from '../components/form/TableWithSection';
-import { calcDiffTableData, payoutsCompare, reservesDiffOf } from '../libs/juicebox';
+import { calcDiffTableData, comparePayouts, compareReserves } from '../libs/juicebox';
 
 const CONTRACT_MAP: AddressMap = {
   "0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98": "JBController_V3",
@@ -75,8 +75,8 @@ function Compare({ projectId, tx }: { projectId: number, tx: RevisedSafeMultisig
   const { value: currentConfig, loading: loading } = useReconfigurationOfProject(projectId);
   const newConfig = parseSafeJuiceboxTx(tx.data || "", tx?.submissionDate || "", currentConfig.fundingCycle.fee || BigNumber.from(0), currentConfig.fundingCycle.configuration || BigNumber.from(0));
 
-  const payoutsDiff = payoutsCompare(currentConfig, currentConfig.payoutMods, newConfig?.payoutMods || []);
-  const reservesDiff = reservesDiffOf(currentConfig.ticketMods, newConfig?.ticketMods || []);
+  const payoutsDiff = comparePayouts(currentConfig, currentConfig.payoutMods, newConfig?.payoutMods || []);
+  const reservesDiff = compareReserves(currentConfig.ticketMods, newConfig?.ticketMods || []);
   const tableData = calcDiffTableData(currentConfig, payoutsDiff, reservesDiff);
 
   return (

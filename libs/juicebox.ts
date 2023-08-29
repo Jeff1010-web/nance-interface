@@ -78,10 +78,19 @@ function percentUpdaterFrom(newLimitBG: BigNumber, currency: BigNumber, version:
   }
 }
 
-export function ruleCompare(oldConfig: FundingCycleConfigProps, newConfig: FundingCycleConfigProps) {
+export function compareRules(oldConfig: FundingCycleConfigProps, newConfig: FundingCycleConfigProps): SplitDiff {
+  const diff: SplitDiff = {
+    expire: {},
+    new: {},
+    change: {},
+    keep: {},
+    newTotal: BIG_ZERO
+  }
+
+  return diff
 }
 
-export function payoutsCompare(config: FundingCycleConfigProps, oldPayouts: JBSplit[], newPayouts: JBSplit[]) {
+export function comparePayouts(config: FundingCycleConfigProps, oldPayouts: JBSplit[], newPayouts: JBSplit[]) {
   const diff: SplitDiff = {
     expire: {},
     new: {},
@@ -161,7 +170,7 @@ export function payoutsCompare(config: FundingCycleConfigProps, oldPayouts: JBSp
   return diff;
 }
 
-export function payoutsDiffOf(config: FundingCycleConfigProps, currentCycle: number | undefined, onchainPayouts: JBSplit[], registeredPayouts: SQLPayout[], actionPayouts: {pid: number, action: Action}[]) {
+export function mergePayouts(config: FundingCycleConfigProps, currentCycle: number | undefined, onchainPayouts: JBSplit[], registeredPayouts: SQLPayout[], actionPayouts: {pid: number, action: Action}[]) {
   const diff: SplitDiff = {
     expire: {},
     new: {},
@@ -310,7 +319,7 @@ export function splitStruct2JBSplit(v: JBSplitNanceStruct) {
   return split
 }
 
-export function reservesDiffOf(oldReserves: JBSplit[], newReserves: JBSplit[], pid: number = 0) {
+export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], pid: number = 0) {
   const newReserveMap = new Map<string, JBSplit>();
   newReserves.forEach(split => newReserveMap.set(keyOfSplit(split), split));
   const diff: SplitDiff = {
