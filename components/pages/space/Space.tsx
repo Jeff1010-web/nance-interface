@@ -12,13 +12,14 @@ import Pagination from "../../Pagination";
 import { Tooltip } from "flowbite-react";
 import { Switch } from "@headlessui/react";
 import { classNames } from "../../../libs/tailwind";
-import { ArrowPathIcon, DocumentTextIcon, ShieldCheckIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
+import { DocumentTextIcon, ShieldCheckIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import LoadingArrowSpiner from "../../LoadingArrowSpiner";
 
 const QueueExecutionModal = dynamic(() => import("./QueueExecutionModal"), {
-  loading: () => <ArrowPathIcon className="animate-spin -ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />,
+  loading: () => <LoadingArrowSpiner />,
 })
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
