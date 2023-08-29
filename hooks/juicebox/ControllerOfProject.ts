@@ -1,4 +1,3 @@
-import { getTerminalDirectory } from 'juice-sdk-v1';
 import { useContractReadValue } from './ContractReadValue';
 import { BigNumberish } from '@ethersproject/bignumber';
 import { useEthersProvider } from '../ViemAdapter';

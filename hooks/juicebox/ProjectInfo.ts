@@ -1,6 +1,5 @@
 import useSWR, { Fetcher } from "swr";
 import { SUBGRAPH_URL } from "../../constants/Juicebox";
-import fetchMetadata, { consolidateMetadata } from "../../libs/projectMetadata";
 
 const projectQuery = `query project($id: ID!) {
     project(id: $id) {
