@@ -12,6 +12,7 @@ import { ZERO_ADDRESS } from '../../../constants/Contract';
 import useTerminalOfProject from '../../../hooks/juicebox/TerminalOfProject';
 import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
 import { useReconfigurationOfProject } from '../../../hooks/juicebox/ReconfigurationOfProject';
+import LoadingArrowSpiner from '../../LoadingArrowSpiner';
 
 export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, proposals, space, currentCycle }: {
     open: boolean, setOpen: (o: boolean) => void,
@@ -23,7 +24,6 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
   const cancelButtonRef = useRef(null);
 
   // Get configuration of current fundingCycle
-  const isV3 = true;
   const projectId = juiceboxProjectId;
   const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, projectId);
   const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
@@ -128,17 +128,10 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
                       Queue Juicebox Cycle
                     </Dialog.Title>
                     
-                    <TableWithSection space={space} tableData={tableData} />
+                    <TableWithSection space={space} tableData={tableData} loading={loading} />
                   </div>
                 </div>
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                  {/* <button
-                    type="button"
-                    className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
-                    onClick={() => setOpen(false)}
-                  >
-                    Next
-                  </button> */}
                   <div className="sm:ml-3 sm:w-auto">
                     <SafeTransactionCreator safeAddress={owner} toContract={controller?.address || ""} data={encodeReconfiguration} value={0} defaultNonce="0" />
                   </div>

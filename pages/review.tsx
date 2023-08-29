@@ -7,12 +7,12 @@ import useProjectInfo from '../hooks/juicebox/ProjectInfo';
 import ProjectSearch from "../components/juicebox/ProjectSearch";
 import { RevisedSafeMultisigTransactionResponse } from '../models/SafeTypes';
 import parseSafeJuiceboxTx from '../libs/SafeJuiceboxParser';
-import { useMultisigTransactionOf } from '../hooks/SafeHooks';
 import Footer from '../components/Footer';
 import { useReconfigurationOfProject } from '../hooks/juicebox/ReconfigurationOfProject';
 import JBProjectInfo from '../components/pages/review/JBProjectInfo';
 import TableWithSection from '../components/form/TableWithSection';
 import { calcDiffTableData, comparePayouts, compareReserves } from '../libs/juicebox';
+import LoadingArrowSpiner from '../components/LoadingArrowSpiner';
 
 const CONTRACT_MAP: AddressMap = {
   "0xFFdD70C318915879d5192e8a0dcbFcB0285b3C98": "JBController_V3",
@@ -34,16 +34,22 @@ export default function ReviewReconfigurationPage() {
   const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>();
   
   // hooks
-  const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, projectId);
-  const { value: specifiedSafeTx } = useMultisigTransactionOf(query.safeTxHash, query.safeTxHash !== "" && selectedSafeTx === undefined);
+  const { data: projectInfo, loading, error } = useProjectInfo(3, projectId);
 
   const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
-  const txForComponent = selectedSafeTx?.tx || specifiedSafeTx;
+  const txForComponent = selectedSafeTx?.tx;
 
-  const setSelectedTxOption = (tx: TxOption) => {
-    setSelectedSafeTx(tx);
-    setQuery({ safeTxHash: tx?.tx?.safeTxHash });
-  };
+  function ReviewArea() {
+    if (error) {
+      return <p className="flex justify-center pb-2 text-red-500">{error}</p>
+    } else if (loading) {
+      return <div className="flex justify-center pb-2"><LoadingArrowSpiner /></div>
+    } else if (txForComponent) {
+      return <Compare projectId={projectId} tx={txForComponent} />
+    } else {
+      return <p className="flex justify-center pb-2 text-green-500">Select txn to compare</p>
+    }
+  }
 
   return (
     <>
@@ -59,12 +65,12 @@ export default function ReviewReconfigurationPage() {
         </div>
         <div id="safetx-loader" className="flex justify-center pt-2 mx-6">
           <div className="w-1/2">
-            <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedTxOption} safeAddress={owner} addressMap={CONTRACT_MAP} />
+            <SafeTransactionSelector val={selectedSafeTx} setVal={setSelectedSafeTx} safeAddress={owner} addressMap={CONTRACT_MAP} />
           </div>
         </div>
         <br />
 
-        {txForComponent && <Compare projectId={projectId} tx={txForComponent} />}
+        <ReviewArea />
       </div>
       <Footer />
     </>
@@ -79,9 +85,5 @@ function Compare({ projectId, tx }: { projectId: number, tx: RevisedSafeMultisig
   const reservesDiff = compareReserves(currentConfig.ticketMods, newConfig?.ticketMods || []);
   const tableData = calcDiffTableData(currentConfig, payoutsDiff, reservesDiff);
 
-  return (
-    (loading)
-      ? <div className="text-center">Loading...</div>
-      : <TableWithSection space="juicebox" tableData={tableData} />
-  );
+  return <TableWithSection space="juicebox" tableData={tableData} loading={loading} />
 }

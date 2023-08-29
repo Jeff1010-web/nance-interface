@@ -46,10 +46,15 @@ export interface SectionTableData {
 }
 
 export default function TableWithSection(
-  { space, tableData }: 
-  { space: string, tableData: SectionTableData[] }) {
+  { space, tableData, loading = false }: 
+  { space: string, tableData: SectionTableData[], loading?: boolean }) {
 
   const [hideUnchanged, setHideUnchanged] = useState(false);
+
+  // if it's loading, display a skeleton loader with placeholder table, and a pluse animation
+  if (loading) {
+    return <TableSkeleton />
+  }
 
   return (
     <div>
@@ -122,5 +127,80 @@ export default function TableWithSection(
         </div>
       </div>
     </div>
+  )
+}
+
+function TableSkeleton() {
+  return (
+    <div>
+      <div className="mt-6 overflow-hidden border-t border-gray-100">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
+            <table className="w-full text-left">
+              <thead className="sr-only">
+                <tr>
+                  <th>Title</th>
+                  <th className="hidden sm:table-cell">proposal</th>
+                  <th className="hidden sm:table-cell">oldVal</th>
+                  <th>newVal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <Fragment>
+                  <tr className="text-sm leading-6 text-gray-900">
+                    <th scope="colgroup" colSpan={4} className="relative isolate py-2 font-semibold">
+                      {/* Section */}
+                      <p className="animate-pulse h-6 w-32 bg-slate-200 rounded"></p>
+                      <div className="absolute inset-y-0 right-full -z-10 w-screen border-b border-gray-200 bg-gray-50" />
+                      <div className="absolute inset-y-0 left-0 -z-10 w-screen border-b border-gray-200 bg-gray-50" />
+                    </th>
+                  </tr>
+
+                  <RowSkeleton />
+                  <RowSkeleton />
+                  <RowSkeleton />
+                </Fragment>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RowSkeleton() {
+  return (
+    <tr>
+      <td className="relative py-5 pr-6">
+        <div className="flex gap-x-6">
+          {/* Icon */}
+          <div
+            className="hidden h-6 w-5 flex-none sm:block bg-slate-200 rounded"
+            aria-hidden="true"
+          />
+          <div className="flex-auto">
+            <div className="flex items-start gap-x-3">
+              {/* Title */}
+              <div className="text-sm font-medium leading-6 text-gray-900 animate-pulse h-6 w-32 bg-slate-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute bottom-0 right-full h-px w-screen bg-gray-100" />
+        <div className="absolute bottom-0 left-0 h-px w-screen bg-gray-100" />
+      </td>
+      <td className="hidden py-5 pr-6 sm:table-cell">
+        {/* Proposal */}
+        <div className="text-sm leading-6 text-gray-900 animate-pulse h-6 w-32 bg-slate-200 rounded"></div>
+      </td>
+      <td className="hidden py-5 pr-6 sm:table-cell">
+        {/* Old Value */}
+        <div className="text-sm leading-6 text-gray-900 animate-pulse h-6 w-32 bg-slate-200 rounded"></div>
+      </td>
+      <td className="py-5">
+        {/* New Value */}
+        <div className="rounded-md py-1 px-2 text-xs font-medium animate-pulse h-6 w-32 bg-slate-200"></div>
+      </td>
+    </tr>
   )
 }
