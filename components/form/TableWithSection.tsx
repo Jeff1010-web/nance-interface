@@ -1,7 +1,8 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { classNames } from '../../libs/tailwind';
 import { ArchiveBoxIcon, ArchiveBoxXMarkIcon, BoltIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import ToggleWithLabel from './ToggleWithLabel';
 
 export type Status = "Add" | "Edit" | "Remove" | "Keep";
 const StatusStyle = {
@@ -44,13 +45,20 @@ export interface SectionTableData {
   entries: Entry[];
 }
 
-export default function TableWithSection({ space, tableData }: { space: string, tableData: SectionTableData[] }) {
+export default function TableWithSection(
+  { space, tableData }: 
+  { space: string, tableData: SectionTableData[] }) {
+
+  const [hideUnchanged, setHideUnchanged] = useState(false);
 
   return (
     <div>
       <div className="mt-6 overflow-hidden border-t border-gray-100">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
+            <div className="flex justify-center my-2">
+              <ToggleWithLabel label="Hide unchanged" enabled={hideUnchanged} setEnabled={setHideUnchanged} />
+            </div>
             <table className="w-full text-left">
               <thead className="sr-only">
                 <tr>
@@ -71,7 +79,7 @@ export default function TableWithSection({ space, tableData }: { space: string, 
                       </th>
                     </tr>
                     {sectionData.entries.map((entry) => (
-                      <tr key={entry.id}>
+                      <tr key={entry.id} className={classNames(hideUnchanged && entry.status === "Keep" && "hidden")}>
                         <td className="relative py-5 pr-6">
                           <div className="flex gap-x-6">
                             {StatusIcon[entry.status]}
