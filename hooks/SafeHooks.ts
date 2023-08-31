@@ -49,6 +49,7 @@ export function useMultisigTransactions(address: string, limit: number = 10, sho
 }
 
 // react hook wrapper for safe api kit
+// FIXME this will trigger infinite re-rendering
 export function useSafeAPIFunction<T>(functionWrapper: (safeApiKit: SafeApiKit) => Promise<T>, shouldFetch: boolean = true) {
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);

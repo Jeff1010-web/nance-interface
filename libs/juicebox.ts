@@ -1,7 +1,7 @@
-import { BigNumber, utils } from "ethers";
+import { BigNumber, Contract, utils } from "ethers";
 import { FundingCycleConfigProps, formattedSplit, calculateSplitAmount, splitAmount2Percent } from "../components/juicebox/ReconfigurationCompare";
 import { ZERO_ADDRESS } from "../constants/Contract";
-import { JBConstants, JBSplit } from "../models/JuiceboxTypes";
+import { CURRENCY_USD, ETH_TOKEN_ADDRESS, JBConstants, JBFundingCycleData, JBSplit } from "../models/JuiceboxTypes";
 import { SQLPayout, Action, Payout, JBSplitNanceStruct } from "../models/NanceTypes";
 import { getAddress } from "viem";
 import { SectionTableData } from "../components/form/TableWithSection";
@@ -443,4 +443,44 @@ export function calcDiffTableData(config: FundingCycleConfigProps, payoutsDiff: 
   tableData[2].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
 
   return tableData;
+}
+
+export function encodedReconfigureFundingCyclesOf(config: FundingCycleConfigProps, payoutsDiff: SplitDiff, reservesDiff: SplitDiff, projectId: number, controller: Contract | undefined, terminal: Contract) {
+  const BIG_ZERO = BigNumber.from(0);
+  const fc = config.fundingCycle;
+  const jbFundingCycleData: JBFundingCycleData = {
+    duration: fc?.duration || BIG_ZERO,
+    weight: fc?.weight || BIG_ZERO,
+    discountRate: fc?.discountRate || BIG_ZERO,
+    ballot: fc?.ballot || ZERO_ADDRESS
+  }
+  const reconfigurationRawData = [
+    BigNumber.from(projectId),                       // _projectId
+    jbFundingCycleData,                              // _data
+    config.metadata,                          // _metadata
+    BigNumber.from(Math.floor(Date.now() / 1000)),   // _mustStartAtOrAfter
+    [                                                // _groupedSplits
+      {
+        group: JBConstants.SplitGroup.ETH,
+        // gather JBSplit of payoutsDiff.new .change .keep
+        splits: Object.values(payoutsDiff.new).concat(Object.values(payoutsDiff.change)).concat(Object.values(payoutsDiff.keep)).map(v => v.split)
+      },
+      {
+        group: JBConstants.SplitGroup.RESERVED_TOKEN,
+        // gather JBSplit of reservesDiff.new .change .keep
+        splits: Object.values(reservesDiff.new).concat(Object.values(reservesDiff.change)).concat(Object.values(reservesDiff.keep)).map(v => v.split)
+      }
+    ],
+    [{                                                // _fundAccessConstraints
+      terminal: terminal.address,
+      token: ETH_TOKEN_ADDRESS,
+      distributionLimit: payoutsDiff.newTotal,
+      distributionLimitCurrency: CURRENCY_USD,
+      overflowAllowance: BIG_ZERO,
+      overflowAllowanceCurrency: BIG_ZERO
+    }],
+    "Queued from Nance.QueueExecutionFlow"           // _memo
+  ];
+
+  return controller?.interface?.encodeFunctionData("reconfigureFundingCyclesOf", reconfigurationRawData);
 }

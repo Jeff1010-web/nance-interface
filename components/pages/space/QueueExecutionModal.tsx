@@ -1,18 +1,15 @@
 import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { CURRENCY_USD, ETH_TOKEN_ADDRESS, JBConstants, JBFundingCycleData } from '../../../models/JuiceboxTypes';
-import { BigNumber, utils } from 'ethers';
+import { utils } from 'ethers';
 import { ProposalsPacket, Reserve } from '../../../models/NanceTypes';
 import { useCurrentPayouts } from '../../../hooks/NanceHooks';
 import TableWithSection, {  } from '../../form/TableWithSection';
 import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
-import { calcDiffTableData, mergePayouts, compareReserves, splitStruct2JBSplit } from '../../../libs/juicebox';
+import { calcDiffTableData, mergePayouts, compareReserves, splitStruct2JBSplit, encodedReconfigureFundingCyclesOf } from '../../../libs/juicebox';
 import useControllerOfProject from '../../../hooks/juicebox/ControllerOfProject';
-import { ZERO_ADDRESS } from '../../../constants/Contract';
 import useTerminalOfProject from '../../../hooks/juicebox/TerminalOfProject';
 import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
 import { useReconfigurationOfProject } from '../../../hooks/juicebox/ReconfigurationOfProject';
-import LoadingArrowSpiner from '../../LoadingArrowSpiner';
 
 export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, proposals, space, currentCycle }: {
     open: boolean, setOpen: (o: boolean) => void,
@@ -55,45 +52,10 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
 
   const tableData = calcDiffTableData(currentConfig, payoutsDiff, reservesDiff);
 
-  const loading = configIsLoading || nancePayoutsLoading;
+  const loading = infoIsLoading || configIsLoading || nancePayoutsLoading;
 
   // Construct reconfiguration function data
-  const BIG_ZERO = BigNumber.from(0);
-  const fc = currentConfig.fundingCycle;
-  const jbFundingCycleData: JBFundingCycleData = {
-    duration: fc?.duration || BIG_ZERO,
-    weight: fc?.weight || BIG_ZERO,
-    discountRate: fc?.discountRate || BIG_ZERO,
-    ballot: fc?.ballot || ZERO_ADDRESS
-  }
-  const reconfigurationRawData = [
-    BigNumber.from(projectId),                       // _projectId
-    jbFundingCycleData,                              // _data
-    currentConfig.metadata,                          // _metadata
-    BigNumber.from(Math.floor(Date.now() / 1000)),   // _mustStartAtOrAfter
-    [                                                // _groupedSplits
-      {
-        group: JBConstants.SplitGroup.ETH,
-        // gather JBSplit of payoutsDiff.new .change .keep
-        splits: Object.values(payoutsDiff.new).concat(Object.values(payoutsDiff.change)).concat(Object.values(payoutsDiff.keep)).map(v => v.split)
-      },
-      {
-        group: JBConstants.SplitGroup.RESERVED_TOKEN,
-        // gather JBSplit of reservesDiff.new .change .keep
-        splits: Object.values(reservesDiff.new).concat(Object.values(reservesDiff.change)).concat(Object.values(reservesDiff.keep)).map(v => v.split)
-      }
-    ],
-    [{                                                // _fundAccessConstraints
-      terminal: terminal.address,
-      token: ETH_TOKEN_ADDRESS,
-      distributionLimit: payoutsDiff.newTotal,
-      distributionLimitCurrency: CURRENCY_USD,
-      overflowAllowance: BIG_ZERO,
-      overflowAllowanceCurrency: BIG_ZERO
-    }],
-    "Queued from Nance.QueueExecutionFlow"           // _memo
-  ];
-  const encodeReconfiguration = !loading ? controller?.interface?.encodeFunctionData("reconfigureFundingCyclesOf", reconfigurationRawData) || "" : "";
+  const encodeReconfiguration = !loading ? encodedReconfigureFundingCyclesOf(currentConfig, payoutsDiff, reservesDiff, projectId, controller, terminal) || "" : "";
 
   return (
     <Transition.Root show={open} as={Fragment}>
