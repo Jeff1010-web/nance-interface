@@ -7,8 +7,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     method: "GET",
     headers: {
       'Authorization': `Bearer ${process.env.NANCE_AUTO_KEY}`,
-    }}).then((response) => {
+    }}).then(async (response) => {
+    console.log(await response.json());
     return (response.status);
   });
+
   return res.status(status).json({ success: true });
 }
