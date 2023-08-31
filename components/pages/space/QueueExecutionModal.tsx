@@ -3,7 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { utils } from 'ethers';
 import { ProposalsPacket, Reserve } from '../../../models/NanceTypes';
 import { useCurrentPayouts } from '../../../hooks/NanceHooks';
-import TableWithSection, {  } from '../../form/TableWithSection';
+import DiffTableWithSection, {  } from '../../form/DiffTableWithSection';
 import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
 import { calcDiffTableData, mergePayouts, compareReserves, splitStruct2JBSplit, encodedReconfigureFundingCyclesOf } from '../../../libs/juicebox';
 import useControllerOfProject from '../../../hooks/juicebox/ControllerOfProject';
@@ -90,7 +90,7 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
                       Queue Juicebox Cycle
                     </Dialog.Title>
                     
-                    <TableWithSection space={space} tableData={tableData} loading={loading} />
+                    <DiffTableWithSection space={space} tableData={tableData} loading={loading} />
                   </div>
                 </div>
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">

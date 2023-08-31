@@ -2,7 +2,7 @@ import { SplitDiffEntry, keyOfSplit } from "../../libs/juicebox";
 import { classNames } from "../../libs/tailwind";
 import { JBSplit } from "../../models/JuiceboxTypes";
 import FormattedAddress from "../ethereum/FormattedAddress";
-import { Status, SectionTableData } from "../form/TableWithSection";
+import { Status, SectionTableData } from "../form/DiffTableWithSection";
 import ResolvedProject from "./ResolvedProject";
 
 export default function JBSplitEntry({ mod, projectVersion = 3 }: { mod: JBSplit, projectVersion?: number }) {

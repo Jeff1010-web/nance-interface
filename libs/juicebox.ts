@@ -4,7 +4,7 @@ import { ZERO_ADDRESS } from "../constants/Contract";
 import { CURRENCY_USD, ETH_TOKEN_ADDRESS, JBConstants, JBFundingCycleData, JBSplit } from "../models/JuiceboxTypes";
 import { SQLPayout, Action, Payout, JBSplitNanceStruct } from "../models/NanceTypes";
 import { getAddress } from "viem";
-import { SectionTableData } from "../components/form/TableWithSection";
+import { SectionTableData } from "../components/form/DiffTableWithSection";
 import { diff2TableEntry } from "../components/juicebox/JBSplitEntry";
 
 // In v1, ETH = 0, USD = 1

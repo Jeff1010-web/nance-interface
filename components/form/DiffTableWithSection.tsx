@@ -45,7 +45,7 @@ export interface SectionTableData {
   entries: Entry[];
 }
 
-export default function TableWithSection(
+export default function DiffTableWithSection(
   { space, tableData, loading = false }: 
   { space: string, tableData: SectionTableData[], loading?: boolean }) {
 

@@ -10,7 +10,7 @@ import parseSafeJuiceboxTx from '../libs/SafeJuiceboxParser';
 import Footer from '../components/Footer';
 import { useReconfigurationOfProject } from '../hooks/juicebox/ReconfigurationOfProject';
 import JBProjectInfo from '../components/pages/review/JBProjectInfo';
-import TableWithSection from '../components/form/TableWithSection';
+import DiffTableWithSection from '../components/form/DiffTableWithSection';
 import { calcDiffTableData, comparePayouts, compareReserves } from '../libs/juicebox';
 import LoadingArrowSpiner from '../components/LoadingArrowSpiner';
 
@@ -85,5 +85,5 @@ function Compare({ projectId, tx }: { projectId: number, tx: RevisedSafeMultisig
   const reservesDiff = compareReserves(currentConfig.ticketMods, newConfig?.ticketMods || []);
   const tableData = calcDiffTableData(currentConfig, payoutsDiff, reservesDiff);
 
-  return <TableWithSection space="juicebox" tableData={tableData} loading={loading} />
+  return <DiffTableWithSection space="juicebox" tableData={tableData} loading={loading} />
 }
