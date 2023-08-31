@@ -195,7 +195,7 @@ export function useSafe(safeAddress: string) {
   return { value, loading: !value, error };
 }
 
-export function useQueueTransaction(safeAddress: string, toContract: string, data: string, txValue: number, nonce: string) {
+export function useQueueTransaction(safeAddress: string, safeTransactionData: SafeTransactionDataPartial) {
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
   const [value, setValue] = useState<{safeTxHash: string, nonce: string}>();
@@ -204,10 +204,6 @@ export function useQueueTransaction(safeAddress: string, toContract: string, dat
   const { address, isConnecting, isDisconnected } = useAccount();
   const { value: safeApiKit } = useSafeAPIKit();
   const { value: safe } = useSafe(safeAddress);
-
-  //const gnosis = new GnosisHandler(safeAddress, 'mainnet');
-  
-  const safeTransactionData: SafeTransactionDataPartial = { to: toContract, value: txValue.toString(), data, nonce: parseInt(nonce || "0") };
 
   const trigger = async () => {
     if (!safe || !walletClient || !safeApiKit || !address) {
@@ -234,7 +230,7 @@ export function useQueueTransaction(safeAddress: string, toContract: string, dat
 
       setValue({
         safeTxHash: safeTxHash,
-        nonce
+        nonce: safeTransaction.data.nonce.toString()
       });
     } catch(e: any) {
       setError(e.message);

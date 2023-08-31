@@ -95,7 +95,11 @@ export default function QueueExecutionModal({ open, setOpen, juiceboxProjectId, 
                 </div>
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                   <div className="sm:ml-3 sm:w-auto">
-                    <SafeTransactionCreator safeAddress={owner} toContract={controller?.address || ""} data={encodeReconfiguration} value={0} defaultNonce="0" />
+                    <SafeTransactionCreator safeAddress={owner} safeTransaction={{
+                      to: controller?.address || "",
+                      value: "0",
+                      data: encodeReconfiguration
+                    }} />
                   </div>
 
                   <button
