@@ -207,7 +207,6 @@ export function useCreateTransaction(safeAddress: string, safeTransactionData: S
   const [value, setValue] = useState<SafeTransaction>();
 
   const { value: safe } = useSafe(safeAddress);
-  console.debug("useCreateTransaction", safeAddress, safeTransactionData, safe)
 
   useEffect(() => {
     if (!safe) {
@@ -217,7 +216,7 @@ export function useCreateTransaction(safeAddress: string, safeTransactionData: S
 
     setLoading(true);
 
-    safe.createTransaction({ safeTransactionData })
+    safe.createTransaction({ safeTransactionData, onlyCalls: true })
       .then(safeTransaction => setValue(safeTransaction))
       .catch(err => setError(err)).finally(() => setLoading(false));
   }, [safe, safeTransactionData]);
@@ -250,7 +249,7 @@ export function useQueueTransaction(safeAddress: string, safeTransactionData: Sa
     setLoading(true);
 
     try {
-      const safeTransaction = await safe.createTransaction({ safeTransactionData, options });
+      const safeTransaction = await safe.createTransaction({ safeTransactionData, options, onlyCalls: true });
       const senderAddress = address;
       const safeTxHash = await safe.getTransactionHash(safeTransaction)
       const signature = await safe.signTransactionHash(safeTxHash)

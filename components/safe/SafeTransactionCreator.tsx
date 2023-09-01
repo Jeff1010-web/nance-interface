@@ -4,25 +4,25 @@ import { ArrowPathIcon } from "@heroicons/react/24/solid";
 import { useHistoryTransactions, useQueueTransaction } from "../../hooks/SafeHooks";
 import ResultModal from "../modal/ResultModal";
 import { getSafeTxUrl } from "../../libs/gnosis";
-import { SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
+import { MetaTransactionData, SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
 
 export default function SafeTransactionCreator(
   { safeAddress, safeTransaction }: 
-  { safeAddress: string, safeTransaction: SafeTransactionDataPartial }) {
+  { safeAddress: string, safeTransaction: SafeTransactionDataPartial | MetaTransactionData[] }) {
 
   const [open, setOpen] = useState<boolean>(false);
   const [nonce, setNonce] = useState<string>("");
 
-  const { value: queueRes, loading, error, trigger } = useQueueTransaction(safeAddress, { ...safeTransaction, nonce: parseInt(nonce || "0") });
-  const { value: historyTxs, loading: historyTxsLoading } = useHistoryTransactions(safeAddress, safeAddress !== "");
+  const { value: queueRes, loading, error, trigger } = useQueueTransaction(safeAddress, safeTransaction, parseInt(nonce || "0"));
+  const { data: historyTxs, isLoading: historyTxsLoading } = useHistoryTransactions(safeAddress, 1, safeAddress !== "");
   const { data: walletClient } = useWalletClient();
 
-  const queueNotReady = !walletClient || !safeTransaction.data || !nonce || !safeAddress || !safeTransaction.to || loading;
+  const queueNotReady = !walletClient || !safeTransaction || !nonce || !safeAddress || loading;
   
   let tooltip = "Queue with nonce";
   if (!walletClient) {
     tooltip = "Wallet not connected";
-  } else if (!safeTransaction.data || !safeAddress || !safeTransaction.to) {
+  } else if (!safeTransaction || !safeAddress) {
     tooltip = "Transaction not ready";
   } else if (!nonce) {
     tooltip = "Nonce is required";

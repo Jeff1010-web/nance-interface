@@ -18,7 +18,10 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import LoadingArrowSpiner from "../../LoadingArrowSpiner";
 
-const QueueExecutionModal = dynamic(() => import("./QueueExecutionModal"), {
+const QueueExecutionModal = dynamic(() => import("./QueueReconfigurationModal"), {
+  loading: () => <LoadingArrowSpiner />,
+})
+const QueueTransactionsModal = dynamic(() => import("./QueueTransactionsModal"), {
   loading: () => <LoadingArrowSpiner />,
 })
 
@@ -28,7 +31,8 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   const [options, setOptions] = useState<Option[]>([{ id: "Loading", label: `Loading...`, status: true }]);
   const [keywordInput, setKeywordInput] = useState<string>();
   const [showDrafts, setShowDrafts] = useState(true);
-  const [showQueueModal, setShowQueueModal] = useState(false);
+  const [showQueueReconfigurationModal, setShowQueueReconfigurationModal] = useState(false);
+  const [showQueueTransactionsModal, setShowQueueTransactionsModal] = useState(false);
 
   // QueryParams
   const router = useRouter();
@@ -146,11 +150,20 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
 
           <button
             type="button"
-            onClick={() => setShowQueueModal(true)}
+            onClick={() => setShowQueueReconfigurationModal(true)}
             className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             <Square3Stack3DIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-            Queue Execution
+            Queue Reconfiguration
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowQueueTransactionsModal(true)}
+            className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            <Square3Stack3DIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+            Queue Transactions
           </button>
 
           <Link
@@ -161,7 +174,8 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             Review Reconfiguration
           </Link>
 
-          {showQueueModal && <QueueExecutionModal open={showQueueModal} setOpen={setShowQueueModal} juiceboxProjectId={projectId} proposals={currentProposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />}
+          {showQueueReconfigurationModal && <QueueExecutionModal open={showQueueReconfigurationModal} setOpen={setShowQueueReconfigurationModal} juiceboxProjectId={projectId} proposals={currentProposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />}
+          {showQueueTransactionsModal && <QueueTransactionsModal open={showQueueTransactionsModal} setOpen={setShowQueueTransactionsModal} juiceboxProjectId={projectId} proposals={currentProposalData?.data} space={space} />}
         </div>
   
         <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">

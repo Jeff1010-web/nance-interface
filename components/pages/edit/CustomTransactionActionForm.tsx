@@ -1,16 +1,14 @@
-import { ArrowPathIcon, CheckCircleIcon, XCircleIcon, CursorArrowRaysIcon } from "@heroicons/react/24/outline";
 import { ErrorMessage } from "@hookform/error-message";
 import { FunctionFragment, FormatTypes } from "ethers/lib/utils";
-import { Tooltip } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
-import { encodeTransactionInput, useTendelySimulate } from "../../../hooks/TenderlyHooks";
-import { classNames } from "../../../libs/tailwind";
+import { TenderlySimulationAPIResponse, encodeTransactionInput } from "../../../hooks/TenderlyHooks";
 import AddressForm from "../../form/AddressForm";
 import BooleanForm from "../../form/BooleanForm";
 import NumberForm from "../../form/NumberForm";
 import StringForm from "../../form/StringForm";
 import FunctionSelector from "./FunctionSelector";
+import TenderlySimulationButton from "../../ethereum/TenderlySimulationButton";
 
 export default function CustomTransactionActionForm({ genFieldName, projectOwner }:
   { genFieldName: (field: string) => any, projectOwner: string | undefined }) {
@@ -32,14 +30,6 @@ export default function CustomTransactionActionForm({ genFieldName, projectOwner
     value: parseInt(getValues(genFieldName("value"))),
     input
   };
-  const { data, isLoading, error } = useTendelySimulate(simulateArgs, !!projectOwner && !!input && shouldSimulate);
-
-  console.log("CustomTransactionActionForm.tenderly", 
-    {
-      args: simulateArgs, 
-      formValues: getValues(),
-      data: data
-    });
   
   useEffect(() => {
     // clear args of last selected function
@@ -54,58 +44,24 @@ export default function CustomTransactionActionForm({ genFieldName, projectOwner
     setShouldSimulate(false);
   }, [getFieldState(genFieldName("args")).isDirty, getValues(genFieldName("functionName"))]);
 
-  useEffect(() => {
-    // set simulationId which will be uploaded within action
+  function onSimulated(data: TenderlySimulationAPIResponse | undefined, shouldSimulate: boolean) {
     const simulationId = data?.simulation?.id;
+    const simulationStatus = data?.simulation?.status;
+
     if (simulationId) {
       setValue(genFieldName("tenderlyId"), simulationId);
     }
-  }, [data]);
 
-  useEffect(() => {
-    // save simulation status so we can check when user submit proposals
-    const simulationStatus = data?.simulation?.status;
     if (shouldSimulate) {
       setValue(genFieldName("tenderlyStatus"), simulationStatus ? "true" : "false");
     } else {
       setValue(genFieldName("tenderlyStatus"), "false");
     }
-  }, [data, shouldSimulate]);
+  }
 
   return (
     <div className="grid grid-cols-4 gap-6">
-      <div className="isolate inline-flex rounded-md col-span-4">
-        <button
-          type="button"
-          className={classNames(
-            "relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300",
-            shouldSimulate ? "" : "hover:bg-gray-50 focus:z-10"
-          )}
-          onClick={() => {
-            if (shouldSimulate) {
-              setShouldSimulate(false);
-            }
-            setShouldSimulate(true);
-          }}
-        >
-          Simulate
-        </button>
-        <div
-          className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300"
-        >
-          {shouldSimulate ? 
-            (isLoading ? 
-              <ArrowPathIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" /> : 
-              (data?.simulation?.status ? 
-                <CheckCircleIcon className="-ml-0.5 h-5 w-5 text-green-400" aria-hidden="true" /> : 
-                <Tooltip content={`Error: ${error ? error.message : (data?.simulation?.error_message || "Not enough args")}`}>
-                  <XCircleIcon className="-ml-0.5 h-5 w-5 text-red-400" aria-hidden="true" />
-                </Tooltip>
-              ) 
-            )
-            : <CursorArrowRaysIcon className="-ml-0.5 h-5 w-5 text-blue-400" aria-hidden="true" />}
-        </div>
-      </div>
+      <TenderlySimulationButton simulationArgs={simulateArgs} shouldSimulate={!!projectOwner && !!input && !!shouldSimulate} setShouldSimulate={setShouldSimulate} onSimulated={onSimulated} />
 
       <div className="col-span-4 sm:col-span-2">
         <AddressForm label="Contract" fieldName={genFieldName("contract")} />

@@ -209,7 +209,7 @@ export type CustomTransaction = {
 }
 
 export function extractFunctionName(str: string) {
-  return str.split("(")[0].split(" ").slice(-1);
+  return str.split("(")[0].split(" ").slice(-1)[0];
 }
 
 export function parseFunctionAbiWithNamedArgs(functionAbi: string, args: any[] | object) {
