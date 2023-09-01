@@ -1,4 +1,3 @@
-import { DocumentMagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { formatDistanceToNowStrict, parseISO, format } from "date-fns";
 import { useQueryParams, StringParam, withDefault, BooleanParam, NumberParam } from "next-query-params";
 import { useRouter } from "next/router";
@@ -12,7 +11,7 @@ import Pagination from "../../Pagination";
 import { Tooltip } from "flowbite-react";
 import { Switch } from "@headlessui/react";
 import { classNames } from "../../../libs/tailwind";
-import { DocumentTextIcon, ShieldCheckIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
+import { BanknotesIcon, BoltIcon, DocumentMagnifyingGlassIcon, DocumentTextIcon, ShieldCheckIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -154,7 +153,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             onClick={() => setShowQueueReconfigurationModal(true)}
             className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Square3Stack3DIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+            <BanknotesIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
             Queue Reconfiguration
           </button>
           {showQueueReconfigurationModal && <QueueExecutionModal open={showQueueReconfigurationModal} setOpen={setShowQueueReconfigurationModal} juiceboxProjectId={projectId} proposals={proposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />}
@@ -165,7 +164,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             onClick={() => setShowQueueTransactionsModal(true)}
             className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Square3Stack3DIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+            <BoltIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
             Queue Transactions
           </button>
           {showQueueTransactionsModal && <QueueTransactionsModal open={showQueueTransactionsModal} setOpen={setShowQueueTransactionsModal} juiceboxProjectId={projectId} proposals={proposalData?.data} space={space} />}
