@@ -108,7 +108,7 @@ export default function OrderCheckboxTable({ safeAddress, entries }: { safeAddre
                           selectedEntry.includes(entry) ? 'text-indigo-600' : 'text-gray-900'
                         )}
                       >
-                        {selectedEntry.includes(entry) && <span className="mr-2 underline">{selectedEntry.indexOf(entry) + 1}</span>}
+                        {selectedEntry.includes(entry) && <span className="mr-2 underline">{"No."}{selectedEntry.indexOf(entry) + 1}</span>}
                         {entry.title}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{entry.proposal}</td>
