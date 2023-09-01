@@ -49,8 +49,8 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   // External Hooks
   const { data: infoData, isLoading: infoLoading, error: infoError } = useSpaceInfo({ space }, router.isReady);
   const { data: proposalData, isLoading: proposalsLoading, error: proposalError } = useProposals({ space, cycle, keyword, page, limit }, router.isReady);
-  const { data: currentProposalData } = useProposals({ space, cycle: infoData?.data?.currentCycle }, router.isReady);
   const currentCycle = cycle || infoData?.data?.currentCycle;
+  const isCurrentCycle = currentCycle === infoData?.data?.currentCycle;
   const allCycle = { id: "All", label: `All`, status: true };
 
   const projectId = parseInt(infoData?.data?.juiceboxProjectId || "1");
@@ -150,21 +150,25 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
 
           <button
             type="button"
+            disabled={!isCurrentCycle}
             onClick={() => setShowQueueReconfigurationModal(true)}
-            className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Square3Stack3DIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
             Queue Reconfiguration
           </button>
+          {showQueueReconfigurationModal && <QueueExecutionModal open={showQueueReconfigurationModal} setOpen={setShowQueueReconfigurationModal} juiceboxProjectId={projectId} proposals={proposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />}
 
           <button
             type="button"
+            disabled={!isCurrentCycle}
             onClick={() => setShowQueueTransactionsModal(true)}
-            className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Square3Stack3DIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
             Queue Transactions
           </button>
+          {showQueueTransactionsModal && <QueueTransactionsModal open={showQueueTransactionsModal} setOpen={setShowQueueTransactionsModal} juiceboxProjectId={projectId} proposals={proposalData?.data} space={space} />}
 
           <Link
             href={`/review?project=${projectId}`}
@@ -174,8 +178,6 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             Review Reconfiguration
           </Link>
 
-          {showQueueReconfigurationModal && <QueueExecutionModal open={showQueueReconfigurationModal} setOpen={setShowQueueReconfigurationModal} juiceboxProjectId={projectId} proposals={currentProposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />}
-          {showQueueTransactionsModal && <QueueTransactionsModal open={showQueueTransactionsModal} setOpen={setShowQueueTransactionsModal} juiceboxProjectId={projectId} proposals={currentProposalData?.data} space={space} />}
         </div>
   
         <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">
