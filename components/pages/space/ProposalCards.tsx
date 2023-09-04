@@ -1,5 +1,3 @@
-import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { useProposalsByID, SnapshotProposal } from "../../../hooks/snapshot/Proposals";
 import { getLastSlash } from "../../../libs/nance";
@@ -7,10 +5,11 @@ import { Proposal, ProposalsPacket } from "../../../models/NanceTypes";
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
 import ProposalRow from "./card/ProposalRow";
 import ProposalPrivateRow from "./card/ProposalPrivateRow";
+import RecommendAction from "./RecommendAction";
 
 type SortOptions = "" | "status" | "title" | "approval" | "participants" | "voted"
 const SortOptionsArr = ["status", "title", "approval", "participants", "voted"];
-const StatusValue: {[key: string]: number} = {
+const StatusValue: { [key: string]: number } = {
   'Revoked': 0,
   'Cancelled': 1,
   'Draft': 2,
@@ -23,22 +22,17 @@ const StatusValue: {[key: string]: number} = {
 function getValueOfStatus(status: string) {
   return StatusValue[status] ?? -1;
 }
-function getRandomInt(max: number) {
-  return Math.floor(Math.random() * max);
-}
 
 export default function ProposalCards({ loading, proposalsPacket, query, setQuery, maxCycle, proposalUrlPrefix, showDrafts }:
-    {
-      loading: boolean, proposalsPacket: ProposalsPacket | undefined,
-      query: { cycle: number, keyword: string, sortBy: string, sortDesc: boolean, page: number, limit: number },
-      setQuery: (o: object) => void, maxCycle: number,
-      proposalUrlPrefix: string,
-      showDrafts: boolean
-    }) {
-  const router = useRouter();
-  const [infoText, setInfoText] = useState('');
+  {
+    loading: boolean, proposalsPacket: ProposalsPacket | undefined,
+    query: { cycle: number, keyword: string, sortBy: string, sortDesc: boolean, page: number, limit: number },
+    setQuery: (o: object) => void, maxCycle: number,
+    proposalUrlPrefix: string,
+    showDrafts: boolean
+  }) {
   const { address, isConnected } = useAccount();
-  
+
   // for those proposals with no results cached by nance, we need to fetch them from snapshot
   const snapshotProposalIds: string[] = proposalsPacket?.proposals?.filter(p => p.voteURL).map(p => getLastSlash(p.voteURL)) || [];
   const { data, loading: snapshotLoading, error, refetch } = useProposalsByID(snapshotProposalIds, address ?? "", snapshotProposalIds.length === 0);
@@ -71,7 +65,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
       // fall back to default sorting
       // if no keyword
       sortedProposals
-        .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0)) 
+        .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0))
         .sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
         .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status));
     }
@@ -89,7 +83,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
       const votedWeightOf = (p: Proposal) => {
         const voted = votedData?.[getLastSlash(p.voteURL)] !== undefined;
         const hasSnapshotVoting = snapshotProposalDict[getLastSlash(p.voteURL)];
-          
+
         if (hasSnapshotVoting) {
           if (voted) return 2;
           else return 1;
@@ -108,36 +102,22 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
         if (nameA > nameB) {
           return 1;
         }
-        
+
         // names must be equal
         return 0;
       });
     } else {
       sortedProposals.sort();
     }
-  
+
     if (!query.sortDesc) {
       sortedProposals.reverse();
     }
   }
-  
-  useEffect(() => {
-    if (loading) {
-      setInfoText('Loading...');
-    } else {
-      if (!proposalsPacket?.proposals) {
-        setInfoText('Error. Please try again later.');
-      } else if (proposalsPacket?.proposals.length === 0) {
-        setInfoText('No proposals found, try below actions:');
-      } else {
-        setInfoText('');
-      }
-    }
-  }, [proposalsPacket?.proposals, loading]);
-  
+
   function SortableTableHeader({ val, label }: { val: SortOptions, label: string }) {
     const sortedByCurrentVal = query.sortBy === val;
-  
+
     return (
       <button onClick={() => {
         if (!sortedByCurrentVal) {
@@ -146,7 +126,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
           setQuery({ sortDesc: !query.sortDesc });
         }
       }} className="group inline-flex">
-  
+
         {label}
         {sortedByCurrentVal && (
           <span className="ml-2 flex-none rounded bg-gray-100 text-gray-900 group-hover:bg-gray-200">
@@ -154,11 +134,15 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
             {!query.sortDesc && <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />}
           </span>
         )}
-  
+
       </button>
     );
   }
-  
+
+  if (!loading && sortedProposals.length === 0) {
+    return <RecommendAction maxCycle={maxCycle} />
+  }
+
   return (
     <>
       <div className="mt-6 bg-white">
@@ -193,8 +177,8 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
               </tr>
             </thead>
             <tbody>
-              {showDrafts && !query.keyword && proposalsPacket?.privateProposals?.map((proposal, proposalIdx) => (   
-                <ProposalPrivateRow 
+              {showDrafts && !query.keyword && proposalsPacket?.privateProposals?.map((proposal, proposalIdx) => (
+                <ProposalPrivateRow
                   proposal={proposal}
                   key={proposalIdx}
                   proposalIdx={proposalIdx}
@@ -203,7 +187,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                 />
               ))}
 
-              {showDrafts && !query.keyword && (proposalsPacket?.privateProposals?.length ?? 0) > 0 && ( 
+              {showDrafts && !query.keyword && (proposalsPacket?.privateProposals?.length ?? 0) > 0 && (
                 <tr>
                   <td colSpan={5}>
                     <hr className="border-dashed border-2" />
@@ -211,7 +195,7 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
                 </tr>
               )}
 
-              {sortedProposals.map((proposal, proposalIdx) => (   
+              {sortedProposals.map((proposal, proposalIdx) => (
                 <ProposalRow
                   proposal={proposal}
                   key={proposalIdx}
@@ -228,61 +212,6 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
           </table>
         </div>
       </div>
-  
-      <p className="text-center m-6">
-        {infoText}
-      </p>
-  
-      {!loading && proposalsPacket?.proposals?.length === 0 && (
-        <div className="flex flex-col items-center space-y-4 mb-6">
-          <button type="button"
-            className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
-            onClick={router.back}>
-              Back
-          </button>
-
-          {
-            query.page && query.page > 1 && (
-              <button type="button"
-                className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
-                onClick={() => setQuery({ page: 1 })}>
-                  Go to first page
-              </button>
-            )
-          }
-  
-          {
-            query.keyword && (
-              <button type="button"
-                className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
-                onClick={() => setQuery({ keyword: '' })}>
-                  Clear the keyword
-              </button>
-            )
-          }
-  
-          {
-            query.keyword && query.cycle && (
-              <button type="button"
-                className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
-                onClick={() => setQuery({ cycle: undefined })}>
-                  Search in all cycles
-              </button>
-            )
-          }
-  
-          {
-            !query.keyword && query.cycle && (
-              <button type="button"
-                className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
-                onClick={() => setQuery({ cycle: getRandomInt(maxCycle) + 1 })}>
-                  Check different cycle
-              </button>
-            )
-          }
-  
-        </div>
-      )}
     </>
   );
 }
