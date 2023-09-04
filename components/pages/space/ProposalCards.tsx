@@ -2,12 +2,11 @@ import { useAccount } from "wagmi";
 import { useProposalsByID, SnapshotProposal } from "../../../hooks/snapshot/Proposals";
 import { getLastSlash } from "../../../libs/nance";
 import { Proposal, ProposalsPacket } from "../../../models/NanceTypes";
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
-import ProposalRow from "./card/ProposalRow";
+import ProposalRow, { ProposalRowSkeleton } from "./card/ProposalRow";
 import ProposalPrivateRow from "./card/ProposalPrivateRow";
 import RecommendAction from "./RecommendAction";
+import SortableTableHeader from "./SortableTableHeader";
 
-type SortOptions = "" | "status" | "title" | "approval" | "participants" | "voted"
 const SortOptionsArr = ["status", "title", "approval", "participants", "voted"];
 const StatusValue: { [key: string]: number } = {
   'Revoked': 0,
@@ -115,103 +114,89 @@ export default function ProposalCards({ loading, proposalsPacket, query, setQuer
     }
   }
 
-  function SortableTableHeader({ val, label }: { val: SortOptions, label: string }) {
-    const sortedByCurrentVal = query.sortBy === val;
+  const isLoading = loading || snapshotLoading;
+  const hasPrivateProposals = showDrafts && !query.keyword && (proposalsPacket?.privateProposals?.length ?? 0) > 0;
 
-    return (
-      <button onClick={() => {
-        if (!sortedByCurrentVal) {
-          setQuery({ sortBy: val, sortDesc: true });
-        } else {
-          setQuery({ sortDesc: !query.sortDesc });
-        }
-      }} className="group inline-flex">
-
-        {label}
-        {sortedByCurrentVal && (
-          <span className="ml-2 flex-none rounded bg-gray-100 text-gray-900 group-hover:bg-gray-200">
-            {query.sortDesc && <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />}
-            {!query.sortDesc && <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />}
-          </span>
-        )}
-
-      </button>
-    );
-  }
-
-  if (!loading && sortedProposals.length === 0) {
-    return <RecommendAction maxCycle={maxCycle} />
+  if (!isLoading && sortedProposals.length === 0) {
+    return <RecommendAction maxCycle={maxCycle} />;
   }
 
   return (
-    <>
-      <div className="mt-6 bg-white">
-        <div className="mt-10 ring-1 ring-gray-300 sm:mx-0 rounded-lg">
-          <table className="min-w-full divide-y divide-gray-300">
-            <thead>
-              <tr>
-                <th scope="col" className="hidden py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 md:table-cell">
-                  <SortableTableHeader val="status" label="Status" />
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >
-                  <SortableTableHeader val="title" label="Title" />
-                </th>
-                <th
-                  scope="col"
-                  className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 md:table-cell"
-                >
-                  <SortableTableHeader val="approval" label="Approval" />
-                </th>
-                <th
-                  scope="col"
-                  className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 md:table-cell"
-                >
-                  <SortableTableHeader val="participants" label="Participants" />
-                </th>
-                <th scope="col" className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 md:table-cell">
-                  <SortableTableHeader val="voted" label="Voted" />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {showDrafts && !query.keyword && proposalsPacket?.privateProposals?.map((proposal, proposalIdx) => (
-                <ProposalPrivateRow
-                  proposal={proposal}
-                  key={proposalIdx}
-                  proposalIdx={proposalIdx}
-                  proposalIdPrefix={proposalsPacket?.proposalInfo?.proposalIdPrefix || ""}
-                  proposalUrlPrefix={proposalUrlPrefix}
-                />
-              ))}
+    <div className="mt-6 bg-white">
+      <div className="mt-10 ring-1 ring-gray-300 sm:mx-0 rounded-lg">
+        <table className="min-w-full divide-y divide-gray-300">
+          <thead>
+            <tr>
+              <th scope="col" className="hidden py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 md:table-cell">
+                <SortableTableHeader val="status" label="Status" />
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              >
+                <SortableTableHeader val="title" label="Title" />
+              </th>
+              <th
+                scope="col"
+                className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 md:table-cell"
+              >
+                <SortableTableHeader val="approval" label="Approval" />
+              </th>
+              <th
+                scope="col"
+                className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 md:table-cell"
+              >
+                <SortableTableHeader val="participants" label="Participants" />
+              </th>
+              <th scope="col" className="hidden px-3 py-3.5 text-center text-sm font-semibold text-gray-900 md:table-cell">
+                <SortableTableHeader val="voted" label="Voted" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
 
-              {showDrafts && !query.keyword && (proposalsPacket?.privateProposals?.length ?? 0) > 0 && (
+            {isLoading && (<>
+              <ProposalRowSkeleton isFirst />
+              <ProposalRowSkeleton />
+              <ProposalRowSkeleton />
+            </>)}
+
+            {!isLoading && hasPrivateProposals && (
+              <>
+                {proposalsPacket?.privateProposals.map((proposal, proposalIdx) => (
+                  <ProposalPrivateRow
+                    proposal={proposal}
+                    key={proposalIdx}
+                    proposalIdx={proposalIdx}
+                    proposalIdPrefix={proposalsPacket?.proposalInfo?.proposalIdPrefix || ""}
+                    proposalUrlPrefix={proposalUrlPrefix}
+                  />
+                ))}
+
                 <tr>
                   <td colSpan={5}>
                     <hr className="border-dashed border-2" />
                   </td>
                 </tr>
-              )}
+              </>
+            )}
 
-              {sortedProposals.map((proposal, proposalIdx) => (
-                <ProposalRow
-                  proposal={proposal}
-                  key={proposalIdx}
-                  proposalIdx={proposalIdx}
-                  proposalIdPrefix={proposalsPacket?.proposalInfo?.proposalIdPrefix || ""}
-                  snapshotSpace={proposalsPacket?.proposalInfo?.snapshotSpace || ""}
-                  snapshotProposalDict={snapshotProposalDict}
-                  votedData={votedData}
-                  proposalUrlPrefix={proposalUrlPrefix}
-                  refetch={refetch}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+            {!isLoading && sortedProposals.map((proposal, proposalIdx) => (
+              <ProposalRow
+                proposal={proposal}
+                key={proposalIdx}
+                proposalIdx={proposalIdx}
+                proposalIdPrefix={proposalsPacket?.proposalInfo?.proposalIdPrefix || ""}
+                snapshotSpace={proposalsPacket?.proposalInfo?.snapshotSpace || ""}
+                snapshotProposalDict={snapshotProposalDict}
+                votedData={votedData}
+                proposalUrlPrefix={proposalUrlPrefix}
+                refetch={refetch}
+              />
+            ))}
+          </tbody>
+        </table>
       </div>
-    </>
+    </div>
   );
 }
