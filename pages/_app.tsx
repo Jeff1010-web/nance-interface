@@ -22,6 +22,7 @@ import { Analytics } from '@vercel/analytics/react';
 
 import { SessionProvider, signOut, useSession } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
+import { useEffect } from 'react';
 
 const graphqlClient = new GraphQLClient({
   url: 'https://hub.snapshot.org/graphql',
@@ -61,11 +62,16 @@ function AccountWatcher() {
   // check for user wallet switch and logout
   // TODO: refetch proposals on login, but how?
   const { data: session, status } = useSession();
-  watchAccount((account) => {
-    if (session?.user && account.address !== session?.user?.name) {
-      signOut();
-    }
+
+  useEffect(() => {
+    const unwatch = watchAccount((account) => {
+      if (session?.user && account.address !== session?.user?.name) {
+        signOut();
+      }
+    });
+    return () => unwatch();
   });
+
   return null;
 }
 
