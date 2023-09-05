@@ -170,7 +170,7 @@ export function comparePayouts(config: FundingCycleConfigProps, oldPayouts: JBSp
   return diff;
 }
 
-export function mergePayouts(config: FundingCycleConfigProps, currentCycle: number | undefined, onchainPayouts: JBSplit[], registeredPayouts: SQLPayout[], actionPayouts: {pid: number, action: Action}[]) {
+export function mergePayouts(config: FundingCycleConfigProps, currentCycle: number | undefined, onchainPayouts: JBSplit[], registeredPayouts: SQLPayout[], actionPayouts: { pid: number, action: Action }[]) {
   const diff: SplitDiff = {
     expire: {},
     new: {},
@@ -181,7 +181,7 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
 
   // Maps
   const registeredPayoutMap = new Map<string, SQLPayout>();
-  const actionPayoutMap = new Map<string, {pid: number, action: Action}>();
+  const actionPayoutMap = new Map<string, { pid: number, action: Action }>();
   registeredPayouts.forEach(payout => registeredPayoutMap.set(keyOfNancePayout2Split(payout), payout));
   actionPayouts.forEach(action => actionPayoutMap.set(keyOfPayout2Split((action.action.payload as Payout)), action));
   //console.debug("payoutsDiffOf.start", onchainPayouts, registeredPayoutMap, actionPayoutMap);
@@ -202,10 +202,10 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
         split,
         proposalId: actionPayout.pid,
         oldVal: formattedSplit(
-            split.percent || BigNumber.from(0),
-            config.fundingCycle.currency,
-            config.fundingCycle.target,
-            config.version
+          split.percent || BigNumber.from(0),
+          config.fundingCycle.currency,
+          config.fundingCycle.target,
+          config.version
         ) || "",
         newVal: "",
         amount: (actionPayout.action.payload as Payout).amountUSD
@@ -428,7 +428,7 @@ export function calcDiffTableData(config: FundingCycleConfigProps, payoutsDiff: 
       entries: []
     }
   ];
-  
+
   // Payout Diff
   Object.values(payoutsDiff.new).forEach(diff2TableEntry(1, "Add", tableData));
   Object.values(payoutsDiff.change).forEach(diff2TableEntry(1, "Edit", tableData));
@@ -450,7 +450,9 @@ export function encodedReconfigureFundingCyclesOf(config: FundingCycleConfigProp
   const fc = config.fundingCycle;
   const jbFundingCycleData: JBFundingCycleData = {
     duration: fc?.duration || BIG_ZERO,
-    weight: fc?.weight || BIG_ZERO,
+    // discountRate is a percent by how much the weight of the subsequent funding cycle should be reduced,
+    //   if the project owner hasn't configured the subsequent funding cycle with an explicit weight.
+    weight: BIG_ZERO,
     discountRate: fc?.discountRate || BIG_ZERO,
     ballot: fc?.ballot || ZERO_ADDRESS
   }
@@ -481,6 +483,7 @@ export function encodedReconfigureFundingCyclesOf(config: FundingCycleConfigProp
     }],
     "Queued from Nance.QueueExecutionFlow"           // _memo
   ];
+  console.debug("reconfigurationRawData", reconfigurationRawData);
 
   return controller?.interface?.encodeFunctionData("reconfigureFundingCyclesOf", reconfigurationRawData);
 }

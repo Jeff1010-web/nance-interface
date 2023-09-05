@@ -3,7 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { utils } from 'ethers';
 import { ProposalsPacket, Reserve } from '../../../models/NanceTypes';
 import { useCurrentPayouts } from '../../../hooks/NanceHooks';
-import DiffTableWithSection, {  } from '../../form/DiffTableWithSection';
+import DiffTableWithSection, { } from '../../form/DiffTableWithSection';
 import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
 import { calcDiffTableData, mergePayouts, compareReserves, splitStruct2JBSplit, encodedReconfigureFundingCyclesOf } from '../../../libs/juicebox';
 import useControllerOfProject from '../../../hooks/juicebox/ControllerOfProject';
@@ -12,11 +12,11 @@ import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
 import { useReconfigurationOfProject } from '../../../hooks/juicebox/ReconfigurationOfProject';
 
 export default function QueueReconfigurationModal({ open, setOpen, juiceboxProjectId, proposals, space, currentCycle }: {
-    open: boolean, setOpen: (o: boolean) => void,
-    juiceboxProjectId: number,
-    proposals: ProposalsPacket | undefined,
-    space: string,
-    currentCycle: number | undefined
+  open: boolean, setOpen: (o: boolean) => void,
+  juiceboxProjectId: number,
+  proposals: ProposalsPacket | undefined,
+  space: string,
+  currentCycle: number | undefined
 }) {
   const cancelButtonRef = useRef(null);
 
@@ -29,7 +29,7 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
   const { value: currentConfig, loading: configIsLoading } = useReconfigurationOfProject(projectId);
 
   // Get registered payouts
-  const previousCycle = currentCycle ? (currentCycle-1).toString() : undefined;
+  const previousCycle = currentCycle ? (currentCycle - 1).toString() : undefined;
   const { data: nancePayouts, isLoading: nancePayoutsLoading } = useCurrentPayouts(space, previousCycle);
 
   // Gather all payout and reserve actions in current fundingCycle
@@ -43,7 +43,7 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
           action
         }
       })
-  });
+    });
 
   // Splits with changes
   const payoutsDiff = mergePayouts(currentConfig, currentCycle, currentConfig.payoutMods || [], nancePayouts?.data || [], actionWithPIDArray?.filter((v) => v.action.type === "Payout") || []);
@@ -89,7 +89,7 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
                     <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
                       Queue Juicebox Cycle
                     </Dialog.Title>
-                    
+
                     <DiffTableWithSection space={space} tableData={tableData} loading={loading} />
                   </div>
                 </div>
@@ -119,4 +119,3 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
     </Transition.Root>
   );
 }
-
