@@ -6,6 +6,7 @@ import ProposalRow, { ProposalRowSkeleton } from "./card/ProposalRow";
 import ProposalPrivateRow from "./card/ProposalPrivateRow";
 import RecommendAction from "./RecommendAction";
 import SortableTableHeader from "./SortableTableHeader";
+import { BooleanParam, StringParam, useQueryParams, withDefault } from "next-query-params";
 
 const SortOptionsArr = ["status", "title", "approval", "participants", "voted"];
 const StatusValue: { [key: string]: number } = {
@@ -22,15 +23,18 @@ function getValueOfStatus(status: string) {
   return StatusValue[status] ?? -1;
 }
 
-export default function ProposalCards({ loading, proposalsPacket, query, setQuery, maxCycle, proposalUrlPrefix, showDrafts }:
+export default function ProposalCards({ loading, proposalsPacket, maxCycle, proposalUrlPrefix, showDrafts }:
   {
-    loading: boolean, proposalsPacket: ProposalsPacket | undefined,
-    query: { cycle: number, keyword: string, sortBy: string, sortDesc: boolean, page: number, limit: number },
-    setQuery: (o: object) => void, maxCycle: number,
+    loading: boolean, proposalsPacket: ProposalsPacket | undefined, maxCycle: number,
     proposalUrlPrefix: string,
     showDrafts: boolean
   }) {
   const { address, isConnected } = useAccount();
+  const [query, setQuery] = useQueryParams({
+    keyword: StringParam,
+    sortBy: withDefault(StringParam, ''),
+    sortDesc: withDefault(BooleanParam, true)
+  });
 
   // for those proposals with no results cached by nance, we need to fetch them from snapshot
   const snapshotProposalIds: string[] = proposalsPacket?.proposals?.filter(p => p.voteURL).map(p => getLastSlash(p.voteURL)) || [];

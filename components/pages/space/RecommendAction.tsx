@@ -12,7 +12,7 @@ export default function RecommendAction({ maxCycle }: { maxCycle: number }) {
     page: withDefault(NumberParam, 1),
     sortBy: withDefault(StringParam, ''),
     sortDesc: withDefault(BooleanParam, true),
-    cycle: NumberParam
+    cycle: StringParam
   });
 
   return (
@@ -52,7 +52,7 @@ export default function RecommendAction({ maxCycle }: { maxCycle: number }) {
           query.keyword && query.cycle && (
             <button type="button"
               className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
-              onClick={() => setQuery({ cycle: undefined })}>
+              onClick={() => setQuery({ cycle: "All" })}>
               Search in all cycles
             </button>
           )
@@ -62,7 +62,7 @@ export default function RecommendAction({ maxCycle }: { maxCycle: number }) {
           !query.keyword && query.cycle && (
             <button type="button"
               className="items-center rounded border border-transparent bg-indigo-700 px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
-              onClick={() => setQuery({ cycle: getRandomInt(maxCycle) + 1 })}>
+              onClick={() => setQuery({ cycle: (getRandomInt(maxCycle) + 1).toString() })}>
               Check different cycle
             </button>
           )

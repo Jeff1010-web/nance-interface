@@ -40,7 +40,7 @@ interface BaseRequest {
 }
 
 export interface ProposalsRequest extends BaseRequest {
-  cycle?: number | null | undefined;
+  cycle?: string | null | undefined;
   keyword?: string | null | undefined;
   limit?: number | null | undefined;
   page?: number | null | undefined;
@@ -213,11 +213,11 @@ export function extractFunctionName(str: string) {
 }
 
 export function parseFunctionAbiWithNamedArgs(functionAbi: string, args: any[] | object) {
-  if(!args) return [];
+  if (!args) return [];
 
   let abi = functionAbi;
   // compatiable with old minimal format functionName
-  if(!functionAbi.startsWith("function")) {
+  if (!functionAbi.startsWith("function")) {
     abi = `function ${functionAbi}`;
   }
 
