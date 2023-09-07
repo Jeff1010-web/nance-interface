@@ -90,6 +90,56 @@ export interface ProposalDeleteRequest {
   hash: string;
 }
 
+export interface ConfigSpaceRequest {
+  config: CreateFormValues;
+  calendar?: string;
+}
+
+export type CreateFormValues = {
+  name: string;
+  discord: DiscordConfig;
+  proposalIdPrefix: string;
+  juicebox: JuiceboxConfig;
+  snapshot: SnapshotConfig;
+}
+
+export type DiscordConfig = {
+  guildId: string;
+  roles: DiscordConfigRoles;
+  channelIds: DiscordConfigChannels;
+}
+
+export type DiscordConfigChannels = {
+  proposals: string;
+}
+
+export type DiscordConfigRoles = {
+  governance: string;
+}
+
+export type JuiceboxConfig = {
+  projectId: string;
+  gnosisSafeAddress: string;
+}
+
+export type SnapshotConfig = {
+  space: string;
+  minTokenPassingAmount: number;
+  passingRatio: number;
+}
+
+export type CreateFormKeys = 'name' | 'propertyKeys.proposalIdPrefix' |
+  `discord.${keyof DiscordConfig}` |
+  `discord.channelIds.${keyof DiscordConfigChannels}`|
+  `discord.roleIds.${keyof DiscordConfigRoles}` |
+  `snapshot.${keyof SnapshotConfig}` |
+  `juicebox.${keyof JuiceboxConfig}`
+
+export type ConfigSpacePayload = {
+  space: string;
+  spaceOwner: string;
+}
+
 // from https://github.com/jigglyjams/nance-ts/blob/main/src/types.ts
 type ProposalType = 'Payout' | 'ReservedToken' | 'ParameterUpdate' | 'ProcessUpdate' | 'CustomTransaction';
 
@@ -262,31 +312,23 @@ export type ProposalNoHash = Omit<Proposal, 'hash'>;
 export type ProposalStore = Record<string, ProposalNoHash>;
 
 export interface NanceConfig {
-  nameId: string;
   name: string;
-  calendarPath: string;
-  scheme: string[];
-  proposalDataBackup: string;
-  ipfsGateway: string;
-  votingResultsDashboard: string;
-  translation: {
-    api: string;
-    targetLanguage: any;
-    storage: {
-      user: string;
-      repo: string;
-    }
-  };
   juicebox: {
-    network: 'mainnet' | 'rinkeby';
+    network: string;
     projectId: string;
     gnosisSafeAddress: string;
   };
   discord: {
     API_KEY: string;
     guildId: string;
-    channelId: string;
-    alertRole: string;
+    roles: {
+      governance: string;
+    };
+    channelIds: {
+      proposals: string;
+      bookkeeping: string;
+      transactions: string;
+    }
     poll: {
       voteYesEmoji: string;
       voteNoEmoji: string;
@@ -297,62 +339,23 @@ export interface NanceConfig {
       yesNoRatio: number;
       showResults: boolean;
     };
+    reminder: {
+      channelIds: string[];
+      imagesCID: string;
+      imageNames: string[];
+      links: Record<string, string>;
+    };
   };
+  propertyKeys: PropertyKeys;
   notion: {
     API_KEY: string;
-    publicURLPrefix: string;
+    enabled: boolean;
     database_id: string;
+    current_cycle_block_id: string;
     payouts_database_id: string;
     reserves_database_id: string;
-    propertyKeys: {
-      proposalId: string;
-      status: string;
-      statusTemperatureCheck: string;
-      statusVoting: string;
-      statusApproved: string;
-      statusCancelled: string;
-      proposalIdPrefix: string;
-      discussionThread: string;
-      ipfs: string;
-      vote: string;
-      category: string;
-      categoryRecurringPayout: string;
-      categoryPayout: string;
-      governanceCycle: string;
-      governanceCyclePrefix: string;
-      reservePercentage: string;
-      payoutName: string;
-      payoutType: string;
-      payoutAmountUSD: string;
-      payoutAddress: string;
-      payoutCount: string;
-      treasuryVersion: string;
-      payoutFirstFC: string;
-      payoutLastFC: string;
-      payoutRenewalFC: string;
-      payoutProposalLink: string;
-    };
-    filters: any;
   };
-  github: {
-    user: string;
-    repo: string;
-    propertyKeys: {
-      title: string;
-      proposalId: string;
-      status: string;
-      statusTemperatureCheck: string;
-      statusVoting: string;
-      statusApproved: string;
-      statusCancelled: string;
-      proposalIdPrefix: string;
-      discussionThread: string;
-      ipfs: string;
-      vote: string;
-      category: string;
-      governanceCycle: string;
-    },
-  },
+  dolt: DoltConfig,
   snapshot: {
     base: string;
     space: string;
@@ -360,7 +363,45 @@ export interface NanceConfig {
     minTokenPassingAmount: number;
     passingRatio: number;
   };
+  calendarCID?: string;
 }
+
+export type DoltConfig = {
+  enabled: boolean;
+  owner: string;
+  repo: string;
+};
+
+export type PropertyKeys = {
+  proposalId: string;
+  status: string;
+  statusTemperatureCheck: string;
+  statusVoting: string;
+  statusApproved: string;
+  statusCancelled: string;
+  proposalIdPrefix: string;
+  discussionThread: string;
+  ipfs: string;
+  vote: string;
+  type: string;
+  typeRecurringPayout: string;
+  typePayout: string;
+  governanceCycle: string;
+  governanceCyclePrefix: string;
+  reservePercentage: string;
+  payoutName: string;
+  payoutType: string;
+  payoutAmountUSD: string;
+  payoutAddress: string;
+  payoutCount: string;
+  payName: string;
+  treasuryVersion: string;
+  payoutFirstFC: string;
+  payoutLastFC: string;
+  payoutRenewalFC: string;
+  payoutProposalLink: string;
+  publicURLPrefix: string;
+};
 
 export interface DateEvent {
   title: string;

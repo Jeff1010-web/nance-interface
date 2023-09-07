@@ -15,6 +15,8 @@ import {
   ProposalDeleteRequest,
   ProposalsPacket,
   SQLPayout,
+  ConfigSpaceRequest,
+  ConfigSpacePayload,
 } from '../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -105,6 +107,22 @@ async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRe
   return json;
 }
 
+async function creator(url: RequestInfo | URL, { arg }: { arg: ConfigSpaceRequest }) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(arg)
+  });
+  const json: APIResponse<ConfigSpacePayload> = await res.json();
+  if (json.success === false) {
+    throw new Error(`An error occurred while uploading the data: ${json?.error}`);
+  }
+
+  return json;
+}
+
 export function useProposalUpload(space: string, proposalId: string | undefined, shouldFetch: boolean = true) {
   let url = `${NANCE_PROXY_API_URL}/${space}/proposals`;
   let fetcher = uploader;
@@ -157,6 +175,15 @@ async function deleter(url: RequestInfo | URL, { arg }: { arg: ProposalDeleteReq
   }
 
   return json;
+}
+
+export function useCreateSpace(shouldFetch: boolean = true) {
+  const url = `${NANCE_PROXY_API_URL}/ish/config`;
+  let fetcher = creator;
+  return useSWRMutation(
+    shouldFetch ? url : null,
+    fetcher,
+  );
 }
 
 export function getPath(space: string, command: string) {

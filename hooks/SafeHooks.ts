@@ -166,7 +166,7 @@ export function useSafeAPIKit() {
     const ethAdapter = new EthersAdapter({
       ethers,
       signerOrProvider: signer!
-    })
+    });
     const safeApiKit = new SafeApiKit({
       txServiceUrl: SAFE_SERVICE_API,
       ethAdapter
@@ -190,12 +190,12 @@ export function useSafe(safeAddress: string) {
     const ethAdapter = new EthersAdapter({
       ethers,
       signerOrProvider: signer
-    })
+    });
     Safe.create({
       ethAdapter,
       safeAddress
     }).then(safe => setValue(safe))
-    .catch(err => setError(err));
+      .catch(err => setError(err));
   }, [signer, safeAddress]);
 
   return { value, loading: !value, error };
@@ -251,8 +251,8 @@ export function useQueueTransaction(safeAddress: string, safeTransactionData: Sa
     try {
       const safeTransaction = await safe.createTransaction({ safeTransactionData, options, onlyCalls: true });
       const senderAddress = address;
-      const safeTxHash = await safe.getTransactionHash(safeTransaction)
-      const signature = await safe.signTransactionHash(safeTxHash)
+      const safeTxHash = await safe.getTransactionHash(safeTransaction);
+      const signature = await safe.signTransactionHash(safeTxHash);
 
       // Propose transaction to the service
       await safeApiKit.proposeTransaction({
@@ -261,7 +261,7 @@ export function useQueueTransaction(safeAddress: string, safeTransactionData: Sa
         safeTxHash,
         senderAddress,
         senderSignature: signature.data
-      })
+      });
 
       setValue({
         safeTxHash: safeTxHash,
@@ -276,5 +276,23 @@ export function useQueueTransaction(safeAddress: string, safeTransactionData: Sa
 
   return {
     value, error, loading, trigger
-  }
+  };
+}
+
+function validSafeFetcher(): Fetcher<any, string> {
+  return async (url) => {
+    const res = await fetch(url);
+    if (res.status !== 200) {
+      return false;
+    }
+    const json = await res.json();
+    return json.address !== undefined;
+  };
+}
+
+export function useIsValidAddress(address: string, shouldFetch: boolean = true) {
+  return useSWR(
+    shouldFetch ? `${SAFE_API}${address}` : null,
+    validSafeFetcher(),
+  );
 }

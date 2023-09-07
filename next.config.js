@@ -16,7 +16,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'jbm.infura-ipfs.io'
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.discordapp.com'
+      },
     ],
   },
   async redirects() {
@@ -46,8 +50,8 @@ const nextConfig = {
         destination: '/s/juicebox/edit',
         permanent: true,
       },
-    ]
+    ];
   }
-}
+};
 
-module.exports = removeImports(nextConfig)
+module.exports = removeImports(nextConfig);

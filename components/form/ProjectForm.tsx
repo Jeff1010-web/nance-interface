@@ -3,7 +3,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import ProjectSearch from "../juicebox/ProjectSearch";
 
 export default function ProjectForm(
-  { label, fieldName, defaultValue = 0 } : { label: string, fieldName: any, defaultValue?: number }
+  { label, fieldName, defaultValue, showType = true, disabled = false } : { label?: string, fieldName: any, defaultValue?: number, showType?: boolean, disabled?: boolean }
 ) {
   const { control, formState: { errors } } = useFormContext();
 
@@ -13,9 +13,11 @@ export default function ProjectForm(
         {label}
       </label>
       <div className="mt-1 flex rounded-md shadow-sm">
-        <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
-                    project
-        </span>
+        { showType && (
+          <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
+                      project
+          </span>
+        )}
         <Controller
           name={fieldName}
           control={control}
@@ -26,7 +28,7 @@ export default function ProjectForm(
             }
           }}
           render={({ field: { onChange, onBlur, value, ref } }) =>
-            <ProjectSearch val={value} setVal={onChange} inputStyle="rounded-none h-10 rounded-r-md" />
+            <ProjectSearch val={value} setVal={onChange} inputStyle={`${showType ? 'rounded-none rounded-r-md' : 'rounded-md'} h-10`} disabled={disabled} />
           }
           defaultValue={defaultValue}
           shouldUnregister

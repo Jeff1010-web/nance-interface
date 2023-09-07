@@ -39,6 +39,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
   if (canForkProposal) {
     editProposalUrl = editProposalUrl + `?&proposalId=${proposalId}&fork=true`;
   }
+
   return (
     <>
       <Head>

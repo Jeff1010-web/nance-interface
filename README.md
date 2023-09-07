@@ -19,6 +19,10 @@ vim .env.local
 
 Specify url of [Nance](https://nance.app/) backend as `NEXT_PUBLIC_NANCE_API_URL`, and your space id as `NEXT_PUBLIC_OVERRIDE_SPACE`.
 
+#### Nance Auto API
+
+Some tasks need to run at specific times, this is done by querying [Nance-auto](https://github.com/nance-eth/nance-ts/blob/main/src/api/auto.ts). We need a shared secret, `NANCE_AUTO_KEY`, to verify requests.
+
 #### Ethereum
 
 We need [Infura](https://www.infura.io/) RPC to interact with Ethereum. Please specify `NEXT_PUBLIC_INFURA_KEY`.
@@ -33,7 +37,7 @@ To find delegations, we need to specify the subgraph url of [Snapshot](https://t
 
 #### NextAuth SIWE
 
-To support session, you need to implement backend for NextAuth and set two env variables: [`NEXTAUTH_URL`](https://next-auth.js.org/configuration/options#nextauth_url) and [`NEXTAUTH_SECRET`](https://next-auth.js.org/configuration/options#nextauth_secret)
+To support session, you need to implement backend for NextAuth and set two env variables: [`NEXTAUTH_DOMAINS`](https://next-auth.js.org/configuration/options#nextauth_url) (a comma separated list of approved domains, no https://) and [`NEXTAUTH_SECRET`](https://next-auth.js.org/configuration/options#nextauth_secret)
 
 #### RichText Editor
 
@@ -53,6 +57,21 @@ Env:
 #### Tenderly Simulation
 
 `TENDERLY_ACCESS_KEY`, this will be used to run simulation.
+
+#### Discord
+
+We use the Discord API to fetch a user's guilds (serves) and guild channels when creating a Nance space. To do this you need to gather the following from the Discord Developer Portal:
+* `NEXT_PUBLIC_DISCORD_CLIENT_ID`
+* `NEXT_PUBLIC_DISCORD_REDIRECT_URI_BASE` (need to add this in your Discord Developer Portal as well)
+* `DISCORD_CLIENT_SECRET`
+* `DISCORD_NANCE_BOT_KEY`
+
+#### Redis
+
+We use a hosted Redis instance on [Upstash](https://upstash.com) to store a user's Discord session and link it to their wallet. To do this you need to set:
+* `REDIS_HOST`
+* `REDIS_PORT`
+* `REDIS_PASSWORD`
 
 ### Framework & Library
 

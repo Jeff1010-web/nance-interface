@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Combobox } from '@headlessui/react';
 import useProjectSearch, { ProjectSearchEntry } from '../../hooks/juicebox/ProjectSearch';
@@ -13,23 +13,29 @@ export interface ProjectOption {
   metadataUri: string
 }
 
-export default function ProjectSearch({ val, setVal, inputStyle = "" }: 
-{ val: number, setVal: (v: number) => void, inputStyle?: string }) {
+export default function ProjectSearch({ val, setVal, inputStyle = "", disabled = true }:
+{ val: number, setVal: (v: number ) => void, inputStyle?: string, disabled?: boolean }) {
   const [query, setQuery] = useState('');
 
   const { data: projects, loading } = useProjectSearch(query);
 
+  useEffect(() => {
+    if (disabled) {
+      setVal(0);
+    }
+  }, [disabled, setVal]);
+
   return (
-    <Combobox as="div" value={val} onChange={setVal} className="w-full">
+    <Combobox disabled={disabled} as="div" value={val} onChange={setVal} className="w-full">
       <div className="relative">
         <Combobox.Input
           className={classNames(
             "w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm",
             loading && "animate-pulse",
-            inputStyle
+            inputStyle, disabled && "bg-gray-100"
           )}
           onChange={(event) => setQuery(event.target.value)}
-          displayValue={(val: number) => val?.toString() || ""}
+          displayValue={(val: number) => (val === 0) ? "" : val?.toString() || ""}
         />
         <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
           <ChevronDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
