@@ -68,9 +68,9 @@ export default function ProposalCards({ loading, proposalsPacket, maxCycle, prop
       // fall back to default sorting
       // if no keyword
       sortedProposals
-        .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0))
         .sort((a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0))
-        .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status));
+        .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
+        .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0));
     }
   } else {
     if (query.sortBy === "status") {
@@ -118,7 +118,7 @@ export default function ProposalCards({ loading, proposalsPacket, maxCycle, prop
     }
   }
 
-  const isLoading = loading || snapshotLoading;
+  const isLoading = loading;
   const hasPrivateProposals = showDrafts && !query.keyword && (proposalsPacket?.privateProposals?.length ?? 0) > 0;
 
   if (!isLoading && sortedProposals.length === 0) {

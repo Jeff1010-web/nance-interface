@@ -20,10 +20,10 @@ import SearchableComboBoxMultiple from "../../SearchableComboBoxMultiple";
 
 const QueueExecutionModal = dynamic(() => import("./QueueReconfigurationModal"), {
   loading: () => <LoadingArrowSpiner />,
-})
+});
 const QueueTransactionsModal = dynamic(() => import("./QueueTransactionsModal"), {
   loading: () => <LoadingArrowSpiner />,
-})
+});
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
   // State
@@ -94,12 +94,12 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     if (!cycle) {
       if (keyword) {
         // if there is a keyword but no cycle specified by user, then we should set the cycle to "All"
-        setQuery({ cycle: allCycle.id })
+        setQuery({ cycle: allCycle.id });
       } else {
         // otherwise, we should set the cycle to current cycle and nexy cycle
         const _currentCycle = infoData?.data?.currentCycle;
         if (_currentCycle) {
-          setQuery({ cycle: _currentCycle.toString() + "+" + (_currentCycle + 1).toString() })
+          setQuery({ cycle: _currentCycle.toString() + "+" + (_currentCycle + 1).toString() });
         }
       }
     } else {
