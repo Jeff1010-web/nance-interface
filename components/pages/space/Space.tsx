@@ -99,7 +99,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
         // otherwise, we should set the cycle to current cycle and nexy cycle
         const _currentCycle = infoData?.data?.currentCycle;
         if (_currentCycle) {
-          setQuery({ cycle: _currentCycle.toString() + "+" + (_currentCycle + 1).toString() });
+          setQuery({ cycle: _currentCycle.toString() });
         }
       }
     } else {

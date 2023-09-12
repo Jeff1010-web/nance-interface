@@ -13,11 +13,11 @@ const StatusValue: { [key: string]: number } = {
   'Revoked': 0,
   'Cancelled': 1,
   'Draft': 2,
-  'Discussion': 2,
-  'Voting': 3,
-  'Approved': 4,
-  'Implementation': 5,
-  'Finished': 6
+  'Approved': 3,
+  'Implementation': 4,
+  'Finished': 5,
+  'Discussion': 6,
+  'Voting': 7
 };
 function getValueOfStatus(status: string) {
   return StatusValue[status] ?? -1;
