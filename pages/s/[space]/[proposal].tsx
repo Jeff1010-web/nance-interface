@@ -1,10 +1,8 @@
-/* eslint-disable max-lines */
 import { SnapshotProposal, useProposalsByID } from "../../../hooks/snapshot/Proposals";
 import SiteNav from "../../../components/SiteNav";
 import { createContext } from "react";
-import { useSpaceInfo } from "../../../hooks/NanceHooks";
 import { getLastSlash } from "../../../libs/nance";
-import { Proposal, Action } from "../../../models/NanceTypes";
+import { Proposal, Action, APIResponse, SpaceInfo } from "../../../models/NanceTypes";
 import Custom404 from "../../404";
 import ScrollToBottom from "../../../components/ScrollToBottom";
 import { NANCE_API_URL } from "../../../constants/Nance";
@@ -13,6 +11,7 @@ import { getToken } from "next-auth/jwt";
 import ProposalSidebar from "../../../components/pages/proposal/ProposalSidebar";
 import ProposalContent from "../../../components/pages/proposal/ProposalContent";
 import ProposalOptions from "../../../components/pages/proposal/ProposalOptions";
+import { getFirstParagraphOfMarkdown } from "../../../libs/markdown";
 
 export async function getServerSideProps({ req, params }: any) {
   let proposal: Proposal;
@@ -27,13 +26,15 @@ export async function getServerSideProps({ req, params }: any) {
     Authorization: `Bearer ${token}`,
   };
 
-  const proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, {headers}).then(res => res.json());
+  const res: APIResponse<SpaceInfo> = await fetch(`${NANCE_API_URL}/${spaceParam}`).then((res) => res.json());
+  const proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, { headers }).then(res => res.json());
   proposal = proposalResponse.data;
-  
+
   // Pass data to the page via props
   return {
     props: {
       space: spaceParam,
+      snapshotSpace: res.data.snapshotSpace,
       proposal: proposal || null
     }
   };
@@ -82,11 +83,10 @@ export const ProposalContext = createContext<{ commonProps: ProposalCommonProps,
   proposalInfo: undefined
 });
 
-export default function NanceProposalPage({ space, proposal }: { space: string, proposal: Proposal | undefined }) {
-  
+export default function NanceProposalPage({ space, snapshotSpace, proposal }: { space: string, snapshotSpace: string, proposal: Proposal | undefined }) {
+
   const proposalHash = getLastSlash(proposal?.voteURL);
 
-  const { data: spaceInfo } = useSpaceInfo({space});  
   const { data: { proposalsData, votedData } } = useProposalsByID([proposalHash], "", proposalHash === undefined);
 
   const snapshotProposal = proposalsData?.[0]
@@ -98,7 +98,7 @@ export default function NanceProposalPage({ space, proposal }: { space: string, 
 
   const commonProps: ProposalCommonProps = {
     space,
-    snapshotSpace: spaceInfo?.data?.snapshotSpace || "",
+    snapshotSpace: snapshotSpace || "",
     status: snapshotProposal?.state || proposal.status,
     title: snapshotProposal?.title || proposal.title,
     author: proposal.authorAddress || snapshotProposal?.author || "",
@@ -120,8 +120,8 @@ export default function NanceProposalPage({ space, proposal }: { space: string, 
     <>
       <SiteNav
         pageTitle={`${commonProps.title}`}
-        description={commonProps.body?.slice(0, 140) || 'No content'}
-        image={`https://cdn.stamp.fyi/space/jbdao.eth?w=1200&h=630`}
+        description={getFirstParagraphOfMarkdown(commonProps.body) || 'No content'}
+        image={`https://cdn.stamp.fyi/space/${snapshotSpace}?w=1200&h=630`}
         space={space}
         proposalId={proposal?.hash}
         withWallet />
