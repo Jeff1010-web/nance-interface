@@ -13,6 +13,7 @@ import ProposalContent from "../../../components/pages/proposal/ProposalContent"
 import ProposalOptions from "../../../components/pages/proposal/ProposalOptions";
 import { getFirstParagraphOfMarkdown } from "../../../libs/markdown";
 import { useSpaceInfo } from "../../../hooks/NanceHooks";
+import { ZERO_ADDRESS } from "../../../constants/Contract";
 
 export async function getServerSideProps({ req, params }: any) {
   let proposal: Proposal;
@@ -122,7 +123,7 @@ export default function NanceProposalPage({ space, proposal }: { space: string, 
       <SiteNav
         pageTitle={`${proposal.title} | ${space}`}
         description={getFirstParagraphOfMarkdown(commonProps.body) || 'No content'}
-        image={`https://cdn.stamp.fyi/avatar/${commonProps.author}?w=1200&h=630`}
+        image={`https://cdn.stamp.fyi/avatar/${commonProps.author || ZERO_ADDRESS}?w=1200&h=630`}
         space={space}
         proposalId={proposal?.hash}
         withWallet
