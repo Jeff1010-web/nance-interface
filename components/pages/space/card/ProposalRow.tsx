@@ -9,8 +9,8 @@ import { Proposal } from "../../../../models/NanceTypes";
 import ColorBar from "../../../ColorBar";
 
 export default function ProposalRow(
-  { proposal, proposalIdx, proposalIdPrefix, snapshotSpace, snapshotProposalDict, votedData, refetch, proposalUrlPrefix }:
-    { proposal: Proposal, proposalIdx: number, proposalIdPrefix: string, snapshotSpace: string, snapshotProposalDict: any, votedData: any, refetch: any, proposalUrlPrefix: string }
+  { proposal, proposalIdx, proposalIdPrefix, snapshotSpace, snapshotProposalDict, votedData, refetch, proposalUrlPrefix, threshold }:
+    { proposal: Proposal, proposalIdx: number, proposalIdPrefix: string, snapshotSpace: string, snapshotProposalDict: any, votedData: any, refetch: any, proposalUrlPrefix: string, threshold: number }
 ) {
   return (
     <tr key={proposal.hash} className="hover:bg-slate-100 hover:cursor-pointer"
@@ -48,7 +48,7 @@ export default function ProposalRow(
           </p>
 
           <div className="md:hidden">
-            <VotesBar proposal={proposal} snapshotProposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} />
+            <VotesBar proposal={proposal} snapshotProposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} threshold={threshold} />
           </div>
         </div>
 
@@ -59,7 +59,7 @@ export default function ProposalRow(
           'hidden px-3 py-3.5 text-sm text-gray-500 md:table-cell'
         )}
       >
-        <VotesBar proposal={proposal} snapshotProposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} />
+        <VotesBar proposal={proposal} snapshotProposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]} threshold={threshold} />
       </td>
       <td
         className={classNames(

@@ -1,22 +1,22 @@
 import { formatDistanceToNowStrict, toDate } from "date-fns";
-import ColorBar from "../../../ColorBar";
+import ColorBar, { JB_THRESHOLD } from "../../../ColorBar";
 import { SnapshotProposal } from "../../../../hooks/snapshot/Proposals";
 import { Proposal } from "../../../../models/NanceTypes";
 import { ClockIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 
-export default function VotesBar({ snapshotProposal, proposal }: { snapshotProposal: SnapshotProposal, proposal: Proposal }) {
+export default function VotesBar({ snapshotProposal, proposal, threshold = JB_THRESHOLD }: { snapshotProposal: SnapshotProposal, proposal: Proposal, threshold?: number }) {
   const hasSnapshotVoting = snapshotProposal !== undefined;
-  
+
   if (hasSnapshotVoting) {
     return (
       <div className="flex flex-col space-y-1">
         <VotingTimeIndicator p={snapshotProposal} />
-  
+
         {['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(snapshotProposal?.type) ? (
-        // sum all scores to get the total score
-          <ColorBar greenScore={snapshotProposal.scores_total || 0} redScore={0} />
+          // sum all scores to get the total score
+          <ColorBar greenScore={snapshotProposal.scores_total || 0} redScore={0} threshold={threshold} />
         ) : (
-          <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} />
+          <ColorBar greenScore={proposal?.voteResults?.scores[0] || 0} redScore={proposal?.voteResults?.scores[1] || 0} threshold={threshold} />
         )
         }
       </div>
@@ -34,15 +34,15 @@ export default function VotesBar({ snapshotProposal, proposal }: { snapshotPropo
             <ClockIcon className="h-3 w-3" />
           </div>
         )}
-  
+
       </div>
     );
   }
 }
 
-function VotingTimeIndicator({p}: {p: SnapshotProposal}) {
+function VotingTimeIndicator({ p }: { p: SnapshotProposal }) {
   if (!p) return null;
-  
+
   const currentTime = Math.floor(Date.now() / 1000);
   const startLabel = formatDistanceToNowStrict(toDate(p.start * 1000), { addSuffix: true });
   const endLabel = formatDistanceToNowStrict(toDate(p.end * 1000), { addSuffix: true });

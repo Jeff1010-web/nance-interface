@@ -196,6 +196,7 @@ export default function ProposalCards({ loading, proposalsPacket, maxCycle, prop
                 votedData={votedData}
                 proposalUrlPrefix={proposalUrlPrefix}
                 refetch={refetch}
+                threshold={proposalsPacket?.proposalInfo?.minTokenPassingAmount ?? 0}
               />
             ))}
           </tbody>
