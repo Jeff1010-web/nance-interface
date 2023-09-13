@@ -69,5 +69,5 @@ export function getFirstParagraphOfMarkdown(raw: string) {
     .map(c => c.value);
 
   const ret = texts[0] || raw;
-  return ret.slice(0, 280);
+  return ret.slice(0, 200);
 }
