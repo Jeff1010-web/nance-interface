@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { BigNumber, Contract, utils } from "ethers";
 import { FundingCycleConfigProps, formattedSplit, calculateSplitAmount, splitAmount2Percent } from "../components/juicebox/ReconfigurationCompare";
 import { ZERO_ADDRESS } from "../constants/Contract";
@@ -25,7 +26,7 @@ export function isEqualJBSplit(a: JBSplit, b: JBSplit) {
     && a.percent.eq(b.percent)
     && a.preferAddToBalance === b.preferAddToBalance
     && a.preferClaimed === b.preferClaimed
-    && a.projectId.eq(b.projectId)
+    && a.projectId.eq(b.projectId);
 }
 
 export const keyOfSplit = (mod: JBSplit) => `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${mod.allocator}`;
@@ -75,7 +76,7 @@ function percentUpdaterFrom(newLimitBG: BigNumber, currency: BigNumber, version:
       newLimitBG,
       version
     ) || "";
-  }
+  };
 }
 
 export function compareRules(oldConfig: FundingCycleConfigProps, newConfig: FundingCycleConfigProps): SplitDiff {
@@ -85,9 +86,9 @@ export function compareRules(oldConfig: FundingCycleConfigProps, newConfig: Fund
     change: {},
     keep: {},
     newTotal: BIG_ZERO
-  }
+  };
 
-  return diff
+  return diff;
 }
 
 export function comparePayouts(config: FundingCycleConfigProps, oldPayouts: JBSplit[], newPayouts: JBSplit[]) {
@@ -97,7 +98,7 @@ export function comparePayouts(config: FundingCycleConfigProps, oldPayouts: JBSp
     change: {},
     keep: {},
     newTotal: config.fundingCycle.target
-  }
+  };
 
   const newPayoutsMap = new Map<string, JBSplit>();
   newPayouts.forEach(payout => newPayoutsMap.set(keyOfSplit(payout), payout));
@@ -121,7 +122,7 @@ export function comparePayouts(config: FundingCycleConfigProps, oldPayouts: JBSp
       ) || "",
       newVal: "",
       amount: calculateSplitAmount((newSplit || split).percent, config.fundingCycle.target)
-    }
+    };
 
     if (newSplit) {
       // keep or change
@@ -152,7 +153,7 @@ export function comparePayouts(config: FundingCycleConfigProps, oldPayouts: JBSp
       oldVal: "",
       newVal: "",
       amount
-    }
+    };
     newLimit += amount;
   });
 
@@ -177,7 +178,7 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
     change: {},
     keep: {},
     newTotal: config.fundingCycle.target
-  }
+  };
 
   // Maps
   const registeredPayoutMap = new Map<string, SQLPayout>();
@@ -209,10 +210,10 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
         ) || "",
         newVal: "",
         amount: (actionPayout.action.payload as Payout).amountUSD
-      }
+      };
     } else if (registeredPayout) {
       // Will it expire?
-      const willExpire = currentCycle && registeredPayout.numberOfPayouts < (currentCycle - registeredPayout.governanceCycleStart + 1)
+      const willExpire = currentCycle && registeredPayout.numberOfPayouts < (currentCycle - registeredPayout.governanceCycleStart + 1);
       if (willExpire) {
         diff.expire[key] = {
           split,
@@ -225,7 +226,7 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
           ) || "",
           newVal: "",
           amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
-        }
+        };
       } else {
         // keep it
         diff.keep[key] = {
@@ -239,7 +240,7 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
           ) || "",
           newVal: "",
           amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
-        }
+        };
       }
     } else {
       // keep it
@@ -254,12 +255,12 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
         ) || "",
         newVal: "",
         amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
-      }
+      };
     }
 
     // Remove map entry so it won't get calculated twice later
     actionPayoutMap.delete(key);
-  })
+  });
 
   actionPayoutMap.forEach((action, key) => {
     // New entry
@@ -272,27 +273,27 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
       beneficiary: payout.address,
       projectId: BigNumber.from(payout.project || 0),
       allocator: ZERO_ADDRESS
-    }
+    };
     diff.new[key] = {
       split,
       proposalId: action.pid,
       oldVal: "",
       newVal: "",
       amount: payout.amountUSD
-    }
-  })
+    };
+  });
 
   // Calculate new distributionLimit and percentages for all payouts if there are changes.
   // FIXME here we assume all project will use USD-based payout, otherwise we need to handle currency
   const isInfiniteLimit = config.fundingCycle.target.gte(JBConstants.UintMax);
   const oldLimit = parseInt(utils.formatEther(config.fundingCycle.target ?? 0));
   let newLimit = oldLimit;
-  Object.entries(diff.new).forEach((v) => newLimit += v[1].amount)
-  Object.entries(diff.expire).forEach((v) => newLimit -= v[1].amount)
+  Object.entries(diff.new).forEach((v) => newLimit += v[1].amount);
+  Object.entries(diff.expire).forEach((v) => newLimit -= v[1].amount);
   Object.entries(diff.change).forEach((v) => {
     newLimit -= calculateSplitAmount(v[1].split.percent, config.fundingCycle.target);
     newLimit += v[1].amount;
-  })
+  });
   const newLimitBG = utils.parseEther(newLimit.toFixed(0));
   diff.newTotal = newLimitBG;
 
@@ -315,8 +316,8 @@ export function splitStruct2JBSplit(v: JBSplitNanceStruct) {
     beneficiary: v.beneficiary,
     projectId: BigNumber.from(v.projectId || 0),
     allocator: v.allocator
-  }
-  return split
+  };
+  return split;
 }
 
 export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], pid: number = 0) {
@@ -328,7 +329,7 @@ export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], 
     change: {},
     keep: {},
     newTotal: BIG_ZERO
-  }
+  };
 
   oldReserves.forEach(ticket => {
     const key = keyOfSplit(ticket);
@@ -346,7 +347,7 @@ export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], 
           newVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
           proposalId: 0,
           amount: ticket.percent.toNumber()
-        }
+        };
       } else {
         // change
         diff.change[key] = {
@@ -355,7 +356,7 @@ export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], 
           newVal: `${(reserve.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
           proposalId: pid,
           amount: reserve.percent.toNumber()
-        }
+        };
       }
     } else {
       // remove
@@ -365,11 +366,11 @@ export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], 
         newVal: "",
         proposalId: pid,
         amount: ticket.percent.toNumber()
-      }
+      };
     }
 
     newReserveMap.delete(key);
-  })
+  });
 
   newReserveMap.forEach((v, k) => {
     diff.newTotal = diff.newTotal.add(BigNumber.from(v.percent));
@@ -379,8 +380,8 @@ export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], 
       newVal: "",
       proposalId: pid,
       amount: v.percent.toNumber()
-    }
-  })
+    };
+  });
 
   console.debug("reservesDiffOf.final", diff);
   return diff;
@@ -396,7 +397,7 @@ export function payout2JBSplit(payout: Payout) {
     beneficiary: payout.address,
     projectId: BigNumber.from(payout.project || 0),
     allocator: ZERO_ADDRESS
-  }
+  };
   return split;
 }
 
@@ -455,7 +456,7 @@ export function encodedReconfigureFundingCyclesOf(config: FundingCycleConfigProp
     weight: BIG_ZERO,
     discountRate: fc?.discountRate || BIG_ZERO,
     ballot: fc?.ballot || ZERO_ADDRESS
-  }
+  };
   const reconfigurationRawData = [
     BigNumber.from(projectId),                       // _projectId
     jbFundingCycleData,                              // _data
