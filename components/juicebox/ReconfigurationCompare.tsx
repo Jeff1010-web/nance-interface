@@ -1,4 +1,4 @@
-import { JBConstants, JBSplit } from "../../models/JuiceboxTypes";
+import { JBConstants, JBSplit, V2V3FundingCycleMetadata } from "../../models/JuiceboxTypes";
 import FormattedAddress from "../ethereum/FormattedAddress";
 // unionBy([2.1], [1.2, 2.3], Math.floor);
 // => [2.1, 1.2]
@@ -56,12 +56,15 @@ export interface MetadataArgs {
   allowMinting: boolean
   allowTerminalMigration: boolean
   allowControllerMigration: boolean
+  global: {
+    pauseTransfers?: boolean
+  }
 }
 
 export interface FundingCycleConfigProps {
   version: number,
   fundingCycle: FundingCycleArgs,
-  metadata: MetadataArgs,
+  metadata: V2V3FundingCycleMetadata | undefined,
   payoutMods: JBSplit[],
   ticketMods: JBSplit[]
 }
@@ -76,16 +79,16 @@ export default function ReconfigurationCompare({ currentFC, previewFC }: Reconfi
     name: string;
     getFunc: (fc: FundingCycleConfigProps) => any;
   }[] = [
-    { name: 'Reserve rate', getFunc: (fc) => fc.metadata.reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[fc.version - 1] * 100 + "%" },
-    { name: 'Rdemption rate', getFunc: (fc) => fc.metadata.redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[fc.version - 1] * 100 + "%" },
-    { name: 'Discount rate', getFunc: (fc) => fc.fundingCycle.discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[fc.version - 1] * 100 + "%" },
-    { name: 'Payments', getFunc: (fc) => fc.metadata.pausePay ? "Disabled" : "Enabled" },
-    { name: 'Token minting', getFunc: (fc) => fc.metadata.allowMinting ? "Enabled" : "Disabled" },
-    { name: 'Terminal migration', getFunc: (fc) => fc.metadata.allowTerminalMigration ? "Enabled" : "Disabled" },
-    { name: 'Controller migration', getFunc: (fc) => fc.metadata.allowControllerMigration ? "Enabled" : "Disabled" },
-    { name: 'Reconfiguration strategy', getFunc: (fc) => <FormattedAddress key={fc.fundingCycle.ballot} address={fc.fundingCycle.ballot} /> },
-    //{name: 'Reconfiguration strategy', getFunc: (fc) => fc.fundingCycle.ballot},
-  ];
+      { name: 'Reserve rate', getFunc: (fc) => fc.metadata.reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[fc.version - 1] * 100 + "%" },
+      { name: 'Rdemption rate', getFunc: (fc) => fc.metadata.redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[fc.version - 1] * 100 + "%" },
+      { name: 'Discount rate', getFunc: (fc) => fc.fundingCycle.discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[fc.version - 1] * 100 + "%" },
+      { name: 'Payments', getFunc: (fc) => fc.metadata.pausePay ? "Disabled" : "Enabled" },
+      { name: 'Token minting', getFunc: (fc) => fc.metadata.allowMinting ? "Enabled" : "Disabled" },
+      { name: 'Terminal migration', getFunc: (fc) => fc.metadata.allowTerminalMigration ? "Enabled" : "Disabled" },
+      { name: 'Controller migration', getFunc: (fc) => fc.metadata.allowControllerMigration ? "Enabled" : "Disabled" },
+      { name: 'Reconfiguration strategy', getFunc: (fc) => <FormattedAddress key={fc.fundingCycle.ballot} address={fc.fundingCycle.ballot} /> },
+      //{name: 'Reconfiguration strategy', getFunc: (fc) => fc.fundingCycle.ballot},
+    ];
 
   const payouts: JBSplit[] = unionBy(currentFC.payoutMods, previewFC.payoutMods, keyOfSplit).sort(orderByPercent);
   const currentPayoutMaps = splits2map(currentFC.payoutMods);

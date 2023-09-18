@@ -24,7 +24,7 @@ export function useReconfigurationOfProject(projectId: number) {
       target: target || zero,
       configuration: fc?.configuration || zero
     },
-    metadata: metadata!,
+    metadata: metadata,
     payoutMods: payoutMods || [],
     ticketMods: ticketMods || [],
   };
@@ -33,4 +33,4 @@ export function useReconfigurationOfProject(projectId: number) {
     value: currentConfig,
     loading: fcIsLoading || metadata === undefined || targetIsLoading || payoutModsIsLoading || ticketModsIsLoading
   }
-} 
+}

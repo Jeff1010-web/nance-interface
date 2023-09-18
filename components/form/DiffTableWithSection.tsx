@@ -46,8 +46,8 @@ export interface SectionTableData {
 }
 
 export default function DiffTableWithSection(
-  { space, tableData, loading = false }: 
-  { space: string, tableData: SectionTableData[], loading?: boolean }) {
+  { space, tableData, loading = false }:
+    { space: string, tableData: SectionTableData[], loading?: boolean }) {
 
   const [hideUnchanged, setHideUnchanged] = useState(false);
 
@@ -105,13 +105,13 @@ export default function DiffTableWithSection(
                           )}
                         </td>
                         <td className="hidden py-5 pr-6 sm:table-cell">
-                          <div className="text-sm leading-6 text-gray-900">{entry.oldVal}</div>
+                          <div className="text-sm leading-6 text-gray-900 overflow-x-scroll max-w-[12rem]">{entry.oldVal}</div>
                         </td>
                         <td className="py-5">
                           <div
                             className={classNames(
                               StatusStyle[entry.status],
-                              'rounded-md py-1 px-2 text-xs font-medium'
+                              'rounded-md py-1 px-2 text-xs font-medium overflow-x-scroll max-w-[12rem]'
                             )}
                           >
                             {entry.newVal}
