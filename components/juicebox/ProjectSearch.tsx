@@ -13,8 +13,8 @@ export interface ProjectOption {
   metadataUri: string
 }
 
-export default function ProjectSearch({ val, setVal, inputStyle = "", disabled = true }:
-{ val: number, setVal: (v: number ) => void, inputStyle?: string, disabled?: boolean }) {
+export default function ProjectSearch({ val, setVal, inputStyle = "", disabled = false }:
+  { val: number, setVal: (v: number) => void, inputStyle?: string, disabled?: boolean }) {
   const [query, setQuery] = useState('');
 
   const { data: projects, loading } = useProjectSearch(query);
