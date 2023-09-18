@@ -1,6 +1,6 @@
 import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import { ProposalsPacket, Reserve } from '../../../models/NanceTypes';
 import { useCurrentPayouts } from '../../../hooks/NanceHooks';
 import DiffTableWithSection, { } from '../../form/DiffTableWithSection';
@@ -10,6 +10,7 @@ import useControllerOfProject from '../../../hooks/juicebox/ControllerOfProject'
 import useTerminalOfProject from '../../../hooks/juicebox/TerminalOfProject';
 import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
 import { useReconfigurationOfProject } from '../../../hooks/juicebox/ReconfigurationOfProject';
+import parseSafeJuiceboxTx from '../../../libs/SafeJuiceboxParser';
 
 export default function QueueReconfigurationModal({ open, setOpen, juiceboxProjectId, proposals, space, currentCycle }: {
   open: boolean, setOpen: (o: boolean) => void,
@@ -50,12 +51,16 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
   const actionReserve = actionWithPIDArray?.find(v => v.action.type === "Reserve");
   const reservesDiff = compareReserves(currentConfig.ticketMods ?? [], (actionReserve?.action.payload as Reserve)?.splits.map(splitStruct => splitStruct2JBSplit(splitStruct)) || (currentConfig.ticketMods ?? []), actionReserve?.pid ?? 0)
 
-  const tableData = calcDiffTableData(currentConfig, payoutsDiff, reservesDiff);
+
 
   const loading = infoIsLoading || configIsLoading || nancePayoutsLoading;
 
   // Construct reconfiguration function data
   const encodeReconfiguration = !loading ? encodedReconfigureFundingCyclesOf(currentConfig, payoutsDiff, reservesDiff, projectId, controller, terminal) || "" : "";
+
+  const tableData = calcDiffTableData(currentConfig,
+    parseSafeJuiceboxTx(encodeReconfiguration, "", currentConfig.fundingCycle.fee, BigNumber.from(Math.floor(Date.now() / 1000))),
+    payoutsDiff, reservesDiff);
 
   return (
     <Transition.Root show={open} as={Fragment}>

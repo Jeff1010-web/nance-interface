@@ -73,6 +73,22 @@ export function splitAmount2Percent(target: BigNumber, amount: number) {
   return utils.parseEther(amount.toFixed(0)).mul(JBConstants.TotalPercent.Splits[2]).div(target);
 }
 
+export function isEqualPayoutSplit(percent: BigNumber, currency: BigNumber, target: BigNumber, newPercent: BigNumber, newCurrency: BigNumber, newTarget: BigNumber) {
+  if (!percent || !newPercent) return undefined;
+
+  const _totalPercent = JBConstants.TotalPercent.Splits[2];
+
+  if (target.eq(JBConstants.UintMax) && newTarget.eq(JBConstants.UintMax)) {
+    return percent.eq(newPercent);
+  } else if (!target.eq(JBConstants.UintMax) && !newTarget.eq(JBConstants.UintMax)) {
+    const amount = formatCurrency(currency, target.mul(percent).div(_totalPercent));
+    const newAmount = formatCurrency(newCurrency, newTarget.mul(newPercent).div(_totalPercent));
+    return amount === newAmount;
+  } else {
+    return false;
+  }
+}
+
 export function formattedSplit(percent: BigNumber, currency: BigNumber, target: BigNumber, version: number) {
   if (!percent) return undefined;
 

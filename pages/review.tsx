@@ -32,7 +32,7 @@ export default function ReviewReconfigurationPage() {
 
   // state
   const [selectedSafeTx, setSelectedSafeTx] = useState<TxOption>();
-  
+
   // hooks
   const { data: projectInfo, loading, error } = useProjectInfo(3, projectId);
 
@@ -81,9 +81,9 @@ function Compare({ projectId, tx }: { projectId: number, tx: RevisedSafeMultisig
   const { value: currentConfig, loading: loading } = useReconfigurationOfProject(projectId);
   const newConfig = parseSafeJuiceboxTx(tx.data || "", tx?.submissionDate || "", currentConfig.fundingCycle.fee || BigNumber.from(0), currentConfig.fundingCycle.configuration || BigNumber.from(0));
 
-  const payoutsDiff = comparePayouts(currentConfig, currentConfig.payoutMods, newConfig?.payoutMods || []);
+  const payoutsDiff = comparePayouts(currentConfig, newConfig, currentConfig.payoutMods, newConfig?.payoutMods || []);
   const reservesDiff = compareReserves(currentConfig.ticketMods, newConfig?.ticketMods || []);
-  const tableData = calcDiffTableData(currentConfig, payoutsDiff, reservesDiff);
+  const tableData = calcDiffTableData(currentConfig, newConfig, payoutsDiff, reservesDiff);
 
   return <DiffTableWithSection space="juicebox" tableData={tableData} loading={loading} />
 }

@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import { BigNumber, BigNumberish, Contract, utils } from "ethers";
-import { FundingCycleConfigProps, formattedSplit, calculateSplitAmount, splitAmount2Percent } from "../components/juicebox/ReconfigurationCompare";
+import { FundingCycleConfigProps, formattedSplit, calculateSplitAmount, splitAmount2Percent, isEqualPayoutSplit } from "../components/juicebox/ReconfigurationCompare";
 import { ZERO_ADDRESS } from "../constants/Contract";
 import { CURRENCY_USD, ETH_TOKEN_ADDRESS, JBConstants, JBFundingCycleData, JBSplit } from "../models/JuiceboxTypes";
 import { SQLPayout, Action, Payout, JBSplitNanceStruct } from "../models/NanceTypes";
@@ -19,11 +19,25 @@ function formatEtherCommify(wei: BigNumberish) {
 // In v1, ETH = 0, USD = 1
 // In v2, ETH = 1, USD = 2, we subtract 1 to get the same value
 export const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
-  const formatter = new Intl.NumberFormat('en-GB');
   const symbol = currency.toNumber() == 0 ? "Ξ" : "$";
   const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatEtherCommify(amount ?? 0);
   return symbol + formatted;
 };
+
+function compareBN(a: BigNumberish | undefined, b: BigNumberish | undefined) {
+  a = a ?? BIG_ZERO;
+  b = b ?? BIG_ZERO;
+
+  return BigNumber.from(a).eq(BigNumber.from(b)) ? "Keep" : "Edit";
+}
+
+function getBooleanLabel(enable: boolean | undefined) {
+  return enable ? "Enabled" : "Disabled";
+}
+
+function compareBoolean(a: boolean | undefined, b: boolean | undefined) {
+  return a === b ? "Keep" : "Edit";
+}
 
 // ====== Split ======
 
@@ -87,33 +101,217 @@ function percentUpdaterFrom(newLimitBG: BigNumber, currency: BigNumber, version:
   };
 }
 
-export function compareRules(oldConfig: FundingCycleConfigProps, newConfig: FundingCycleConfigProps): SplitDiff {
-  const diff: SplitDiff = {
-    expire: {},
-    new: {},
-    change: {},
-    keep: {},
-    newTotal: BIG_ZERO
-  };
+export function compareRules(config: FundingCycleConfigProps, newConfig: FundingCycleConfigProps | undefined): SectionTableData[] {
+  if (!newConfig) return [];
 
-  return diff;
+  const discountRateDenominator = BigNumber.from(JBConstants.TotalPercent.DiscountRate[2]);
+  const reservedRateDenominator = BigNumber.from(JBConstants.TotalPercent.ReservedRate[2]);
+
+  const weight = config.fundingCycle.weight || BIG_ZERO;
+  const discountRate = config.fundingCycle.discountRate || BIG_ZERO;
+  const reservedRate = config.metadata?.reservedRate || BIG_ZERO;
+  const redemptionRate = config.metadata?.redemptionRate || BIG_ZERO;
+  let newWeight = newConfig.fundingCycle.weight || BIG_ZERO;
+  const newDiscountRate = newConfig.fundingCycle.discountRate || BIG_ZERO;
+  const newReservedRate = newConfig.metadata?.reservedRate || BIG_ZERO;
+  const newRedemptionRate = newConfig.metadata?.redemptionRate || BIG_ZERO;
+
+  const weightSpecified = !newWeight.eq(0);
+  newWeight = weightSpecified ?
+    newWeight :
+    mulDiv(weight, discountRateDenominator.sub(discountRate), discountRateDenominator);
+
+  // Payer gets what left after reserved tokens are issued.
+  const payerWeight = weight.sub(mulDiv(weight, reservedRate, reservedRateDenominator));
+  const newPayerWeight = newWeight.sub(mulDiv(newWeight, newReservedRate, reservedRateDenominator));
+
+  // For display, 0.01 % precision
+  const discountRateLabel = (discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[2] * 100).toFixed(2) + "%";
+  const reservedRateLabel = (reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[2] * 100).toFixed(2) + "%";
+  const redemptionRateLabel = (redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[2] * 100).toFixed(2) + "%";
+  const newDiscountRateLabel = (newDiscountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[2] * 100).toFixed(2) + "%";
+  const newReservedRateLabel = (newReservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[2] * 100).toFixed(2) + "%";
+  const newRedemptionRateLabel = (newRedemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[2] * 100).toFixed(2) + "%";
+
+  return [
+    {
+      section: "Cycle",
+      entries: [
+        {
+          id: "duration",
+          title: "Duration",
+          proposal: 0,
+          oldVal: config.fundingCycle.duration?.div(86400).toString() + " days",
+          newVal: newConfig.fundingCycle.duration?.div(86400).toString() + " days",
+          status: compareBN(config.fundingCycle.duration, newConfig.fundingCycle.duration),
+          valueToBeSorted: 0
+        },
+        {
+          id: "payouts",
+          title: "Payouts",
+          proposal: 0,
+          oldVal: formatCurrency(config.fundingCycle.currency, config.fundingCycle.target),
+          newVal: formatCurrency(newConfig.fundingCycle.currency, newConfig.fundingCycle.target),
+          status: (config.fundingCycle.currency.eq(newConfig.fundingCycle.currency) && config.fundingCycle.target.eq(newConfig.fundingCycle.target)) ? "Keep" : "Edit",
+          valueToBeSorted: 0
+        },
+        {
+          id: "editDeadline",
+          title: "Edit Deadline",
+          proposal: 0,
+          oldVal: config.fundingCycle.ballot,
+          newVal: newConfig.fundingCycle.ballot,
+          status: config.fundingCycle.ballot === newConfig.fundingCycle.ballot ? "Keep" : "Edit",
+          valueToBeSorted: 0
+        }
+      ]
+    },
+    {
+      section: "Token",
+      entries: [
+        {
+          id: "totalIssuanceRate",
+          title: "Total issuance rate",
+          proposal: 0,
+          oldVal: formatEtherCommify(weight),
+          newVal: formatEtherCommify(newWeight),
+          status: compareBN(weight, newWeight),
+          valueToBeSorted: 0
+        },
+        {
+          id: "payerIssuanceRate",
+          title: "Payer issuance rate",
+          proposal: 0,
+          oldVal: formatEtherCommify(payerWeight),
+          newVal: formatEtherCommify(newPayerWeight),
+          status: compareBN(payerWeight, newPayerWeight),
+          valueToBeSorted: 0
+        },
+        {
+          id: "reservedRate",
+          title: "Reserved rate",
+          proposal: 0,
+          oldVal: reservedRateLabel,
+          newVal: newReservedRateLabel,
+          status: compareBN(reservedRate, newReservedRate),
+          valueToBeSorted: 0
+        },
+        {
+          id: "issuanceReductionRate",
+          title: "Issuance reduction rate",
+          proposal: 0,
+          oldVal: discountRateLabel,
+          newVal: newDiscountRateLabel,
+          status: compareBN(discountRate, newDiscountRate),
+          valueToBeSorted: 0
+        },
+        {
+          id: "redemptionRate",
+          title: "Redemption rate",
+          proposal: 0,
+          oldVal: redemptionRateLabel,
+          newVal: newRedemptionRateLabel,
+          status: compareBN(redemptionRate, newRedemptionRate),
+          valueToBeSorted: 0
+        },
+        {
+          id: "ownerTokenMinting",
+          title: "Owner token minting",
+          proposal: 0,
+          oldVal: getBooleanLabel(config.metadata?.allowMinting),
+          newVal: getBooleanLabel(newConfig.metadata?.allowMinting),
+          status: compareBoolean(config.metadata?.allowMinting, newConfig.metadata?.allowMinting),
+          valueToBeSorted: 0
+        },
+        {
+          id: "tokenTransfers",
+          title: "Token transfers",
+          proposal: 0,
+          // @ts-ignore we do have pauseTransfers
+          oldVal: getBooleanLabel(!config.metadata?.global.pauseTransfers),
+          // @ts-ignore
+          newVal: getBooleanLabel(!newConfig.metadata?.global.pauseTransfers),
+          // @ts-ignore
+          status: compareBoolean(config.metadata?.global.pauseTransfers, newConfig.metadata?.global.pauseTransfers),
+          valueToBeSorted: 0
+        }
+      ]
+    },
+    {
+      section: "Other Rules",
+      entries: [
+        {
+          id: "paymentToThisProject",
+          title: "Payment to this project",
+          proposal: 0,
+          oldVal: getBooleanLabel(!config.metadata?.pausePay),
+          newVal: getBooleanLabel(!newConfig.metadata?.pausePay),
+          status: compareBoolean(config.metadata?.pausePay, newConfig.metadata?.pausePay),
+          valueToBeSorted: 0
+        },
+        {
+          id: "holdFees",
+          title: "Hold fees",
+          proposal: 0,
+          oldVal: getBooleanLabel(config.metadata?.holdFees),
+          newVal: getBooleanLabel(newConfig.metadata?.holdFees),
+          status: compareBoolean(config.metadata?.holdFees, newConfig.metadata?.holdFees),
+          valueToBeSorted: 0
+        },
+        {
+          id: "setPaymentTerminals",
+          title: "Set payment terminals",
+          proposal: 0,
+          oldVal: getBooleanLabel(config.metadata?.global.allowSetTerminals),
+          newVal: getBooleanLabel(newConfig.metadata?.global.allowSetTerminals),
+          status: compareBoolean(config.metadata?.global.allowSetTerminals, newConfig.metadata?.global.allowSetTerminals),
+          valueToBeSorted: 0
+        },
+        {
+          id: "setController",
+          title: "Set controller",
+          proposal: 0,
+          oldVal: getBooleanLabel(config.metadata?.global.allowSetController),
+          newVal: getBooleanLabel(newConfig.metadata?.global.allowSetController),
+          status: compareBoolean(config.metadata?.global.allowSetController, newConfig.metadata?.global.allowSetController),
+          valueToBeSorted: 0
+        },
+        {
+          id: "migratePaymentTerminal",
+          title: "Migrate payment terminal",
+          proposal: 0,
+          oldVal: getBooleanLabel(config.metadata?.allowTerminalMigration),
+          newVal: getBooleanLabel(newConfig.metadata?.allowTerminalMigration),
+          status: compareBoolean(config.metadata?.allowTerminalMigration, newConfig.metadata?.allowTerminalMigration),
+          valueToBeSorted: 0
+        },
+        {
+          id: "migrateController",
+          title: "Migrate controller",
+          proposal: 0,
+          oldVal: getBooleanLabel(config.metadata?.allowControllerMigration),
+          newVal: getBooleanLabel(newConfig.metadata?.allowControllerMigration),
+          status: compareBoolean(config.metadata?.allowControllerMigration, newConfig.metadata?.allowControllerMigration),
+          valueToBeSorted: 0
+        }
+      ]
+    }];
 }
 
-export function comparePayouts(config: FundingCycleConfigProps, oldPayouts: JBSplit[], newPayouts: JBSplit[]) {
+export function comparePayouts(config: FundingCycleConfigProps, newConfig: FundingCycleConfigProps | undefined, oldPayouts: JBSplit[], newPayouts: JBSplit[]) {
   const diff: SplitDiff = {
     expire: {},
     new: {},
     change: {},
     keep: {},
-    newTotal: config.fundingCycle.target
+    newTotal: newConfig?.fundingCycle.target || BIG_ZERO
   };
+  if (!newConfig) return diff;
 
   const newPayoutsMap = new Map<string, JBSplit>();
   newPayouts.forEach(payout => newPayoutsMap.set(keyOfSplit(payout), payout));
 
   const isInfiniteLimit = config.fundingCycle.target.gte(JBConstants.UintMax);
-  const oldLimit = parseInt(utils.formatEther(config.fundingCycle.target ?? 0));
-  let newLimit = oldLimit;
 
   // Calculate diff
   oldPayouts.forEach(split => {
@@ -129,23 +327,41 @@ export function comparePayouts(config: FundingCycleConfigProps, oldPayouts: JBSp
         config.version
       ) || "",
       newVal: "",
-      amount: calculateSplitAmount((newSplit || split).percent, config.fundingCycle.target)
+      amount: 0
     };
 
     if (newSplit) {
       // keep or change
-      const equal = isEqualJBSplit(split, newSplit);
+      const equal = isEqualPayoutSplit(
+        split.percent, config.fundingCycle.currency, config.fundingCycle.target,
+        newSplit.percent, newConfig.fundingCycle.currency, newConfig.fundingCycle.target);
+
       if (equal) {
-        diff.keep[key] = entry;
+        diff.keep[key] = {
+          ...entry,
+          newVal: formattedSplit(
+            split.percent || BIG_ZERO,
+            config.fundingCycle.currency,
+            config.fundingCycle.target,
+            config.version
+          ) || "",
+          amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
+        };
       } else {
-        diff.change[key] = entry;
-        newLimit -= calculateSplitAmount(entry.split.percent, config.fundingCycle.target);
-        newLimit += entry.amount;
+        diff.change[key] = {
+          ...entry,
+          newVal: formattedSplit(
+            newSplit.percent || BIG_ZERO,
+            newConfig.fundingCycle.currency,
+            newConfig.fundingCycle.target,
+            newConfig.version
+          ) || "",
+          amount: calculateSplitAmount(newSplit.percent, newConfig.fundingCycle.target)
+        };
       }
     } else {
       // expire
       diff.expire[key] = entry;
-      newLimit -= entry.amount;
     }
 
     // Remove map entry so it won't get calculated twice later
@@ -154,28 +370,22 @@ export function comparePayouts(config: FundingCycleConfigProps, oldPayouts: JBSp
 
   newPayoutsMap.forEach((split, key) => {
     // New entry
-    const amount = calculateSplitAmount(split.percent, config.fundingCycle.target);
+    const amount = calculateSplitAmount(split.percent, newConfig.fundingCycle.target);
     diff.new[key] = {
       split,
       proposalId: 0,
       oldVal: "",
-      newVal: "",
+      newVal: formattedSplit(
+        split.percent || BIG_ZERO,
+        newConfig.fundingCycle.currency,
+        newConfig.fundingCycle.target,
+        newConfig.version
+      ) || "",
       amount
     };
-    newLimit += amount;
   });
 
-  // Calculate new distributionLimit and percentages for all payouts if there are changes.
-  const newLimitBG = utils.parseEther(newLimit.toFixed(0));
-  diff.newTotal = newLimitBG;
-
-  // FIXME: remining funds should be allocated to project owner
-  const updatePercentAndNewVal = percentUpdaterFrom(newLimitBG, config.fundingCycle.currency, config.version);
-  Object.values(diff.keep).forEach(updatePercentAndNewVal);
-  Object.values(diff.new).forEach(updatePercentAndNewVal);
-  Object.values(diff.change).forEach(updatePercentAndNewVal);
-
-  console.debug("payoutsCompare.final", { diff, isInfiniteLimit, oldLimit, newLimit });
+  //console.debug("payoutsCompare.final", { diff, isInfiniteLimit });
   return diff;
 }
 
@@ -311,7 +521,7 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
   Object.values(diff.new).forEach(updatePercentAndNewVal);
   Object.values(diff.change).forEach(updatePercentAndNewVal);
 
-  console.debug("payoutsDiffOf.final", { diff, isInfiniteLimit, oldLimit, newLimit });
+  //console.debug("payoutsDiffOf.final", { diff, isInfiniteLimit, oldLimit, newLimit });
   return diff;
 }
 
@@ -391,7 +601,7 @@ export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], 
     };
   });
 
-  console.debug("reservesDiffOf.final", diff);
+  //console.debug("reservesDiffOf.final", diff);
   return diff;
 }
 
@@ -409,206 +619,12 @@ export function payout2JBSplit(payout: Payout) {
   return split;
 }
 
-function calcTokenRates(weight: BigNumber, discountRate: BigNumber, reservedRate: BigNumber, redemptionRate: BigNumber) {
-  const discountRateDenominator = BigNumber.from(JBConstants.TotalPercent.DiscountRate[2]);
-  const reservedRateDenominator = BigNumber.from(JBConstants.TotalPercent.ReservedRate[2]);
-
-  // Payer gets what left after reserved tokens are issued.
-  const payerIssuanceRate = weight.sub(mulDiv(weight, reservedRate, reservedRateDenominator));
-  // Discounted issuance rate in next cycle.
-  const newIssuanceRate = mulDiv(weight, discountRateDenominator.sub(discountRate), discountRateDenominator);
-  const newPayerIssuanceRate = newIssuanceRate.sub(mulDiv(newIssuanceRate, reservedRate, reservedRateDenominator));
-
-  // For display, 0.01 % precision
-  const discountRateLabel = (discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[2] * 100).toFixed(2) + "%";
-  const reservedRateLabel = (reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[2] * 100).toFixed(2) + "%";
-  const redemptionRateLabel = (redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[2] * 100).toFixed(2) + "%";
-
-  return {
-    issuanceRate: weight, payerIssuanceRate, newIssuanceRate, newPayerIssuanceRate,
-    discountRateLabel, reservedRateLabel, redemptionRateLabel
-  };
-}
-
-function getBooleanLabel(enable: boolean | undefined) {
-  return enable ? "Enabled" : "Disabled";
-}
-
-export function calcDiffTableData(config: FundingCycleConfigProps, payoutsDiff: SplitDiff, reservesDiff: SplitDiff) {
+export function calcDiffTableData(config: FundingCycleConfigProps, newConfig: FundingCycleConfigProps | undefined, payoutsDiff: SplitDiff, reservesDiff: SplitDiff) {
   // Table data
-  // TODO: to review, we can decode queued reconfiguration, calculate diff and display it.
-  // Separate this part and we can reuse it.
-  //
-  const weight = config.fundingCycle.weight || BIG_ZERO;
-  const discountRate = config.fundingCycle.discountRate || BIG_ZERO;
-  const reservedRate = config.metadata?.reservedRate || BIG_ZERO;
-  const redemptionRate = config.metadata?.redemptionRate || BIG_ZERO;
-  const rates = calcTokenRates(weight, discountRate, reservedRate, redemptionRate);
-
-  console.debug("calcDiffTableData", { config, rates });
+  //console.debug("calcDiffTableData", { config, newConfig, payoutsDiff, reservesDiff });
 
   const tableData: SectionTableData[] = [
-    {
-      section: "Cycle",
-      entries: [
-        {
-          id: "duration",
-          title: "Duration",
-          proposal: 0,
-          oldVal: config.fundingCycle.duration?.div(86400).toString() + " days",
-          newVal: config.fundingCycle.duration?.div(86400).toString() + " days",
-          status: "Keep",
-          valueToBeSorted: 0
-        },
-        {
-          id: "payouts",
-          title: "Payouts",
-          proposal: 0,
-          oldVal: formatCurrency(config.fundingCycle.currency, config.fundingCycle.target),
-          newVal: formatCurrency(config.fundingCycle.currency, payoutsDiff.newTotal),
-          status: payoutsDiff.newTotal.eq(config.fundingCycle.target) ? "Keep" : "Edit",
-          valueToBeSorted: 0
-        },
-        {
-          id: "editDeadline",
-          title: "Edit Deadline",
-          proposal: 0,
-          oldVal: config.fundingCycle.ballot,
-          newVal: config.fundingCycle.ballot,
-          status: "Keep",
-          valueToBeSorted: 0
-        }
-      ]
-    },
-    {
-      section: "Token",
-      entries: [
-        {
-          id: "totalIssuanceRate",
-          title: "Total issuance rate",
-          proposal: 0,
-          oldVal: formatEtherCommify(rates.issuanceRate),
-          newVal: formatEtherCommify(rates.newIssuanceRate),
-          status: rates.issuanceRate.eq(rates.newIssuanceRate) ? "Keep" : "Edit",
-          valueToBeSorted: 0
-        },
-        {
-          id: "payerIssuanceRate",
-          title: "Payer issuance rate",
-          proposal: 0,
-          oldVal: formatEtherCommify(rates.payerIssuanceRate),
-          newVal: formatEtherCommify(rates.newPayerIssuanceRate),
-          status: rates.payerIssuanceRate.eq(rates.newPayerIssuanceRate) ? "Keep" : "Edit",
-          valueToBeSorted: 0
-        },
-        {
-          id: "reservedRate",
-          title: "Reserved rate",
-          proposal: 0,
-          oldVal: rates.reservedRateLabel,
-          newVal: rates.reservedRateLabel,
-          status: "Keep",
-          valueToBeSorted: 0
-        },
-        {
-          id: "issuanceReductionRate",
-          title: "Issuance reduction rate",
-          proposal: 0,
-          oldVal: rates.discountRateLabel,
-          newVal: rates.discountRateLabel,
-          status: "Keep",
-          valueToBeSorted: 0
-        },
-        {
-          id: "redemptionRate",
-          title: "Redemption rate",
-          proposal: 0,
-          oldVal: rates.redemptionRateLabel,
-          newVal: rates.redemptionRateLabel,
-          status: "Keep",
-          valueToBeSorted: 0
-        },
-        {
-          id: "ownerTokenMinting",
-          title: "Owner token minting",
-          proposal: 0,
-          oldVal: getBooleanLabel(config.metadata?.allowMinting),
-          newVal: getBooleanLabel(config.metadata?.allowMinting),
-          status: "Keep",
-          valueToBeSorted: 0
-        },
-        {
-          id: "tokenTransfers",
-          title: "Token transfers",
-          proposal: 0,
-          // @ts-ignore we do have pauseTransfers
-          oldVal: getBooleanLabel(!config.metadata?.global.pauseTransfers),
-          // @ts-ignore
-          newVal: getBooleanLabel(!config.metadata?.global.pauseTransfers),
-          status: "Keep",
-          valueToBeSorted: 0
-        }
-      ]
-    },
-    {
-      section: "Other Rules",
-      entries: [
-        {
-          id: "paymentToThisProject",
-          title: "Payment to this project",
-          proposal: 0,
-          oldVal: getBooleanLabel(!config.metadata?.pausePay),
-          newVal: getBooleanLabel(!config.metadata?.pausePay),
-          status: "Keep",
-          valueToBeSorted: 0
-        },
-        {
-          id: "holdFees",
-          title: "Hold fees",
-          proposal: 0,
-          oldVal: getBooleanLabel(config.metadata?.holdFees),
-          newVal: getBooleanLabel(config.metadata?.holdFees),
-          status: "Keep",
-          valueToBeSorted: 0
-        },
-        {
-          id: "setPaymentTerminals",
-          title: "Set payment terminals",
-          proposal: 0,
-          oldVal: getBooleanLabel(config.metadata?.global.allowSetTerminals),
-          newVal: getBooleanLabel(config.metadata?.global.allowSetTerminals),
-          status: "Keep",
-          valueToBeSorted: 0
-        },
-        {
-          id: "setController",
-          title: "Set controller",
-          proposal: 0,
-          oldVal: getBooleanLabel(config.metadata?.global.allowSetController),
-          newVal: getBooleanLabel(config.metadata?.global.allowSetController),
-          status: "Keep",
-          valueToBeSorted: 0
-        },
-        {
-          id: "migratePaymentTerminal",
-          title: "Migrate payment terminal",
-          proposal: 0,
-          oldVal: getBooleanLabel(config.metadata?.allowTerminalMigration),
-          newVal: getBooleanLabel(config.metadata?.allowTerminalMigration),
-          status: "Keep",
-          valueToBeSorted: 0
-        },
-        {
-          id: "migrateController",
-          title: "Migrate controller",
-          proposal: 0,
-          oldVal: getBooleanLabel(config.metadata?.allowControllerMigration),
-          newVal: getBooleanLabel(config.metadata?.allowControllerMigration),
-          status: "Keep",
-          valueToBeSorted: 0
-        }
-      ]
-    },
+    ...compareRules(config, newConfig),
     {
       section: "Distribution",
       entries: []
@@ -626,13 +642,13 @@ export function calcDiffTableData(config: FundingCycleConfigProps, payoutsDiff: 
   Object.values(payoutsDiff.change).forEach(diff2TableEntry(payoutIndex, "Edit", tableData));
   Object.values(payoutsDiff.expire).forEach(diff2TableEntry(payoutIndex, "Remove", tableData));
   Object.values(payoutsDiff.keep).forEach(diff2TableEntry(payoutIndex, "Keep", tableData));
-  tableData[1].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
+  tableData[payoutIndex].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
   // Reserve Diff
   Object.values(reservesDiff.new).forEach(diff2TableEntry(reserveIndex, "Add", tableData));
   Object.values(reservesDiff.change).forEach(diff2TableEntry(reserveIndex, "Edit", tableData));
   Object.values(reservesDiff.expire).forEach(diff2TableEntry(reserveIndex, "Remove", tableData));
   Object.values(reservesDiff.keep).forEach(diff2TableEntry(reserveIndex, "Keep", tableData));
-  tableData[2].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
+  tableData[reserveIndex].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
 
   return tableData;
 }

@@ -49,7 +49,7 @@ export default function DiffTableWithSection(
   { space, tableData, loading = false }:
     { space: string, tableData: SectionTableData[], loading?: boolean }) {
 
-  const [hideUnchanged, setHideUnchanged] = useState(false);
+  const [hideUnchanged, setHideUnchanged] = useState(true);
 
   // if it's loading, display a skeleton loader with placeholder table, and a pluse animation
   if (loading) {
