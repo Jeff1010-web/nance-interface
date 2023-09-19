@@ -34,7 +34,7 @@ export default async function auth(req: any, res: any) {
             return null;
           }
 
-          console.debug("📚 NextAuth.authorize", credentials, domain, csrf);
+          console.log("📚 NextAuth.authorize", credentials, domain, csrf);
           const result = await siwe.verify({
             signature: credentials?.signature || "",
             domain,
