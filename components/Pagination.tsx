@@ -14,14 +14,14 @@ export interface PaginationProps {
 
 export default function Pagination({ page, setPage, total, limit, infinite = false }: PaginationProps) {
   const itemStart = (page - 1) * limit + 1;
-  const itemEnd = infinite ? page*limit : Math.min(page * limit, total);
+  const itemEnd = infinite ? page * limit : Math.min(page * limit, total);
   const pages = Math.ceil(total / limit);
 
   const firstPages = Math.max(1, page - 3);
   const lastPages = Math.min(page + 3, pages);
 
   const renderedPages = range(firstPages, lastPages).map((p) => {
-    if(p === page) {
+    if (p === page) {
       return (
         <input key={p} type="number" aria-current="page" max={pages} min={1} step={1} value={page} onChange={e => setPage(e.target.value as unknown as number)} name="page-input" id="page-input" className="relative z-10 inline-flex items-center border border-indigo-500 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 focus:z-20" />
       );
@@ -35,11 +35,11 @@ export default function Pagination({ page, setPage, total, limit, infinite = fal
           {p}
         </button>
       );
-    } 
+    }
   });
 
   return (
-    <div className="w-full rounded-lg mt-6 flex items-center justify-between px-4 py-3 sm:px-6">
+    <div className="w-full rounded-lg mt-6 flex items-center justify-between px-4 py-3 sm:px-6" id="pagination-div">
       <div className="flex flex-1 justify-between sm:hidden">
         <button
           disabled={page === 1}

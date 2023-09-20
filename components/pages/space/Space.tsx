@@ -1,7 +1,7 @@
 import { formatDistanceToNowStrict, parseISO, format } from "date-fns";
 import { useQueryParams, StringParam, withDefault, BooleanParam, NumberParam } from "next-query-params";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useSpaceInfo, useProposals } from "../../../hooks/NanceHooks";
 import ScrollToBottom from "../../ScrollToBottom";
 import SearchableComboBox, { Option } from "../../SearchableComboBox";
@@ -17,6 +17,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import LoadingArrowSpiner from "../../LoadingArrowSpiner";
 import SearchableComboBoxMultiple from "../../SearchableComboBoxMultiple";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 
 const QueueExecutionModal = dynamic(() => import("./QueueReconfigurationModal"), {
   loading: () => <LoadingArrowSpiner />,
@@ -24,6 +26,70 @@ const QueueExecutionModal = dynamic(() => import("./QueueReconfigurationModal"),
 const QueueTransactionsModal = dynamic(() => import("./QueueTransactionsModal"), {
   loading: () => <LoadingArrowSpiner />,
 });
+
+function getDriver(action: () => void) {
+  const driverObj = driver({
+    showProgress: true,
+    steps: [
+      {
+        element: "#new-proposal-button",
+        popover: {
+          title: "Create new proposal",
+          description: "You can request payouts, reserve tokens and custom transactions.",
+          side: "left", align: 'start'
+        },
+      },
+      {
+        element: "#cycle-select-box",
+        popover: {
+          title: "Select the cycle",
+          description: "Proposals are grouped by cycles, you can select the cycle you want to view.",
+          side: "top", align: 'start'
+        },
+      },
+      {
+        element: "#search-bar",
+        popover: {
+          title: "Search proposals with keywords",
+          description: "You can search proposals with keywords, which can be the words in the title or the content. Use space to separate multiple keywords.",
+          side: "bottom", align: 'start'
+        },
+      },
+      {
+        element: "#proposals-table",
+        popover: {
+          title: "View proposals",
+          description: "All proposals are listed here. You can view the details of each proposal by clicking the proposal.",
+          side: "top", align: 'start'
+        },
+      },
+      {
+        element: "#proposals-table-head",
+        popover: {
+          title: "Sort proposals",
+          description: "You can sort proposals by clicking the table headers. And to reverse the order, just click again.",
+          side: "bottom", align: 'start'
+        },
+      },
+      {
+        element: "#pagination-div",
+        popover: {
+          title: "Check other pages",
+          description: "You can check other pages by clicking the left or right arrow.",
+          side: "top", align: 'start'
+        },
+      },
+    ],
+    onDestroyStarted: () => {
+      if (!driverObj.hasNextStep() || confirm("Are you sure?")) {
+        driverObj.destroy();
+        action();
+      }
+    },
+  });
+
+  return driverObj;
+}
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
   // State
@@ -42,14 +108,15 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     page: withDefault(NumberParam, 1),
     sortBy: withDefault(StringParam, ''),
     sortDesc: withDefault(BooleanParam, true),
-    cycle: StringParam
+    cycle: StringParam,
+    guide: withDefault(BooleanParam, false)
   });
   const { keyword, cycle, limit, page } = query;
 
   // External Hooks
   const { data: infoData, isLoading: infoLoading, error: infoError } = useSpaceInfo({ space }, router.isReady);
   const { data: proposalData, isLoading: proposalsLoading, error: proposalError } = useProposals({ space, cycle, keyword, page, limit }, router.isReady);
-  //const currentCycle = cycle || infoData?.data?.currentCycle;
+  const loading = infoLoading || proposalsLoading;
   const isCurrentCycle = cycle && infoData?.data?.currentCycle && cycle === infoData?.data?.currentCycle.toString();
   const allCycle = { id: "All", label: `All`, status: true };
 
@@ -124,6 +191,12 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     }
   }, [keyword]);
 
+  useLayoutEffect(() => {
+    if (query.guide && !loading) {
+      getDriver(() => setQuery({ guide: false })).drive();
+    }
+  }, [query.guide, loading, setQuery]);
+
   return (
     <div className="m-4 lg:m-6 flex justify-center lg:px-20">
       <div className="flex flex-col max-w-7xl w-full">
@@ -161,6 +234,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
 
         <div className="max-w-7xl flex flex-col space-y-2 md:flex-row md:space-x-5 md:space-y-0 bg-white mt-2 p-2 shadow rounded-md">
           <Link
+            id="new-proposal-button"
             href={`/s/${space}/edit`}
             className="md:ml-2 inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
@@ -232,7 +306,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
           )}
 
 
-          <div className={hasDrafts ? "md:w-2/12" : "md:w-3/12"}>
+          <div id="cycle-select-box" className={hasDrafts ? "md:w-2/12" : "md:w-3/12"}>
             <SearchableComboBoxMultiple val={cycleOptions} setVal={(options) => {
               setCycleOptions(options);
               // sync with cycle parameter
@@ -243,7 +317,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
           </div>
 
           {/* Search bar and limit */}
-          <div className="md:w-9/12">
+          <div className="md:w-9/12" id="search-bar">
             <label htmlFor="keyword" className="block text-sm font-medium text-gray-700">
               Search proposals
             </label>
@@ -274,8 +348,8 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
 
         </div>
 
-        <div className="">
-          <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={infoLoading || proposalsLoading} proposalsPacket={proposalData?.data} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} showDrafts={showDrafts} />
+        <div>
+          <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={loading} proposalsPacket={proposalData?.data} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} showDrafts={showDrafts} />
         </div>
 
         <Pagination page={page} setPage={(p) => setQuery({ page: p })} limit={limit} total={0} infinite />

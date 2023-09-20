@@ -128,8 +128,8 @@ export default function ProposalCards({ loading, proposalsPacket, maxCycle, prop
   return (
     <div className="mt-6 bg-white">
       <div className="mt-10 ring-1 ring-gray-300 sm:mx-0 rounded-lg">
-        <table className="min-w-full divide-y divide-gray-300">
-          <thead>
+        <table className="min-w-full divide-y divide-gray-300" id="proposals-table">
+          <thead id="proposals-table-head">
             <tr>
               <th scope="col" className="hidden py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 md:table-cell">
                 <SortableTableHeader val="status" label="Status" />
