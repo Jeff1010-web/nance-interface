@@ -12,7 +12,6 @@ import {
   configureChains, mainnet
 } from 'wagmi';
 import { watchAccount } from '@wagmi/core';
-import { SafeConnector } from 'wagmi/connectors/safe';
 import { infuraProvider } from 'wagmi/providers/infura';
 
 import { NextQueryParamProvider } from 'next-query-params';
@@ -44,10 +43,8 @@ const { connectors } = getDefaultWallets({
   chains
 });
 
-const safeConnector = new SafeConnector({ chains });
-
 const wagmiConfig = createConfig({
-  connectors: [...connectors(), safeConnector],
+  connectors,
   publicClient
 });
 
