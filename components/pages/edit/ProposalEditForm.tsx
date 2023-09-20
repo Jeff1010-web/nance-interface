@@ -18,21 +18,75 @@ import { ProposalMetadataContext } from "../../../pages/s/[space]/edit";
 import MiddleStepModal from "../../modal/MiddleStepModal";
 import ResultModal from "../../modal/ResultModal";
 import Actions from "./Actions";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+import { BooleanParam, useQueryParams, withDefault } from "next-query-params";
 
 type ProposalFormValues = Omit<ProposalUploadRequest, "signature">
 
 const ProposalStatus = [
-  {title: "Publish", description: "Publish your proposal and let people join the discussion.", value: "Discussion", display: "Publish"},
-  {title: "Draft", description: "Save your proposal as draft, you can publish it later.", value: "Draft", display: "Save as Draft"},
-  {title: "Private Draft", description: "Save your proposal as private, you can publish it later for discussion.", value: "Private", display: "Save as Private"},
+  { title: "Publish", description: "Publish your proposal and let people join the discussion.", value: "Discussion", display: "Publish" },
+  { title: "Draft", description: "Save your proposal as draft, you can publish it later.", value: "Draft", display: "Save as Draft" },
+  { title: "Private Draft", description: "Save your proposal as private, you can publish it later for discussion.", value: "Private", display: "Save as Private" },
 ];
 
 const TEMPLATE = `<h2>Synopsis</h2><p><em>State what the proposal does in one sentence.</em></p><p></p><h2>Motivation</h2><p><em>What problem does this solve? Why now?</em></p><p></p><h2>Specification</h2><p><em>How exactly will this be executed? Be specific and leave no ambiguity.</em></p><p></p><h2>Rationale</h2><p><em>Why is this specification appropriate?</em></p><p></p><h2>Risks</h2><p><em>What might go wrong?</em></p><p></p><h2>Timeline</h2><p><em>When exactly should this proposal take effect? When exactly should this proposal end?</em></p>`;
+
+function getDriver(action: () => void) {
+  const driverObj = driver({
+    showProgress: true,
+    steps: [
+      {
+        element: "#add-action-button",
+        popover: {
+          title: "Add an action",
+          description: "Specify this proposal's onchain actions.",
+          side: "bottom", align: 'start'
+        },
+      },
+      {
+        element: "#proposal-title",
+        popover: {
+          title: "Input proposal title",
+          description: "Keep it short and simple.",
+          side: "bottom", align: 'start'
+        },
+      },
+      {
+        element: "#proposal-body",
+        popover: {
+          title: "Input proposal body",
+          description: "You can write more details here. You can also drag and drop markdown file or image to attach content (images are pinned to IPFS).",
+          side: "bottom", align: 'start'
+        },
+      },
+      {
+        element: "#submit-button-div",
+        popover: {
+          title: "Submit the proposal",
+          description: "After you connected wallet, you can either submit the proposal or save it as private draft.",
+          side: "top", align: 'start'
+        },
+      },
+    ],
+    onDestroyStarted: () => {
+      if (!driverObj.hasNextStep() || confirm("Are you sure?")) {
+        driverObj.destroy();
+        action();
+      }
+    },
+  });
+
+  return driverObj;
+}
 
 export default function ProposalEditForm({ space }: { space: string }) {
   // query and context
   const router = useRouter();
   const metadata = useContext(ProposalMetadataContext);
+  const [query, setQuery] = useQueryParams({
+    guide: withDefault(BooleanParam, false)
+  });
 
   // state
   const [formErrors, setFormErrors] = useState<string>("");
@@ -42,7 +96,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
 
   // hooks
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, !metadata.fork && metadata.loadedProposal?.hash || undefined, router.isReady);
-  
+
   const { data: session, status } = useSession();
   const { openConnectModal } = useConnectModal();
 
@@ -89,12 +143,18 @@ export default function ProposalEditForm({ space }: { space: string }) {
       });
   };
 
+  useEffect(() => {
+    if (query.guide) {
+      getDriver(() => setQuery({ guide: false })).drive();
+    }
+  }, [query.guide, setQuery]);
+
   // shortcut
   const isSubmitting = isMutating;
   const error = uploadError;
 
   useEffect(() => {
-    if(formState.errors && Object.keys(formState.errors).length > 0) {
+    if (formState.errors && Object.keys(formState.errors).length > 0) {
       const actionErrors = formState.errors.proposal?.actions || [];
       const arr: any = [];
       actionErrors.forEach?.((e, i) => {
@@ -108,9 +168,9 @@ export default function ProposalEditForm({ space }: { space: string }) {
     }
   }, [formState]);
 
-  function getButtonLabel(selected: {title: string, description: string, value: string, display: string}) {
-    //{status === "loading" ? 
-    //(isMutating ? "Submitting..." : "Connecting...") : 
+  function getButtonLabel(selected: { title: string, description: string, value: string, display: string }) {
+    //{status === "loading" ?
+    //(isMutating ? "Submitting..." : "Connecting...") :
     //(formErrors.length > 0 ? "Error in form" : selected.display)}
 
     if (formErrors.length > 0) {
@@ -130,8 +190,8 @@ export default function ProposalEditForm({ space }: { space: string }) {
       {!error && <ResultModal title="Success" description={`Proposal "${getValues("proposal.title")}" ${isNew ? "created" : "updated"} by ${session?.user?.name || "unknown"}`} buttonText="Go to proposal page" onClick={() => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${data?.data.hash}` : `/s/${space}/${data?.data.hash}`)} isSuccessful={true} shouldOpen={data !== undefined} close={reset} />}
       {error && <ResultModal title="Error" description={error.error_description || error.message || error} buttonText="Close" onClick={reset} isSuccessful={false} shouldOpen={true} close={reset} />}
 
-      <MiddleStepModal open={txnsMayFail} setOpen={setTxnsMayFail} 
-        title="SimulationCheck" description="You have some transactions may failed based on simulations, do you wish to continue?" 
+      <MiddleStepModal open={txnsMayFail} setOpen={setTxnsMayFail}
+        title="SimulationCheck" description="You have some transactions may failed based on simulations, do you wish to continue?"
         payload={formDataPayload}
         onContinue={(f) => processAndUploadProposal(f)} />
       <form className="space-y-6 mt-6" onSubmit={handleSubmit(onSubmit)}>
@@ -141,7 +201,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
           <div>
             <div className="mt-5 md:mt-0">
               <div className=" gap-6">
-                <div className="">
+                <div id="proposal-title">
                   <input
                     type="text"
                     {...register("proposal.title", { value: metadata.loadedProposal?.title || "Proposal Title" })}
@@ -151,7 +211,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
               </div>
 
               <div>
-                <div className="mt-4">
+                <div className="mt-4" id="proposal-body">
                   <Controller
                     name="proposal.body"
                     control={control}
@@ -206,7 +266,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
           </p>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex justify-end" id="submit-button-div">
           <Link href={space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`} legacyBehavior>
             <a
               className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"

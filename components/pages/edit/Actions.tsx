@@ -23,8 +23,8 @@ export default function Actions({ loadedActions }: { loadedActions: Action[] }) 
     [key: string]: any;
   }>({ name: "proposal.actions" });
 
-  const {space} = useContext(ProposalMetadataContext);
-  const { data: spaceInfo } = useSpaceInfo({space});
+  const { space } = useContext(ProposalMetadataContext);
+  const { data: spaceInfo } = useSpaceInfo({ space });
   const projectId = spaceInfo?.data?.juiceboxProjectId;
   const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, parseInt(projectId ?? ""));
   const projectOwner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
@@ -47,7 +47,7 @@ export default function Actions({ loadedActions }: { loadedActions: Action[] }) 
 
   return (
     <div>
-      
+
       {fields.map((field: any, index) => {
         if (field.type === "Payout") {
           return (
@@ -121,7 +121,8 @@ export default function Actions({ loadedActions }: { loadedActions: Action[] }) 
         }
       })}
 
-      <div className="bg-white p-8 mt-4 shadow rounded-lg flex flex-col items-center justify-center hover:cursor-pointer"
+      <div id="add-action-button"
+        className="bg-white p-8 mt-4 shadow rounded-lg flex flex-col items-center justify-center hover:cursor-pointer"
         onClick={() => setOpen(true)}>
         <div className="w-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-8">
           <SquaresPlusIcon className="w-14 h-14 text-gray-400" />
