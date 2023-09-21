@@ -4,7 +4,6 @@ import Head from 'next/head';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { NANCE_DEFAULT_SPACE } from "../constants/Nance";
 import Image from 'next/image';
 
 interface SiteNavProps {

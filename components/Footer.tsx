@@ -10,7 +10,7 @@ const navigation = [
   },
   {
     name: 'GitHub',
-    href: 'https://github.com/nance-eth/nance-interface',
+    href: 'https://github.com/nance-eth',
     icon: (props: any) => (
       <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
         <path
@@ -35,7 +35,7 @@ const navigation = [
     ),
   },
 ];
-  
+
 export default function Footer() {
   return (
     <footer className="bg-slate-50">
@@ -50,11 +50,10 @@ export default function Footer() {
         </div>
         <div className="mt-8 md:order-1 md:mt-0">
           <p className="text-center text-xs leading-5 text-gray-500">
-              &infin; Built with <a href={`https://github.com/nance-eth/nance-interface/tree/${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA}`}>{process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "dev"}</a>
+            &infin; Built with <a href={`https://github.com/nance-eth/nance-interface/tree/${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA}`}>{process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "dev"}</a>
           </p>
         </div>
       </div>
     </footer>
   );
 }
-  

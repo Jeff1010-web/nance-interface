@@ -1,18 +1,13 @@
-import SiteNav from "../components/SiteNav";
-
-import { NANCE_DEFAULT_SPACE } from "../constants/Nance";
-
 import Footer from "../components/Footer";
-import NanceSpace from "../components/pages/space/Space";
+import SiteNav from "../components/SiteNav";
+import Landing from "../components/pages/landing/Landing";
 
-export default function NanceProposals() {
-  let space = NANCE_DEFAULT_SPACE;
-
+export default function LandingPage() {
   return (
     <>
-      <SiteNav pageTitle="JuiceboxDAO Governance" description="JuiceboxDAO Governance Platform" image="/images/opengraph/homepage.png" withWallet withProposalButton={false} />
-      <NanceSpace space={space} />
+      <SiteNav pageTitle="Nance | Automate Your Governance" withProposalButton={false} withSiteSuffixInTitle={false} />
+      <Landing />
       <Footer />
     </>
-  );
+  )
 }
