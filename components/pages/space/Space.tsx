@@ -1,24 +1,21 @@
 import { formatDistanceToNowStrict, parseISO, format } from "date-fns";
 import { useQueryParams, StringParam, withDefault, BooleanParam, NumberParam } from "next-query-params";
 import { useRouter } from "next/router";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { useSpaceInfo, useProposals } from "../../../hooks/NanceHooks";
 import ScrollToBottom from "../../ScrollToBottom";
-import SearchableComboBox, { Option } from "../../SearchableComboBox";
 import ProposalCards from "./ProposalCards";
 import { getLastSlash } from "../../../libs/nance";
 import Pagination from "../../Pagination";
 import { Tooltip } from "flowbite-react";
-import { Switch } from "@headlessui/react";
-import { classNames } from "../../../libs/tailwind";
-import { BanknotesIcon, BoltIcon, DocumentMagnifyingGlassIcon, DocumentTextIcon, ShieldCheckIcon, Square3Stack3DIcon } from "@heroicons/react/24/solid";
+import { BanknotesIcon, BoltIcon, DocumentTextIcon, ShieldCheckIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import LoadingArrowSpiner from "../../LoadingArrowSpiner";
-import SearchableComboBoxMultiple from "../../SearchableComboBoxMultiple";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
+import CycleSelectorAndSearchBar from "./CycleSelectorAndSearchBar";
 
 const QueueExecutionModal = dynamic(() => import("./QueueReconfigurationModal"), {
   loading: () => <LoadingArrowSpiner />,
@@ -93,9 +90,6 @@ function getDriver(action: () => void) {
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
   // State
-  const [cycleOptions, setCycleOptions] = useState<Option[]>();
-  const [options, setOptions] = useState<Option[]>([{ id: "Loading", label: `Loading...`, status: true }]);
-  const [keywordInput, setKeywordInput] = useState<string>();
   const [showDrafts, setShowDrafts] = useState(true);
   const [showQueueReconfigurationModal, setShowQueueReconfigurationModal] = useState(false);
   const [showQueueTransactionsModal, setShowQueueTransactionsModal] = useState(false);
@@ -117,13 +111,8 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   const { data: infoData, isLoading: infoLoading, error: infoError } = useSpaceInfo({ space }, router.isReady);
   const { data: proposalData, isLoading: proposalsLoading, error: proposalError } = useProposals({ space, cycle, keyword, page, limit }, router.isReady);
   const loading = infoLoading || proposalsLoading;
-  const isCurrentCycle = cycle && infoData?.data?.currentCycle && cycle === infoData?.data?.currentCycle.toString();
-  const allCycle = { id: "All", label: `All`, status: true };
 
   const projectId = parseInt(infoData?.data?.juiceboxProjectId || "1");
-
-  // Flag
-  const hasDrafts = (proposalData?.data?.privateProposals?.length ?? 0) > 0;
 
   // Data process
   let remainingTime = "-";
@@ -136,60 +125,6 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   } catch (error) {
     //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
   }
-
-  // Effects to sync UI
-  useEffect(() => {
-    // if we can retrieve the current cycle from infoData, then we can populate the options
-    const _currentCycle = infoData?.data?.currentCycle;
-    console.log("🟢 NanceSpace.useEffect -> _currentCycle", _currentCycle);
-    const newOptions: Option[] = [];
-    if (_currentCycle) {
-      newOptions.push(allCycle);
-      const nextCycle = _currentCycle + 1;
-      newOptions.push({ id: `${nextCycle}`, label: `GC-${nextCycle} (Next)`, status: true });
-      newOptions.push({ id: `${_currentCycle}`, label: `GC-${_currentCycle} (Current)`, status: true });
-      for (let i = _currentCycle - 1; i >= 1; i--) {
-        newOptions.push({ id: `${i}`, label: `GC-${i}`, status: false });
-      }
-
-      setOptions(newOptions);
-    }
-  }, [infoData]);
-
-  // sync cycle option with the query params
-  useEffect(() => {
-    if (!cycle) {
-      if (keyword) {
-        // if there is a keyword but no cycle specified by user, then we should set the cycle to "All"
-        setQuery({ cycle: allCycle.id });
-      } else {
-        // otherwise, we should set the cycle to current cycle and nexy cycle
-        const _currentCycle = infoData?.data?.currentCycle;
-        if (_currentCycle) {
-          setQuery({ cycle: _currentCycle.toString() });
-        }
-      }
-    } else {
-      // cycle is 123 + 32 format
-      const _cycles = cycle.split("+");
-      const _cycleOptions = _cycles.map(c => {
-        const _cycleOption = options.find(o => o.id === c);
-        if (_cycleOption) {
-          return _cycleOption;
-        } else {
-          return { id: c, label: `GC-${c}`, status: false };
-        }
-      });
-      setCycleOptions(_cycleOptions);
-    }
-  }, [keyword, cycle, options, infoData, setQuery, allCycle.id]);
-
-  // sync keyword input with the query params
-  useEffect(() => {
-    if (keyword != keywordInput) {
-      setKeywordInput(keyword ?? "");
-    }
-  }, [keyword]);
 
   useLayoutEffect(() => {
     if (query.guide && !loading) {
@@ -278,75 +213,9 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
 
         </div>
 
-        <div className="flex mt-6 flex-col space-y-2 md:justify-between md:flex-row md:space-x-4 md:space-y-0">
-          {hasDrafts && (
-            <div className="md:w-1/12">
-              <Switch.Group as="div" className="flex flex-col">
-                <Switch.Label as="span" className="text-sm">
-                  <span className="font-medium text-gray-900">Show drafts</span>
-                </Switch.Label>
-                <Switch
-                  checked={showDrafts}
-                  onChange={setShowDrafts}
-                  className={classNames(
-                    showDrafts ? 'bg-indigo-600' : 'bg-gray-200',
-                    'relative mt-2 inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2'
-                  )}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={classNames(
-                      showDrafts ? 'translate-x-5' : 'translate-x-0',
-                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out'
-                    )}
-                  />
-                </Switch>
-              </Switch.Group>
-            </div>
-          )}
-
-
-          <div id="cycle-select-box" className={hasDrafts ? "md:w-2/12" : "md:w-3/12"}>
-            <SearchableComboBoxMultiple val={cycleOptions} setVal={(options) => {
-              setCycleOptions(options);
-              // sync with cycle parameter
-              setQuery({
-                cycle: options.map((option) => option.id).join("+")
-              });
-            }} options={options} label="Select cycle" />
-          </div>
-
-          {/* Search bar and limit */}
-          <div className="md:w-9/12" id="search-bar">
-            <label htmlFor="keyword" className="block text-sm font-medium text-gray-700">
-              Search proposals
-            </label>
-            <div className="mt-1 flex rounded-md shadow-sm">
-              <div className="relative flex flex-grow items-stretch focus-within:z-10">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <DocumentMagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                </div>
-                <input
-                  type="text"
-                  name="keyword"
-                  id="keyword"
-                  className="block w-full rounded-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  placeholder="grant, swap and payout etc."
-                  value={keywordInput !== undefined ? keywordInput : (keyword ?? "")}
-                  onChange={(e) => setKeywordInput(e.target.value)}
-                  onKeyUp={(e) => {
-                    if (e.key == "Enter") {
-                      setQuery({
-                        keyword: keywordInput
-                      });
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-        </div>
+        <CycleSelectorAndSearchBar
+          showDrafts={showDrafts} setShowDrafts={setShowDrafts}
+          hasDrafts={(proposalData?.data?.privateProposals?.length ?? 0) > 0} currentCycle={infoData?.data?.currentCycle} />
 
         <div>
           <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={loading} proposalsPacket={proposalData?.data} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} showDrafts={showDrafts} />
