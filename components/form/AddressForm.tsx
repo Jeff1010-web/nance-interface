@@ -3,7 +3,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import ENSAddressInput from "./ENSAddressInput";
 
 export default function AddressForm(
-  { label, fieldName, defaultValue = "" } : { label: string, fieldName: any, defaultValue?: string }
+  { label, fieldName, defaultValue = "", disabled = false } : { label: string, fieldName: any, defaultValue?: string, disabled?: boolean }
 ) {
   const { control, formState: { errors } } = useFormContext();
 
@@ -24,9 +24,13 @@ export default function AddressForm(
             pattern: { value: /^0x[a-fA-F0-9]{40}$/, message: "Not a valid address" }
           }}
           render={({ field: { onChange, onBlur, value, ref } }) =>
-            <ENSAddressInput val={value} setVal={onChange} inputStyle="rounded-none h-10 rounded-r-md" />
+            <ENSAddressInput
+              val={defaultValue || value}
+              setVal={onChange}
+              inputStyle="rounded-none h-10 rounded-r-md"
+              disabled={disabled}
+            />
           }
-          defaultValue={defaultValue}
           shouldUnregister
         />
       </div>

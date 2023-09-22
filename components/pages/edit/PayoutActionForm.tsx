@@ -4,10 +4,9 @@ import NumberForm from "../../form/NumberForm";
 import ProjectForm from "../../form/ProjectForm";
 import SelectForm from "../../form/SelectForm";
 
-export default function PayoutActionForm({ genFieldName }:
-  { genFieldName: (field: string) => any }) {
+export default function PayoutActionForm({ genFieldName, projectOwner }:
+  { genFieldName: (field: string) => any, projectOwner: string }) {
   const { watch, getValues } = useFormContext();
-
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-1">
@@ -31,7 +30,12 @@ export default function PayoutActionForm({ genFieldName }:
         )
       }
       <div className="col-span-4 sm:col-span-2">
-        <AddressForm label={watch(genFieldName("type")) === "project" ? "Token Beneficiary" : "Receiver Address"} fieldName={genFieldName("address")} />
+        <AddressForm
+          label={watch(genFieldName("type")) === "project" ? "Token Beneficiary" : "Receiver Address"}
+          fieldName={genFieldName("address")}
+          defaultValue={watch(genFieldName("type")) === "project" ? projectOwner : undefined}
+          disabled={watch(genFieldName("type")) === "project"}
+        />
       </div>
     </div>
   );

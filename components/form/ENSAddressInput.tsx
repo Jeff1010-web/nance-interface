@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Combobox } from '@headlessui/react';
+import { Tooltip } from 'flowbite-react';
 import { useEnsAddress } from 'wagmi';
 import { classNames } from '../../libs/tailwind';
 
-export default function ENSAddressInput({ val, setVal, inputStyle = "" }:
-  { val: string, setVal: (v: any) => void, inputStyle?: string }) {
+export default function ENSAddressInput({ val, setVal, inputStyle = "", disabled = false }:
+  { val: string, setVal: (v: any) => void, inputStyle?: string, defaultValue?: string, disabled?: boolean }) {
 
   const [query, setQuery] = useState('');
   const { data: address, isLoading } = useEnsAddress({
@@ -18,24 +19,39 @@ export default function ENSAddressInput({ val, setVal, inputStyle = "" }:
       ? [address]
       : [];
 
+  const renderComboboxInput = () => {
+    return (
+      <Combobox.Input
+        className={classNames(
+          "w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm",
+          isLoading && "animate-pulse",
+          inputStyle,
+          disabled && "bg-gray-100 cursor-not-allowed"
+        )}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          if (!query.endsWith('.eth')) {
+            setVal(event.target.value);
+          }
+        }}
+        displayValue={(option: string) => option}
+        placeholder="Address/ENS"
+      />
+    );
+  };
+
   return (
-    <Combobox as="div" value={val} onChange={setVal} className="w-full">
+    <Combobox as="div" value={val} onChange={setVal} className="w-full" disabled={disabled}>
       <div className="relative">
-        <Combobox.Input
-          className={classNames(
-            "w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm",
-            isLoading && "animate-pulse",
-            inputStyle
-          )}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            if (!query.endsWith('.eth')) {
-              setVal(event.target.value);
-            }
-          }}
-          displayValue={(option: string) => option}
-          placeholder="Address/ENS"
-        />
+
+        { disabled ? (
+          <Tooltip content="Default token beneficiary must be set to Juicebox project owner">
+            {renderComboboxInput()}
+          </Tooltip>
+        ) : (
+          renderComboboxInput()
+        )}
+
         <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
           <ChevronDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
         </Combobox.Button>

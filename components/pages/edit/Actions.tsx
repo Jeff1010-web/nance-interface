@@ -61,7 +61,7 @@ export default function Actions({ loadedActions }: { loadedActions: Action[] }) 
                 {...register(`proposal.actions.${index}.type`, { shouldUnregister: true, value: field.type })}
                 className="hidden"
               />
-              <PayoutActionForm genFieldName={genFieldName(index)} />
+              <PayoutActionForm genFieldName={genFieldName(index)} projectOwner={projectOwner} />
             </div>
           );
         } else if (field.type === "Transfer") {
