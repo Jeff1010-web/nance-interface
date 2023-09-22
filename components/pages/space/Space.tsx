@@ -1,4 +1,3 @@
-import { formatDistanceToNowStrict, parseISO, format } from "date-fns";
 import { useQueryParams, StringParam, withDefault, BooleanParam, NumberParam } from "next-query-params";
 import { useRouter } from "next/router";
 import { useLayoutEffect, useState } from "react";
@@ -7,15 +6,14 @@ import ScrollToBottom from "../../ScrollToBottom";
 import ProposalCards from "./ProposalCards";
 import { getLastSlash } from "../../../libs/nance";
 import Pagination from "../../Pagination";
-import { Tooltip } from "flowbite-react";
 import { BanknotesIcon, BoltIcon, DocumentTextIcon, ShieldCheckIcon } from "@heroicons/react/24/solid";
-import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import LoadingArrowSpiner from "../../LoadingArrowSpiner";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import CycleSelectorAndSearchBar from "./CycleSelectorAndSearchBar";
+import SpaceHeader from "./SpaceHeader";
 
 const QueueExecutionModal = dynamic(() => import("./QueueReconfigurationModal"), {
   loading: () => <LoadingArrowSpiner />,
@@ -100,8 +98,6 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     keyword: StringParam,
     limit: withDefault(NumberParam, 20),
     page: withDefault(NumberParam, 1),
-    sortBy: withDefault(StringParam, ''),
-    sortDesc: withDefault(BooleanParam, true),
     cycle: StringParam,
     guide: withDefault(BooleanParam, false)
   });
@@ -114,18 +110,6 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
 
   const projectId = parseInt(infoData?.data?.juiceboxProjectId || "1");
 
-  // Data process
-  let remainingTime = "-";
-  let endTime;
-  let formattedEndTime = "-";
-  try {
-    endTime = parseISO(infoData?.data?.currentEvent?.end ?? "");
-    formattedEndTime = endTime ? format(endTime, 'EEE MMM dd yyyy HH:mm a') : '-';
-    remainingTime = formatDistanceToNowStrict(endTime);
-  } catch (error) {
-    //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
-  }
-
   useLayoutEffect(() => {
     if (query.guide && !loading) {
       getDriver(() => setQuery({ guide: false })).drive();
@@ -136,36 +120,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     <div className="m-4 lg:m-6 flex justify-center lg:px-20">
       <div className="flex flex-col max-w-7xl w-full">
 
-        {/* Page header */}
-        <div className="max-w-7xl md:flex md:space-x-5 bg-white p-6 shadow rounded-md">
-          <div className="flex flex-col space-x-0 space-y-6 items-center md:flex-row md:justify-between md:space-x-6 md:space-y-0 w-full">
-            <div className="flex-shrink-0 md:w-5/12 flex space-x-3">
-              <Image
-                className="h-16 w-16 rounded-full"
-                src={`https://cdn.stamp.fyi/space/${infoData?.data?.snapshotSpace}?s=160`}
-                alt={`${space} Logo`}
-                height={64} width={64}
-              />
-
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900">{space}</h1>
-                <p className="text-sm font-medium text-gray-500 text-right">powered by Nance</p>
-              </div>
-            </div>
-
-            <div className="break-words p-2 md:w-2/12 text-center rounded-md border-2 border-blue-600 bg-indigo-100">
-              <Tooltip content={formattedEndTime}>
-                <span className="tooltip-trigger">
-                  <p className="text-2xl font-semibold">{remainingTime} remaining</p>
-                </span>
-              </Tooltip>
-              <a className="text-sm text-gray-900"
-                href="https://info.juicebox.money/dao/process/" target="_blank" rel="noopener noreferrer">
-                {infoData?.data?.currentEvent?.title || "Unknown"} of GC{infoData?.data?.currentCycle}
-              </a>
-            </div>
-          </div>
-        </div>
+        <SpaceHeader spaceInfo={infoData?.data} />
 
         <div className="max-w-7xl flex flex-col space-y-2 md:flex-row md:space-x-5 md:space-y-0 bg-white mt-2 p-2 shadow rounded-md">
           <Link
