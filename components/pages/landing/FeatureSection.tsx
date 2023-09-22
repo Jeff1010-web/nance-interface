@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowPathIcon, DocumentMagnifyingGlassIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/solid'
+import { ArrowPathIcon, DocumentMagnifyingGlassIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/solid';
 
 const features = [
   {
@@ -18,7 +18,7 @@ const features = [
     description: "It serves as a tool for facilitating the execution of proposal actions, including project reconfiguration, token transfers, and integration with community safes for easy comparison with previous cycles.",
     icon: WrenchScrewdriverIcon,
   },
-]
+];
 
 export default function FeatureSection() {
   return (
@@ -55,5 +55,5 @@ export default function FeatureSection() {
         </div>
       </div>
     </div>
-  )
+  );
 }

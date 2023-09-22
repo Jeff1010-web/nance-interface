@@ -41,13 +41,13 @@ export default function ReviewReconfigurationPage() {
 
   function ReviewArea() {
     if (error) {
-      return <p className="flex justify-center pb-2 text-red-500">{error}</p>
+      return <p className="flex justify-center pb-2 text-red-500">{error}</p>;
     } else if (loading) {
-      return <div className="flex justify-center pb-2"><LoadingArrowSpiner /></div>
+      return <div className="flex justify-center pb-2"><LoadingArrowSpiner /></div>;
     } else if (txForComponent) {
-      return <Compare projectId={projectId} tx={txForComponent} />
+      return <Compare projectId={projectId} tx={txForComponent} />;
     } else {
-      return <p className="flex justify-center pb-2 text-green-500">Select txn to compare</p>
+      return <p className="flex justify-center pb-2 text-green-500">Select txn to compare</p>;
     }
   }
 
@@ -85,5 +85,5 @@ function Compare({ projectId, tx }: { projectId: number, tx: RevisedSafeMultisig
   const reservesDiff = compareReserves(currentConfig.ticketMods, newConfig?.ticketMods || []);
   const tableData = calcDiffTableData(currentConfig, newConfig, payoutsDiff, reservesDiff);
 
-  return <DiffTableWithSection space="juicebox" tableData={tableData} loading={loading} />
+  return <DiffTableWithSection space="juicebox" tableData={tableData} loading={loading} />;
 }

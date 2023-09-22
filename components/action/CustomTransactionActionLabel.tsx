@@ -38,5 +38,5 @@ export default function CustomTransactionActionLabel({ customTransaction, space,
       </a>
 
     </span>
-  )
+  );
 }

@@ -60,5 +60,5 @@ export function diff2TableEntry(index: number, status: Status, tableData: Sectio
       status,
       title: (<JBSplitEntry mod={v.split} projectVersion={3} />)
     });
-  }
+  };
 }

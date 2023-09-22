@@ -42,14 +42,14 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
         return {
           pid: p.proposalId || 0,
           action
-        }
-      })
+        };
+      });
     });
 
   // Splits with changes
   const payoutsDiff = mergePayouts(currentConfig, currentCycle, currentConfig.payoutMods || [], nancePayouts?.data || [], actionWithPIDArray?.filter((v) => v.action.type === "Payout") || []);
   const actionReserve = actionWithPIDArray?.find(v => v.action.type === "Reserve");
-  const reservesDiff = compareReserves(currentConfig.ticketMods ?? [], (actionReserve?.action.payload as Reserve)?.splits.map(splitStruct => splitStruct2JBSplit(splitStruct)) || (currentConfig.ticketMods ?? []), actionReserve?.pid ?? 0)
+  const reservesDiff = compareReserves(currentConfig.ticketMods ?? [], (actionReserve?.action.payload as Reserve)?.splits.map(splitStruct => splitStruct2JBSplit(splitStruct)) || (currentConfig.ticketMods ?? []), actionReserve?.pid ?? 0);
 
 
 

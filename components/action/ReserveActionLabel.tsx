@@ -10,5 +10,5 @@ export function ReserveActionLabel({ reserve }: { reserve: Reserve }) {
         )
       )}
     </div>
-  )
+  );
 }

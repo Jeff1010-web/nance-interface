@@ -45,5 +45,5 @@ export default function TenderlySimulationButton({ simulationArgs, shouldSimulat
           : <CursorArrowRaysIcon className="-ml-0.5 h-5 w-5 text-blue-400" aria-hidden="true" />}
       </div>
     </div>
-  )
+  );
 }

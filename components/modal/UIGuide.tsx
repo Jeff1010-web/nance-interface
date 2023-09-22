@@ -29,7 +29,7 @@ export default function UIGuide({ name, steps }: { name: string, steps: DriveSte
   const [spaceGuide, setSpaceGuide] = useLocalStorage<GuideRecord>(`UIGuide-${name}`, 1, {
     shouldOpen: true,
     version: 1
-  })
+  });
   const [open, setOpen] = useState<boolean>(spaceGuide.shouldOpen);
 
   const driver = getDriver(steps, () => {
@@ -55,5 +55,5 @@ export default function UIGuide({ name, steps }: { name: string, steps: DriveSte
           version: 1
         });
       }} />
-  )
+  );
 }

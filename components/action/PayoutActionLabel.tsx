@@ -12,5 +12,5 @@ export default function PayoutActionLabel({ payout }: { payout: Payout }) {
       {/* <FormattedAddress address={(action.payload as Payout).address} style="inline ml-1" /> */}
       {`for ${payout.count} cycles`}
     </span>
-  )
+  );
 }

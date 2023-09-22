@@ -17,5 +17,5 @@ export default function JBProjectInfo({ metadataUri }: { metadataUri: string }) 
       <dd className="text-gray-700 break-words line-clamp-3 w-1/3">{metadata?.description || 'Loading metadata...'}</dd>
       <ResolvedProject projectId={query.project} />
     </div>
-  )
+  );
 }

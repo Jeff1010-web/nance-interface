@@ -71,7 +71,7 @@ const driverSteps: DriveStep[] = [
       side: "top", align: 'start'
     },
   },
-]
+];
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
   // State

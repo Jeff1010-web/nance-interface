@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const responseData = await response.json();
       res.status(200).json(responseData);
     } else {
-      res.status(response.status).json({ error: response.statusText })
+      res.status(response.status).json({ error: response.statusText });
     }    
   } catch (error) {
     // Handle any errors that occur during the forwarding process

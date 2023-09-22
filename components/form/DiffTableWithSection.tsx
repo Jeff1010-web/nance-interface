@@ -10,7 +10,7 @@ const StatusStyle = {
   Edit: "text-yellow-700 bg-yellow-50 ring-yellow-600/20 ring-1 ring-inset",
   Remove: "text-red-700 bg-red-50 ring-red-600/20 ring-1 ring-inset",
   Keep: "text-gray-400"
-}
+};
 const StatusIcon = {
   Add: <BoltIcon
     className="text-green-700 bg-green-50 ring-green-600/20 hidden h-6 w-5 flex-none sm:block"
@@ -28,7 +28,7 @@ const StatusIcon = {
     className="text-gray-400 hidden h-6 w-5 flex-none sm:block"
     aria-hidden="true"
   />
-}
+};
 
 interface Entry {
   id: string;
@@ -53,7 +53,7 @@ export default function DiffTableWithSection(
 
   // if it's loading, display a skeleton loader with placeholder table, and a pluse animation
   if (loading) {
-    return <TableSkeleton />
+    return <TableSkeleton />;
   }
 
   return (
@@ -127,7 +127,7 @@ export default function DiffTableWithSection(
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function TableSkeleton() {
@@ -166,7 +166,7 @@ function TableSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function RowSkeleton() {
@@ -202,5 +202,5 @@ function RowSkeleton() {
         <div className="rounded-md py-1 px-2 text-xs font-medium animate-pulse h-6 w-32 bg-slate-200"></div>
       </td>
     </tr>
-  )
+  );
 }

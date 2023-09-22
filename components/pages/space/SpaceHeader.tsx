@@ -45,5 +45,5 @@ export default function SpaceHeader({ spaceInfo }: { spaceInfo: SpaceInfo | unde
         </div>
       </div>
     </div>
-  )
+  );
 }

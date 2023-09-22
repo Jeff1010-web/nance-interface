@@ -1,4 +1,4 @@
-import { useQuery } from 'graphql-hooks'
+import { useQuery } from 'graphql-hooks';
 
 const QUERY = `
 query Ranking($search: String) {
@@ -16,7 +16,7 @@ query Ranking($search: String) {
     }
   }
 }
-`
+`;
 
 export interface SpaceSearch {
     id: string,
@@ -27,10 +27,10 @@ export interface SpaceSearch {
 }
 
 export default function useSnapshotSearch(search: string): {data: SpaceSearch[] | undefined, loading: boolean} {
-    const { loading, data } = useQuery<{ranking: { items: SpaceSearch[] }}>(QUERY, {
-        variables: {
-          search
-        }
-    });
-    return { loading, data: data?.ranking.items };
+  const { loading, data } = useQuery<{ranking: { items: SpaceSearch[] }}>(QUERY, {
+    variables: {
+      search
+    }
+  });
+  return { loading, data: data?.ranking.items };
 }

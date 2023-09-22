@@ -1,5 +1,5 @@
-import { Switch } from '@headlessui/react'
-import { classNames } from '../../libs/tailwind'
+import { Switch } from '@headlessui/react';
+import { classNames } from '../../libs/tailwind';
 
 export default function ToggleWithLabel({ label, enabled, setEnabled }: { label: string, enabled: boolean, setEnabled: (enabled: boolean) => void }) {
 
@@ -25,5 +25,5 @@ export default function ToggleWithLabel({ label, enabled, setEnabled }: { label:
         <span className="font-medium text-gray-900">{label}</span>
       </Switch.Label>
     </Switch.Group>
-  )
+  );
 }

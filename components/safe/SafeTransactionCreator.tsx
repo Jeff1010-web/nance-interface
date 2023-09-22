@@ -35,14 +35,16 @@ export default function SafeTransactionCreator(
     if (nonce === "" && _historyTxs?.countUniqueNonce) {
       setNonce(_historyTxs.countUniqueNonce.toString());
     }
-  }, [historyTxs])
+  }, [historyTxs]);
 
   return (
     <span className="isolate inline-flex rounded-md shadow-sm">
       <button
         type="button"
         disabled={queueNotReady}
-        onClick={() => {setOpen(true); trigger();}}
+        onClick={() => {
+          setOpen(true); trigger();
+        }}
         className="relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 disabled:opacity-50"
       >      
         {loading && <ArrowPathIcon className="animate-spin -ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />}
@@ -61,5 +63,5 @@ export default function SafeTransactionCreator(
       {error && <ResultModal title="Error" description={error} buttonText="Close" onClick={() => setOpen(false)} isSuccessful={false} shouldOpen={open} close={() => setOpen(false)} />}
       {queueRes && <ResultModal title="Success" description={`Transaction queued as txn-${queueRes.safeTxHash} (nonce: ${queueRes.nonce})`} buttonText="Go to Safe App" onClick={() => window.open(getSafeTxUrl(safeAddress, queueRes.safeTxHash), "_blank")} isSuccessful={true} shouldOpen={open} close={() => setOpen(false)} />}
     </span>
-  )
+  );
 }

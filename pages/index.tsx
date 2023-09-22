@@ -9,5 +9,5 @@ export default function LandingPage() {
       <Landing />
       <Footer />
     </>
-  )
+  );
 }

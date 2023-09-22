@@ -29,22 +29,22 @@ export default function OrderCheckboxTable({ safeAddress, entries }: { safeAddre
   };
 
   useLayoutEffect(() => {
-    const isIndeterminate = selectedEntry.length > 0 && selectedEntry.length < entries.length
-    setChecked(selectedEntry.length === entries.length)
-    setIndeterminate(isIndeterminate)
-    checkbox.current!.indeterminate = isIndeterminate
-  }, [selectedEntry])
+    const isIndeterminate = selectedEntry.length > 0 && selectedEntry.length < entries.length;
+    setChecked(selectedEntry.length === entries.length);
+    setIndeterminate(isIndeterminate);
+    checkbox.current!.indeterminate = isIndeterminate;
+  }, [selectedEntry]);
 
   useEffect(() => {
     if (shouldSimulate) {
       setShouldSimulate(false);
     }
-  }, [selectedEntry])
+  }, [selectedEntry]);
 
   function toggleAll() {
-    setSelectedEntry(checked || indeterminate ? [] : entries)
-    setChecked(!checked && !indeterminate)
-    setIndeterminate(false)
+    setSelectedEntry(checked || indeterminate ? [] : entries);
+    setChecked(!checked && !indeterminate);
+    setIndeterminate(false);
   }
 
   return (
@@ -122,5 +122,5 @@ export default function OrderCheckboxTable({ safeAddress, entries }: { safeAddre
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -33,5 +33,5 @@ export default function ActionLabel({ action, space }: { action: Action, space: 
       )}
 
     </div>
-  )
+  );
 }

@@ -11,5 +11,5 @@ export default function TransferActionLabel({ transfer }: { transfer: Transfer }
       &nbsp;to
       <FormattedAddress address={transfer.to} style="inline ml-1" />
     </span>
-  )
+  );
 }

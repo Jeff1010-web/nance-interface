@@ -281,5 +281,5 @@ export default function ProposalSidebar(
         <ProposalVotes snapshotSpace={commonProps.snapshotSpace} />
       )}
     </div>
-  )
+  );
 }

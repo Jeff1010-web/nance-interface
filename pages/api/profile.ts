@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const voter = req.query.voter as string;
   const space = req.query.space as string;
   const proposal = req.query.proposal as string;
-  const prefix = process.env.NODE_ENV === "production" ? `https://${req.headers.host}` : `http://${req.headers.host}`
+  const prefix = process.env.NODE_ENV === "production" ? `https://${req.headers.host}` : `http://${req.headers.host}`;
   console.debug('api.profile', { query: req.query, prefix: prefix });
 
   const nanceSpace = NANCE_MAPPING[space];

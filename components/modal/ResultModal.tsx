@@ -1,6 +1,6 @@
-import { Fragment, useRef } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
-import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Fragment, useRef } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { classNames } from '../../libs/tailwind';
 
 export default function ResultModal(
@@ -81,5 +81,5 @@ export default function ResultModal(
         </div>
       </Dialog>
     </Transition.Root>
-  )
+  );
 }

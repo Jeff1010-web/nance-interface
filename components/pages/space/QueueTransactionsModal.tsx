@@ -33,9 +33,9 @@ export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectI
         return {
           pid: p.proposalId || 0,
           action
-        }
-      })
-  });
+        };
+      });
+    });
   const transferActions = actionWithPIDArray?.filter((v) => v.action.type === "Transfer");
   const customTransactionActions = actionWithPIDArray?.filter((v) => v.action.type === "Custom Transaction");
 
@@ -51,7 +51,7 @@ export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectI
         value: getContractLabel(transfer.contract) === "ETH" ? transfer.amount : "0",
         data: getContractLabel(transfer.contract) === "ETH" ? "0x" : erc20.encodeFunctionData("transfer", [transfer.to, parseUnits(transfer.amount, transfer.decimals)])
       }
-    }
+    };
   }) || [];
   const customTransactionEntries: TransactionEntry[] = customTransactionActions?.map((v) => {
     
@@ -65,7 +65,7 @@ export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectI
         value: customTransaction.value ,
         data: contractInterface.encodeFunctionData(extractFunctionName(customTransaction.functionName), customTransaction.args)
       }
-    }
+    };
   }) || [];
   const entries = transferEntries.concat(customTransactionEntries);
 
