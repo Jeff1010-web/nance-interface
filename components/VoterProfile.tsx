@@ -51,7 +51,7 @@ export default function VoterProfile({ voter, space, proposal, isOpen }: VoterPr
       <div className="mt-1 flex justify-between items-center space-x-2 animate-pulse">
         {/* Avatar */}
         <div className='justify-center hidden lg:flex'>
-          <img className="rounded-full bg-slate-200 h-10 w-10 p-1" />
+          <Image alt='Avatar holder' src='' className="rounded-full bg-slate-200 h-10 w-10 p-1" />
         </div>
 
         {/* Stats */}

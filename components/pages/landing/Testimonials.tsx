@@ -6,7 +6,7 @@ export default function Testimonials() {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto grid max-w-2xl grid-cols-1 lg:mx-0 lg:max-w-none lg:grid-cols-2">
           <div className="flex flex-col pb-10 sm:pb-16 lg:pb-0 lg:pr-8 xl:pr-20">
-            <img className="h-12 self-start" src="/images/homepage/juice-logo-full.svg" alt="Logo of Juicebox protocol" />
+            <Image width={212} height={48} className="h-12 self-start" src="/images/homepage/juice-logo-full.svg" alt="Logo of Juicebox protocol" />
             <figure className="mt-10 flex flex-auto flex-col justify-between">
               <blockquote className="text-lg leading-8 text-gray-900">
                 <p>

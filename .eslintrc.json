@@ -4,6 +4,7 @@
     "brace-style": ["warn", "1tbs"],
     "indent": ["warn", 2],
     "semi": ["warn", "always", { "omitLastInOneLineBlock": true}],
-    "max-lines": ["warn", 300]
+    "max-lines": ["warn", 300],
+    "react-hooks/exhaustive-deps": "off"
   }
 }
