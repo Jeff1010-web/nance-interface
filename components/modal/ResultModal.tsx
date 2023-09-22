@@ -4,10 +4,12 @@ import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { classNames } from '../../libs/tailwind';
 
 export default function ResultModal(
-  { shouldOpen, close, title, description, buttonText, onClick, isSuccessful = true }: 
-  { title: string, description: string, buttonText: string, onClick: () => void, 
-    shouldOpen: boolean, close: () => void,
-    isSuccessful?: boolean }) {
+  { shouldOpen, close, title, description, buttonText, onClick, isSuccessful = true, cancelButtonText = "Cancel" }:
+    {
+      title: string, description: string, buttonText: string, onClick: () => void,
+      shouldOpen: boolean, close: () => void,
+      isSuccessful?: boolean, cancelButtonText?: string
+    }) {
 
   const cancelButtonRef = useRef(null);
 
@@ -70,7 +72,7 @@ export default function ResultModal(
                     onClick={close}
                     ref={cancelButtonRef}
                   >
-                    Cancel
+                    {cancelButtonText}
                   </button>
                 </div>
               </Dialog.Panel>

@@ -1,6 +1,6 @@
-import { useQueryParams, StringParam, withDefault, BooleanParam, NumberParam } from "next-query-params";
+import { useQueryParams, StringParam, withDefault, NumberParam } from "next-query-params";
 import { useRouter } from "next/router";
-import { useLayoutEffect, useState } from "react";
+import { useState } from "react";
 import { useSpaceInfo, useProposals } from "../../../hooks/NanceHooks";
 import ScrollToBottom from "../../ScrollToBottom";
 import ProposalCards from "./ProposalCards";
@@ -10,10 +10,10 @@ import { BanknotesIcon, BoltIcon, DocumentTextIcon, ShieldCheckIcon } from "@her
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import LoadingArrowSpiner from "../../LoadingArrowSpiner";
-import { driver } from "driver.js";
-import "driver.js/dist/driver.css";
 import CycleSelectorAndSearchBar from "./CycleSelectorAndSearchBar";
 import SpaceHeader from "./SpaceHeader";
+import { DriveStep } from "driver.js";
+import UIGuide from "../../modal/UIGuide";
 
 const QueueExecutionModal = dynamic(() => import("./QueueReconfigurationModal"), {
   loading: () => <LoadingArrowSpiner />,
@@ -22,69 +22,56 @@ const QueueTransactionsModal = dynamic(() => import("./QueueTransactionsModal"),
   loading: () => <LoadingArrowSpiner />,
 });
 
-function getDriver(action: () => void) {
-  const driverObj = driver({
-    showProgress: true,
-    steps: [
-      {
-        element: "#new-proposal-button",
-        popover: {
-          title: "Create new proposal",
-          description: "You can request payouts, reserve tokens and custom transactions.",
-          side: "left", align: 'start'
-        },
-      },
-      {
-        element: "#cycle-select-box",
-        popover: {
-          title: "Select the cycle",
-          description: "Proposals are grouped by cycles, you can select the cycle you want to view.",
-          side: "top", align: 'start'
-        },
-      },
-      {
-        element: "#search-bar",
-        popover: {
-          title: "Search proposals with keywords",
-          description: "You can search proposals with keywords, which can be the words in the title or the content. Use space to separate multiple keywords.",
-          side: "bottom", align: 'start'
-        },
-      },
-      {
-        element: "#proposals-table",
-        popover: {
-          title: "View proposals",
-          description: "All proposals are listed here. You can view the details of each proposal by clicking the proposal.",
-          side: "top", align: 'start'
-        },
-      },
-      {
-        element: "#proposals-table-head",
-        popover: {
-          title: "Sort proposals",
-          description: "You can sort proposals by clicking the table headers. And to reverse the order, just click again.",
-          side: "bottom", align: 'start'
-        },
-      },
-      {
-        element: "#pagination-div",
-        popover: {
-          title: "Check other pages",
-          description: "You can check other pages by clicking the left or right arrow.",
-          side: "top", align: 'start'
-        },
-      },
-    ],
-    onDestroyStarted: () => {
-      if (!driverObj.hasNextStep() || confirm("Are you sure?")) {
-        driverObj.destroy();
-        action();
-      }
+const driverSteps: DriveStep[] = [
+  {
+    element: "#new-proposal-button",
+    popover: {
+      title: "Create new proposal",
+      description: "You can request payouts, reserve tokens and custom transactions.",
+      side: "left", align: 'start'
     },
-  });
-
-  return driverObj;
-}
+  },
+  {
+    element: "#cycle-select-box",
+    popover: {
+      title: "Select the cycle",
+      description: "Proposals are grouped by cycles, you can select the cycle you want to view.",
+      side: "top", align: 'start'
+    },
+  },
+  {
+    element: "#search-bar",
+    popover: {
+      title: "Search proposals with keywords",
+      description: "You can search proposals with keywords, which can be the words in the title or the content. Use space to separate multiple keywords.",
+      side: "bottom", align: 'start'
+    },
+  },
+  {
+    element: "#proposals-table",
+    popover: {
+      title: "View proposals",
+      description: "All proposals are listed here. You can view the details of each proposal by clicking the proposal.",
+      side: "top", align: 'start'
+    },
+  },
+  {
+    element: "#proposals-table-head",
+    popover: {
+      title: "Sort proposals",
+      description: "You can sort proposals by clicking the table headers. And to reverse the order, just click again.",
+      side: "bottom", align: 'start'
+    },
+  },
+  {
+    element: "#pagination-div",
+    popover: {
+      title: "Check other pages",
+      description: "You can check other pages by clicking the left or right arrow.",
+      side: "top", align: 'start'
+    },
+  },
+]
 
 export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space: string, proposalUrlPrefix?: string }) {
   // State
@@ -98,8 +85,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
     keyword: StringParam,
     limit: withDefault(NumberParam, 20),
     page: withDefault(NumberParam, 1),
-    cycle: StringParam,
-    guide: withDefault(BooleanParam, false)
+    cycle: StringParam
   });
   const { keyword, cycle, limit, page } = query;
 
@@ -110,16 +96,11 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
 
   const projectId = parseInt(infoData?.data?.juiceboxProjectId || "1");
 
-  useLayoutEffect(() => {
-    if (query.guide && !loading) {
-      getDriver(() => setQuery({ guide: false })).drive();
-    }
-  }, [query.guide, loading, setQuery]);
-
   return (
     <div className="m-4 lg:m-6 flex justify-center lg:px-20">
       <div className="flex flex-col max-w-7xl w-full">
 
+        <UIGuide name="SpacePage" steps={driverSteps} />
         <SpaceHeader spaceInfo={infoData?.data} />
 
         <div className="max-w-7xl flex flex-col space-y-2 md:flex-row md:space-x-5 md:space-y-0 bg-white mt-2 p-2 shadow rounded-md">
