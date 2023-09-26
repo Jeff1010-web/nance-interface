@@ -11,8 +11,9 @@ export interface TransactionEntry {
   transactionData: SafeTransactionDataPartial
 }
 
+// FIXME shouldn't default to use safe (consider governor contract)
 export default function OrderCheckboxTable({ safeAddress, entries }: { safeAddress: string, entries: TransactionEntry[] }) {
-  
+
   const checkbox = useRef<HTMLInputElement>(null);
   const [checked, setChecked] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
