@@ -56,6 +56,13 @@ export function useCurrentPayouts(space: string, cycle: string | undefined, shou
   );
 }
 
+export function usePrivateProposals(space: string, shouldFetch: boolean = true) {
+  return useSWR<APIResponse<Proposal[]>, string>(
+    shouldFetch ? `${NANCE_PROXY_API_URL}/${space}/privateProposals` : null,
+    jsonFetcher(),
+  );
+}
+
 export function useProposals(args: ProposalsRequest, shouldFetch: boolean = true) {
   const urlParams = new URLSearchParams();
   if (args.cycle) {

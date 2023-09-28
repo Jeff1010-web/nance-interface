@@ -25,7 +25,7 @@ export type ProposalInfo = {
   minTokenPassingAmount: number;
 };
 
-export type ProposalsPacket = { proposalInfo: ProposalInfo, proposals: Proposal[], privateProposals: Proposal[] };
+export type ProposalsPacket = { proposalInfo: ProposalInfo, proposals: Proposal[] };
 
 export type ProposalsPacketWithoutBody = { proposalInfo: ProposalInfo, proposals: Omit<Proposal, 'body'>[] };
 
@@ -130,7 +130,7 @@ export type SnapshotConfig = {
 
 export type CreateFormKeys = 'name' | 'propertyKeys.proposalIdPrefix' |
   `discord.${keyof DiscordConfig}` |
-  `discord.channelIds.${keyof DiscordConfigChannels}`|
+  `discord.channelIds.${keyof DiscordConfigChannels}` |
   `discord.roleIds.${keyof DiscordConfigRoles}` |
   `snapshot.${keyof SnapshotConfig}` |
   `juicebox.${keyof JuiceboxConfig}`

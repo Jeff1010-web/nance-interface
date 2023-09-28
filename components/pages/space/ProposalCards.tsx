@@ -23,9 +23,10 @@ function getValueOfStatus(status: string) {
   return StatusValue[status] ?? -1;
 }
 
-export default function ProposalCards({ loading, proposalsPacket, maxCycle, proposalUrlPrefix, showDrafts }:
+export default function ProposalCards({ loading, proposalsPacket, privateProposals, maxCycle, proposalUrlPrefix, showDrafts }:
   {
-    loading: boolean, proposalsPacket: ProposalsPacket | undefined, maxCycle: number,
+    loading: boolean, proposalsPacket: ProposalsPacket | undefined, privateProposals: Proposal[] | undefined,
+    maxCycle: number,
     proposalUrlPrefix: string,
     showDrafts: boolean
   }) {
@@ -119,7 +120,7 @@ export default function ProposalCards({ loading, proposalsPacket, maxCycle, prop
   }
 
   const isLoading = loading;
-  const hasPrivateProposals = showDrafts && !query.keyword && (proposalsPacket?.privateProposals?.length ?? 0) > 0;
+  const hasPrivateProposals = showDrafts && !query.keyword && (privateProposals?.length ?? 0) > 0;
 
   if (!isLoading && sortedProposals.length === 0) {
     return <RecommendAction maxCycle={maxCycle} />;
@@ -167,7 +168,7 @@ export default function ProposalCards({ loading, proposalsPacket, maxCycle, prop
 
             {!isLoading && hasPrivateProposals && (
               <>
-                {proposalsPacket?.privateProposals.map((proposal, proposalIdx) => (
+                {privateProposals?.map((proposal, proposalIdx) => (
                   <ProposalPrivateRow
                     proposal={proposal}
                     key={proposalIdx}
