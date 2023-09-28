@@ -11,7 +11,6 @@ import {
   WagmiConfig, createConfig,
   configureChains, mainnet
 } from 'wagmi';
-import { watchAccount } from '@wagmi/core';
 import { infuraProvider } from 'wagmi/providers/infura';
 
 import { NextQueryParamProvider } from 'next-query-params';
@@ -20,9 +19,8 @@ import { Flowbite } from 'flowbite-react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
 
-import { SessionProvider, signOut, useSession } from 'next-auth/react';
+import { SessionProvider } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
-import { useEffect } from 'react';
 
 const graphqlClient = new GraphQLClient({
   url: 'https://hub.snapshot.org/graphql',
@@ -44,6 +42,7 @@ const { connectors } = getDefaultWallets({
 });
 
 const wagmiConfig = createConfig({
+  autoConnect: true,
   connectors,
   publicClient
 });
@@ -57,29 +56,17 @@ const theme = {
   }
 };
 
-function AccountWatcher() {
-  // check for user wallet switch and logout
-  // TODO: refetch proposals on login, but how?
-  const { data: session, status } = useSession();
-
-  useEffect(() => {
-    const unwatch = watchAccount((account) => {
-      if (session?.user && account.address !== session?.user?.name) {
-        signOut();
-      }
-    });
-    return () => unwatch();
-  });
-
-  return null;
-}
-
 function MyApp({ Component, pageProps }: any) {
   return (
     <>
       <WagmiConfig config={wagmiConfig}>
-        <SessionProvider refetchInterval={0} session={pageProps.session}>
-          <AccountWatcher />
+        <SessionProvider
+          session={pageProps.session}
+          // Re-fetch session every 5 minutes
+          refetchInterval={5 * 60}
+          // Re-fetches session when window is focused
+          refetchOnWindowFocus={true}
+        >
           <RainbowKitSiweNextAuthProvider>
             <RainbowKitProvider
               chains={chains}
