@@ -21,6 +21,7 @@ import { Analytics } from '@vercel/analytics/react';
 
 import { SessionProvider } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
+import { SWRConfig } from 'swr';
 
 const graphqlClient = new GraphQLClient({
   url: 'https://hub.snapshot.org/graphql',
@@ -77,9 +78,13 @@ function MyApp({ Component, pageProps }: any) {
               <ClientContext.Provider value={graphqlClient}>
                 <NextQueryParamProvider>
                   <Flowbite theme={theme}>
-                    <ErrorBoundary>
-                      <Component {...pageProps} />
-                    </ErrorBoundary>
+                    <SWRConfig value={{
+                      revalidateOnFocus: false
+                    }}>
+                      <ErrorBoundary>
+                        <Component {...pageProps} />
+                      </ErrorBoundary>
+                    </SWRConfig>
                   </Flowbite>
                 </NextQueryParamProvider>
               </ClientContext.Provider>
