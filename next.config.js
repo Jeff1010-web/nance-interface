@@ -32,7 +32,7 @@ const nextConfig = {
         has: [
           {
             type: 'host',
-            value: 'jbdao.org',
+            value: 'www.jbdao.org',
           },
         ],
       },
@@ -43,7 +43,7 @@ const nextConfig = {
         has: [
           {
             type: 'host',
-            value: 'jbdao.org',
+            value: 'www.jbdao.org',
           },
         ],
       },
@@ -54,7 +54,7 @@ const nextConfig = {
         has: [
           {
             type: 'host',
-            value: 'jbdao.org',
+            value: 'www.jbdao.org',
           },
         ],
       },
@@ -65,7 +65,7 @@ const nextConfig = {
         has: [
           {
             type: 'host',
-            value: 'jbdao.org',
+            value: 'www.jbdao.org',
           },
         ],
       },
@@ -78,7 +78,7 @@ const nextConfig = {
         has: [
           {
             type: 'host',
-            value: 'jbdao.org',
+            value: 'www.jbdao.org',
           },
         ],
         destination: '/s/juicebox/:slug*',
