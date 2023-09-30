@@ -74,16 +74,6 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/:slug*',
-        has: [
-          {
-            type: 'host',
-            value: 'www.jbdao.org',
-          },
-        ],
-        destination: '/s/juicebox/:slug*',
-      },
-      {
         source: '/',
         has: [
           {
@@ -92,6 +82,16 @@ const nextConfig = {
           },
         ],
         destination: '/s/juicebox',
+      },
+      {
+        source: '/:slug*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.jbdao.org',
+          },
+        ],
+        destination: '/s/juicebox/:slug*',
       },
     ]
   },
