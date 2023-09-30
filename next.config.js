@@ -27,31 +27,64 @@ const nextConfig = {
     return [
       {
         source: '/proposal/:slug',
-        destination: '/p/:slug',
+        destination: '/:slug',
         permanent: true,
+        has: [
+          {
+            type: 'host',
+            value: 'jbdao.org',
+          },
+        ],
       },
       {
         source: '/snapshot/:slug',
-        destination: '/p/:slug',
+        destination: '/:slug',
         permanent: true,
+        has: [
+          {
+            type: 'host',
+            value: 'jbdao.org',
+          },
+        ],
       },
       {
         source: '/snapshot/jbdao.eth/proposal/:slug',
-        destination: '/p/:slug',
+        destination: '/:slug',
         permanent: true,
+        has: [
+          {
+            type: 'host',
+            value: 'jbdao.org',
+          },
+        ],
       },
       {
         source: '/p/:path',
-        destination: '/s/juicebox/:path',
+        destination: '/:path',
         permanent: true,
-      },
-      {
-        source: '/edit',
-        destination: '/s/juicebox/edit',
-        permanent: true,
+        has: [
+          {
+            type: 'host',
+            value: 'jbdao.org',
+          },
+        ],
       },
     ];
-  }
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/:slug*',
+        has: [
+          {
+            type: 'host',
+            value: 'jbdao.org',
+          },
+        ],
+        destination: '/s/juicebox/:slug*',
+      },
+    ]
+  },
 };
 
 module.exports = removeImports(nextConfig);
