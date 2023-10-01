@@ -23,54 +23,6 @@ const nextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      {
-        source: '/proposal/:slug',
-        destination: '/:slug',
-        permanent: true,
-        has: [
-          {
-            type: 'host',
-            value: 'www.jbdao.org',
-          },
-        ],
-      },
-      {
-        source: '/snapshot/:slug',
-        destination: '/:slug',
-        permanent: true,
-        has: [
-          {
-            type: 'host',
-            value: 'www.jbdao.org',
-          },
-        ],
-      },
-      {
-        source: '/snapshot/jbdao.eth/proposal/:slug',
-        destination: '/:slug',
-        permanent: true,
-        has: [
-          {
-            type: 'host',
-            value: 'www.jbdao.org',
-          },
-        ],
-      },
-      {
-        source: '/p/:path',
-        destination: '/:path',
-        permanent: true,
-        has: [
-          {
-            type: 'host',
-            value: 'www.jbdao.org',
-          },
-        ],
-      },
-    ];
-  },
   async rewrites() {
     return [
       {
@@ -84,14 +36,24 @@ const nextConfig = {
         destination: '/s/juicebox',
       },
       {
-        source: '/:slug*',
+        source: '/edit',
         has: [
           {
             type: 'host',
             value: 'www.jbdao.org',
           },
         ],
-        destination: '/s/juicebox/:slug*',
+        destination: '/s/juicebox/edit',
+      },
+      {
+        source: '/p/:slug',
+        has: [
+          {
+            type: 'host',
+            value: 'www.jbdao.org',
+          },
+        ],
+        destination: '/s/juicebox/:slug',
       },
     ]
   },
