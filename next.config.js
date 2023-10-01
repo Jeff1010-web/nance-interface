@@ -23,18 +23,23 @@ const nextConfig = {
       },
     ],
   },
-  async rewrites() {
+  async redirects() {
     return [
       {
         source: '/',
+        destination: '/s/juicebox',
+        permanent: false,
         has: [
           {
             type: 'host',
             value: 'www.jbdao.org',
           },
         ],
-        destination: '/s/juicebox',
       },
+    ]
+  },
+  async rewrites() {
+    return [
       {
         source: '/edit',
         has: [
