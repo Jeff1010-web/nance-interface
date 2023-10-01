@@ -7,7 +7,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useContext, useState, useEffect, Fragment } from "react";
 import { useForm, SubmitHandler, FormProvider, Controller } from "react-hook-form";
-import { NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import { fileDrop } from "../../../hooks/FileDrop";
 import { imageUpload } from "../../../hooks/ImageUpload";
 import { useProposalUpload } from "../../../hooks/NanceHooks";
@@ -120,7 +119,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
     };
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req)
-      //.then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res?.data.hash}` : `/s/${space}/${res?.data.hash}`))
       .catch((err) => {
         console.warn("📗 Nance.editProposal.onSignError ->", err);
       });
@@ -164,7 +162,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
   return (
     <FormProvider {...methods} >
 
-      {!error && <ResultModal title="Success" description={`Proposal "${getValues("proposal.title")}" ${isNew ? "created" : "updated"} by ${session?.user?.name || "unknown"}`} buttonText="Go to proposal page" onClick={() => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${data?.data.hash}` : `/s/${space}/${data?.data.hash}`)} isSuccessful={true} shouldOpen={data !== undefined} close={reset} />}
+      {!error && <ResultModal title="Success" description={`Proposal "${getValues("proposal.title")}" ${isNew ? "created" : "updated"} by ${session?.user?.name || "unknown"}`} buttonText="Go to proposal page" onClick={() => router.push(`/s/${space}/${data?.data.hash}`)} isSuccessful={true} shouldOpen={data !== undefined} close={reset} />}
       {error && <ResultModal title="Error" description={error.error_description || error.message || error} buttonText="Close" onClick={reset} isSuccessful={false} shouldOpen={true} close={reset} />}
 
       <UIGuide name="EditPage" steps={driverSteps} />
@@ -245,7 +243,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
         )}
 
         <div className="flex justify-end" id="submit-button-div">
-          <Link href={space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`} legacyBehavior>
+          <Link href={`/s/${space}`} legacyBehavior>
             <a
               className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >

@@ -3,7 +3,6 @@ import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { useQueryParams, withDefault, NumberParam, createEnumParam } from "next-query-params";
 import Link from "next/link";
 import { Fragment, useContext, useState } from "react";
-import { NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import { canEditProposal } from "../../../libs/nance";
 import { classNames } from "../../../libs/tailwind";
 import ColorBar from "../../ColorBar";
@@ -18,13 +17,13 @@ import ProposalVotes from "./ProposalVotes";
 import { ProposalContext } from "../../../pages/s/[space]/[proposal]";
 
 const ProposalStatus = [
-  {title: "Archive", description: "Archive your proposal and exit from governance process."},
-  {title: "Delete", description: "Delete your proposal and this can't be undo."},
+  { title: "Archive", description: "Archive your proposal and exit from governance process." },
+  { title: "Delete", description: "Delete your proposal and this can't be undo." },
 ];
 
 export default function ProposalSidebar(
   { space, proposal, snapshotProposal }:
-  { space: string, proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }
+    { space: string, proposal: Proposal | undefined, snapshotProposal: SnapshotProposal | undefined }
 ) {
 
   const router = useRouter();
@@ -37,7 +36,7 @@ export default function ProposalSidebar(
   const editPageQuery = {
     proposalId: proposal?.hash
   };
-  
+
   const [nanceAPILoading, setNanceAPILoading] = useState(false);
   const { data: session, status } = useSession();
   const [selected, setSelected] = useState(ProposalStatus[0]);
@@ -62,7 +61,7 @@ export default function ProposalSidebar(
     };
     console.debug("📗 Nance.archiveProposal.submit ->", req);
     trigger(req)
-      .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res?.data.hash}` : `/s/${space}/${res?.data.hash}`))
+      .then(res => router.push(`/s/${space}/${res?.data.hash}`))
       .catch((err) => {
         console.warn("📗 Nance.archiveProposal.onUploadError ->", err);
       }).finally(() => {
@@ -80,7 +79,7 @@ export default function ProposalSidebar(
       };
       console.debug("📗 Nance.deleteProposal.onDelete ->", req);
       deleteTrigger(req)
-        .then(() => router.push(space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`))
+        .then(() => router.push(`/s/${space}`))
         .catch((err) => {
           console.warn("📗 Nance.deleteProposal.onDeleteError ->", err);
         }).finally(() => {
@@ -104,14 +103,14 @@ export default function ProposalSidebar(
     };
     console.debug("📗 Nance.archiveProposal.submit ->", req);
     trigger(req)
-      .then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res?.data.hash}` : `/s/${space}/${res?.data.hash}`))
+      .then(res => router.push(`/s/${space}/${res?.data.hash}`))
       .catch((err) => {
         console.warn("📗 Nance.archiveProposal.onUploadError ->", err);
       }).finally(() => {
         setNanceAPILoading(false);
       });
   };
-  
+
   return (
     <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:px-6 sticky top-6 bottom-6 opacity-100" style={{
       maxHeight: 'calc(100vh - 9rem)'
@@ -152,12 +151,12 @@ export default function ProposalSidebar(
               </a>
             </>
           )}
-          
+
           {canEditProposal(proposal?.status) && status === "authenticated" && (
             <Link
               legacyBehavior
               href={{
-                pathname: space === NANCE_DEFAULT_SPACE ? '/edit' : `/s/${space}/edit`,
+                pathname: `/s/${space}/edit`,
                 query: editPageQuery,
               }}
             >
@@ -175,16 +174,16 @@ export default function ProposalSidebar(
                   <div className="relative">
                     <div className="inline-flex divide-x divide-gray-700 rounded-md shadow-sm w-full">
                       <button onClick={() => {
-                        if(selected.title === "Archive") {
+                        if (selected.title === "Archive") {
                           archiveProposal();
-                        } else if(selected.title === "Delete") {
+                        } else if (selected.title === "Delete") {
                           deleteProposal();
                         }
                       }} className={classNames(
                         "inline-flex items-center justify-center rounded-none rounded-l-md border border-transparent px-4 py-2 text-sm font-medium disabled:text-black text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 w-full",
                         (selected.title === "Delete" ? "bg-red-600 hover:bg-red-500" : "bg-gray-600 hover:bg-gray-500")
                       )}
-                      disabled={nanceAPILoading}
+                        disabled={nanceAPILoading}
                       >
                         {nanceAPILoading && (
                           <div className="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-gray-900 rounded-full mr-2" role="status" aria-label="loading">
