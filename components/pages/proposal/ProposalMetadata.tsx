@@ -44,8 +44,9 @@ export default function ProposalMetadata() {
                   <ArrowTopRightOnSquareIcon className="h-3 w-3 inline text-xs" />
                 </Link>
 
-                ({format(toDate(commonProps!.created * 1000), "LLL dd, u KK:mm a")}
-                {commonProps!.end > 0 && <span>- {format(toDate(commonProps!.end * 1000), "LLL dd, u KK:mm a")})</span>}
+                &nbsp;({format(toDate(commonProps!.created * 1000), "LLL dd, u KK:mm a")}
+                {commonProps!.end > 0 && <span>- {format(toDate(commonProps!.end * 1000), "LLL dd, u KK:mm a")}</span>}
+                )
               </span>
             </>
           )}
