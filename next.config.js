@@ -55,6 +55,16 @@ const nextConfig = {
         ],
         destination: '/s/juicebox/:slug',
       },
+      {
+        source: '/:slug(\\d{1,})',
+        has: [
+          {
+            type: 'host',
+            value: 'www.jbdao.org',
+          },
+        ],
+        destination: '/s/juicebox/:slug',
+      },
     ]
   },
 };
