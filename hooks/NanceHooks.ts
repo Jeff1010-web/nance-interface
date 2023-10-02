@@ -174,7 +174,6 @@ async function deleter(url: RequestInfo | URL, { arg }: { arg: ProposalDeleteReq
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(arg)
   });
   const json: APIResponse<ProposalUploadPayload> = await res.json();
   if (json.success === false) {
