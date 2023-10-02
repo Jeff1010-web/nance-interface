@@ -104,7 +104,7 @@ export default function SnapshotSearch(
         <>
           <div className="mt-4">
             {(() => {
-              const canUserEdit = canEditSnapshotSpace(selectedSpace, session.user?.name as string);
+              const canUserEdit = canEditSnapshotSpace(selectedSpace, session.user?.name?.toLowerCase() as string);
 
               const addNanceSnapshotButton = (
                 <button
