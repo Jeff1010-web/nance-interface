@@ -1,11 +1,20 @@
 import { ErrorMessage } from "@hookform/error-message";
 import { Controller, useFormContext } from "react-hook-form";
 import ENSAddressInput from "./ENSAddressInput";
+import { useEffect } from "react";
 
 export default function AddressForm(
-  { label, fieldName, defaultValue = "", disabled = false } : { label: string, fieldName: any, defaultValue?: string, disabled?: boolean }
+  { label, fieldName, defaultValue = "", disabled = false }: { label: string, fieldName: any, defaultValue?: string, disabled?: boolean }
 ) {
-  const { control, formState: { errors } } = useFormContext();
+  const { control, formState: { errors }, setValue, getValues } = useFormContext();
+
+  // Controller doesn't support default values, so we need to set it manually
+  // Here's the trick: we only set the default value if the field is empty
+  useEffect(() => {
+    if (defaultValue && !getValues(fieldName)) {
+      setValue(fieldName, defaultValue);
+    }
+  }, [defaultValue, getValues, setValue, fieldName]);
 
   return (
     <div>
@@ -14,7 +23,7 @@ export default function AddressForm(
       </label>
       <div className="mt-1 flex rounded-md shadow-sm">
         <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
-                    address
+          address
         </span>
         <Controller
           name={fieldName}
@@ -25,7 +34,7 @@ export default function AddressForm(
           }}
           render={({ field: { onChange, onBlur, value, ref } }) =>
             <ENSAddressInput
-              val={defaultValue || value}
+              val={value}
               setVal={onChange}
               inputStyle="rounded-none h-10 rounded-r-md"
               disabled={disabled}
