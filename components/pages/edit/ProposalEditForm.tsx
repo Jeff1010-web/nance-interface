@@ -121,7 +121,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
 
     const payload = {
       ...formData.proposal,
-      status: (metadata.loadedProposal?.status === 'Temperature Check') ? 'Temperature Check' : selected.value,
+      status: (metadata.loadedProposal?.status === 'Temperature Check' && !isNew) ? 'Temperature Check' : selected.value,
       body: await htmlToMarkdown(formData.proposal.body ?? ""),
       hash
     };
