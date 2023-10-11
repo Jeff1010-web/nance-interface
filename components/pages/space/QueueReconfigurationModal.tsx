@@ -4,13 +4,13 @@ import { BigNumber, utils } from 'ethers';
 import { ProposalsPacket, Reserve } from '../../../models/NanceTypes';
 import { useCurrentPayouts } from '../../../hooks/NanceHooks';
 import DiffTableWithSection, { } from '../../form/DiffTableWithSection';
-import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
 import { calcDiffTableData, mergePayouts, compareReserves, splitStruct2JBSplit, encodedReconfigureFundingCyclesOf } from '../../../libs/juicebox';
 import useControllerOfProject from '../../../hooks/juicebox/ControllerOfProject';
 import useTerminalOfProject from '../../../hooks/juicebox/TerminalOfProject';
 import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
 import { useReconfigurationOfProject } from '../../../hooks/juicebox/ReconfigurationOfProject';
 import parseSafeJuiceboxTx from '../../../libs/SafeJuiceboxParser';
+import TransactionCreator from '../../ethereum/TransactionCreator';
 
 export default function QueueReconfigurationModal({ open, setOpen, juiceboxProjectId, proposals, space, currentCycle }: {
   open: boolean, setOpen: (o: boolean) => void,
@@ -50,8 +50,6 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
   const payoutsDiff = mergePayouts(currentConfig, currentCycle, currentConfig.payoutMods || [], nancePayouts?.data || [], actionWithPIDArray?.filter((v) => v.action.type === "Payout") || []);
   const actionReserve = actionWithPIDArray?.find(v => v.action.type === "Reserve");
   const reservesDiff = compareReserves(currentConfig.ticketMods ?? [], (actionReserve?.action.payload as Reserve)?.splits.map(splitStruct => splitStruct2JBSplit(splitStruct)) || (currentConfig.ticketMods ?? []), actionReserve?.pid ?? 0);
-
-
 
   const loading = infoIsLoading || configIsLoading || nancePayoutsLoading;
 
@@ -100,11 +98,11 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
                 </div>
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                   <div className="sm:ml-3 sm:w-auto">
-                    <SafeTransactionCreator safeAddress={owner} safeTransaction={{
+                    <TransactionCreator address={owner} transactions={[{
                       to: controller?.address || "",
                       value: "0",
                       data: encodeReconfiguration
-                    }} />
+                    }]} />
                   </div>
 
                   <button

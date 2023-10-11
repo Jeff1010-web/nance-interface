@@ -1,5 +1,8 @@
-import { useQueueTransaction } from "./SafeHooks";
+import { getAddress } from "viem";
+import { useEtherscanContractABI } from "./EtherscanHooks";
+import { useQueueTransaction, useSafeInfo } from "./SafeHooks";
 import usePropose from "./governor/Propose";
+import { FunctionFragment, Interface } from "ethers/lib/utils";
 
 export interface TransactionData {
   to: string;
@@ -29,4 +32,32 @@ export default function useQueueTransactionToContract(address: string, transacti
     error: error || (isSuccess ? undefined : "Error proposing transaction"),
     trigger: trigger || write
   };
+}
+
+export enum ContractType {
+  Safe,
+  Governor,
+  Unknown
+}
+
+export function useContractType(rawAddress: string) {
+  if (rawAddress === "") return ContractType.Unknown;
+
+  const address = getAddress(rawAddress);
+  const { data: safeInfo, error: safeError } = useSafeInfo(address);
+  const { data: abi, error: etherscanError } = useEtherscanContractABI(address);
+
+  if (!safeError && safeInfo?.masterCopy) {
+    return ContractType.Safe;
+  } else if (!etherscanError && abi) {
+    const ethersInterface = new Interface(abi || []);
+    const fragmentMap: { [key: string]: FunctionFragment } = {};
+    Object.values(ethersInterface.functions || {}).forEach(f => fragmentMap[f.format("full")] = f);
+    console.debug("useContractType.fragmentMap", fragmentMap);
+    if (fragmentMap["propose(address[],uint256[],bytes[],string) external returns (uint256)"]) {
+      return ContractType.Governor;
+    }
+  }
+
+  return ContractType.Unknown;
 }

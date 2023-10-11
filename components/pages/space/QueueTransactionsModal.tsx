@@ -2,20 +2,19 @@ import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { utils } from 'ethers';
 import { CustomTransaction, ProposalsPacket, Transfer, extractFunctionName } from '../../../models/NanceTypes';
-import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
 import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
 import OrderCheckboxTable, { TransactionEntry } from '../../form/OrderCheckboxTable';
 import TransferActionLabel from '../../action/TransferActionLabel';
 import { getContractLabel } from '../../../constants/Contract';
 import { Interface, parseUnits } from 'ethers/lib/utils';
 import CustomTransactionActionLabel from '../../action/CustomTransactionActionLabel';
-import { OperationType } from '@safe-global/safe-core-sdk-types';
+import TransactionCreator from '../../ethereum/TransactionCreator';
 
 export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectId, proposals, space }: {
-    open: boolean, setOpen: (o: boolean) => void,
-    juiceboxProjectId: number,
-    proposals: ProposalsPacket | undefined,
-    space: string
+  open: boolean, setOpen: (o: boolean) => void,
+  juiceboxProjectId: number,
+  proposals: ProposalsPacket | undefined,
+  space: string
 }) {
   const cancelButtonRef = useRef(null);
 
@@ -54,7 +53,7 @@ export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectI
     };
   }) || [];
   const customTransactionEntries: TransactionEntry[] = customTransactionActions?.map((v) => {
-    
+
     const customTransaction = v.action.payload as CustomTransaction;
     const contractInterface = new Interface([customTransaction.functionName]);
     return {
@@ -62,7 +61,7 @@ export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectI
       proposal: v.pid.toString(),
       transactionData: {
         to: customTransaction.contract,
-        value: customTransaction.value ,
+        value: customTransaction.value,
         data: contractInterface.encodeFunctionData(extractFunctionName(customTransaction.functionName), customTransaction.args)
       }
     };
@@ -101,13 +100,13 @@ export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectI
                     <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
                       Queue Transactions
                     </Dialog.Title>
-                    
-                    <OrderCheckboxTable safeAddress={owner} entries={entries} />
+
+                    <OrderCheckboxTable address={owner} entries={entries} />
                   </div>
                 </div>
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                   <div className="sm:ml-3 sm:w-auto">
-                    <SafeTransactionCreator safeAddress={owner} safeTransaction={entries.map(e => e.transactionData)} />
+                    <TransactionCreator address={owner} transactions={entries.map(e => e.transactionData)} />
                   </div>
 
                   <button
@@ -127,4 +126,3 @@ export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectI
     </Transition.Root>
   );
 }
-
