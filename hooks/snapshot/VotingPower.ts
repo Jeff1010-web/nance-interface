@@ -1,4 +1,5 @@
 import { useQuery } from 'graphql-hooks';
+import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../../constants/Snapshot';
 
 const QUERY = `
 query VotingPowerQuery($voter: String!, $space: String!, $proposal: String) {
@@ -36,11 +37,9 @@ export default function useVotingPower(voter: string | undefined, space: string 
 }
 
 export async function fetchVotingPower(voter: string, space: string, proposal: string): Promise<SnapshotVotingPower> {
-  const ret = await fetch('https://hub.snapshot.org/graphql', {
+  const ret = await fetch(`${SNAPSHOT_HUB}/graphql`, {
     method: "POST",
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: SNAPSHOT_HEADERS,
     body: JSON.stringify({
       query: QUERY,
       variables: { voter, space, proposal }
