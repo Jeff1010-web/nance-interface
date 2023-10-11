@@ -1,3 +1,5 @@
+import { SNAPSHOT_HUB } from '../../constants/Snapshot';
+
 export interface SpaceMetric {
     categories?: string[],
     followers?: number
@@ -12,7 +14,7 @@ export interface AllSpacesResponse {
 }
 
 export async function fetchAllSpaces(): Promise<AllSpacesResponse> {
-  return fetch('https://hub.snapshot.org/api/explore', {
+  return fetch(`${SNAPSHOT_HUB}/api/explore`, {
     method: "GET",
     headers: {
       'Content-Type': 'application/json',

@@ -5,9 +5,9 @@ import { useAccount } from "wagmi";
 import { useEthersSigner } from '../ViemAdapter';
 import useSnapshotSpaceSettings from './SpaceSettings';
 import { NANCE_PUBLIC_ADDRESS } from '../../constants/Nance';
+import { SNAPSHOT_HUB } from '../../constants/Snapshot';
 
-const hub = 'https://hub.snapshot.org';
-const client = new snapshot.Client712(hub);
+const client = new snapshot.Client712(SNAPSHOT_HUB);
 
 function clearNull(input: any) {
   let output = {} as Record<string, any>;

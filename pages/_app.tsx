@@ -22,9 +22,11 @@ import { Analytics } from '@vercel/analytics/react';
 import { SessionProvider } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
 import { SWRConfig } from 'swr';
+import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../constants/Snapshot';
 
 const graphqlClient = new GraphQLClient({
-  url: 'https://hub.snapshot.org/graphql',
+  url: `${SNAPSHOT_HUB}/graphql`,
+  headers: SNAPSHOT_HEADERS,
   cache: memCache({ size: 200 })
 });
 

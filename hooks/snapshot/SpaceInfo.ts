@@ -1,4 +1,5 @@
 import { useQuery } from 'graphql-hooks';
+import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../../constants/Snapshot';
 
 const QUERY = `
 query SpaceInfo($spaceId: String) {
@@ -27,11 +28,9 @@ export interface SpaceInfo {
 }
 
 export async function fetchSpaceInfo(spaceId: string): Promise<SpaceInfo> {
-  return fetch('https://hub.snapshot.org/graphql', {
+  return fetch(`${SNAPSHOT_HUB}graphql`, {
     method: "POST",
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: SNAPSHOT_HEADERS,
     body: JSON.stringify({ 
       query: QUERY, 
       variables: { spaceId } 
