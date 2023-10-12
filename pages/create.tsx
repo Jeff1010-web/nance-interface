@@ -35,7 +35,6 @@ export default function CreateSpacePage() {
 
   useEffect(() => {
     function handleStorageChange(event: StorageEvent) {
-      console.log('storage change', event);
       if (event.key === LOCAL_STORAGE_KEY_DISCORD_STATUS) {
         if (event.newValue === 'success') setShouldFetchDiscordUser(true);
       }

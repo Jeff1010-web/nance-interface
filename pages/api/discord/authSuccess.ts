@@ -3,7 +3,6 @@ import { LOCAL_STORAGE_KEY_DISCORD_STATUS } from '../../../libs/discordURL';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { status } = req.query;
-  console.log('status', status);
 
   res.setHeader('Content-Type', 'text/html');
   res.end(`

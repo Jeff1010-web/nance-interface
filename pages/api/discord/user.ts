@@ -8,11 +8,13 @@ import { DiscordUserAuthResponse } from '../../../models/DiscordTypes';
 const DISCORD_API = "https://discord.com/api/v10";
 
 const getTokenByAddress = async (address: string) => {
-  const redisValue = await redis.get(address);
-  if (!redisValue) return null;
-  const discordTokenUserStore = JSON.parse(redisValue) as DiscordUserAuthResponse;
-  const token = discordTokenUserStore.access_token;
-  return token;
+  const encryptedDiscordTokenUserStore = await redis.get(address);
+  if (!encryptedDiscordTokenUserStore) return null;
+  const discordTokenUserStore = await decode({
+    token: encryptedDiscordTokenUserStore,
+    secret: process.env.NEXTAUTH_SECRET!,
+  }) as unknown as DiscordUserAuthResponse;
+  return discordTokenUserStore.access_token ?? null;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
