@@ -1,11 +1,10 @@
-import { useQueryParams, StringParam, withDefault, NumberParam } from "next-query-params";
+import { useQueryParams, StringParam } from "next-query-params";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useSpaceInfo, useProposals, usePrivateProposals } from "../../../hooks/NanceHooks";
+import { useSpaceInfo, usePrivateProposals } from "../../../hooks/NanceHooks";
 import ScrollToBottom from "../../ScrollToBottom";
 import ProposalCards from "./ProposalCards";
 import { getLastSlash } from "../../../libs/nance";
-import Pagination from "../../Pagination";
 import { BanknotesIcon, BoltIcon, DocumentTextIcon, ShieldCheckIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -83,19 +82,13 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   // QueryParams
   const router = useRouter();
   const [query, setQuery] = useQueryParams({
-    keyword: StringParam,
-    limit: withDefault(NumberParam, 20),
-    page: withDefault(NumberParam, 1),
     cycle: StringParam
   });
-  const { keyword, cycle, limit, page } = query;
 
   // External Hooks
   const { data: sessionData } = useSession();
-  const { data: infoData, isLoading: infoLoading, error: infoError } = useSpaceInfo({ space }, router.isReady);
+  const { data: infoData, isLoading: loading, error: infoError } = useSpaceInfo({ space }, router.isReady);
   const { data: privateProposals, mutate } = usePrivateProposals(space, router.isReady);
-  const { data: proposalData, isLoading: proposalsLoading, error: proposalError } = useProposals({ space, cycle, keyword, page, limit }, router.isReady);
-  const loading = infoLoading || proposalsLoading;
 
   const projectId = parseInt(infoData?.data?.juiceboxProjectId || "1");
 
@@ -162,10 +155,8 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
           hasDrafts={(privateProposals?.data?.length ?? 0) > 0} currentCycle={infoData?.data?.currentCycle} />
 
         <div>
-          <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={loading} proposalsPacket={proposalData?.data} privateProposals={privateProposals?.data} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} showDrafts={showDrafts} />
+          <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={loading} space={space} privateProposals={privateProposals?.data} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} showDrafts={showDrafts} />
         </div>
-
-        <Pagination page={page} setPage={(p) => setQuery({ page: p })} limit={limit} total={0} infinite />
 
         <div className="mt-2 text-center">
           {infoData?.data?.dolthubLink && (

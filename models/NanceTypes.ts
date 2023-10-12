@@ -25,7 +25,7 @@ export type ProposalInfo = {
   minTokenPassingAmount: number;
 };
 
-export type ProposalsPacket = { proposalInfo: ProposalInfo, proposals: Proposal[] };
+export type ProposalsPacket = { proposalInfo: ProposalInfo, proposals: Proposal[], hasMore: boolean };
 
 export type ProposalsPacketWithoutBody = { proposalInfo: ProposalInfo, proposals: Omit<Proposal, 'body'>[] };
 

@@ -5,7 +5,7 @@ import { Option } from "../../SearchableComboBox";
 
 import { DocumentMagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { classNames } from "../../../libs/tailwind";
-import { NumberParam, StringParam, useQueryParams, withDefault } from "next-query-params";
+import { StringParam, useQueryParams, withDefault } from "next-query-params";
 
 const allCycle = { id: "All", label: `All`, status: true };
 
@@ -47,7 +47,6 @@ export default function CycleSelectorAndSearchBar(
 
   const [query, setQuery] = useQueryParams({
     keyword: StringParam,
-    page: withDefault(NumberParam, 1),
     cycle: withDefault(StringParam, currentCycle?.toString())
   });
   const { keyword, cycle } = query;
@@ -113,8 +112,7 @@ export default function CycleSelectorAndSearchBar(
                 // FIXME: use bouncing hook
                 if (e.key == "Enter") {
                   setQuery({
-                    keyword: keywordInput,
-                    page: 1
+                    keyword: keywordInput
                   });
                 }
               }}
