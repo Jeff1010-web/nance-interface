@@ -22,11 +22,15 @@ import GnosisSafeForm from "../components/form/GnosisSafeForm";
 
 export default function CreateSpacePage() {
   const router = useRouter();
+  const { fetchDiscord } = router.query as Record<string, string>;
+
   // hooks
   const { data: session, status } = useSession();
   const { openConnectModal } = useConnectModal();
-  const { data: discordUser, isLoading: discordLoading } = useFetchDiscordUser({address: session?.user?.name || ''}, router.isReady);
-  const { trigger: discordLogoutTrigger  } = useLogoutDiscordUser({address: session?.user?.name || ''}, router.isReady);
+  const address = session?.user?.name;
+  const shouldFetchDiscordUser = fetchDiscord === 'true' && router.isReady && !!address;
+  const { data: discordUser, isLoading: discordLoading } = useFetchDiscordUser({address}, shouldFetchDiscordUser);
+  const { trigger: discordLogoutTrigger  } = useLogoutDiscordUser({address: session?.user?.name || ''}, !!discordUser);
 
   return (
     <>
@@ -48,7 +52,7 @@ export default function CreateSpacePage() {
 
           {status === "authenticated" && (
             <>
-              { !discordUser && !discordLoading && (
+              { !discordUser?.username && !discordLoading && (
                 <div className="flex justify-center">
                   <button
                     className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-purple-800 px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
@@ -64,14 +68,14 @@ export default function CreateSpacePage() {
                   </div>
                 ) }
               </div>
-              { !discordLoading && discordUser && (
+              { !discordLoading && discordUser?.avatar && (
                 <>
                   <div className="flex justify-center">
                     <div className="block text-center">
                       <p className="">{`${discordUser?.username}`}</p>
                       <a className="text-xs underline hover:cursor-pointer" onClick={ () => {
                         discordLogoutTrigger();
-                        window.location.reload();
+                        window.location.assign(window.location.pathname);
                       }
                       }>disconnect</a>
                     </div>
@@ -79,7 +83,7 @@ export default function CreateSpacePage() {
                   </div>
                 </>
               )}
-              { discordUser && (
+              { discordUser?.username && (
                 <Form session={session} />
               )}
             </>
@@ -111,6 +115,11 @@ function Form({ session }: { session: Session }) {
     console.debug("📗 Nance.createSpace.submit ->", req);
     return trigger(req).then(() => router.push(`/s/${formData.name}`));
   };
+
+  useEffect(() => {
+    // log form values as they change
+    console.debug("📗 Nance.createSpace.watch ->", watch());
+  });
 
   return (
     <FormProvider {...methods} >

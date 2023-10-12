@@ -1,8 +1,11 @@
+// fetch user auth token from Discord API, set the user auth token in redis
+
 // https://discordjs.guide/oauth2/#a-quick-example
 // https://github.com/discordjs/guide/blob/main/code-samples/oauth/simple-oauth-webserver/index.js
 import { redis } from "../../../libs/redis";
 import { decode } from "next-auth/jwt";
 import { DISCORD_OAUTH_URL, discordRedirectBaseUrl, discordScope, DISCORD_CLIENT_ID } from "../../../libs/discordURL";
+import { DiscordUserAuthResponse } from '../../../models/DiscordTypes';
 
 const params = {
   client_id: DISCORD_CLIENT_ID as string,
@@ -29,21 +32,23 @@ export default async function handler(req: any, res: any) {
     });
 
     try {
-      const discordUser = await response.json();
+      const discordUser = await response.json() as DiscordUserAuthResponse;
       const session = await decode({
         token: req.cookies["__Secure-next-auth.session-token"] ?? req.cookies["next-auth.session-token"],
         secret: process.env.NEXTAUTH_SECRET!,
       });
-      const key = session?.sub ?? req.cookies["next-auth.session-token"] ?? req.cookies["__Secure-next-auth.session-token"];
-      await redis.set(key, JSON.stringify(discordUser));
+      const key = session?.sub;
+      if (!key) return res.status(401).send('Unauthorized');
+
+      // TODO implement refresh token, set expiry to discordUser.expires_in for now
+      await redis.set(key, JSON.stringify(discordUser), 'EX', discordUser.expires_in);
+      res.redirect(`/${from}?fetchDiscord=true`);
     } catch (error) {
       console.error('Discord authentication error:', error);
-      res.status(500).send('Internal Server Error');
+      res.redirect(`/${from}`);
     }
-    res.redirect(`/${from}`);
-    res.end();
   } catch (error: any) {
     console.error('Discord authentication error:', error);
-    res.status(500).send('Internal Server Error');
+    res.redirect(`/${from}`);
   }
 }
