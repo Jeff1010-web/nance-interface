@@ -2,7 +2,7 @@ import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { BigNumber, utils } from 'ethers';
 import { ProposalsPacket, Reserve } from '../../../models/NanceTypes';
-import { useCurrentPayouts } from '../../../hooks/NanceHooks';
+import { useCurrentPayouts, useProposalsInfinite } from '../../../hooks/NanceHooks';
 import DiffTableWithSection, { } from '../../form/DiffTableWithSection';
 import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
 import { calcDiffTableData, mergePayouts, compareReserves, splitStruct2JBSplit, encodedReconfigureFundingCyclesOf } from '../../../libs/juicebox';
@@ -11,15 +11,25 @@ import useTerminalOfProject from '../../../hooks/juicebox/TerminalOfProject';
 import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
 import { useReconfigurationOfProject } from '../../../hooks/juicebox/ReconfigurationOfProject';
 import parseSafeJuiceboxTx from '../../../libs/SafeJuiceboxParser';
+import { useRouter } from 'next/router';
+import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
 
-export default function QueueReconfigurationModal({ open, setOpen, juiceboxProjectId, proposals, space, currentCycle }: {
+export default function QueueReconfigurationModal({ open, setOpen, juiceboxProjectId, space, currentCycle }: {
   open: boolean, setOpen: (o: boolean) => void,
   juiceboxProjectId: number,
-  proposals: ProposalsPacket | undefined,
   space: string,
   currentCycle: number | undefined
 }) {
   const cancelButtonRef = useRef(null);
+  const router = useRouter();
+  const [query, setQuery] = useQueryParams({
+    keyword: StringParam,
+    limit: withDefault(NumberParam, 5),
+    cycle: StringParam,
+    sortBy: withDefault(StringParam, ''),
+    sortDesc: withDefault(BooleanParam, true)
+  });
+  const { cycle, keyword, limit } = query;
 
   // Get configuration of current fundingCycle
   const projectId = juiceboxProjectId;
@@ -33,8 +43,10 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
   const previousCycle = currentCycle ? (currentCycle - 1).toString() : undefined;
   const { data: nancePayouts, isLoading: nancePayoutsLoading } = useCurrentPayouts(space, previousCycle);
 
+  const { data: proposalDataArray, isLoading: proposalsLoading } = useProposalsInfinite({ space, cycle, keyword, limit }, router.isReady);
+
   // Gather all payout and reserve actions in current fundingCycle
-  const actionWithPIDArray = proposals?.proposals
+  const actionWithPIDArray = proposalDataArray?.map(r => r.data?.proposals).flat()
     // only gather approved actions
     ?.filter(p => p.actions.length > 0 && (p.status === "Voting" || p.status === "Approved"))
     .flatMap(p => {
@@ -51,9 +63,7 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
   const actionReserve = actionWithPIDArray?.find(v => v.action.type === "Reserve");
   const reservesDiff = compareReserves(currentConfig.ticketMods ?? [], (actionReserve?.action.payload as Reserve)?.splits.map(splitStruct => splitStruct2JBSplit(splitStruct)) || (currentConfig.ticketMods ?? []), actionReserve?.pid ?? 0);
 
-
-
-  const loading = infoIsLoading || configIsLoading || nancePayoutsLoading;
+  const loading = infoIsLoading || configIsLoading || nancePayoutsLoading || proposalsLoading;
 
   // Construct reconfiguration function data
   const encodeReconfiguration = !loading ? encodedReconfigureFundingCyclesOf(currentConfig, payoutsDiff, reservesDiff, projectId, controller, terminal) || "" : "";

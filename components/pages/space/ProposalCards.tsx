@@ -9,7 +9,6 @@ import SortableTableHeader from "./SortableTableHeader";
 import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from "next-query-params";
 import { useProposalsInfinite } from "../../../hooks/NanceHooks";
 import { useRouter } from "next/router";
-import LoadingArrowSpiner from "../../LoadingArrowSpiner";
 import LoadMoreButton from "./LoadMoreButton";
 
 const SortOptionsArr = ["status", "title", "approval", "participants", "voted"];

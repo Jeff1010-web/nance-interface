@@ -15,7 +15,7 @@ import { DriveStep } from "driver.js";
 import UIGuide from "../../modal/UIGuide";
 import { useSession } from "next-auth/react";
 
-const QueueExecutionModal = dynamic(() => import("./QueueReconfigurationModal"), {
+const QueueReconfigurationModal = dynamic(() => import("./QueueReconfigurationModal"), {
   loading: () => <LoadingArrowSpiner />,
 });
 const QueueTransactionsModal = dynamic(() => import("./QueueTransactionsModal"), {
@@ -125,7 +125,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             <BanknotesIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
             Queue Reconfiguration
           </button>
-          {showQueueReconfigurationModal && <QueueExecutionModal open={showQueueReconfigurationModal} setOpen={setShowQueueReconfigurationModal} juiceboxProjectId={projectId} proposals={proposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />}
+          {showQueueReconfigurationModal && <QueueReconfigurationModal open={showQueueReconfigurationModal} setOpen={setShowQueueReconfigurationModal} juiceboxProjectId={projectId} space={space} currentCycle={infoData?.data?.currentCycle} />}
 
           <button
             type="button"
@@ -138,7 +138,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             <BoltIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
             Queue Transactions
           </button>
-          {showQueueTransactionsModal && <QueueTransactionsModal open={showQueueTransactionsModal} setOpen={setShowQueueTransactionsModal} juiceboxProjectId={projectId} proposals={proposalData?.data} space={space} />}
+          {showQueueTransactionsModal && <QueueTransactionsModal open={showQueueTransactionsModal} setOpen={setShowQueueTransactionsModal} juiceboxProjectId={projectId} space={space} />}
 
           <Link
             href={`/review?project=${projectId}`}
