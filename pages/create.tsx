@@ -8,8 +8,8 @@ import { useRouter } from "next/router";
 import Notification from "../components/Notification";
 import { CreateFormValues } from "../models/NanceTypes";
 import { useCreateSpace } from "../hooks/NanceHooks";
-import { discordAuthUrl, avatarBaseUrl } from "../libs/discordURL";
-import { useFetchDiscordUser, useLogoutDiscordUser } from "../hooks/discordHooks";
+import { avatarBaseUrl, LOCAL_STORAGE_KEY_DISCORD_STATUS } from "../libs/discordURL";
+import { useFetchDiscordUser, useLogoutDiscordUser } from "../hooks/DiscordHooks";
 import { Session } from "next-auth";
 import { useEffect, useState } from "react";
 import ProjectForm from "../components/form/ProjectForm";
@@ -19,18 +19,32 @@ import GovernanceCyleForm from "../components/form/GovernanceCycleForm";
 import ToggleSwitch from "../components/ToggleSwitch";
 import { TextInput } from "../components/form/TextForm";
 import GnosisSafeForm from "../components/form/GnosisSafeForm";
+import { discordAuthWindow } from '../libs/discord';
 
 export default function CreateSpacePage() {
   const router = useRouter();
-  const { fetchDiscord } = router.query as Record<string, string>;
+  // state
+  const [shouldFetchDiscordUser, setShouldFetchDiscordUser] = useState(false);
 
   // hooks
   const { data: session, status } = useSession();
   const { openConnectModal } = useConnectModal();
   const address = session?.user?.name;
-  const shouldFetchDiscordUser = fetchDiscord === 'true' && router.isReady && !!address;
   const { data: discordUser, isLoading: discordLoading } = useFetchDiscordUser({address}, shouldFetchDiscordUser);
   const { trigger: discordLogoutTrigger  } = useLogoutDiscordUser({address: session?.user?.name || ''}, !!discordUser);
+
+  useEffect(() => {
+    function handleStorageChange(event: StorageEvent) {
+      console.log('storage change', event);
+      if (event.key === LOCAL_STORAGE_KEY_DISCORD_STATUS) {
+        if (event.newValue === 'success') setShouldFetchDiscordUser(true);
+      }
+    }
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   return (
     <>
@@ -56,7 +70,10 @@ export default function CreateSpacePage() {
                 <div className="flex justify-center">
                   <button
                     className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-purple-800 px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
-                    onClick={() => router.push(discordAuthUrl('create'))}
+                    onClick={ () => {
+                      localStorage.removeItem(LOCAL_STORAGE_KEY_DISCORD_STATUS);
+                      discordAuthWindow(); 
+                    } }
                   >
                     Connect Discord
                   </button>
@@ -75,6 +92,8 @@ export default function CreateSpacePage() {
                       <p className="">{`${discordUser?.username}`}</p>
                       <a className="text-xs underline hover:cursor-pointer" onClick={ () => {
                         discordLogoutTrigger();
+                        // set local storage to false, then refresh
+                        localStorage.removeItem(LOCAL_STORAGE_KEY_DISCORD_STATUS);
                         window.location.assign(window.location.pathname);
                       }
                       }>disconnect</a>

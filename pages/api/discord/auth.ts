@@ -4,7 +4,7 @@
 // https://github.com/discordjs/guide/blob/main/code-samples/oauth/simple-oauth-webserver/index.js
 import { redis } from "../../../libs/redis";
 import { decode } from "next-auth/jwt";
-import { DISCORD_OAUTH_URL, discordRedirectBaseUrl, discordScope, DISCORD_CLIENT_ID } from "../../../libs/discordURL";
+import { DISCORD_OAUTH_URL, discordRedirectBaseUrl, discordScope, DISCORD_CLIENT_ID, DISCORD_PROXY_USER_URL, DISCORD_PROXY_AUTH_SUCCESS_URL } from "../../../libs/discordURL";
 import { DiscordUserAuthResponse } from '../../../models/DiscordTypes';
 
 const params = {
@@ -18,9 +18,9 @@ const params = {
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "GET") return res.redirect("/create");
-  const { code, from } = req.query;
+  const { code } = req.query;
   params.code = code;
-  params.redirect_uri = `${discordRedirectBaseUrl}?from=${from}`;
+  params.redirect_uri = `${discordRedirectBaseUrl}`;
   const body = new URLSearchParams(params);
   try {
     const response = await fetch(DISCORD_OAUTH_URL, {
@@ -39,16 +39,14 @@ export default async function handler(req: any, res: any) {
       });
       const key = session?.sub;
       if (!key) return res.status(401).send('Unauthorized');
-
+      // const encryptedDiscordUser = await redis.get(key);
       // TODO implement refresh token, set expiry to discordUser.expires_in for now
       await redis.set(key, JSON.stringify(discordUser), 'EX', discordUser.expires_in);
-      res.redirect(`/${from}?fetchDiscord=true`);
+      res.redirect(`${DISCORD_PROXY_AUTH_SUCCESS_URL}?status=success`);
     } catch (error) {
       console.error('Discord authentication error:', error);
-      res.redirect(`/${from}`);
     }
   } catch (error: any) {
     console.error('Discord authentication error:', error);
-    res.redirect(`/${from}`);
   }
 }

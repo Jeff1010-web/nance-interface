@@ -1,3 +1,5 @@
+import { discordAuthUrl } from './discordURL';
+
 export function openInDiscord(url: string) {
   try {
     // use URL object to replace https:// with discord://
@@ -38,3 +40,7 @@ export function discordContactMessage(form: { name: string, email: string, messa
   };
   return body;
 }
+
+export const discordAuthWindow = () => {
+  return window.open(discordAuthUrl(), '_blank', 'width=400,height=700,noopener,noreferrer');
+};
