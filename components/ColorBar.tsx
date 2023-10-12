@@ -36,15 +36,16 @@ function ColorDiv({ color, width }: { color: string, width: number }) {
   );
 }
 
-// Proposals which receive at least 80,000,000 affirmative JBX votes amounting to at least 66% of total votes are queued for execution. "Abstain" votes are not included in these counts.
+// Proposals with 80,000,000 or more votes (including "Abstain" and "Against" votes) and at least 66% "For" votes (not counting "Abstain" votes) will be implemented.
 // case 1: full green
 // case 2: full red
 // case 3: full gray
 // case 4: green + red, green
 export default function ColorBar({ greenScore, redScore, noTooltip = false, threshold = JB_THRESHOLD }: { greenScore: number, redScore: number, noTooltip?: boolean, threshold?: number }) {
   const totalScore = greenScore + redScore;
-  const shouldDisplayVerticalLine = greenScore >= threshold && greenScore / totalScore < 0.66;
-  const colorWidth = Math.min(TOTAL_WIDTH, Math.round(greenScore / threshold * TOTAL_WIDTH));
+  const hasPass = totalScore >= threshold && greenScore / totalScore >= 0.66;
+  const shouldDisplayVerticalLine = totalScore >= threshold && greenScore / totalScore < 0.66;
+  const colorWidth = Math.min(TOTAL_WIDTH, Math.round(totalScore / threshold * TOTAL_WIDTH));
   const grayWidth = TOTAL_WIDTH - colorWidth;
 
   const greenWidth = Math.round(greenScore / totalScore * colorWidth);
@@ -67,7 +68,7 @@ export default function ColorBar({ greenScore, redScore, noTooltip = false, thre
 
   return (
     <Tooltip
-      content={`For ${formatNumber(greenScore)}, Against ${formatNumber(redScore)}, ApprovalThreshold ${formatNumber(threshold)}`}
+      content={`${hasPass ? "✅" : "❌"} For ${formatNumber(greenScore)}, Against ${formatNumber(redScore)}, Threshold ${formatNumber(threshold)}`}
       trigger="hover"
     >
       {renderBar()}
