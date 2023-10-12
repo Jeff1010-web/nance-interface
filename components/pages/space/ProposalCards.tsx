@@ -37,7 +37,7 @@ export default function ProposalCards({ loading, space, privateProposals, maxCyc
   const router = useRouter();
   const [query, setQuery] = useQueryParams({
     keyword: StringParam,
-    limit: withDefault(NumberParam, 5),
+    limit: withDefault(NumberParam, 15),
     cycle: StringParam,
     sortBy: withDefault(StringParam, ''),
     sortDesc: withDefault(BooleanParam, true)
@@ -145,8 +145,6 @@ export default function ProposalCards({ loading, space, privateProposals, maxCyc
   if (!isLoading && sortedProposals.length === 0) {
     return <RecommendAction maxCycle={maxCycle} />;
   }
-
-  console.debug(sortedProposals)
 
   return (
     <>

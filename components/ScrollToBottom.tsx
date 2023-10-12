@@ -8,14 +8,14 @@ export default function JumpToTopOrBottom() {
   // Show the buttons when the user scrolls down 20px from the top of the document
   useEffect(() => {
     const handleScroll = () => {
-      if (window.pageYOffset > 20) {
+      if (window.scrollY > 20) {
         setShowTopButton(true);
       } else {
         setShowTopButton(false);
       }
 
       // Show the "Jump to Bottom" button when the user scrolls to the bottom of the document
-      if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
         setShowBottomButton(false);
       } else {
         setShowBottomButton(true);

@@ -10,7 +10,7 @@ export default function LoadMoreButton(
       <button
         type="button"
         className={classNames(
-          "relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300",
+          "relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 disabled:cursor-not-allowed disabled:opacity-50",
           loading ? "" : "hover:bg-gray-50 focus:z-10"
         )}
         disabled={loading || !hasMore}
