@@ -134,6 +134,7 @@ export function useSafeInfo(address: string, shouldFetch: boolean = true) {
   return useSWR<SafeInfoResponse, Error>(
     shouldFetch ? `${SAFE_API}${address}` : null,
     safeInfoJsonFetcher(),
+    { shouldRetryOnError: false }
   );
 }
 

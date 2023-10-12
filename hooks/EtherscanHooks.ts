@@ -12,7 +12,7 @@ interface EtherscanAPIResponse {
 }
 
 const fetcher = (url: string) => fetch(url).then(res => res.json()).then((j: EtherscanAPIResponse) => {
-  if(j.status != "1") {
+  if (j.status != "1") {
     throw new Error(`Etherscan API Error: ${j.result}`);
   }
   return j.result;
@@ -24,6 +24,7 @@ export function useEtherscanContractABI(initialAddress: string, shouldFetch: boo
   const { data: abi, isLoading, error } = useSWR<string>(
     shouldFetch ? `https://api.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=${API_KEY}` : null,
     fetcher,
+    { shouldRetryOnError: false }
   );
 
   useEffect(() => {

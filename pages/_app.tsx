@@ -9,8 +9,9 @@ import {
 } from '@rainbow-me/rainbowkit';
 import {
   WagmiConfig, createConfig,
-  configureChains, mainnet
+  configureChains
 } from 'wagmi';
+import { mainnet } from 'wagmi/chains';
 import { watchAccount } from '@wagmi/core';
 import { infuraProvider } from 'wagmi/providers/infura';
 

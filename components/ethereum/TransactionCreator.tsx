@@ -1,4 +1,3 @@
-import { getAddress } from "viem";
 import { ContractType, useContractType } from "../../hooks/ContractHooks";
 import SafeTransactionCreator from "../safe/SafeTransactionCreator";
 import GovernorTransactionCreator from "./GovernorTransactionCreator";

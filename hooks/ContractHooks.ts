@@ -2,7 +2,7 @@ import { getAddress } from "viem";
 import { useEtherscanContractABI } from "./EtherscanHooks";
 import { useQueueTransaction, useSafeInfo } from "./SafeHooks";
 import usePropose from "./governor/Propose";
-import { FunctionFragment, Interface } from "ethers/lib/utils";
+import { FunctionFragment, Interface, isAddress } from "ethers/lib/utils";
 
 export interface TransactionData {
   to: string;
@@ -41,11 +41,9 @@ export enum ContractType {
 }
 
 export function useContractType(rawAddress: string) {
-  if (rawAddress === "") return ContractType.Unknown;
-
-  const address = getAddress(rawAddress);
-  const { data: safeInfo, error: safeError } = useSafeInfo(address);
-  const { data: abi, error: etherscanError } = useEtherscanContractABI(address);
+  const address = isAddress(rawAddress) ? getAddress(rawAddress) : undefined;
+  const { data: safeInfo, error: safeError } = useSafeInfo(address as string, address !== undefined);
+  const { data: abi, error: etherscanError } = useEtherscanContractABI(address as string, address !== undefined);
 
   if (!safeError && safeInfo?.masterCopy) {
     return ContractType.Safe;
@@ -57,6 +55,10 @@ export function useContractType(rawAddress: string) {
     if (fragmentMap["propose(address[],uint256[],bytes[],string) external returns (uint256)"]) {
       return ContractType.Governor;
     }
+  } else if (address !== undefined) {
+    // Maybe a governor contract without ABI (unverified)
+    // Default to governor contract
+    return ContractType.Governor;
   }
 
   return ContractType.Unknown;
