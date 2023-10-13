@@ -11,7 +11,7 @@
     "export": "next export",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "typechain --target ethers-v5 --out-dir types/contracts/v1 './node_modules/@jbx-protocol/contracts-v1/deployments/mainnet/*.json' && typechain --target ethers-v5 --out-dir types/contracts/v2 './node_modules/@jbx-protocol/contracts-v2/deployments/mainnet/*.json'"
+    "postinstall": "typechain --target ethers-v5 --out-dir types/contracts/v2 './node_modules/@jbx-protocol/contracts-v2/deployments/mainnet/*.json'"
   },
   "dependencies": {
     "@headlessui/react": "^1.6.6",

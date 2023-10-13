@@ -66,7 +66,7 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
   const loading = infoIsLoading || configIsLoading || nancePayoutsLoading || proposalsLoading;
 
   // Construct reconfiguration function data
-  const encodeReconfiguration = !loading ? encodedReconfigureFundingCyclesOf(currentConfig, payoutsDiff, reservesDiff, projectId, controller, terminal) || "" : "";
+  const encodeReconfiguration = !loading ? encodedReconfigureFundingCyclesOf(currentConfig, payoutsDiff, reservesDiff, projectId, controller, terminal?.address) || "" : "";
 
   const tableData = calcDiffTableData(currentConfig,
     parseSafeJuiceboxTx(encodeReconfiguration, "", currentConfig.fundingCycle.fee, BigNumber.from(Math.floor(Date.now() / 1000))),
