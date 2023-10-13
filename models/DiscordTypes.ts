@@ -18,7 +18,7 @@ export interface DiscordUser {
 export interface DiscordGuild {
   id: string;
   name: string;
-  icon: string | null;
+  icon: string | undefined;
   owner: boolean;
   permissions: string;
   features: string[];

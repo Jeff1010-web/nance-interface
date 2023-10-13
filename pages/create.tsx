@@ -34,6 +34,9 @@ export default function CreateSpacePage() {
   const { trigger: discordLogoutTrigger  } = useLogoutDiscordUser({address: session?.user?.name || ''}, !!discordUser);
 
   useEffect(() => {
+    // check if there is a recent LOCAL_STORAGE_KEY_DISCORD_STATUS we can use
+    const discordStatus = localStorage.getItem(LOCAL_STORAGE_KEY_DISCORD_STATUS);
+    if (discordStatus === 'success') setShouldFetchDiscordUser(true);
     function handleStorageChange(event: StorageEvent) {
       if (event.key === LOCAL_STORAGE_KEY_DISCORD_STATUS) {
         if (event.newValue === 'success') setShouldFetchDiscordUser(true);
