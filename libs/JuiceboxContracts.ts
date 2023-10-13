@@ -61,7 +61,6 @@ export function getJBController(provider: any, _version: string | undefined, _ne
 
 export function getJBDirectory(provider: any, _network: string | undefined) {
   const network = _network === "goerli" ? "goerli" : "mainnet";
-  console.debug("getJBDirectory", _network, network, JBDirectory.address, JBDirectory_goerli.address);
 
   if (network === "mainnet") {
     return new Contract(JBDirectory.address, JBDirectory.abi, provider);
