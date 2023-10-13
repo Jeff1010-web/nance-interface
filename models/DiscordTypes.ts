@@ -43,6 +43,18 @@ export interface DiscordChannel {
   last_pin_timestamp: string | null;
 };
 
+export interface DiscordRole {
+  id: string;
+  name: string;
+  color: number;
+  hoist: boolean;
+  position: number;
+  permissions: string;
+  managed: boolean;
+  mentionable: boolean;
+  flags: number;
+};
+
 export interface DiscordUserAuthResponse {
   access_token: string;
   expires_in: number;
