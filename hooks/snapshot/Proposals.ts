@@ -1,5 +1,6 @@
 import { APIError, useQuery } from 'graphql-hooks';
 import { mapChoiceIndex } from '../../libs/snapshotUtil';
+import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../../constants/Snapshot';
 
 const PROPOSALS_QUERY = `
 query Proposals($first: Int, $skip: Int, $space: String, $state: String, $keyword: String) {
@@ -306,11 +307,9 @@ export function useAllVotesOfAddress(address: string, limit: number, spaceFilter
 }
 
 export async function fetchAllVotesOfAddress(address: string, limit: number, spaceFilter: string = ""): Promise<AllVotes> {
-  const ret = await fetch('https://hub.snapshot.org/graphql', {
+  const ret = await fetch(`${SNAPSHOT_HUB}/graphql`, {
     method: "POST",
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: SNAPSHOT_HEADERS,
     body: JSON.stringify({
       query: ALL_VOTES_OF_USER,
       variables: {

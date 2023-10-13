@@ -13,7 +13,6 @@ import {
   useNetwork
 } from 'wagmi';
 import { mainnet, goerli } from 'wagmi/chains';
-import { watchAccount } from '@wagmi/core';
 import { infuraProvider } from 'wagmi/providers/infura';
 
 import { NextQueryParamProvider } from 'next-query-params';
@@ -22,13 +21,14 @@ import { Flowbite } from 'flowbite-react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
 
-import { SessionProvider, signOut, useSession } from 'next-auth/react';
+import { SessionProvider } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
-import { useEffect } from 'react';
 import { NetworkContext } from '../context/NetworkContext';
+import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../constants/Snapshot';
 
 const graphqlClient = new GraphQLClient({
-  url: 'https://hub.snapshot.org/graphql',
+  url: `${SNAPSHOT_HUB}/graphql`,
+  headers: SNAPSHOT_HEADERS,
   cache: memCache({ size: 200 })
 });
 
@@ -47,6 +47,7 @@ const { connectors } = getDefaultWallets({
 });
 
 const wagmiConfig = createConfig({
+  autoConnect: true,
   connectors,
   publicClient
 });
@@ -60,31 +61,17 @@ const theme = {
   }
 };
 
-function AccountWatcher() {
-  // check for user wallet switch and logout
-  // TODO: refetch proposals on login, but how?
-  const { data: session, status } = useSession();
-
-  useEffect(() => {
-    const unwatch = watchAccount((account) => {
-      if (session?.user && account.address !== session?.user?.name) {
-        signOut();
-      }
-    });
-    return () => unwatch();
-  });
-
-  return null;
-}
-
 function MyApp({ Component, pageProps }: any) {
   const { chain } = useNetwork();
   const network = chain?.name === "goerli" ? "goerli" : "mainnet";
   console.debug("network", network, chain);
 
   return (
-    <SessionProvider refetchInterval={0} session={pageProps.session}>
-      <AccountWatcher />
+    <SessionProvider session={pageProps.session}
+      // Re-fetch session every 5 minutes
+      refetchInterval={5 * 60}
+      // Re-fetches session when window is focused
+      refetchOnWindowFocus={true}>
       <RainbowKitSiweNextAuthProvider>
         <RainbowKitProvider
           chains={chains}

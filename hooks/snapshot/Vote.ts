@@ -4,9 +4,9 @@ import { Signer, Wallet } from 'ethers';
 import { useCallback, useState } from 'react';
 import { useAccount } from "wagmi";
 import { useEthersSigner } from '../ViemAdapter';
+import { SNAPSHOT_HUB } from '../../constants/Snapshot';
 
-const hub = 'https://hub.snapshot.org'; // or https://testnet.snapshot.org for testnet
-const client = new snapshot.Client712(hub);
+const client = new snapshot.Client712(SNAPSHOT_HUB);
 
 export default function useVote(
   space: string, 

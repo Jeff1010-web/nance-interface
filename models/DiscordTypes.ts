@@ -42,3 +42,11 @@ export interface DiscordChannel {
   parent_id: string | null;
   last_pin_timestamp: string | null;
 };
+
+export interface DiscordUserAuthResponse {
+  access_token: string;
+  expires_in: number;
+  refresh_token: string;
+  scope: string;
+  token_type: string;
+};

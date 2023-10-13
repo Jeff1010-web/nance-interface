@@ -17,7 +17,7 @@ export default function StatsSection() {
               Trusted by DAOs worldwide
             </h2>
             <p className="mt-4 text-lg leading-8 text-gray-600">
-              Our software is so simple that people can’t help but fall in love with it. Simplicity is easy when you just skip tons of mission-critical features.
+              Governing your DAO is simple when you let Nance handle the heavy lifting.
             </p>
           </div>
 

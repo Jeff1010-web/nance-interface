@@ -10,7 +10,6 @@ import Pagination from "../../components/Pagination";
 import { shortenAddress } from "../../libs/address";
 import { classNames } from "../../libs/tailwind";
 import { useAllSpaceInfo } from "../../hooks/NanceHooks";
-import { NANCE_DEFAULT_SPACE } from "../../constants/Nance";
 import useSWR, { Fetcher } from 'swr';
 import { ProfileResponse } from "../api/profile";
 import { Disclosure, Listbox, Transition } from "@headlessui/react";
@@ -57,7 +56,7 @@ export async function getServerSideProps(context: any) {
     const res = await fetch(`https://api.ensideas.com/ens/resolve/${user}`);
     const json: ENSIdeasResponse = await res.json();
 
-    if(!json.error) {
+    if (!json.error) {
       return {
         props: {
           ensInfo: {
@@ -69,7 +68,7 @@ export async function getServerSideProps(context: any) {
         }
       };
     }
-  } catch(e) {
+  } catch (e) {
     console.warn("❌ user.ENSIdeasAPI.fetch.error", e);
   }
 
@@ -96,7 +95,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
   const { data, loading } = useVotesOfAddress(address, (query.page - 1) * query.limit, query.limit, query.space || "");
 
   const { data: allSpaceInfo } = useAllSpaceInfo();
-  const snapshotToNanceSpaceMap: {[key: string]: string} = {};
+  const snapshotToNanceSpaceMap: { [key: string]: string } = {};
   allSpaceInfo?.data?.forEach((spaceInfo) => {
     snapshotToNanceSpaceMap[spaceInfo.snapshotSpace] = spaceInfo.name;
   });
@@ -106,11 +105,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
     // Direct user to nance proposal page if eligible
     const nanceSpaceName = snapshotToNanceSpaceMap[spaceId];
     if (nanceSpaceName) {
-      if (nanceSpaceName === NANCE_DEFAULT_SPACE) {
-        return `/p/${proposalId}`;
-      } else {
-        return `/s/${nanceSpaceName}/${proposalId}`;
-      }
+      return `/s/${nanceSpaceName}/${proposalId}`;
     } else {
       return `https://snapshot.org/#/${spaceId}/proposal/${proposalId}`;
     }
@@ -164,8 +159,8 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
 
                 <a href={`https://etherscan.io/address/${address}`} className="text-gray-500 text-xs">{shortenAddress(address)}</a>
                 <h2 id="applicant-information-title" className="text-3xl font-medium flex">
-                  <Image 
-                    src={`https://cdn.stamp.fyi/avatar/${address}`} 
+                  <Image
+                    src={`https://cdn.stamp.fyi/avatar/${address}`}
                     alt={`Avatar of ${address}`}
                     className="rounded-full h-10 w-10 p-1"
                     height={40} width={40} />
@@ -173,7 +168,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
                 </h2>
 
                 <div className="flex mt-2 place-items-center justify-between space-x-2">
-                  <Listbox value={query.space} onChange={(t) => setQuery({space: t})}>
+                  <Listbox value={query.space} onChange={(t) => setQuery({ space: t })}>
                     {({ open }) => (
                       <>
                         <div className="relative grow">
@@ -208,7 +203,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
                                       <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'block truncate')}>
                                         {nanceSpace.name}
                                       </span>
-                
+
                                       {selected ? (
                                         <span
                                           className={classNames(
@@ -230,7 +225,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
                     )}
                   </Listbox>
 
-                  <XMarkIcon className="h-5 w-5 text-gray-400" aria-hidden="true" onClick={() => setQuery({space: ""})} />
+                  <XMarkIcon className="h-5 w-5 text-gray-400" aria-hidden="true" onClick={() => setQuery({ space: "" })} />
                 </div>
 
                 {query.space && !userProfileInfo && (
@@ -291,7 +286,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
                           </Disclosure.Button>
                           <Disclosure.Panel as="div">
                             <ul className="text-gray-500">
-                              {userProfileInfo?.proposals?.sort((a,b) => (b.proposalId ?? 0) - (a.proposalId ?? 0)).map(p => (
+                              {userProfileInfo?.proposals?.sort((a, b) => (b.proposalId ?? 0) - (a.proposalId ?? 0)).map(p => (
                                 <li key={p.hash}>
                                   <a href={getProposalLink(query.space || "", p.hash)} className="flex justify-between space-x-2">
                                     <p className="w-1/3">{`Prop ${p.proposalId ? p.proposalId : "tbd"}`}</p>
@@ -311,7 +306,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
                     </div>
                   </div>
                 )}
-                  
+
               </div>
             </section>
           </div>
@@ -319,7 +314,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
           <ScrollToBottom />
           <div className="flex justify-center">
             <div className="max-w-5xl">
-              <Pagination page={query.page} setPage={(p) => setQuery({page: p})} limit={query.limit} total={userProfileInfo?.votes.total || 0} infinite={!userProfileInfo} />
+              <Pagination page={query.page} setPage={(p) => setQuery({ page: p })} limit={query.limit} total={userProfileInfo?.votes.total || 0} infinite={!userProfileInfo} />
             </div>
           </div>
         </main>

@@ -7,7 +7,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useContext, useState, useEffect, Fragment } from "react";
 import { useForm, SubmitHandler, FormProvider, Controller } from "react-hook-form";
-import { NANCE_DEFAULT_SPACE } from "../../../constants/Nance";
 import { fileDrop } from "../../../hooks/FileDrop";
 import { imageUpload } from "../../../hooks/ImageUpload";
 import { useProposalUpload } from "../../../hooks/NanceHooks";
@@ -20,6 +19,8 @@ import ResultModal from "../../modal/ResultModal";
 import Actions from "./Actions";
 import { DriveStep } from "driver.js";
 import UIGuide from "../../modal/UIGuide";
+import useLocalStorage from "../../../hooks/LocalStorage";
+import { formatDistance, fromUnixTime, getUnixTime } from "date-fns";
 
 type ProposalFormValues = Omit<ProposalUploadRequest, "signature">
 
@@ -66,6 +67,15 @@ const driverSteps: DriveStep[] = [
   },
 ];
 
+interface ProposalCache {
+  version: number;
+  timestamp: number;
+  title: string;
+  body: string;
+}
+
+const CACHE_VERSION = 1;
+
 export default function ProposalEditForm({ space }: { space: string }) {
   // query and context
   const router = useRouter();
@@ -78,6 +88,8 @@ export default function ProposalEditForm({ space }: { space: string }) {
   const [formDataPayload, setFormDataPayload] = useState<ProposalFormValues>();
 
   // hooks
+  const [proposalCache, setProposalCache] = useLocalStorage<ProposalCache>("ProposalCache", CACHE_VERSION, { version: CACHE_VERSION, title: "", body: "", timestamp: 0 });
+  const [cacheModalIsOpen, setCacheModalIsOpen] = useState(!!(proposalCache.title || proposalCache.body));
   const { isMutating, error: uploadError, trigger, data, reset } = useProposalUpload(space, !metadata.fork && metadata.loadedProposal?.hash || undefined, router.isReady);
 
   const { data: session, status } = useSession();
@@ -87,7 +99,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
 
   // form
   const methods = useForm<ProposalFormValues>();
-  const { register, handleSubmit, control, formState, getValues } = methods;
+  const { register, handleSubmit, control, formState, getValues, setValue } = methods;
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
     const _allSimulated = getValues("proposal.actions")
       .filter((a) => a.type === "Custom Transaction" && (a.payload as CustomTransaction).tenderlyStatus !== "true")
@@ -109,7 +121,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
 
     const payload = {
       ...formData.proposal,
-      status: (metadata.loadedProposal?.status === 'Temperature Check') ? 'Temperature Check' : selected.value,
+      status: (metadata.loadedProposal?.status === 'Temperature Check' && !isNew) ? 'Temperature Check' : selected.value,
       body: await htmlToMarkdown(formData.proposal.body ?? ""),
       hash
     };
@@ -120,7 +132,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
     };
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req)
-      //.then(res => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${res?.data.hash}` : `/s/${space}/${res?.data.hash}`))
       .catch((err) => {
         console.warn("📗 Nance.editProposal.onSignError ->", err);
       });
@@ -164,8 +175,22 @@ export default function ProposalEditForm({ space }: { space: string }) {
   return (
     <FormProvider {...methods} >
 
-      {!error && <ResultModal title="Success" description={`Proposal "${getValues("proposal.title")}" ${isNew ? "created" : "updated"} by ${session?.user?.name || "unknown"}`} buttonText="Go to proposal page" onClick={() => router.push(space === NANCE_DEFAULT_SPACE ? `/p/${data?.data.hash}` : `/s/${space}/${data?.data.hash}`)} isSuccessful={true} shouldOpen={data !== undefined} close={reset} />}
+      {!error && <ResultModal title="Success" description={`Proposal "${getValues("proposal.title")}" ${isNew ? "created" : "updated"} by ${session?.user?.name || "unknown"}`} buttonText="Go to proposal page" onClick={() => router.push(`/s/${space}/${data?.data.hash}`)} isSuccessful={true} shouldOpen={data !== undefined} close={reset} />}
       {error && <ResultModal title="Error" description={error.error_description || error.message || error} buttonText="Close" onClick={reset} isSuccessful={false} shouldOpen={true} close={reset} />}
+
+      <ResultModal
+        title="You have saved proposal content, do you wish to restore it?"
+        description={`Saved ${formatDistance(fromUnixTime(proposalCache.timestamp), new Date(), { addSuffix: true })}. Title: ${proposalCache.title}, Content: ${proposalCache.body.slice(0, 140)}...`}
+        buttonText="Restore" onClick={() => {
+          setValue("proposal.title", proposalCache.title);
+          setValue("proposal.body", proposalCache.body);
+          setCacheModalIsOpen(false);
+        }}
+        cancelButtonText="Delete" close={() => {
+          setProposalCache({ version: CACHE_VERSION, title: "", body: "", timestamp: 0 });
+          setCacheModalIsOpen(false);
+        }}
+        shouldOpen={cacheModalIsOpen} />
 
       <UIGuide name="EditPage" steps={driverSteps} />
       <MiddleStepModal open={txnsMayFail} setOpen={setTxnsMayFail}
@@ -182,7 +207,14 @@ export default function ProposalEditForm({ space }: { space: string }) {
                 <div id="proposal-title">
                   <input
                     type="text"
-                    {...register("proposal.title", { value: metadata.loadedProposal?.title || "Proposal Title" })}
+                    {...register("proposal.title", {
+                      value: metadata.loadedProposal?.title || "Proposal Title",
+                      onChange: (e) => {
+                        if (!cacheModalIsOpen) {
+                          setProposalCache({ version: CACHE_VERSION, title: e.target.value, body: getValues("proposal.body") || "", timestamp: getUnixTime(new Date()) });
+                        }
+                      }
+                    })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xl"
                   />
                 </div>
@@ -199,7 +231,12 @@ export default function ProposalEditForm({ space }: { space: string }) {
                         onInit={(evt, editor) => editor.setContent(metadata.loadedProposal?.body || TEMPLATE)}
                         initialValue={metadata.loadedProposal?.body || TEMPLATE}
                         value={value}
-                        onEditorChange={(newValue, editor) => onChange(newValue)}
+                        onEditorChange={(newValue, editor) => {
+                          if (!cacheModalIsOpen) {
+                            setProposalCache({ version: CACHE_VERSION, title: getValues("proposal.title") || "", body: newValue, timestamp: getUnixTime(new Date()) });
+                          }
+                          onChange(newValue);
+                        }}
                         init={{
                           height: 500,
                           plugins: [
@@ -245,7 +282,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
         )}
 
         <div className="flex justify-end" id="submit-button-div">
-          <Link href={space === NANCE_DEFAULT_SPACE ? `/` : `/s/${space}`} legacyBehavior>
+          <Link href={`/s/${space}`} legacyBehavior>
             <a
               className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >

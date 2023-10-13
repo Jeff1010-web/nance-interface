@@ -9,22 +9,35 @@ import { getContractLabel } from '../../../constants/Contract';
 import { Interface, parseUnits } from 'ethers/lib/utils';
 import CustomTransactionActionLabel from '../../action/CustomTransactionActionLabel';
 import TransactionCreator from '../../ethereum/TransactionCreator';
+import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
+import { useProposalsInfinite } from '../../../hooks/NanceHooks';
+import { useRouter } from 'next/router';
 
-export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectId, proposals, space }: {
+export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectId, space }: {
   open: boolean, setOpen: (o: boolean) => void,
   juiceboxProjectId: number,
-  proposals: ProposalsPacket | undefined,
   space: string
 }) {
   const cancelButtonRef = useRef(null);
+  const router = useRouter();
+  const [query, setQuery] = useQueryParams({
+    keyword: StringParam,
+    limit: withDefault(NumberParam, 5),
+    cycle: StringParam,
+    sortBy: withDefault(StringParam, ''),
+    sortDesc: withDefault(BooleanParam, true)
+  });
+  const { cycle, keyword, limit } = query;
 
   // Get configuration of current fundingCycle
   const projectId = juiceboxProjectId;
   const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(3, projectId);
   const owner = projectInfo?.owner ? utils.getAddress(projectInfo.owner) : "";
 
+  const { data: proposalDataArray, isLoading: proposalsLoading } = useProposalsInfinite({ space, cycle, keyword, limit }, router.isReady);
+
   // Gather all actions in current fundingCycle
-  const actionWithPIDArray = proposals?.proposals
+  const actionWithPIDArray = proposalDataArray?.map(r => r.data?.proposals).flat()
     // only gather approved actions
     ?.filter(p => p.actions.length > 0 && (p.status === "Voting" || p.status === "Approved"))
     .flatMap(p => {

@@ -63,16 +63,14 @@ function isBotMemberFetcher(): Fetcher<any, string> {
   };
 }
 
-export function useFetchDiscordUser(args: { address: string }, shouldFetch: boolean = true) {
-  shouldFetch = args.address ? true : false;
+export function useFetchDiscordUser(args: { address: string | undefined | null }, shouldFetch: boolean = false) {
   return useSWR<DiscordUser, string>(
     shouldFetch ? `${DISCORD_PROXY_USER_URL}?address=${args.address}&command=${USER_COMMANDS.user}` : null,
     jsonFetcher(),
   );
 }
 
-export function useLogoutDiscordUser(args: { address: string }, shouldFetch: boolean = true) {
-  shouldFetch = args.address ? true : false;
+export function useLogoutDiscordUser(args: { address: string }, shouldFetch: boolean = false) {
   return useSWRMutation<DiscordUser, string>(
     shouldFetch ? `${DISCORD_PROXY_LOGOUT_URL}?address=${args.address}` : null,
     jsonFetcher(),

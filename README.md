@@ -66,6 +66,9 @@ We use the Discord API to fetch a user's guilds (serves) and guild channels when
 * `DISCORD_CLIENT_SECRET`
 * `DISCORD_NANCE_BOT_KEY`
 
+We use a Discord webhook to alert us when someone fills out a contact form. To do this you need to set:
+* ``DISCORD_CONTACT_WEBHOOK``
+
 #### Redis
 
 We use a hosted Redis instance on [Upstash](https://upstash.com) to store a user's Discord session and link it to their wallet. To do this you need to set:

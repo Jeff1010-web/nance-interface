@@ -1,11 +1,10 @@
-import { useQueryParams, StringParam, withDefault, NumberParam } from "next-query-params";
+import { useQueryParams, StringParam } from "next-query-params";
 import { useRouter } from "next/router";
-import { useState } from "react";
-import { useSpaceInfo, useProposals } from "../../../hooks/NanceHooks";
+import { useEffect, useState } from "react";
+import { useSpaceInfo, usePrivateProposals } from "../../../hooks/NanceHooks";
 import ScrollToBottom from "../../ScrollToBottom";
 import ProposalCards from "./ProposalCards";
 import { getLastSlash } from "../../../libs/nance";
-import Pagination from "../../Pagination";
 import { BanknotesIcon, BoltIcon, DocumentTextIcon, ShieldCheckIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -14,8 +13,9 @@ import CycleSelectorAndSearchBar from "./CycleSelectorAndSearchBar";
 import SpaceHeader from "./SpaceHeader";
 import { DriveStep } from "driver.js";
 import UIGuide from "../../modal/UIGuide";
+import { useSession } from "next-auth/react";
 
-const QueueExecutionModal = dynamic(() => import("./QueueReconfigurationModal"), {
+const QueueReconfigurationModal = dynamic(() => import("./QueueReconfigurationModal"), {
   loading: () => <LoadingArrowSpiner />,
 });
 const QueueTransactionsModal = dynamic(() => import("./QueueTransactionsModal"), {
@@ -82,19 +82,20 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
   // QueryParams
   const router = useRouter();
   const [query, setQuery] = useQueryParams({
-    keyword: StringParam,
-    limit: withDefault(NumberParam, 20),
-    page: withDefault(NumberParam, 1),
     cycle: StringParam
   });
-  const { keyword, cycle, limit, page } = query;
 
   // External Hooks
-  const { data: infoData, isLoading: infoLoading, error: infoError } = useSpaceInfo({ space }, router.isReady);
-  const { data: proposalData, isLoading: proposalsLoading, error: proposalError } = useProposals({ space, cycle, keyword, page, limit }, router.isReady);
-  const loading = infoLoading || proposalsLoading;
+  const { data: sessionData } = useSession();
+  const { data: infoData, isLoading: loading, error: infoError } = useSpaceInfo({ space }, router.isReady);
+  const { data: privateProposals, mutate } = usePrivateProposals(space, router.isReady);
 
   const projectId = parseInt(infoData?.data?.juiceboxProjectId || "1");
+
+  useEffect(() => {
+    console.debug("session change", sessionData);
+    mutate();
+  }, [sessionData?.user?.name, mutate])
 
   return (
     <div className="m-4 lg:m-6 flex justify-center lg:px-20">
@@ -124,7 +125,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             <BanknotesIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
             Queue Reconfiguration
           </button>
-          {showQueueReconfigurationModal && <QueueExecutionModal open={showQueueReconfigurationModal} setOpen={setShowQueueReconfigurationModal} juiceboxProjectId={projectId} proposals={proposalData?.data} space={space} currentCycle={infoData?.data?.currentCycle} />}
+          {showQueueReconfigurationModal && <QueueReconfigurationModal open={showQueueReconfigurationModal} setOpen={setShowQueueReconfigurationModal} juiceboxProjectId={projectId} space={space} currentCycle={infoData?.data?.currentCycle} />}
 
           <button
             type="button"
@@ -137,7 +138,7 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
             <BoltIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
             Queue Transactions
           </button>
-          {showQueueTransactionsModal && <QueueTransactionsModal open={showQueueTransactionsModal} setOpen={setShowQueueTransactionsModal} juiceboxProjectId={projectId} proposals={proposalData?.data} space={space} />}
+          {showQueueTransactionsModal && <QueueTransactionsModal open={showQueueTransactionsModal} setOpen={setShowQueueTransactionsModal} juiceboxProjectId={projectId} space={space} />}
 
           <Link
             href={`/review?project=${projectId}`}
@@ -151,13 +152,11 @@ export default function NanceSpace({ space, proposalUrlPrefix = "/p/" }: { space
 
         <CycleSelectorAndSearchBar
           showDrafts={showDrafts} setShowDrafts={setShowDrafts}
-          hasDrafts={(proposalData?.data?.privateProposals?.length ?? 0) > 0} currentCycle={infoData?.data?.currentCycle} />
+          hasDrafts={(privateProposals?.data?.length ?? 0) > 0} currentCycle={infoData?.data?.currentCycle} />
 
         <div>
-          <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={loading} proposalsPacket={proposalData?.data} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} showDrafts={showDrafts} />
+          <ProposalCards proposalUrlPrefix={proposalUrlPrefix} loading={loading} space={space} privateProposals={privateProposals?.data} maxCycle={(infoData?.data?.currentCycle ?? 0) + 1} showDrafts={showDrafts} />
         </div>
-
-        <Pagination page={page} setPage={(p) => setQuery({ page: p })} limit={limit} total={0} infinite />
 
         <div className="mt-2 text-center">
           {infoData?.data?.dolthubLink && (

@@ -30,12 +30,25 @@ export default function PayoutActionForm({ genFieldName, projectOwner }:
         )
       }
       <div className="col-span-4 sm:col-span-2">
-        <AddressForm
-          label={watch(genFieldName("type")) === "project" ? "Token Beneficiary" : "Receiver Address"}
-          fieldName={genFieldName("address")}
-          defaultValue={watch(genFieldName("type")) === "project" ? projectOwner : undefined}
-          disabled={watch(genFieldName("type")) === "project"}
-        />
+        {
+          watch(genFieldName("type")) === "project" && (
+            <AddressForm
+              label="Token Beneficiary"
+              fieldName={genFieldName("address")}
+              defaultValue={projectOwner}
+              disabled
+            />
+          )
+        }
+
+        {
+          watch(genFieldName("type")) !== "project" && (
+            <AddressForm
+              label="Receiver Address"
+              fieldName={genFieldName("address")}
+            />
+          )
+        }
       </div>
     </div>
   );

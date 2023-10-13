@@ -1,5 +1,6 @@
 import useSWR, { Fetcher } from 'swr';
 import useSWRMutation from 'swr/mutation';
+import useSWRInfinite from 'swr/infinite';
 import { NANCE_PROXY_API_URL } from "../constants/Nance";
 import {
   APIResponse,
@@ -56,6 +57,13 @@ export function useCurrentPayouts(space: string, cycle: string | undefined, shou
   );
 }
 
+export function usePrivateProposals(space: string, shouldFetch: boolean = true) {
+  return useSWR<APIResponse<Proposal[]>, string>(
+    shouldFetch ? `${NANCE_PROXY_API_URL}/${space}/privateProposals` : null,
+    jsonFetcher(),
+  );
+}
+
 export function useProposals(args: ProposalsRequest, shouldFetch: boolean = true) {
   const urlParams = new URLSearchParams();
   if (args.cycle) {
@@ -75,6 +83,30 @@ export function useProposals(args: ProposalsRequest, shouldFetch: boolean = true
     shouldFetch ? `${NANCE_PROXY_API_URL}/${args.space}/proposals?` + urlParams.toString() : null,
     jsonFetcher(),
   );
+}
+
+export function useProposalsInfinite(args: ProposalsRequest, shouldFetch: boolean = true) {
+  const urlParams = new URLSearchParams();
+  if (args.cycle) {
+    urlParams.set('cycle', args.cycle);
+  }
+  if (args.keyword) {
+    urlParams.set('keyword', args.keyword);
+  }
+  if (args.limit) {
+    urlParams.set('limit', args.limit.toString());
+  }
+  if (args.page) {
+    urlParams.set('page', args.page.toString());
+  }
+
+  const getKey = (pageIndex: number, previousPageData: APIResponse<ProposalsPacket>) => {
+    if (!shouldFetch || (previousPageData && !previousPageData.data.hasMore)) return null; // reached the end
+    urlParams.set('page', (pageIndex + 1).toString());
+    return `${NANCE_PROXY_API_URL}/${args.space}/proposals?` + urlParams.toString();                    // SWR key
+  }
+
+  return useSWRInfinite<APIResponse<ProposalsPacket>, string>(getKey, jsonFetcher());
 }
 
 export function useProposal(args: ProposalRequest, shouldFetch: boolean = true) {
@@ -167,7 +199,6 @@ async function deleter(url: RequestInfo | URL, { arg }: { arg: ProposalDeleteReq
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(arg)
   });
   const json: APIResponse<ProposalUploadPayload> = await res.json();
   if (json.success === false) {
@@ -201,7 +232,8 @@ export async function fetchCreatedProposals(space: string | undefined, author: s
           minTokenPassingAmount: 0
         },
         proposals: [],
-        privateProposals: []
+        privateProposals: [],
+        hasMore: false,
       }
     } as APIResponse<ProposalsPacket>;
   }

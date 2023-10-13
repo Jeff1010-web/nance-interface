@@ -6,7 +6,7 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import Image from 'next/image';
 import { DiscordChannel, DiscordGuild } from '../models/DiscordTypes';
 import { addBotUrl, guildIconBaseUrl } from '../libs/discordURL';
-import { useFetchDiscordGuilds, useFetchDiscordChannels, useIsBotMemberOfGuild } from "../hooks/discordHooks";
+import { useFetchDiscordGuilds, useFetchDiscordChannels, useIsBotMemberOfGuild } from "../hooks/DiscordHooks";
 import { DiscordConfig } from '../models/NanceTypes';
 
 const getGuildIconUrl = (guild: DiscordGuild | null) => {
