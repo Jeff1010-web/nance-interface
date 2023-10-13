@@ -1280,13 +1280,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jbx-protocol/contracts-v1@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@jbx-protocol/contracts-v1@npm:2.0.0"
-  checksum: 4c5d0e2e9a96d4b45e743937ab66568d50331e2d6c4ccc847745184b3eec82c88dc552b18257c0d39cd6ec629feb37450b02e4f096a7dcc440675301b94b1a90
-  languageName: node
-  linkType: hard
-
 "@jbx-protocol/contracts-v2@npm:^8.0.2":
   version: 8.0.2
   resolution: "@jbx-protocol/contracts-v2@npm:8.0.2"
@@ -8798,7 +8791,6 @@ __metadata:
     "@headlessui/react": ^1.6.6
     "@heroicons/react": ^2.0.18
     "@hookform/error-message": ^2.0.1
-    "@jbx-protocol/contracts-v1": ^2.0.0
     "@jbx-protocol/contracts-v2": ^8.0.2
     "@jbx-protocol/juice-contracts-v3": 5.0.0
     "@rainbow-me/rainbowkit": ^1
@@ -8833,7 +8825,6 @@ __metadata:
     graphql-hooks-memcache: ^3.1.0
     ioredis: ^5.3.2
     juice-hooks: ^3.2.5-alpha
-    juice-sdk-v1: ^2.1.0-alpha
     lodash.unionby: ^4.8.0
     next: ^13.4.2
     next-auth: ^4.22.1
@@ -9102,16 +9093,6 @@ __metadata:
   peerDependencies:
     react: ">=18.1.0"
   checksum: cf8e488dad5a5bad9f3b9596661d6f7758c0b4b54dc696da0b19784afa1f8b02aee0205d248de0d0b9eeda9b2170d89b4f0c5dde055457b6203b03fedafe0e48
-  languageName: node
-  linkType: hard
-
-"juice-sdk-v1@npm:^2.1.0-alpha":
-  version: 2.1.0-alpha
-  resolution: "juice-sdk-v1@npm:2.1.0-alpha"
-  peerDependencies:
-    "@jbx-protocol/contracts-v1": 2.0.0
-    ethers: ">=5.5.0"
-  checksum: 1c00ad6f8b39a97cc0c60c4af058740198d57d338f16693c1035e7eace94fcb4c0a464e4860d7f29070b1f11e5c05bbb70101edd36848e39f868e287fb610029
   languageName: node
   linkType: hard
 

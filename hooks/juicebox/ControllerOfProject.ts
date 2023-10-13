@@ -1,16 +1,16 @@
 import { useContractReadValue } from './ContractReadValue';
 import { BigNumberish } from '@ethersproject/bignumber';
 import { useEthersProvider } from '../ViemAdapter';
-import JBDirectory from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBDirectory.json';
-import { Contract } from 'ethers';
-import JBController from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController.json';
-import JBController3_1 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController3_1.json';
+import { NetworkContext } from '../../context/NetworkContext';
+import { useContext } from 'react';
+import { getJBController, getJBControllerVersion, getJBDirectory } from '../../libs/JuiceboxContracts';
 
 export default function useControllerOfProject(
   projectId: BigNumberish | undefined
 ) {
   const provider = useEthersProvider();
-  const directory = new Contract(JBDirectory.address, JBDirectory.abi, provider);
+  const network = useContext(NetworkContext);
+  const directory = getJBDirectory(provider, network);
 
   const { value, loading, refetchValue } = useContractReadValue<string>({
     contract: directory,
@@ -18,18 +18,11 @@ export default function useControllerOfProject(
     args: projectId ? [projectId] : null
   });
 
-  let version;
-  let contract;
-  if (value === JBController.address) {
-    version = "v3";
-    contract = new Contract(JBController.address, JBController.abi, provider);
-  } else if (value === JBController3_1.address) {
-    version = "v3.1";
-    contract = new Contract(JBController3_1.address, JBController3_1.abi, provider);
-  }
-  
+  const version = getJBControllerVersion(value);
+  const contract = getJBController(provider, version, network);
+
   return {
-    value: contract, 
+    value: contract,
     loading, refetchValue,
     version
   }

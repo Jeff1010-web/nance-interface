@@ -9,9 +9,10 @@ import {
 } from '@rainbow-me/rainbowkit';
 import {
   WagmiConfig, createConfig,
-  configureChains
+  configureChains,
+  useNetwork
 } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
+import { mainnet, goerli } from 'wagmi/chains';
 import { watchAccount } from '@wagmi/core';
 import { infuraProvider } from 'wagmi/providers/infura';
 
@@ -24,6 +25,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SessionProvider, signOut, useSession } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
 import { useEffect } from 'react';
+import { NetworkContext } from '../context/NetworkContext';
 
 const graphqlClient = new GraphQLClient({
   url: 'https://hub.snapshot.org/graphql',
@@ -32,7 +34,7 @@ const graphqlClient = new GraphQLClient({
 
 // WAGMI and RainbowKit configuration
 const { chains, publicClient } = configureChains(
-  [mainnet],
+  [mainnet, goerli],
   [
     infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY || "" }),
   ],
@@ -76,34 +78,47 @@ function AccountWatcher() {
 }
 
 function MyApp({ Component, pageProps }: any) {
+  const { chain } = useNetwork();
+  const network = chain?.name === "goerli" ? "goerli" : "mainnet";
+  console.debug("network", network, chain);
+
   return (
-    <>
-      <WagmiConfig config={wagmiConfig}>
-        <SessionProvider refetchInterval={0} session={pageProps.session}>
-          <AccountWatcher />
-          <RainbowKitSiweNextAuthProvider>
-            <RainbowKitProvider
-              chains={chains}
-              appInfo={{
-                appName: 'JBDAO',
-                learnMoreUrl: 'https://jbdao.org',
-              }}>
-              <ClientContext.Provider value={graphqlClient}>
-                <NextQueryParamProvider>
-                  <Flowbite theme={theme}>
-                    <ErrorBoundary>
-                      <Component {...pageProps} />
-                    </ErrorBoundary>
-                  </Flowbite>
-                </NextQueryParamProvider>
-              </ClientContext.Provider>
-            </RainbowKitProvider>
-          </RainbowKitSiweNextAuthProvider>
-        </SessionProvider>
-      </WagmiConfig>
-      <Analytics />
-    </>
+    <SessionProvider refetchInterval={0} session={pageProps.session}>
+      <AccountWatcher />
+      <RainbowKitSiweNextAuthProvider>
+        <RainbowKitProvider
+          chains={chains}
+          appInfo={{
+            appName: 'JBDAO',
+            learnMoreUrl: 'https://jbdao.org',
+          }}>
+          <ClientContext.Provider value={graphqlClient}>
+            <NextQueryParamProvider>
+              <Flowbite theme={theme}>
+                <ErrorBoundary>
+                  <NetworkContext.Provider value={network}>
+                    <Component {...pageProps} />
+                  </NetworkContext.Provider>
+                </ErrorBoundary>
+              </Flowbite>
+            </NextQueryParamProvider>
+          </ClientContext.Provider>
+        </RainbowKitProvider>
+      </RainbowKitSiweNextAuthProvider>
+    </SessionProvider>
   );
 }
 
-export default MyApp;
+function WagmiWrappedApp({ Component, pageProps }: any) {
+  return (
+    <>
+      <WagmiConfig config={wagmiConfig}>
+        <MyApp Component={Component} pageProps={pageProps} />
+      </WagmiConfig>
+
+      <Analytics />
+    </>
+  )
+}
+
+export default WagmiWrappedApp;

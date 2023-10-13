@@ -4,7 +4,7 @@ import { useContext, useEffect } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { ZERO_ADDRESS } from "../../../constants/Contract";
 import { useSpaceInfo } from "../../../hooks/NanceHooks";
-import { useCurrentFundingCycleV2 } from "../../../hooks/juicebox/CurrentFundingCycle";
+import { useCurrentFundingCycle } from "../../../hooks/juicebox/CurrentFundingCycle";
 import { useCurrentSplits } from "../../../hooks/juicebox/CurrentSplits";
 import { JBConstants } from "../../../models/JuiceboxTypes";
 import { JBSplitNanceStruct } from "../../../models/NanceTypes";
@@ -19,19 +19,19 @@ import { ProposalMetadataContext } from "../../../pages/s/[space]/edit";
 export default function ReserveActionForm({ genFieldName }:
   { genFieldName: (field: string) => any }) {
 
-  const {space} = useContext(ProposalMetadataContext);
+  const { space } = useContext(ProposalMetadataContext);
 
   const { watch, formState: { errors } } = useFormContext();
   const { fields, append, remove, prepend } = useFieldArray<{
     splits: JBSplitNanceStruct[];
     [key: string]: any;
   }>({ name: genFieldName("splits") });
-  
-  const { data: spaceInfo } = useSpaceInfo({space});
+
+  const { data: spaceInfo } = useSpaceInfo({ space });
   const projectId = spaceInfo?.data?.juiceboxProjectId;
-  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycleV2({ projectId, isV3: true });
+  const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycle(projectId);
   const [fc, metadata] = _fc || [];
-  const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN, true);
+  const { value: ticketMods, loading: ticketModsIsLoading } = useCurrentSplits(projectId, fc?.configuration, JBConstants.SplitGroup.RESERVED_TOKEN);
   // TODO: reserve rate, percent / total_percentage JBConstants
 
   useEffect(() => {
