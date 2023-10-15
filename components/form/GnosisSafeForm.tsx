@@ -7,7 +7,7 @@ import { ExclamationCircleIcon, CheckCircleIcon,  } from '@heroicons/react/20/so
 
 export default function GnosisSafeForm() {
   const { control, formState: { errors }, setValue } = useFormContext();
-  const fieldName = 'juicebox.gnosisSafeAddress';
+  const fieldName = 'config.juicebox.gnosisSafeAddress';
 
   const [gnosisSafeEnabled, setGnosisSafeEnabled] = useState(false);
   const [gnosisSafeAddress, setGnosisSafeAddress] = useState("");

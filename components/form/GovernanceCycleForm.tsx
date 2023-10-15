@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { Tooltip } from "flowbite-react";
 import GovernanceCalendarMini from '../GovernanceCalendarMini';
 import GovernanceCalendarKey from "../GovernanceCalendarKey";
@@ -68,7 +68,7 @@ export default function GovernanceCyleForm() {
         <input
           type="hidden"
           {...register('governanceCycleForm.startDate')}
-          value={startDate.toISOString()}
+          value={startDate.toUTCString()}
         />
         <GovernanceCalendarMini
           setSelectedDate={setStartDate}

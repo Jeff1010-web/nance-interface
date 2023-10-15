@@ -25,7 +25,6 @@ export default function CreateSpacePage() {
   const router = useRouter();
   // state
   const [shouldFetchDiscordUser, setShouldFetchDiscordUser] = useState(false);
-
   // hooks
   const { data: session, status } = useSession();
   const { openConnectModal } = useConnectModal();
@@ -118,7 +117,7 @@ export default function CreateSpacePage() {
 function Form({ session }: { session: Session }) {
   // query and context
   const router = useRouter();
-
+  const dryrun = router.query.dryrun === "true";
   // hooks
   const { isMutating, error: uploadError, trigger, data, reset } = useCreateSpace(router.isReady);
   // state
@@ -128,23 +127,17 @@ function Form({ session }: { session: Session }) {
   const { register, handleSubmit, control, formState: { errors, isValid }, watch } = methods;
   const onSubmit: SubmitHandler<CreateFormValues> = async (formData) => {
     console.log(formData);
-    const payload = { ...formData };
+    const payload = { ...formData, dryrun };
     console.debug("📚 Nance.createSpace.onSubmit ->", { formData, payload });
-    const req = {
-      config: formData
-    };
-    console.debug("📗 Nance.createSpace.submit ->", req);
-    return trigger(req).then(() => router.push(`/s/${formData.name}`));
+    return trigger(payload).then((res) => {
+      if (dryrun) console.debug("📚 Nance.createSpace.onSubmit -> ", res);
+      else router.push(`/s/${formData.config.name}`);
+    });
   };
-
-  useEffect(() => {
-    // log form values as they change
-    console.debug("📗 Nance.createSpace.watch ->", watch());
-  });
 
   return (
     <FormProvider {...methods} >
-      <Notification title="Success" description="Created" show={data !== undefined} close={() => {
+      <Notification title="Success" description={dryrun ? JSON.stringify(data) : 'Space created!'} show={data !== undefined} close={() => {
         reset();
       }} checked={true} />
       {( uploadError) &&
@@ -153,15 +146,15 @@ function Form({ session }: { session: Session }) {
           }} checked={false} />
       }
       <form className="lg:m-6 flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-        <TextInput label="Nance space name" name="name" register={register} />
+        <TextInput label="Nance space name" name="config.name" register={register} />
         <DiscordForm session={session}/>
         <SnapshotForm session={session} />
-        <TextInput label="Proposal ID Prefix" name="propertyKeys.proposalIdPrefix" register={register} maxLength={3} placeHolder="JBP"
+        <TextInput label="Proposal ID Prefix" name="config.proposalIdPrefix" register={register} maxLength={3} placeHolder="JBP"
           className="w-16" tooltip="Text prepended to proposal ID numbers, usually 3 letters representing your organization"
         />
 
         <ToggleSwitch enabled={juiceboxProjectDisabled} setEnabled={setJuiceboxProjectDisabled} label="Link to a Juicebox Project?" />
-        <div className="mt-2 mb-3"><ProjectForm fieldName="juicebox.projectId" showType={false} disabled={!juiceboxProjectDisabled} /></div>
+        <div className="mt-2 mb-3"><ProjectForm fieldName="config.juicebox.projectId" showType={false} disabled={!juiceboxProjectDisabled} /></div>
 
         <GnosisSafeForm />
 

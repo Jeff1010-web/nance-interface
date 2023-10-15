@@ -16,8 +16,8 @@ import {
   ProposalDeleteRequest,
   ProposalsPacket,
   SQLPayout,
-  ConfigSpaceRequest,
   ConfigSpacePayload,
+  CreateFormValues,
 } from '../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -104,7 +104,7 @@ export function useProposalsInfinite(args: ProposalsRequest, shouldFetch: boolea
     if (!shouldFetch || (previousPageData && !previousPageData.data.hasMore)) return null; // reached the end
     urlParams.set('page', (pageIndex + 1).toString());
     return `${NANCE_PROXY_API_URL}/${args.space}/proposals?` + urlParams.toString();                    // SWR key
-  }
+  };
 
   return useSWRInfinite<APIResponse<ProposalsPacket>, string>(getKey, jsonFetcher());
 }
@@ -139,7 +139,7 @@ async function uploader(url: RequestInfo | URL, { arg }: { arg: ProposalUploadRe
   return json;
 }
 
-async function creator(url: RequestInfo | URL, { arg }: { arg: ConfigSpaceRequest }) {
+async function creator(url: RequestInfo | URL, { arg }: { arg: CreateFormValues }) {
   const res = await fetch(url, {
     method: 'POST',
     headers: {

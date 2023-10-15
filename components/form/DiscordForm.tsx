@@ -8,7 +8,7 @@ export default function DiscordForm(
   { session } : { session: Session }
 ) {
   const { control, formState: { errors } } = useFormContext();
-  const fieldName = 'discord';
+  const fieldName = 'config.discord';
   return (
     <div>
       <Controller
@@ -23,7 +23,7 @@ export default function DiscordForm(
         shouldUnregister
       />
       <SmallNumberInput
-        label="Temperature Check Yes vote threshold" name="discord.minYesVotes"
+        label="Temperature Check Yes vote threshold" name="config.discord.minYesVotes"
         register={control.register} defaultValue={10}
         tooltipContent="The minimum number of yes votes required for a proposal to pass Temperature Check."
         badgeContent="👍's"/>
