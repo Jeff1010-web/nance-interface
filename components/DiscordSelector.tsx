@@ -21,25 +21,27 @@ const appendSymbol = (str: string, append: string) => {
   return `${append}${str}`;
 };
 
+// Discord API returns a message object if there is an error,
+// using the detection of the message object to determine if there is an error, could be done better
 const formatGuilds = (guilds?: DiscordGuild[]): DiscordGuild[] => {
-  if (!guilds || guilds.length === 0) return [];
+  if (!guilds || guilds.length === 0 || (guilds as any).message) return [];
   return guilds.filter((guild) => (Number(guild.permissions) & MANAGE_GUILD) === MANAGE_GUILD).map((guild) => {
     return { ...guild, icon: getGuildIconUrl(guild) };
   });
 };
 
 const formatRoles = (roles?: DiscordRole[]): DiscordRole[] => {
-  if (!roles || roles.length === 0) return [];
+  if (!roles || roles.length === 0 || (roles as any).message) return [];
   return roles.map((role) => {
     return { ...role, name: appendSymbol(role.name, '@') };
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  }).sort((a, b) => a.name.localeCompare(b.name)); // sort alphabetically
 };
 
 const formatChannels = (channels?: DiscordChannel[]): DiscordChannel[] => {
-  if (!channels || channels.length === 0) return [];
+  if (!channels || channels.length === 0 || (channels as any).message ) return [];
   return channels.filter((channel) => channel.type === TEXT_CHANNEL).map((channel) => {
     return { ...channel, name: appendSymbol(channel.name, '# ') };
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  }).sort((a, b) => a.name.localeCompare(b.name)); // sort alphabetically
 };
 
 export default function DiscordSelector(
