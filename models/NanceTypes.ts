@@ -106,6 +106,7 @@ export type DiscordConfig = {
   guildId: string;
   roles: DiscordConfigRoles;
   channelIds: DiscordConfigChannels;
+  reminder: { channelIds: string[]; }
 }
 
 export type GovernanceCycleForm = {

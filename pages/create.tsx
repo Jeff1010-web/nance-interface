@@ -135,6 +135,10 @@ function Form({ session }: { session: Session }) {
     });
   };
 
+  useEffect(() => {
+    console.debug("📝 Nance.create ->", watch());
+  });
+
   return (
     <FormProvider {...methods} >
       <Notification title="Success" description={dryrun ? JSON.stringify(data) : 'Space created!'} show={data !== undefined} close={() => {

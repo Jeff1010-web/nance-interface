@@ -128,7 +128,7 @@ export default function DiscordSelector(
         value={ selectedAlertChannel || { name: '-', id: null} as unknown as DiscordChannel }
         onChange={(channel) => {
           setSelectedAlertChannel(channel);
-          setVal({ ...val, channelIds: { proposals: channel.id }});
+          setVal({ ...val, reminder: { channelIds: [channel.id] }});
         }}
         label="Select a channel to send daily alerts"
         disabled={!selectedGuild || !botIsMember || !channels}
