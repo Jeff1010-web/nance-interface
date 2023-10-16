@@ -49,8 +49,10 @@ export default function DiscordSelector(
   const router = useRouter();
 
   // state
+  // const [botIsMember, setBotIsMember] = useState(false);
   const [selectedGuild, setSelectedGuild] = useState<DiscordGuild | undefined>(undefined);
-  const [selectedChannel, setSelectedChannel] = useState({ name: '-', id: null} as unknown as DiscordChannel);
+  const [selectedProposalChannel, setSelectedProposalChannel] = useState({ name: '-', id: null} as unknown as DiscordChannel);
+  const [selectedAlertChannel, setSelectedAlertChannel] = useState({ name: '-', id: null} as unknown as DiscordChannel);
   const [selectedAlertRole, setSelectedAlertRole] = useState({ name: '-', id: null} as unknown as DiscordRole);
 
   // hooks
@@ -58,6 +60,12 @@ export default function DiscordSelector(
   const { data: channels, trigger: discordChannelsTrigger } = useFetchDiscordChannels({guildId: selectedGuild?.id || '' }, router.isReady);
   const { data: botIsMember, trigger: isBotMemberTrigger } = useIsBotMemberOfGuild({guildId: selectedGuild?.id}, (router.isReady && selectedGuild !== null));
   const { data: roles, trigger: discordRolesTrigger } = useFetchDiscordGuildRoles({guildId: selectedGuild?.id || '' });
+
+  const resetRolesAndChannels = () => {
+    setSelectedProposalChannel({ name: '-', id: null} as unknown as DiscordChannel);
+    setSelectedAlertRole({ name: '-', id: null} as unknown as DiscordRole);
+    setSelectedAlertChannel({ name: '-', id: null} as unknown as DiscordChannel);
+  };
 
   useEffect(() => {
     if (selectedGuild) {
@@ -74,9 +82,8 @@ export default function DiscordSelector(
       <GenericListbox<DiscordGuild>
         value={ selectedGuild || { icon: getGuildIconUrl() } as DiscordGuild }
         onChange={(guild) => {
+          resetRolesAndChannels();
           setSelectedGuild(guild);
-          setSelectedChannel({ name: '-', id: null} as unknown as DiscordChannel);
-          setSelectedAlertRole({ name: '-', id: null} as unknown as DiscordRole);
           setVal({ ...val, guildId: guild.id });
         }}
         label="Select a Discord Server"
@@ -107,12 +114,23 @@ export default function DiscordSelector(
       )}
 
       <GenericListbox<DiscordChannel>
-        value={ selectedChannel || { name: '-', id: null} as unknown as DiscordChannel }
+        value={ selectedProposalChannel || { name: '-', id: null} as unknown as DiscordChannel }
         onChange={(channel) => {
-          setSelectedChannel(channel);
+          setSelectedProposalChannel(channel);
           setVal({ ...val, channelIds: { proposals: channel.id }});
         }}
-        label="Select a channel"
+        label="Select a channel to post proposals"
+        disabled={!selectedGuild || !botIsMember || !channels}
+        items={ formatChannels(channels) }
+      />
+
+      <GenericListbox<DiscordChannel>
+        value={ selectedAlertChannel || { name: '-', id: null} as unknown as DiscordChannel }
+        onChange={(channel) => {
+          setSelectedAlertChannel(channel);
+          setVal({ ...val, channelIds: { proposals: channel.id }});
+        }}
+        label="Select a channel to send daily alerts"
         disabled={!selectedGuild || !botIsMember || !channels}
         items={ formatChannels(channels) }
       />
