@@ -25,6 +25,7 @@ import JBETHPaymentTerminal_goerli from '@jbx-protocol/juice-contracts-v3/deploy
 import JBETHPaymentTerminal3_1_goerli from '@jbx-protocol/juice-contracts-v3/deployments/goerli/JBETHPaymentTerminal3_1.json';
 import JBETHPaymentTerminal3_1_1_goerli from '@jbx-protocol/juice-contracts-v3/deployments/goerli/JBETHPaymentTerminal3_1_1.json';
 import JBETHPaymentTerminal3_1_2_goerli from '@jbx-protocol/juice-contracts-v3/deployments/goerli/JBETHPaymentTerminal3_1_2.json';
+import { goerli } from 'wagmi/chains';
 
 export function getJBControllerVersion(address: string | undefined) {
   if (address === JBController.address) {
@@ -40,7 +41,7 @@ export function getJBControllerVersion(address: string | undefined) {
 
 export function getJBController(provider: any, _version: string | undefined, _network: string | undefined) {
   const version = _version === "v3" ? "v3" : "v3.1";
-  const network = _network === "goerli" ? "goerli" : "mainnet";
+  const network = _network === goerli.name ? "goerli" : "mainnet";
 
   if (network === "mainnet") {
     if (version === "v3.1") {
@@ -60,7 +61,7 @@ export function getJBController(provider: any, _version: string | undefined, _ne
 }
 
 export function getJBDirectory(provider: any, _network: string | undefined) {
-  const network = _network === "goerli" ? "goerli" : "mainnet";
+  const network = _network === goerli.name ? "goerli" : "mainnet";
 
   if (network === "mainnet") {
     return new Contract(JBDirectory.address, JBDirectory.abi, provider);
@@ -72,7 +73,7 @@ export function getJBDirectory(provider: any, _network: string | undefined) {
 }
 
 export function getJBSplitsStore(provider: any, _network: string | undefined) {
-  const network = _network === "goerli" ? "goerli" : "mainnet";
+  const network = _network === goerli.name ? "goerli" : "mainnet";
 
   if (network === "mainnet") {
     return new Contract(JBSplitsStore.address, JBSplitsStore.abi, provider);
@@ -84,7 +85,7 @@ export function getJBSplitsStore(provider: any, _network: string | undefined) {
 }
 
 export function getJBFundAccessConstraintsStore(provider: any, _network: string | undefined) {
-  const network = _network === "goerli" ? "goerli" : "mainnet";
+  const network = _network === goerli.name ? "goerli" : "mainnet";
 
   if (network === "mainnet") {
     return new Contract(JBFundAccessConstraintsStore.address, JBFundAccessConstraintsStore.abi, provider);
@@ -96,7 +97,7 @@ export function getJBFundAccessConstraintsStore(provider: any, _network: string 
 }
 
 export function getJBSingleTokenPaymentTerminalStore(provider: any, _network: string | undefined) {
-  const network = _network === "goerli" ? "goerli" : "mainnet";
+  const network = _network === goerli.name ? "goerli" : "mainnet";
 
   if (network === "mainnet") {
     return new Contract(JBSingleTokenPaymentTerminalStore.address, JBSingleTokenPaymentTerminalStore.abi, provider);
@@ -108,7 +109,7 @@ export function getJBSingleTokenPaymentTerminalStore(provider: any, _network: st
 }
 
 export function getJBETHPaymentTerminal(provider: any, _network: string | undefined, address: string | undefined) {
-  const network = _network === "goerli" ? "goerli" : "mainnet";
+  const network = _network === goerli.name ? "goerli" : "mainnet";
 
   if (network === "mainnet") {
     if (address === JBETHPaymentTerminal.address) {

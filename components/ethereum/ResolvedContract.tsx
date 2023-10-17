@@ -1,24 +1,28 @@
 import { Address } from "wagmi";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useEtherscanContract } from "../../hooks/EtherscanHooks";
 import { classNames } from '../../libs/tailwind';
+import { getAddressLink } from "../../libs/EtherscanURL";
+import { NetworkContext } from "../../context/NetworkContext";
 
 export interface Props {
-    address: string;
-    style?: string;
-    overrideURLPrefix?: string;
-    openInNewWindow?: boolean;
-    noLink?: boolean;
+  address: string;
+  style?: string;
+  overrideURLPrefix?: string;
+  openInNewWindow?: boolean;
+  noLink?: boolean;
 }
 
 export default function ResolvedContract({ address, style, overrideURLPrefix, openInNewWindow = true, noLink = false }: Props) {
   const addr = address as Address;
   const hasAddr = addr && addr.length == 42;
-  const urlPrefix = overrideURLPrefix || "https://etherscan.io/address/";
   const anchorTarget = openInNewWindow ? "_blank" : "_self";
 
   const [label, setLabel] = useState<string>(address);
   const { data: contractSources } = useEtherscanContract(addr, hasAddr);
+
+  const network = useContext(NetworkContext);
+  const urlPrefix = overrideURLPrefix || getAddressLink("", network);
 
   useEffect(() => {
     if (contractSources?.[0]) {
@@ -26,7 +30,7 @@ export default function ResolvedContract({ address, style, overrideURLPrefix, op
     }
   }, [contractSources]);
 
-  if(noLink) {
+  if (noLink) {
     return (
       <span className={style}>
         {label}

@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useWalletClient } from "wagmi";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
 import ResultModal from "../modal/ResultModal";
 import usePropose from "../../hooks/governor/Propose";
 import { GenericTransactionData } from "./TransactionCreator";
+import { getTxLink } from "../../libs/EtherscanURL";
+import { NetworkContext } from "../../context/NetworkContext";
 
 export default function GovernorTransactionCreator(
   { governorAddress, transactionDatas, description = "Queued from nance.app" }:
     { governorAddress: string, transactionDatas: GenericTransactionData[], description?: string }) {
 
   const [open, setOpen] = useState<boolean>(false);
+
+  const network = useContext(NetworkContext);
 
   const { data, error, isLoading, write } = usePropose(
     governorAddress as `0x${string}`,
@@ -21,7 +25,7 @@ export default function GovernorTransactionCreator(
 
   const queueNotReady = !walletClient || !transactionDatas || !governorAddress || isLoading;
 
-  let tooltip = "Queue with nonce";
+  let tooltip = "Propose";
   if (!walletClient) {
     tooltip = "Wallet not connected";
   } else if (!transactionDatas || !governorAddress) {
@@ -45,7 +49,7 @@ export default function GovernorTransactionCreator(
       </button>
 
       {error && <ResultModal title="Error" description={error.message} buttonText="Close" onClick={() => setOpen(false)} isSuccessful={false} shouldOpen={open} close={() => setOpen(false)} />}
-      {data && <ResultModal title="Success" description={`Transaction queued as txn-${data.hash}`} buttonText="Go to Etherscan Tx" onClick={() => window.open(`https://etherscan.io/tx/${data.hash}`, "_blank")} isSuccessful={true} shouldOpen={open} close={() => setOpen(false)} />}
+      {data && <ResultModal title="Success" description={`Transaction queued as txn-${data.hash}`} buttonText="Go to Etherscan Tx" onClick={() => window.open(getTxLink(data.hash, network), "_blank")} isSuccessful={true} shouldOpen={open} close={() => setOpen(false)} />}
     </span>
   );
 }

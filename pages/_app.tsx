@@ -63,7 +63,7 @@ const theme = {
 
 function MyApp({ Component, pageProps }: any) {
   const { chain } = useNetwork();
-  const network = chain?.name === "Goerli" ? "goerli" : "mainnet";
+  const network = chain?.name || mainnet.name;
 
   return (
     <SessionProvider session={pageProps.session}

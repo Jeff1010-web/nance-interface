@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { goerli } from 'wagmi/chains';
 
 const KEY = process.env.JUICEBOX_SUBGRAPH_KEY;
 const MAINNET_SUBGRAPH_API_URL = `https://subgraph.satsuma-prod.com/${KEY}/juicebox/mainnet/api`;
@@ -8,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { method, body, query } = req;
     const network = query.network as string;
-    const subgraphUrl = network === "goerli" ? GOERLI_SUBGRAPH_API_URL : MAINNET_SUBGRAPH_API_URL;
+    const subgraphUrl = network === goerli.name ? GOERLI_SUBGRAPH_API_URL : MAINNET_SUBGRAPH_API_URL;
 
     // Forward the request to the destination URL
     console.debug("Forwarding request to", subgraphUrl, method, body);

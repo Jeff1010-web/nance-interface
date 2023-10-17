@@ -13,9 +13,11 @@ import { useAllSpaceInfo } from "../../hooks/NanceHooks";
 import useSWR, { Fetcher } from 'swr';
 import { ProfileResponse } from "../api/profile";
 import { Disclosure, Listbox, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useContext } from "react";
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
+import { NetworkContext } from "../../context/NetworkContext";
+import { getAddressLink } from "../../libs/EtherscanURL";
 
 const getColorOfChoice = (choice: string) => {
   if (choice == 'For') {
@@ -85,6 +87,7 @@ export async function getServerSideProps(context: any) {
 }
 
 export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }) {
+  const network = useContext(NetworkContext);
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
     limit: withDefault(NumberParam, 25),
@@ -157,7 +160,7 @@ export default function NanceUserPage({ ensInfo }: { ensInfo: ENSIdeasResponse }
                 maxHeight: 'calc(100vh - 9rem)'
               }}>
 
-                <a href={`https://etherscan.io/address/${address}`} className="text-gray-500 text-xs">{shortenAddress(address)}</a>
+                <a href={getAddressLink(address, network)} className="text-gray-500 text-xs">{shortenAddress(address)}</a>
                 <h2 id="applicant-information-title" className="text-3xl font-medium flex">
                   <Image
                     src={`https://cdn.stamp.fyi/avatar/${address}`}
