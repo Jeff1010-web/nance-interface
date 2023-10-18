@@ -24,6 +24,8 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
   const router = useRouter();
   const [query, setQuery] = useQueryParams({
     keyword: StringParam,
+    // potentioal bug: this limit can be smaller than the number of proposals in current cycle,
+    //   which can lead to missing actions while generating diff table
     limit: withDefault(NumberParam, 5),
     cycle: StringParam,
     sortBy: withDefault(StringParam, ''),
@@ -99,7 +101,7 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl sm:p-6">
-                <div className="sm:flex sm:items-start">
+                <div>
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                     <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
                       Queue Juicebox Cycle
