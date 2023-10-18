@@ -8,10 +8,11 @@ import { getTxLink } from "../../libs/EtherscanURL";
 import { NetworkContext } from "../../context/NetworkContext";
 
 export default function GovernorTransactionCreator(
-  { governorAddress, transactionDatas, description = "Queued from nance.app" }:
-    { governorAddress: string, transactionDatas: GenericTransactionData[], description?: string }) {
+  { governorAddress, transactionDatas }:
+    { governorAddress: string, transactionDatas: GenericTransactionData[] }) {
 
   const [open, setOpen] = useState<boolean>(false);
+  const [description, setDescription] = useState<string>("New proposal");
 
   const network = useContext(NetworkContext);
 
@@ -25,7 +26,7 @@ export default function GovernorTransactionCreator(
 
   const queueNotReady = !walletClient || !transactionDatas || !governorAddress || isLoading;
 
-  let tooltip = "Propose";
+  let tooltip = "Propose with title";
   if (!walletClient) {
     tooltip = "Wallet not connected";
   } else if (!transactionDatas || !governorAddress) {
@@ -42,11 +43,18 @@ export default function GovernorTransactionCreator(
         onClick={() => {
           setOpen(true); write?.();
         }}
-        className="relative inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 disabled:opacity-50"
+        className="relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 disabled:opacity-50"
       >
         {isLoading && <ArrowPathIcon className="animate-spin -ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />}
         {tooltip}
       </button>
+
+      <input
+        type="text"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 w-40"
+      />
 
       {error && <ResultModal title="Error" description={error.message} buttonText="Close" onClick={() => setOpen(false)} isSuccessful={false} shouldOpen={open} close={() => setOpen(false)} />}
       {data && <ResultModal title="Success" description={`Transaction queued as txn-${data.hash}`} buttonText="Go to Etherscan Tx" onClick={() => window.open(getTxLink(data.hash, network), "_blank")} isSuccessful={true} shouldOpen={open} close={() => setOpen(false)} />}
