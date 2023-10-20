@@ -28,9 +28,10 @@ export default async function auth(req: any, res: any) {
           if (!nextAuthDomains) return null;
           const csrf = await getCsrfToken({ req });
           const domain = JSON.parse(credentials?.message || "")?.domain;
-          const domainPattern = nextAuthDomains.filter((domain) => domain.includes('*'))[0];
-          const regexPattern = new RegExp(`^${domainPattern.replace(/\*/g, '.*')}`);
-          if (!nextAuthDomains.includes(domain) || !regexPattern.test(domain)) {
+          const domainPattern = nextAuthDomains.filter((domain) => domain.includes('*'))[0]; // support 1 domain pattern
+          let regexPattern = /.*/; // initialize as any string
+          if (domainPattern) regexPattern = new RegExp(`^${domainPattern.replace(/\*/g, '.*')}`); // make domain pattern new regex
+          if (!nextAuthDomains.includes(domain) && !regexPattern.test(domain)) {
             console.log("❌ NextAuth.authorize.error", "Invalid domain", domain);
             // FIXME to return meaningful error message
             return null;
