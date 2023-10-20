@@ -24,11 +24,13 @@ export default async function auth(req: any, res: any) {
       async authorize(credentials) {
         try {
           const siwe = new SiweMessage(JSON.parse(credentials?.message || "{}"));
-          const nextAuthDomains = process.env.NEXTAUTH_DOMAINS?.split(',') || "";
+          const nextAuthDomains = process.env.NEXTAUTH_DOMAINS?.split(',');
+          if (!nextAuthDomains) return null;
           const csrf = await getCsrfToken({ req });
           const domain = JSON.parse(credentials?.message || "")?.domain;
-
-          if (!nextAuthDomains.includes(domain)) {
+          const domainPattern = nextAuthDomains.filter((domain) => domain.includes('*'))[0];
+          const regexPattern = new RegExp(`^${domainPattern.replace(/\*/g, '.*')}`);
+          if (!nextAuthDomains.includes(domain) || !regexPattern.test(domain)) {
             console.log("❌ NextAuth.authorize.error", "Invalid domain", domain);
             // FIXME to return meaningful error message
             return null;
