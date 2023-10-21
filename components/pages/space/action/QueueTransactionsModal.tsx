@@ -1,16 +1,16 @@
 import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { utils } from 'ethers';
-import { CustomTransaction, ProposalsPacket, Transfer, extractFunctionName } from '../../../models/NanceTypes';
-import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
-import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
-import OrderCheckboxTable, { TransactionEntry } from '../../form/OrderCheckboxTable';
-import TransferActionLabel from '../../action/TransferActionLabel';
-import { getContractLabel } from '../../../constants/Contract';
+import { CustomTransaction, Transfer, extractFunctionName } from '../../../../models/NanceTypes';
+import SafeTransactionCreator from '../../../safe/SafeTransactionCreator';
+import useProjectInfo from '../../../../hooks/juicebox/ProjectInfo';
+import OrderCheckboxTable, { TransactionEntry } from '../../../form/OrderCheckboxTable';
+import TransferActionLabel from '../../../action/TransferActionLabel';
+import { getContractLabel } from '../../../../constants/Contract';
 import { Interface, parseUnits } from 'ethers/lib/utils';
-import CustomTransactionActionLabel from '../../action/CustomTransactionActionLabel';
+import CustomTransactionActionLabel from '../../../action/CustomTransactionActionLabel';
 import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
-import { useProposalsInfinite } from '../../../hooks/NanceHooks';
+import { useProposalsInfinite } from '../../../../hooks/NanceHooks';
 import { useRouter } from 'next/router';
 
 export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectId, space }: {

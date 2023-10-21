@@ -1,16 +1,16 @@
 import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { BigNumber, utils } from 'ethers';
-import { ProposalsPacket, Reserve } from '../../../models/NanceTypes';
-import { useCurrentPayouts, useProposalsInfinite } from '../../../hooks/NanceHooks';
-import DiffTableWithSection, { } from '../../form/DiffTableWithSection';
-import SafeTransactionCreator from '../../safe/SafeTransactionCreator';
-import { calcDiffTableData, mergePayouts, compareReserves, splitStruct2JBSplit, encodedReconfigureFundingCyclesOf } from '../../../libs/juicebox';
-import useControllerOfProject from '../../../hooks/juicebox/ControllerOfProject';
-import useTerminalOfProject from '../../../hooks/juicebox/TerminalOfProject';
-import useProjectInfo from '../../../hooks/juicebox/ProjectInfo';
-import { useReconfigurationOfProject } from '../../../hooks/juicebox/ReconfigurationOfProject';
-import parseSafeJuiceboxTx from '../../../libs/SafeJuiceboxParser';
+import { Reserve } from '../../../../models/NanceTypes';
+import { useCurrentPayouts, useProposalsInfinite } from '../../../../hooks/NanceHooks';
+import DiffTableWithSection, { } from '../../../form/DiffTableWithSection';
+import SafeTransactionCreator from '../../../safe/SafeTransactionCreator';
+import { calcDiffTableData, mergePayouts, compareReserves, splitStruct2JBSplit, encodedReconfigureFundingCyclesOf } from '../../../../libs/juicebox';
+import useControllerOfProject from '../../../../hooks/juicebox/ControllerOfProject';
+import useTerminalOfProject from '../../../../hooks/juicebox/TerminalOfProject';
+import useProjectInfo from '../../../../hooks/juicebox/ProjectInfo';
+import { useReconfigurationOfProject } from '../../../../hooks/juicebox/ReconfigurationOfProject';
+import parseSafeJuiceboxTx from '../../../../libs/SafeJuiceboxParser';
 import { useRouter } from 'next/router';
 import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
 

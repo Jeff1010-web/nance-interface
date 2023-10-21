@@ -1,6 +1,6 @@
 import SiteNav from "../../../components/SiteNav";
 import Footer from "../../../components/Footer";
-import NanceSpace from "../../../components/pages/space/Space";
+import NanceSpace from "../../../components/pages/space/NanceSpace";
 import { NANCE_API_URL } from "../../../constants/Nance";
 
 export async function getServerSideProps(context: any) {
@@ -15,7 +15,7 @@ export async function getServerSideProps(context: any) {
   };
 }
 
-export default function NanceSpacePage({ space, snapshotSpace } : { space: string, snapshotSpace: string }) {
+export default function NanceSpacePage({ space, snapshotSpace }: { space: string, snapshotSpace: string }) {
   const spaceImage = (space === 'juicebox') ? '/images/opengraph/homepage.png' : `https://cdn.stamp.fyi/space/${snapshotSpace}?s=500`;
   return (
     <>

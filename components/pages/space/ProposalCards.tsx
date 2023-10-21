@@ -4,12 +4,12 @@ import { getLastSlash } from "../../../libs/nance";
 import { Proposal, ProposalsPacket } from "../../../models/NanceTypes";
 import ProposalRow, { ProposalRowSkeleton } from "./card/ProposalRow";
 import ProposalPrivateRow from "./card/ProposalPrivateRow";
-import RecommendAction from "./RecommendAction";
-import SortableTableHeader from "./SortableTableHeader";
+import RecommendAction from "./card/RecommendAction";
+import SortableTableHeader from "./card/SortableTableHeader";
 import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from "next-query-params";
 import { useProposalsInfinite } from "../../../hooks/NanceHooks";
 import { useRouter } from "next/router";
-import LoadMoreButton from "./LoadMoreButton";
+import LoadMoreButton from "./card/LoadMoreButton";
 
 const SortOptionsArr = ["status", "title", "approval", "participants", "voted"];
 const StatusValue: { [key: string]: number } = {
@@ -147,7 +147,7 @@ export default function ProposalCards({ loading, space, privateProposals, maxCyc
   }
 
   return (
-    <>
+    <div>
       <div className="mt-6 bg-white">
         <div className="mt-10 ring-1 ring-gray-300 sm:mx-0 rounded-lg">
           <table className="min-w-full divide-y divide-gray-300" id="proposals-table">
@@ -235,6 +235,6 @@ export default function ProposalCards({ loading, space, privateProposals, maxCyc
           loading={(size - 1) * limit + 1 > sortedProposals.length}
           hasMore={proposalsPacket?.hasMore} />
       </div>
-    </>
+    </div>
   );
 }
