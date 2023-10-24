@@ -49,7 +49,7 @@ function AllSpace() {
               <div className="flex justify-between gap-x-4 py-3">
                 <dt className="text-gray-500">Treasury</dt>
                 <dd className="flex items-start gap-x-2">
-                  <ResolvedProject version={3} projectId={parseInt(spaceInfo.juiceboxProjectId)} />
+                  <ResolvedProject version={3} projectId={parseInt(spaceInfo.juiceboxProjectId)} isTestnet={spaceInfo.transactorAddress?.network === "goerli"} />
                 </dd>
               </div>
             </dl>
