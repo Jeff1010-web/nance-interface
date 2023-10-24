@@ -1,11 +1,11 @@
 import { BigNumber } from "ethers";
-import { SUBGRAPH_URL } from "../../constants/Juicebox";
 import { shortenAddress } from "../../libs/address";
+import { subgraphOf } from "../../constants/Juicebox";
 
 const Query = `query ProjectEvents($first: Int, $skip: Int) {
   projectEvents(
-    first: $first, 
-    skip: $skip, 
+    first: $first,
+    skip: $skip,
     orderBy: timestamp,
     orderDirection: desc
     where: {
@@ -82,67 +82,67 @@ const Query = `query ProjectEvents($first: Int, $skip: Int) {
 
 // model for graphql response
 export interface ProjectEventResponse {
-    id: string
-    project: {
-      projectId: string
-      pv: string
-      handle: string
-      metadataUri: string
-    }
-    timestamp: number
-    payEvent: {
-      txHash: string
-      caller: string
-      beneficiary: string
-      amount: string
-      note: string
-    } | null
-    redeemEvent: {
-      txHash: string
-      holder: string
-      beneficiary: string
-      amount: string
-      returnAmount: string
-    } | null
-    deployedERC20Event: {
-      txHash: string
-      address: string
-      symbol: string
-    } | null
-    projectCreateEvent: {
-      txHash: string
-      caller: string
-    } | null
-    tapEvent: {
-      txHash: string
-      caller: string
-      beneficiary: string
-      netTransferAmount: string
-    } | null
-    distributePayoutsEvent: {
-      txHash: string
-      caller: string
-      distributedAmount: string
-      fee: string
-      memo: string
-    } | null
-    printReservesEvent: {
-      txHash: string
-      caller: string
-      count: string
-    } | null
-    distributeReservedTokensEvent: {
-      txHash: string
-      caller: string
-      tokenCount: string
-      memo: string
-    } | null
-    deployETHERC20ProjectPayerEvent: {
-      txHash: string
-      caller: string
-      address: string
-      memo: string
-    } | null
+  id: string
+  project: {
+    projectId: string
+    pv: string
+    handle: string
+    metadataUri: string
+  }
+  timestamp: number
+  payEvent: {
+    txHash: string
+    caller: string
+    beneficiary: string
+    amount: string
+    note: string
+  } | null
+  redeemEvent: {
+    txHash: string
+    holder: string
+    beneficiary: string
+    amount: string
+    returnAmount: string
+  } | null
+  deployedERC20Event: {
+    txHash: string
+    address: string
+    symbol: string
+  } | null
+  projectCreateEvent: {
+    txHash: string
+    caller: string
+  } | null
+  tapEvent: {
+    txHash: string
+    caller: string
+    beneficiary: string
+    netTransferAmount: string
+  } | null
+  distributePayoutsEvent: {
+    txHash: string
+    caller: string
+    distributedAmount: string
+    fee: string
+    memo: string
+  } | null
+  printReservesEvent: {
+    txHash: string
+    caller: string
+    count: string
+  } | null
+  distributeReservedTokensEvent: {
+    txHash: string
+    caller: string
+    tokenCount: string
+    memo: string
+  } | null
+  deployETHERC20ProjectPayerEvent: {
+    txHash: string
+    caller: string
+    address: string
+    memo: string
+  } | null
 }
 
 export interface ProjectEvent {
@@ -164,15 +164,15 @@ export interface ProjectEvent {
   payload?: any
 }
 
-export default async function fetchProjectEvents(first: number = 20, skip: number = 0): Promise<ProjectEvent[]> {
-  const response = await fetch(SUBGRAPH_URL, {
+export default async function fetchProjectEvents(first: number = 20, skip: number = 0, network: string = "mainnet"): Promise<ProjectEvent[]> {
+  const response = await fetch(subgraphOf(network), {
     method: "POST",
-    body: JSON.stringify({ 
-      query: Query, 
-      variables: { 
+    body: JSON.stringify({
+      query: Query,
+      variables: {
         first,
         skip
-      } 
+      }
     }),
   });
   const { data } = await response.json();

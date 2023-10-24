@@ -653,7 +653,7 @@ export function calcDiffTableData(config: FundingCycleConfigProps, newConfig: Fu
   return tableData;
 }
 
-export function encodedReconfigureFundingCyclesOf(config: FundingCycleConfigProps, payoutsDiff: SplitDiff, reservesDiff: SplitDiff, projectId: number, controller: Contract | undefined, terminal: Contract) {
+export function encodedReconfigureFundingCyclesOf(config: FundingCycleConfigProps, payoutsDiff: SplitDiff, reservesDiff: SplitDiff, projectId: number, controller: Contract | undefined, terminalAddress: string | undefined = ZERO_ADDRESS) {
   const BIG_ZERO = BigNumber.from(0);
   const fc = config.fundingCycle;
   const jbFundingCycleData: JBFundingCycleData = {
@@ -682,7 +682,7 @@ export function encodedReconfigureFundingCyclesOf(config: FundingCycleConfigProp
       }
     ],
     [{                                                // _fundAccessConstraints
-      terminal: terminal.address,
+      terminal: terminalAddress,
       token: ETH_TOKEN_ADDRESS,
       distributionLimit: payoutsDiff.newTotal,
       distributionLimitCurrency: CURRENCY_USD,

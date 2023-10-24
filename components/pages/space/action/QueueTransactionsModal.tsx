@@ -2,7 +2,6 @@ import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { utils } from 'ethers';
 import { CustomTransaction, Transfer, extractFunctionName } from '../../../../models/NanceTypes';
-import SafeTransactionCreator from '../../../safe/SafeTransactionCreator';
 import useProjectInfo from '../../../../hooks/juicebox/ProjectInfo';
 import OrderCheckboxTable, { TransactionEntry } from '../../../form/OrderCheckboxTable';
 import TransferActionLabel from '../../../action/TransferActionLabel';
@@ -12,6 +11,7 @@ import CustomTransactionActionLabel from '../../../action/CustomTransactionActio
 import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
 import { useProposalsInfinite } from '../../../../hooks/NanceHooks';
 import { useRouter } from 'next/router';
+import TransactionCreator from '../../../ethereum/TransactionCreator';
 
 export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectId, space }: {
   open: boolean, setOpen: (o: boolean) => void,
@@ -114,12 +114,12 @@ export default function QueueTransactionsModal({ open, setOpen, juiceboxProjectI
                       Queue Transactions
                     </Dialog.Title>
 
-                    <OrderCheckboxTable safeAddress={owner} entries={entries} />
+                    <OrderCheckboxTable address={owner} entries={entries} />
                   </div>
                 </div>
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                   <div className="sm:ml-3 sm:w-auto">
-                    <SafeTransactionCreator safeAddress={owner} safeTransaction={entries.map(e => e.transactionData)} />
+                    <TransactionCreator address={owner} transactions={entries.map(e => e.transactionData)} />
                   </div>
 
                   <button

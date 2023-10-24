@@ -19,6 +19,8 @@ function jsonFetcher(): Fetcher<SafeMultisigTransactionListResponse, string> {
       throw new Error('Invalid data.');
     } else if (res.status == 422) {
       throw new Error('Invalid ethereum address.');
+    } else if (res.status == 404) {
+      throw new Error('Safe not found.');
     }
     const json = await res.json();
 
@@ -77,14 +79,14 @@ export function useSafeAPIFunction<T>(functionWrapper: (safeApiKit: SafeApiKit) 
       setLoading(true);
       const val = await _functionWrapper(safeApiKit);
       setValue(val);
-    } catch(e: any) {
+    } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() =>{
+  useEffect(() => {
     refetch()
   }, [safeApiKit, shouldFetch, functionWrapper])
 
@@ -129,9 +131,10 @@ function safeInfoJsonFetcher(): Fetcher<SafeInfoResponse, string> {
 }
 
 export function useSafeInfo(address: string, shouldFetch: boolean = true) {
-  return useSWR(
+  return useSWR<SafeInfoResponse, Error>(
     shouldFetch ? `${SAFE_API}${address}` : null,
     safeInfoJsonFetcher(),
+    { shouldRetryOnError: false }
   );
 }
 
@@ -157,7 +160,7 @@ export function useSafeDelegates(address: string, shouldFetch: boolean = true) {
 export function useSafeAPIKit() {
   const [value, setValue] = useState<SafeApiKit>();
   const signer = useEthersSigner();
-  
+
   useEffect(() => {
     if (!signer) {
       return;
@@ -181,7 +184,7 @@ export function useSafe(safeAddress: string) {
   const [error, setError] = useState<string>();
   const [value, setValue] = useState<Safe>();
   const signer = useEthersSigner();
-  
+
   useEffect(() => {
     if (!signer || !safeAddress) {
       return;
@@ -229,7 +232,7 @@ export function useCreateTransaction(safeAddress: string, safeTransactionData: S
 export function useQueueTransaction(safeAddress: string, safeTransactionData: SafeTransactionDataPartial | MetaTransactionData[], nonce?: number) {
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
-  const [value, setValue] = useState<{safeTxHash: string, nonce: string}>();
+  const [value, setValue] = useState<{ safeTxHash: string, nonce: string }>();
 
   const { data: walletClient } = useWalletClient();
   const { address, isConnecting, isDisconnected } = useAccount();
@@ -267,7 +270,7 @@ export function useQueueTransaction(safeAddress: string, safeTransactionData: Sa
         safeTxHash: safeTxHash,
         nonce: safeTransaction.data.nonce.toString()
       });
-    } catch(e: any) {
+    } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);

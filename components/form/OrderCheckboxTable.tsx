@@ -1,9 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { classNames } from '../../libs/tailwind';
 import { SafeTransactionDataPartial } from '@safe-global/safe-core-sdk-types';
-import TenderlySimulationButton from '../ethereum/TenderlySimulationButton';
-import { useCreateTransaction } from '../../hooks/SafeHooks';
-import { TenderlySimulateArgs } from '../../hooks/TenderlyHooks';
+import GenericTenderlySimulationButton from '../ethereum/GenericTenderlySimulationButton';
 
 export interface TransactionEntry {
   title: JSX.Element
@@ -11,34 +9,18 @@ export interface TransactionEntry {
   transactionData: SafeTransactionDataPartial
 }
 
-export default function OrderCheckboxTable({ safeAddress, entries }: { safeAddress: string, entries: TransactionEntry[] }) {
-  
+export default function OrderCheckboxTable({ address, entries }: { address: string, entries: TransactionEntry[] }) {
+
   const checkbox = useRef<HTMLInputElement>(null);
   const [checked, setChecked] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<TransactionEntry[]>([]);
-  const [shouldSimulate, setShouldSimulate] = useState<boolean>(false);
-
-  const { value: safeTransaction } = useCreateTransaction(safeAddress, selectedEntry.map(e => e.transactionData));
-
-  const simulationArgs: TenderlySimulateArgs = {
-    from: safeAddress,
-    to: safeTransaction?.data.to || "",
-    value: parseInt(safeTransaction?.data.value || "0"),
-    input: safeTransaction?.data.data || ""
-  };
 
   useLayoutEffect(() => {
     const isIndeterminate = selectedEntry.length > 0 && selectedEntry.length < entries.length;
     setChecked(selectedEntry.length === entries.length);
     setIndeterminate(isIndeterminate);
     checkbox.current!.indeterminate = isIndeterminate;
-  }, [selectedEntry]);
-
-  useEffect(() => {
-    if (shouldSimulate) {
-      setShouldSimulate(false);
-    }
   }, [selectedEntry]);
 
   function toggleAll() {
@@ -55,7 +37,7 @@ export default function OrderCheckboxTable({ safeAddress, entries }: { safeAddre
             <div className="relative">
               {selectedEntry.length > 0 && (
                 <div className="absolute left-14 top-0 flex h-12 items-center space-x-3 bg-white sm:left-12">
-                  <TenderlySimulationButton simulationArgs={simulationArgs} shouldSimulate={shouldSimulate} setShouldSimulate={setShouldSimulate} />
+                  <GenericTenderlySimulationButton rawAddress={address} transactions={selectedEntry.map(e => e.transactionData)} />
                 </div>
               )}
               <table className="min-w-full table-fixed divide-y divide-gray-300">

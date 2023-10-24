@@ -9,8 +9,10 @@ import {
 } from '@rainbow-me/rainbowkit';
 import {
   WagmiConfig, createConfig,
-  configureChains, mainnet
+  configureChains,
+  useNetwork
 } from 'wagmi';
+import { mainnet, goerli } from 'wagmi/chains';
 import { infuraProvider } from 'wagmi/providers/infura';
 
 import { NextQueryParamProvider } from 'next-query-params';
@@ -21,7 +23,7 @@ import { Analytics } from '@vercel/analytics/react';
 
 import { SessionProvider } from 'next-auth/react';
 import { RainbowKitSiweNextAuthProvider } from '@rainbow-me/rainbowkit-siwe-next-auth';
-import { SWRConfig } from 'swr';
+import { NetworkContext } from '../context/NetworkContext';
 import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../constants/Snapshot';
 
 const graphqlClient = new GraphQLClient({
@@ -32,7 +34,7 @@ const graphqlClient = new GraphQLClient({
 
 // WAGMI and RainbowKit configuration
 const { chains, publicClient } = configureChains(
-  [mainnet],
+  [mainnet, goerli],
   [
     infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY || "" }),
   ],
@@ -60,43 +62,49 @@ const theme = {
 };
 
 function MyApp({ Component, pageProps }: any) {
+  const { chain } = useNetwork();
+  const network = chain?.name || mainnet.name;
+
   return (
-    <>
-      <WagmiConfig config={wagmiConfig}>
-        <SessionProvider
-          session={pageProps.session}
-          // Re-fetch session every 5 minutes
-          refetchInterval={5 * 60}
-          // Re-fetches session when window is focused
-          refetchOnWindowFocus={true}
-        >
-          <RainbowKitSiweNextAuthProvider>
-            <RainbowKitProvider
-              chains={chains}
-              appInfo={{
-                appName: 'JBDAO',
-                learnMoreUrl: 'https://jbdao.org',
-              }}>
-              <ClientContext.Provider value={graphqlClient}>
-                <NextQueryParamProvider>
-                  <Flowbite theme={theme}>
-                    <SWRConfig value={{
-                      revalidateOnFocus: false
-                    }}>
-                      <ErrorBoundary>
-                        <Component {...pageProps} />
-                      </ErrorBoundary>
-                    </SWRConfig>
-                  </Flowbite>
-                </NextQueryParamProvider>
-              </ClientContext.Provider>
-            </RainbowKitProvider>
-          </RainbowKitSiweNextAuthProvider>
-        </SessionProvider>
-      </WagmiConfig>
-      <Analytics />
-    </>
+    <SessionProvider session={pageProps.session}
+      // Re-fetch session every 5 minutes
+      refetchInterval={5 * 60}
+      // Re-fetches session when window is focused
+      refetchOnWindowFocus={true}>
+      <RainbowKitSiweNextAuthProvider>
+        <RainbowKitProvider
+          chains={chains}
+          appInfo={{
+            appName: 'JBDAO',
+            learnMoreUrl: 'https://jbdao.org',
+          }}>
+          <ClientContext.Provider value={graphqlClient}>
+            <NextQueryParamProvider>
+              <Flowbite theme={theme}>
+                <ErrorBoundary>
+                  <NetworkContext.Provider value={network}>
+                    <Component {...pageProps} />
+                  </NetworkContext.Provider>
+                </ErrorBoundary>
+              </Flowbite>
+            </NextQueryParamProvider>
+          </ClientContext.Provider>
+        </RainbowKitProvider>
+      </RainbowKitSiweNextAuthProvider>
+    </SessionProvider>
   );
 }
 
-export default MyApp;
+function WagmiWrappedApp({ Component, pageProps }: any) {
+  return (
+    <>
+      <WagmiConfig config={wagmiConfig}>
+        <MyApp Component={Component} pageProps={pageProps} />
+      </WagmiConfig>
+
+      <Analytics />
+    </>
+  )
+}
+
+export default WagmiWrappedApp;

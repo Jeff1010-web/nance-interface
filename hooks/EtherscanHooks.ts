@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { usePublicClient } from 'wagmi';
+import { mainnet } from 'wagmi/chains';
 import { Interface } from 'ethers/lib/utils';
+import { NetworkContext } from '../context/NetworkContext';
 
 const API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_KEY;
 
@@ -12,23 +14,32 @@ interface EtherscanAPIResponse {
 }
 
 const fetcher = (url: string) => fetch(url).then(res => res.json()).then((j: EtherscanAPIResponse) => {
-  if(j.status != "1") {
+  if (j.status != "1") {
     throw new Error(`Etherscan API Error: ${j.result}`);
   }
   return j.result;
 });
 
-export function useEtherscanContractABI(initialAddress: string, shouldFetch: boolean = true) {
-  const [address, setAddress] = useState(initialAddress);
+export function useEtherscanAPIUrl() {
+  const network = useContext(NetworkContext);
+  return `https://api${network === mainnet.name ? "" : `-${network}`}.etherscan.io/api`;
+}
+
+export function useEtherscanContractABI(address: string, shouldFetch: boolean = true) {
+  const [implementationAddress, setImplementationAddress] = useState("");
   const client = usePublicClient();
+  const apiUrl = useEtherscanAPIUrl();
   const { data: abi, isLoading, error } = useSWR<string>(
-    shouldFetch ? `https://api.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=${API_KEY}` : null,
+    shouldFetch ? `${apiUrl}?module=contract&action=getabi&address=${implementationAddress || address}&apikey=${API_KEY}` : null,
     fetcher,
+    //{ shouldRetryOnError: false }
   );
 
   useEffect(() => {
-    (async () => {
-      if (abi && client) {
+    let cancelled = false;
+
+    const func = (async () => {
+      if (abi && client && implementationAddress === "") {
         const ethersInterface = new Interface(abi);
         if (Object.values(ethersInterface.functions).length === 0) {
           // this maybe a proxy contract without any explicit function
@@ -43,18 +54,24 @@ export function useEtherscanContractABI(initialAddress: string, shouldFetch: boo
             }],
             functionName: "masterCopy",
           })) as `0x${string}`;
-          console.debug("useEtherscanContractABI.proxy", initialAddress, address, proxyAddress);
-          setAddress(proxyAddress);
+          if (!cancelled) {
+            setImplementationAddress(proxyAddress);
+          }
         }
       }
-    })();
-  }, [address, abi, client]);
+    });
+    func();
+
+    return () => {
+      cancelled = true;
+    }
+  }, [abi, client, implementationAddress, address]);
 
   return {
     data: abi,
     isLoading,
     error,
-    isProxy: address === initialAddress
+    isProxy: address !== implementationAddress
   };
 }
 
@@ -75,8 +92,9 @@ interface EtherscanContractSource {
 }
 
 export function useEtherscanContract(contract: string, shouldFetch: boolean = true) {
+  const apiUrl = useEtherscanAPIUrl();
   return useSWR<[EtherscanContractSource]>(
-    shouldFetch ? `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${contract}&apikey=${API_KEY}` : null,
+    shouldFetch ? `${apiUrl}?module=contract&action=getsourcecode&address=${contract}&apikey=${API_KEY}` : null,
     fetcher,
   );
 }

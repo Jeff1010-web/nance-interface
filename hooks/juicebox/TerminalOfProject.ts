@@ -1,19 +1,17 @@
 import { useContractReadValue } from './ContractReadValue';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { useEthersProvider } from '../ViemAdapter';
-import JBDirectory from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBDirectory.json';
-import { Contract } from 'ethers';
 import { ETH_TOKEN_ADDRESS } from '../../models/JuiceboxTypes';
-import JBETHPaymentTerminal from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal.json';
-import JBETHPaymentTerminal3_1 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal3_1.json';
-import JBETHPaymentTerminal3_1_1 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal3_1_1.json';
-import JBETHPaymentTerminal3_1_2 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBETHPaymentTerminal3_1_2.json';
+import { useContext } from 'react';
+import { NetworkContext } from '../../context/NetworkContext';
+import { getJBDirectory, getJBETHPaymentTerminal } from '../../libs/JuiceboxContracts';
 
 export default function useTerminalOfProject(
   projectId: BigNumberish | undefined
 ) {
   const provider = useEthersProvider();
-  const contract = new Contract(JBDirectory.address, JBDirectory.abi, provider);
+  const network = useContext(NetworkContext);
+  const contract = getJBDirectory(provider, network);
 
   const { value, refetchValue, loading } = useContractReadValue<string>({
     contract,
@@ -21,16 +19,7 @@ export default function useTerminalOfProject(
     args: projectId ? [BigNumber.from(projectId).toHexString(), ETH_TOKEN_ADDRESS] : null
   });
 
-  let terminal;
-  if (value === JBETHPaymentTerminal.address) {
-    terminal = new Contract(JBETHPaymentTerminal.address, JBETHPaymentTerminal.abi, provider);
-  } else if (value === JBETHPaymentTerminal3_1.address) {
-    terminal = new Contract(JBETHPaymentTerminal3_1.address, JBETHPaymentTerminal3_1.abi, provider);
-  } else if (value === JBETHPaymentTerminal3_1_1.address) {
-    terminal = new Contract(JBETHPaymentTerminal3_1_1.address, JBETHPaymentTerminal3_1_1.abi, provider);
-  } else {
-    terminal = new Contract(JBETHPaymentTerminal3_1_2.address, JBETHPaymentTerminal3_1_2.abi, provider);
-  } 
+  const terminal = getJBETHPaymentTerminal(provider, network, value);
 
   return {
     value: terminal, refetchValue, loading

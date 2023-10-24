@@ -4,7 +4,6 @@ import { BigNumber, utils } from 'ethers';
 import { Reserve } from '../../../../models/NanceTypes';
 import { useCurrentPayouts, useProposalsInfinite } from '../../../../hooks/NanceHooks';
 import DiffTableWithSection, { } from '../../../form/DiffTableWithSection';
-import SafeTransactionCreator from '../../../safe/SafeTransactionCreator';
 import { calcDiffTableData, mergePayouts, compareReserves, splitStruct2JBSplit, encodedReconfigureFundingCyclesOf } from '../../../../libs/juicebox';
 import useControllerOfProject from '../../../../hooks/juicebox/ControllerOfProject';
 import useTerminalOfProject from '../../../../hooks/juicebox/TerminalOfProject';
@@ -13,6 +12,7 @@ import { useReconfigurationOfProject } from '../../../../hooks/juicebox/Reconfig
 import parseSafeJuiceboxTx from '../../../../libs/SafeJuiceboxParser';
 import { useRouter } from 'next/router';
 import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
+import TransactionCreator from '../../../ethereum/TransactionCreator';
 
 export default function QueueReconfigurationModal({ open, setOpen, juiceboxProjectId, space, currentCycle }: {
   open: boolean, setOpen: (o: boolean) => void,
@@ -24,6 +24,8 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
   const router = useRouter();
   const [query, setQuery] = useQueryParams({
     keyword: StringParam,
+    // potentioal bug: this limit can be smaller than the number of proposals in current cycle,
+    //   which can lead to missing actions while generating diff table
     limit: withDefault(NumberParam, 5),
     cycle: StringParam,
     sortBy: withDefault(StringParam, ''),
@@ -66,7 +68,7 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
   const loading = infoIsLoading || configIsLoading || nancePayoutsLoading || proposalsLoading;
 
   // Construct reconfiguration function data
-  const encodeReconfiguration = !loading ? encodedReconfigureFundingCyclesOf(currentConfig, payoutsDiff, reservesDiff, projectId, controller, terminal) || "" : "";
+  const encodeReconfiguration = !loading ? encodedReconfigureFundingCyclesOf(currentConfig, payoutsDiff, reservesDiff, projectId, controller, terminal?.address) || "" : "";
 
   const tableData = calcDiffTableData(currentConfig,
     parseSafeJuiceboxTx(encodeReconfiguration, "", currentConfig.fundingCycle.fee, BigNumber.from(Math.floor(Date.now() / 1000))),
@@ -99,7 +101,7 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl sm:p-6">
-                <div className="sm:flex sm:items-start">
+                <div>
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                     <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
                       Queue Juicebox Cycle
@@ -110,11 +112,11 @@ export default function QueueReconfigurationModal({ open, setOpen, juiceboxProje
                 </div>
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                   <div className="sm:ml-3 sm:w-auto">
-                    <SafeTransactionCreator safeAddress={owner} safeTransaction={{
+                    <TransactionCreator address={owner} transactions={[{
                       to: controller?.address || "",
                       value: "0",
                       data: encodeReconfiguration
-                    }} />
+                    }]} />
                   </div>
 
                   <button

@@ -1,23 +1,21 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import { getJBSplitsStore } from "juice-sdk";
 import { useContractReadValue } from "./ContractReadValue";
 import { JBSplit } from '../../models/JuiceboxTypes';
-import JBSplitsStoreV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBSplitsStore.json';
-import { Contract } from 'ethers';
 import { useEthersProvider } from '../ViemAdapter';
+import { NetworkContext } from '../../context/NetworkContext';
+import { useContext } from 'react';
+import { getJBSplitsStore } from '../../libs/JuiceboxContracts';
 
 export function useCurrentSplits(
   projectId: BigNumberish | undefined,
   // funding cycle configuration
   domain: BigNumberish | undefined,
   // ETH_PAYOUT_SPLIT_GROUP or RESERVED_TOKEN_SPLIT_GROUP
-  group: BigNumberish | undefined,
-  isV3: boolean = false
-)  {
+  group: BigNumberish | undefined
+) {
   const provider = useEthersProvider();
-  const contract = isV3 ? 
-    new Contract(JBSplitsStoreV3.address, JBSplitsStoreV3.abi, provider)
-    : getJBSplitsStore(provider);
+  const network = useContext(NetworkContext);
+  const contract = getJBSplitsStore(provider, network);
 
   return useContractReadValue<JBSplit[]>({
     contract,
