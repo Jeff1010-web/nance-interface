@@ -1,6 +1,7 @@
 import { JBConstants, JBSplit, V2V3FundingCycleMetadata } from "../../models/JuiceboxTypes";
 import { BigNumber, utils } from "ethers";
 import { formatCurrency } from "../../libs/juicebox";
+import { parseEther } from "ethers/lib/utils";
 
 // 'projectId-beneficiary-allocator': mod
 const splits2map = (splits: JBSplit[]) => {
@@ -63,14 +64,21 @@ export interface FundingCycleConfigProps {
 }
 
 export function calculateSplitAmount(percent: BigNumber, target: BigNumber) {
-  return parseInt(utils.formatEther(target.mul(percent).div(JBConstants.TotalPercent.Splits[2]) ?? 0));
+  const _totalPercent = JBConstants.TotalPercent.Splits[2];
+  const amount = target.mul(percent).div(_totalPercent);
+  const ret = amount.div(ETHER);
+  return ret.toNumber();
 }
+
+const ETHER = BigNumber.from("1000000000000000000");
 
 export function splitAmount2Percent(target: BigNumber, amount: number) {
   if (amount <= 0) {
     return BigNumber.from(0);
   }
-  return utils.parseEther(amount.toFixed(0)).mul(JBConstants.TotalPercent.Splits[2]).div(target);
+  const totalPercent = BigNumber.from(JBConstants.TotalPercent.Splits[2]);
+  const percent = ETHER.mul(totalPercent).mul(amount).div(target);
+  return percent;
 }
 
 export function isEqualPayoutSplit(percent: BigNumber, currency: BigNumber, target: BigNumber, newPercent: BigNumber, newCurrency: BigNumber, newTarget: BigNumber) {

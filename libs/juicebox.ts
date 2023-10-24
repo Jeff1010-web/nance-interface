@@ -446,19 +446,39 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
           amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
         };
       } else {
-        // keep it
-        diff.keep[key] = {
-          split,
-          proposalId: registeredPayout.proposalId || 0,
-          oldVal: formattedSplit(
-            split.percent || BIG_ZERO,
-            config.fundingCycle.currency,
-            config.fundingCycle.target,
-            config.version
-          ) || "",
-          newVal: "",
-          amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
-        };
+        // We have registered payout
+        // Let's see if it matched
+        const onchainAmount = calculateSplitAmount(split.percent, config.fundingCycle.target);
+        const registeredAmount = registeredPayout.amount;
+        if (onchainAmount === registeredAmount) {
+          // keep it
+          diff.keep[key] = {
+            split,
+            proposalId: registeredPayout.proposalId || 0,
+            oldVal: formattedSplit(
+              split.percent || BIG_ZERO,
+              config.fundingCycle.currency,
+              config.fundingCycle.target,
+              config.version
+            ) || "",
+            newVal: "",
+            amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
+          };
+        } else {
+          // correct it
+          diff.change[key] = {
+            split,
+            proposalId: registeredPayout.proposalId || 0,
+            oldVal: formattedSplit(
+              split.percent || BIG_ZERO,
+              config.fundingCycle.currency,
+              config.fundingCycle.target,
+              config.version
+            ) || "",
+            newVal: "",
+            amount: registeredAmount
+          }
+        }
       }
     } else {
       // keep it
@@ -506,6 +526,7 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
   const isInfiniteLimit = config.fundingCycle.target.gte(JBConstants.UintMax);
   const oldLimit = parseInt(utils.formatEther(config.fundingCycle.target ?? 0));
   let newLimit = oldLimit;
+  console.debug("haha", { diff });
   Object.entries(diff.new).forEach((v) => newLimit += v[1].amount);
   Object.entries(diff.expire).forEach((v) => newLimit -= v[1].amount);
   Object.entries(diff.change).forEach((v) => {
@@ -520,9 +541,64 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
   Object.values(diff.keep).forEach(updatePercentAndNewVal);
   Object.values(diff.new).forEach(updatePercentAndNewVal);
   Object.values(diff.change).forEach(updatePercentAndNewVal);
+  ensureSplitsSumTo100Percent(diff, newLimitBG, config.fundingCycle.currency, config.version);
 
   //console.debug("payoutsDiffOf.final", { diff, isInfiniteLimit, oldLimit, newLimit });
   return diff;
+}
+
+// Modified from https://github.com/jbx-protocol/juice-interface/blob/f17617de9577e4bf3f9d6208a51a2a2a3444188c/src/utils/v2v3/distributions.ts#L108
+function ensureSplitsSumTo100Percent(diff: SplitDiff, newLimitBG: BigNumber, currency: BigNumber, version: number) {
+  // Calculate the percent total of the splits
+  const allValues = Object.values(diff.keep).concat(Object.values(diff.new)).concat(Object.values(diff.change));
+  const currentTotal = allValues.reduce((sum, entry) => sum.add(entry.split.percent), BigNumber.from(0)).toNumber();
+  const SPLITS_TOTAL_PERCENT = JBConstants.TotalPercent.Splits[2];
+  // If the current total is already equal to SPLITS_TOTAL_PERCENT, no adjustment needed
+  if (currentTotal === SPLITS_TOTAL_PERCENT) {
+    return;
+  }
+  //console.debug("ensureSplitsSumTo100Percent", { noAdjustment: currentTotal === SPLITS_TOTAL_PERCENT, currentTotal, SPLITS_TOTAL_PERCENT });
+
+  // Calculate the ratio to adjust each split by
+  const ratio = SPLITS_TOTAL_PERCENT / currentTotal;
+
+  // Adjust each split
+  allValues.forEach(entry => {
+    const newPercent = BigNumber.from(Math.round(entry.split.percent.toNumber() * ratio));
+    //const oldPercent = entry.split.percent;
+    entry.split.percent = newPercent;
+    entry.newVal = entry.newVal = formattedSplit(
+      newPercent,
+      currency,
+      newLimitBG,
+      version
+    ) || "";
+    //console.debug("adjustPercent", { oldPercent, newPercent, ratio, entry })
+  })
+
+  // Calculate the total after adjustment
+  const adjustedTotal = allValues.reduce((sum, entry) => sum.add(entry.split.percent), BigNumber.from(0)).toNumber();
+  if (adjustedTotal === SPLITS_TOTAL_PERCENT) {
+    return;
+  }
+
+  // If there's STILL a difference due to rounding errors, adjust the largest split
+  const difference = SPLITS_TOTAL_PERCENT - adjustedTotal
+  const largestSplitIndex = allValues.findIndex(
+    entry => entry.split.percent.toNumber() === Math.max(...allValues.map(e => e.split.percent.toNumber())),
+  )
+  if (allValues[largestSplitIndex]) {
+    const newPercent = allValues[largestSplitIndex].split.percent.add(difference);
+    //const oldPercent = allValues[largestSplitIndex].split.percent;
+    allValues[largestSplitIndex].split.percent = newPercent;
+    allValues[largestSplitIndex].newVal = formattedSplit(
+      newPercent,
+      currency,
+      newLimitBG,
+      version
+    ) || "";
+    //console.debug("after difference", { oldPercent, newPercent, difference, entry: allValues[largestSplitIndex] });
+  }
 }
 
 export function splitStruct2JBSplit(v: JBSplitNanceStruct) {
