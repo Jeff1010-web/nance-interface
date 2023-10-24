@@ -8,6 +8,7 @@ import { BanknotesIcon, BoltIcon, DocumentTextIcon, ShieldCheckIcon } from "@her
 import LoadingArrowSpiner from "../../LoadingArrowSpiner";
 import { StringParam, useQueryParams } from "next-query-params";
 import { SpaceInfo } from "../../../models/NanceTypes";
+import { ChainValidator } from "../../ethereum/ChainValidator";
 
 
 const QueueReconfigurationModal = dynamic(() => import("./action/QueueReconfigurationModal"), {
@@ -31,6 +32,8 @@ export default function SpaceAction({ spaceInfo }: { spaceInfo: SpaceInfo }) {
 
   return (
     <div className="max-w-7xl flex flex-col space-y-2 md:flex-row md:space-x-5 md:space-y-0 bg-white mt-2 p-2 shadow rounded-md">
+      {spaceInfo.transactorAddress && <ChainValidator supportedNetwork={spaceInfo.transactorAddress.network} />}
+
       <Link
         id="new-proposal-button"
         href={`/s/${spaceName}/edit`}
