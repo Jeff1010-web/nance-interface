@@ -15,8 +15,14 @@ export type SpaceInfo = {
     end: string;
   };
   snapshotSpace: string;
+  spaceOwners: string[];
   juiceboxProjectId: string;
   dolthubLink: string;
+  transactorAddress?: {
+    type: 'safe' | 'governor';
+    network: string;
+    address: string;
+  }
 };
 
 export type ProposalInfo = {
