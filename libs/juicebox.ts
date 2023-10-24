@@ -415,18 +415,24 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
     const registeredPayout = registeredPayoutMap.get(key);
     const actionPayout = actionPayoutMap.get(key);
 
+    const defaultSplitDiffEntry = {
+      split,
+      proposalId: 0,
+      oldVal: formattedSplit(
+        split.percent || BIG_ZERO,
+        config.fundingCycle.currency,
+        config.fundingCycle.target,
+        config.version
+      ) || "",
+      newVal: "",
+      amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
+    };
+
     if (actionPayout) {
       // Amount change or refresh
       diff.change[key] = {
-        split,
+        ...defaultSplitDiffEntry,
         proposalId: actionPayout.pid,
-        oldVal: formattedSplit(
-          split.percent || BigNumber.from(0),
-          config.fundingCycle.currency,
-          config.fundingCycle.target,
-          config.version
-        ) || "",
-        newVal: "",
         amount: (actionPayout.action.payload as Payout).amountUSD
       };
     } else if (registeredPayout) {
@@ -434,16 +440,8 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
       const willExpire = currentCycle && registeredPayout.numberOfPayouts < (currentCycle - registeredPayout.governanceCycleStart + 1);
       if (willExpire) {
         diff.expire[key] = {
-          split,
-          proposalId: registeredPayout.proposalId || 0,
-          oldVal: formattedSplit(
-            split.percent || BIG_ZERO,
-            config.fundingCycle.currency,
-            config.fundingCycle.target,
-            config.version
-          ) || "",
-          newVal: "",
-          amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
+          ...defaultSplitDiffEntry,
+          proposalId: registeredPayout.proposalId || 0
         };
       } else {
         // We have registered payout
@@ -453,47 +451,21 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
         if (onchainAmount === registeredAmount) {
           // keep it
           diff.keep[key] = {
-            split,
-            proposalId: registeredPayout.proposalId || 0,
-            oldVal: formattedSplit(
-              split.percent || BIG_ZERO,
-              config.fundingCycle.currency,
-              config.fundingCycle.target,
-              config.version
-            ) || "",
-            newVal: "",
-            amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
+            ...defaultSplitDiffEntry,
+            proposalId: registeredPayout.proposalId || 0
           };
         } else {
           // correct it
           diff.change[key] = {
-            split,
+            ...defaultSplitDiffEntry,
             proposalId: registeredPayout.proposalId || 0,
-            oldVal: formattedSplit(
-              split.percent || BIG_ZERO,
-              config.fundingCycle.currency,
-              config.fundingCycle.target,
-              config.version
-            ) || "",
-            newVal: "",
             amount: registeredAmount
           }
         }
       }
     } else {
       // keep it
-      diff.keep[key] = {
-        split,
-        proposalId: 0,
-        oldVal: formattedSplit(
-          split.percent || BIG_ZERO,
-          config.fundingCycle.currency,
-          config.fundingCycle.target,
-          config.version
-        ) || "",
-        newVal: "",
-        amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
-      };
+      diff.keep[key] = defaultSplitDiffEntry;
     }
 
     // Remove map entry so it won't get calculated twice later
@@ -526,7 +498,6 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
   const isInfiniteLimit = config.fundingCycle.target.gte(JBConstants.UintMax);
   const oldLimit = parseInt(utils.formatEther(config.fundingCycle.target ?? 0));
   let newLimit = oldLimit;
-  console.debug("haha", { diff });
   Object.entries(diff.new).forEach((v) => newLimit += v[1].amount);
   Object.entries(diff.expire).forEach((v) => newLimit -= v[1].amount);
   Object.entries(diff.change).forEach((v) => {
