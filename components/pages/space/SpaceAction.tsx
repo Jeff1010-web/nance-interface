@@ -5,11 +5,11 @@ import dynamic from "next/dynamic";
 
 import { BanknotesIcon, BoltIcon, DocumentTextIcon, ShieldCheckIcon } from "@heroicons/react/24/solid";
 
+import { useAccount } from "wagmi";
 import LoadingArrowSpiner from "../../LoadingArrowSpiner";
 import { StringParam, useQueryParams } from "next-query-params";
 import { SpaceInfo } from "../../../models/NanceTypes";
 import { ChainValidator } from "../../ethereum/ChainValidator";
-
 
 const QueueReconfigurationModal = dynamic(() => import("./action/QueueReconfigurationModal"), {
   loading: () => <LoadingArrowSpiner />,
@@ -30,9 +30,11 @@ export default function SpaceAction({ spaceInfo }: { spaceInfo: SpaceInfo }) {
   const projectId = parseInt(spaceInfo.juiceboxProjectId || "1");
   const currentCycle = spaceInfo.currentCycle.toString();
 
+  const { isConnected } = useAccount();
+
   return (
     <div className="max-w-7xl flex flex-col space-y-2 md:flex-row md:space-x-5 md:space-y-0 bg-white mt-2 p-2 shadow rounded-md">
-      {spaceInfo.transactorAddress && <ChainValidator supportedNetwork={spaceInfo.transactorAddress.network} />}
+      {spaceInfo.transactorAddress && isConnected && <ChainValidator supportedNetwork={spaceInfo.transactorAddress.network} />}
 
       <Link
         id="new-proposal-button"
@@ -78,5 +80,5 @@ export default function SpaceAction({ spaceInfo }: { spaceInfo: SpaceInfo }) {
       </Link>
 
     </div>
-  )
+  );
 }
