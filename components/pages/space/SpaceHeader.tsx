@@ -15,7 +15,7 @@ export default function SpaceHeader({ spaceInfo }: { spaceInfo: SpaceInfo }) {
     //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
   }
 
-  const { name: spaceName, currentEvent, currentCycle } = spaceInfo;
+  const { name: spaceName, currentEvent, currentCycle, snapshotSpace } = spaceInfo;
 
   return (
     <div className="max-w-7xl md:flex md:space-x-5 bg-white p-6 shadow rounded-md">
@@ -23,7 +23,7 @@ export default function SpaceHeader({ spaceInfo }: { spaceInfo: SpaceInfo }) {
         <div className="flex-shrink-0 md:w-5/12 flex space-x-3">
           <Image
             className="h-16 w-16 rounded-full"
-            src={`https://cdn.stamp.fyi/space/${spaceName}?s=160`}
+            src={`https://cdn.stamp.fyi/space/${snapshotSpace}?s=160`}
             alt={`${spaceName} Logo`}
             height={64} width={64}
           />

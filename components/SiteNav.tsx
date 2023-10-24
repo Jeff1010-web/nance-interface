@@ -21,10 +21,9 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
   const router = useRouter();
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Analytics', href: 'https://app.flipsidecrypto.com/dashboard/snapshot-plus-data-ueqrnb' },
-    { name: 'Support us', href: 'https://juicebox.money/v2/p/477' },
-    { name: 'Other spaces', href: '/s' }
+    { name: 'Home', href: `/s/${space}` },
+    { name: 'Spaces', href: '/s' },
+    { name: 'Docs', href: 'https://docs.nance.app' }
   ];
 
   const meta = {

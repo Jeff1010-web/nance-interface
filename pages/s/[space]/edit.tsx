@@ -62,7 +62,7 @@ export default function NanceEditProposal({ space, loadedProposal, fork }: { spa
       <div className="m-4 lg:m-6 flex justify-center items-center">
         <div className="max-w-7xl w-full">
           <p className="text-2xl font-bold">
-            {(proposalId && !fork) ? "Edit" : "New"} Proposal for <a href={`/s/${space}`}>{space}</a>
+            {(proposalId && !fork) ? "Edit" : "New"} Proposal for {space}
           </p>
 
           <ProposalMetadataContext.Provider value={{ loadedProposal, fork, space }}>
