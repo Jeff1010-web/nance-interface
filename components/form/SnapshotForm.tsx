@@ -7,7 +7,7 @@ export default function SnapshotForm(
   { session } : { session: Session }
 ) {
   const { control, formState: { errors } } = useFormContext();
-  const fieldName = 'snapshot.space';
+  const fieldName = 'config.snapshot.space';
   return (
     <div>
       <Controller

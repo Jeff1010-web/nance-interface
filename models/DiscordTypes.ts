@@ -18,7 +18,7 @@ export interface DiscordUser {
 export interface DiscordGuild {
   id: string;
   name: string;
-  icon: string | null;
+  icon: string | undefined;
   owner: boolean;
   permissions: string;
   features: string[];
@@ -41,6 +41,18 @@ export interface DiscordChannel {
   user_limit: number;
   parent_id: string | null;
   last_pin_timestamp: string | null;
+};
+
+export interface DiscordRole {
+  id: string;
+  name: string;
+  color: number;
+  hoist: boolean;
+  position: number;
+  permissions: string;
+  managed: boolean;
+  mentionable: boolean;
+  flags: number;
 };
 
 export interface DiscordUserAuthResponse {

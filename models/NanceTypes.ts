@@ -90,24 +90,40 @@ export interface ProposalDeleteRequest {
   hash: string;
 }
 
-export interface ConfigSpaceRequest {
-  config: CreateFormValues;
-  calendar?: string;
-}
-
 export type CreateFormValues = {
-  name: string;
-  discord: DiscordConfig;
-  proposalIdPrefix: string;
-  juicebox: JuiceboxConfig;
-  snapshot: SnapshotConfig;
+  config: {
+    name: string;
+    discord: DiscordConfig;
+    proposalIdPrefix: string;
+    juicebox: JuiceboxConfig;
+    snapshot: SnapshotConfig;
+  }
+  governanceCycleForm: GovernanceCycleForm
+  dryRun: boolean;
 }
 
 export type DiscordConfig = {
   guildId: string;
   roles: DiscordConfigRoles;
   channelIds: DiscordConfigChannels;
+  reminder: { channelIds: string[]; }
 }
+
+export type GovernanceCycleForm = {
+  time: FormTime;
+  startDate: string;
+  temperatureCheckLength: string;
+  voteLength: string;
+  delayLength: string;
+  executionLength: string;
+};
+
+export type FormTime = {
+  ampm: string;
+  hour: number;
+  minute: string;
+  timezoneOffset: number;
+};
 
 export type DiscordConfigChannels = {
   proposals: string;
@@ -128,12 +144,13 @@ export type SnapshotConfig = {
   passingRatio: number;
 }
 
-export type CreateFormKeys = 'name' | 'propertyKeys.proposalIdPrefix' |
-  `discord.${keyof DiscordConfig}` |
-  `discord.channelIds.${keyof DiscordConfigChannels}` |
-  `discord.roleIds.${keyof DiscordConfigRoles}` |
-  `snapshot.${keyof SnapshotConfig}` |
-  `juicebox.${keyof JuiceboxConfig}`
+export type CreateFormKeys = 'config.name' | 'config.proposalIdPrefix' |
+  `config.discord.${keyof DiscordConfig}` |
+  `config.discord.channelIds.${keyof DiscordConfigChannels}` |
+  `config.discord.roleIds.${keyof DiscordConfigRoles}` |
+  `config.snapshot.${keyof SnapshotConfig}` |
+  `config.juicebox.${keyof JuiceboxConfig}` |
+  `governanceCycleForm.${keyof GovernanceCycleForm}`;
 
 export type ConfigSpacePayload = {
   space: string;
@@ -164,7 +181,6 @@ export interface Proposal {
   ipfsURL: string;
   voteURL: string;
   voteSetup?: SnapshotVoteOptions;
-  internalVoteResults?: InternalVoteResults;
   voteResults?: VoteResults;
   authorAddress?: string;
   authorDiscordId?: string;
@@ -286,16 +302,6 @@ export type ParameterUpdate = {
   redemptionPercentage: number;
 };
 
-export type InternalVoteResults = {
-  voteProposalId: string;
-  totalVotes: number;
-  scoresState: string;
-  scores: Record<string, number>;
-  percentages: Record<string, number>;
-  outcomePercentage: string;
-  outcomeEmoji: string;
-};
-
 export type VoteResults = {
   choices: string[];
   scores: number[];
@@ -314,9 +320,10 @@ export type ProposalStore = Record<string, ProposalNoHash>;
 export interface NanceConfig {
   name: string;
   juicebox: {
-    network: string;
+    network: 'mainnet' | 'goerli';
     projectId: string;
     gnosisSafeAddress: string;
+    governorAddress: string;
   };
   discord: {
     API_KEY: string;
@@ -330,77 +337,32 @@ export interface NanceConfig {
       transactions: string;
     }
     poll: {
-      voteYesEmoji: string;
-      voteNoEmoji: string;
-      voteGoVoteEmoji: string;
-      votePassEmoji: string;
-      voteCancelledEmoji: string;
       minYesVotes: number;
       yesNoRatio: number;
-      showResults: boolean;
+      verifyRole: string;
     };
     reminder: {
+      type: string;
       channelIds: string[];
       imagesCID: string;
       imageNames: string[];
-      links: Record<string, string>;
     };
   };
-  propertyKeys: PropertyKeys;
-  notion: {
-    API_KEY: string;
-    enabled: boolean;
-    database_id: string;
-    current_cycle_block_id: string;
-    payouts_database_id: string;
-    reserves_database_id: string;
-  };
+  proposalIdPrefix: string;
   dolt: DoltConfig,
   snapshot: {
-    base: string;
     space: string;
     choices: string[];
     minTokenPassingAmount: number;
     passingRatio: number;
   };
-  calendarCID?: string;
+  submitAsApproved?: boolean;
 }
 
 export type DoltConfig = {
   enabled: boolean;
   owner: string;
   repo: string;
-};
-
-export type PropertyKeys = {
-  proposalId: string;
-  status: string;
-  statusTemperatureCheck: string;
-  statusVoting: string;
-  statusApproved: string;
-  statusCancelled: string;
-  proposalIdPrefix: string;
-  discussionThread: string;
-  ipfs: string;
-  vote: string;
-  type: string;
-  typeRecurringPayout: string;
-  typePayout: string;
-  governanceCycle: string;
-  governanceCyclePrefix: string;
-  reservePercentage: string;
-  payoutName: string;
-  payoutType: string;
-  payoutAmountUSD: string;
-  payoutAddress: string;
-  payoutCount: string;
-  payName: string;
-  treasuryVersion: string;
-  payoutFirstFC: string;
-  payoutLastFC: string;
-  payoutRenewalFC: string;
-  payoutProposalLink: string;
-  publicURLPrefix: string;
 };
 
 export interface DateEvent {

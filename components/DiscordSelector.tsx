@@ -1,38 +1,71 @@
-import { Fragment, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Session } from 'next-auth';
-import { Listbox, Transition } from '@headlessui/react';
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
-import Image from 'next/image';
-import { DiscordChannel, DiscordGuild } from '../models/DiscordTypes';
+import { DiscordChannel, DiscordGuild, DiscordRole } from '../models/DiscordTypes';
 import { addBotUrl, guildIconBaseUrl } from '../libs/discordURL';
-import { useFetchDiscordGuilds, useFetchDiscordChannels, useIsBotMemberOfGuild } from "../hooks/DiscordHooks";
+import { useFetchDiscordGuilds, useFetchDiscordChannels, useIsBotMemberOfGuild, useFetchDiscordGuildRoles } from "../hooks/DiscordHooks";
 import { DiscordConfig } from '../models/NanceTypes';
+import GenericListbox from './GenericListbox';
 
-const getGuildIconUrl = (guild: DiscordGuild | null) => {
+const TEXT_CHANNEL = 0;
+const MANAGE_GUILD = 1 << 5;
+
+const getGuildIconUrl = (guild?: DiscordGuild) => {
   if (!guild) return "/images/default_server_icon.png";
   if (!guild.icon) return "/images/default_server_icon.png";
   return `${guildIconBaseUrl}/${guild.id}/${guild.icon}.png`;
 };
 
-function classNames(...classes: any[]) {
-  return classes.filter(Boolean).join(' ');
-}
+const appendSymbol = (str: string, append: string) => {
+  if (str.startsWith(append)) return str;
+  return `${append}${str}`;
+};
+
+// Discord API returns a message object if there is an error,
+// using the detection of the message object to determine if there is an error, could be done better
+const formatGuilds = (guilds?: DiscordGuild[]): DiscordGuild[] => {
+  if (!guilds || guilds.length === 0 || (guilds as any).message) return [];
+  return guilds.filter((guild) => (Number(guild.permissions) & MANAGE_GUILD) === MANAGE_GUILD).map((guild) => {
+    return { ...guild, icon: getGuildIconUrl(guild) };
+  });
+};
+
+const formatRoles = (roles?: DiscordRole[]): DiscordRole[] => {
+  if (!roles || roles.length === 0 || (roles as any).message) return [];
+  return roles.map((role) => {
+    return { ...role, name: appendSymbol(role.name, '@') };
+  }).sort((a, b) => a.name.localeCompare(b.name)); // sort alphabetically
+};
+
+const formatChannels = (channels?: DiscordChannel[]): DiscordChannel[] => {
+  if (!channels || channels.length === 0 || (channels as any).message ) return [];
+  return channels.filter((channel) => channel.type === TEXT_CHANNEL).map((channel) => {
+    return { ...channel, name: appendSymbol(channel.name, '# ') };
+  }).sort((a, b) => a.name.localeCompare(b.name)); // sort alphabetically
+};
 
 export default function DiscordSelector(
   {session, val, setVal}: {session: Session, val: DiscordConfig, setVal: (v: Partial<DiscordConfig>) => void}) {
   const router = useRouter();
 
-  const { data: guilds, isLoading: discordGuildsLoading } = useFetchDiscordGuilds({address: session?.user?.name || ''}, router.isReady);
+  // state
+  // const [botIsMember, setBotIsMember] = useState(false);
+  const [selectedGuild, setSelectedGuild] = useState<DiscordGuild | undefined>(undefined);
+  const [selectedProposalChannel, setSelectedProposalChannel] = useState({ name: '-', id: null} as unknown as DiscordChannel);
+  const [selectedAlertChannel, setSelectedAlertChannel] = useState({ name: '-', id: null} as unknown as DiscordChannel);
+  const [selectedAlertRole, setSelectedAlertRole] = useState({ name: '-', id: null} as unknown as DiscordRole);
 
-  const [selectedGuild, setSelectedGuild] = useState<DiscordGuild | null>(null);
-
+  // hooks
+  const { data: guilds } = useFetchDiscordGuilds({address: session?.user?.name || ''}, router.isReady);
   const { data: channels, trigger: discordChannelsTrigger } = useFetchDiscordChannels({guildId: selectedGuild?.id || '' }, router.isReady);
-
-  const [selectedChannel, setSelectedChannel] = useState({ name: '-', id: null} as unknown as DiscordChannel);
-
   const { data: botIsMember, trigger: isBotMemberTrigger } = useIsBotMemberOfGuild({guildId: selectedGuild?.id}, (router.isReady && selectedGuild !== null));
+  const { data: roles, trigger: discordRolesTrigger } = useFetchDiscordGuildRoles({guildId: selectedGuild?.id || '' });
 
+  const resetRolesAndChannels = () => {
+    setSelectedProposalChannel({ name: '-', id: null} as unknown as DiscordChannel);
+    setSelectedAlertRole({ name: '-', id: null} as unknown as DiscordRole);
+    setSelectedAlertChannel({ name: '-', id: null} as unknown as DiscordChannel);
+  };
 
   useEffect(() => {
     if (selectedGuild) {
@@ -40,82 +73,22 @@ export default function DiscordSelector(
     }
     if (botIsMember) {
       discordChannelsTrigger();
-      setSelectedChannel({ name: '-', id: null} as unknown as DiscordChannel);
+      discordRolesTrigger();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedGuild, isBotMemberTrigger, discordChannelsTrigger, botIsMember]);
+  }, [selectedGuild, botIsMember]);
 
   return (
     <div className="w-100">
-      {/* guild select */}
-      <Listbox value={selectedGuild} onChange={(v: DiscordGuild) => {
-        setSelectedGuild(v);
-        setVal({...val, guildId: v.id});
-      }}>
-        {({ open }) => (
-          <>
-            <Listbox.Label className="block text-sm font-medium leading-6 text-gray-900">Select a Discord server</Listbox.Label>
-            <div className="relative mt-2">
-              <Listbox.Button className="relative w-full cursor-default rounded-md bg-white py-2 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
-                <span className="flex items-center">
-                  <Image src={getGuildIconUrl(selectedGuild || null)} alt="" className="h-10 w-10 flex-shrink-0 rounded-full" width={50} height={50} />
-                  <span className="ml-3 block truncate">{selectedGuild?.name}</span>
-                </span>
-                <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-                  <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                </span>
-              </Listbox.Button>
-
-              <Transition
-                show={open}
-                as={Fragment}
-                leave="transition ease-in duration-10000"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <Listbox.Options className="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                  {guilds?.map((guild) => (
-                    <Listbox.Option
-                      key={guild.id}
-                      className={({ active }) =>
-                        classNames(
-                          active ? 'bg-indigo-600 text-white' : 'text-gray-900',
-                          'relative cursor-default select-none py-2 pl-3 pr-9'
-                        )
-                      }
-                      value={guild}
-                    >
-                      {({ selected, active }) => (
-                        <>
-                          <div className="flex items-center">
-                            <Image src={getGuildIconUrl(guild)} alt="" className="h-10 w-10 flex-shrink-0 rounded-full" width={100} height={100} />
-                            <span
-                              className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}
-                            >
-                              {guild.name}
-                            </span>
-                          </div>
-
-                          {selected ? (
-                            <span
-                              className={classNames(
-                                active ? 'text-white' : 'text-indigo-600',
-                                'absolute inset-y-0 right-0 flex items-center pr-4'
-                              )}
-                            >
-                              <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                            </span>
-                          ) : null}
-                        </>
-                      )}
-                    </Listbox.Option>
-                  ))}
-                </Listbox.Options>
-              </Transition>
-            </div>
-          </>
-        )}
-      </Listbox>
+      <GenericListbox<DiscordGuild>
+        value={ selectedGuild || { icon: getGuildIconUrl() } as DiscordGuild }
+        onChange={(guild) => {
+          resetRolesAndChannels();
+          setSelectedGuild(guild);
+          setVal({ ...val, guildId: guild.id });
+        }}
+        label="Select a Discord Server"
+        items={ formatGuilds(guilds) }
+      />
 
       {/* add bot to server button */}
       { selectedGuild && !botIsMember && (
@@ -140,74 +113,38 @@ export default function DiscordSelector(
         </>
       )}
 
-      {/* channel select */}
-      <Listbox value={selectedChannel} onChange={(c: DiscordChannel) => {
-        setSelectedChannel(c);
-        setVal({...val, channelIds: {proposals: c.id }});
-      }}
-      disabled={!selectedGuild || !botIsMember}>
-        {({ open }) => (
-          <>
-            <Listbox.Label className="mt-2 block text-sm font-medium leading-6 text-gray-900">Select a channel to post proposals to</Listbox.Label>
-            <div className="relative mt-2">
-              <Listbox.Button className="relative w-full cursor-default rounded-md bg-white py-2 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6 disabled:bg-gray-100">
-                <span className="flex items-center">
-                  <span className="ml-3 block truncate">{selectedChannel.name}</span>
-                </span>
-                <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-                  <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                </span>
-              </Listbox.Button>
+      <GenericListbox<DiscordChannel>
+        value={ selectedProposalChannel || { name: '-', id: null} as unknown as DiscordChannel }
+        onChange={(channel) => {
+          setSelectedProposalChannel(channel);
+          setVal({ ...val, channelIds: { proposals: channel.id }});
+        }}
+        label="Select a channel to post proposals"
+        disabled={!selectedGuild || !botIsMember || !channels}
+        items={ formatChannels(channels) }
+      />
 
-              <Transition
-                show={open}
-                as={Fragment}
-                leave="transition ease-in duration-100"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                  {channels?.filter((channel) => channel.type === 0).map((channel) => (
-                    <Listbox.Option
-                      key={channel.id}
-                      className={({ active }) =>
-                        classNames(
-                          active ? 'bg-indigo-600 text-white' : 'text-gray-900',
-                          'relative cursor-default select-none py-2 pl-3 pr-9'
-                        )
-                      }
-                      value={channel}
-                    >
-                      {({ selected, active }) => (
-                        <>
-                          <div className="flex items-center">
-                            <span
-                              className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}
-                            >
-                              {channel.name}
-                            </span>
-                          </div>
+      <GenericListbox<DiscordChannel>
+        value={ selectedAlertChannel || { name: '-', id: null} as unknown as DiscordChannel }
+        onChange={(channel) => {
+          setSelectedAlertChannel(channel);
+          setVal({ ...val, reminder: { channelIds: [channel.id] }});
+        }}
+        label="Select a channel to send daily alerts"
+        disabled={!selectedGuild || !botIsMember || !channels}
+        items={ formatChannels(channels) }
+      />
 
-                          {selected ? (
-                            <span
-                              className={classNames(
-                                active ? 'text-white' : 'text-indigo-600',
-                                'absolute inset-y-0 right-0 flex items-center pr-4'
-                              )}
-                            >
-                              <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                            </span>
-                          ) : null}
-                        </>
-                      )}
-                    </Listbox.Option>
-                  ))}
-                </Listbox.Options>
-              </Transition>
-            </div>
-          </>
-        )}
-      </Listbox>
+      <GenericListbox<DiscordRole>
+        value={ selectedAlertRole || { name: '-', id: null} as unknown as DiscordRole }
+        onChange={(role) => {
+          setSelectedAlertRole(role);
+          setVal({ ...val, roles: { governance: role.id }});
+        }}
+        label="Select a role to alert to parcipate in your governance"
+        disabled={!selectedGuild || !botIsMember || !roles}
+        items={ formatRoles(roles) }
+      />
     </div>
   );
 }
