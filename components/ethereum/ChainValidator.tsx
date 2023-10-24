@@ -6,7 +6,7 @@ import ResultModal from "../modal/ResultModal";
 
 export function ChainValidator({ supportedNetwork }: { supportedNetwork: string }) {
   const _network = useContext(NetworkContext);
-  const network = _network.toLowerCase();
+  const network = _network.toLowerCase() === "ethereum" ? "mainnet" : _network.toLowerCase();
   const [open, setOpen] = useState(network !== supportedNetwork);
   const { switchNetwork } = useSwitchNetwork();
 
@@ -22,5 +22,5 @@ export function ChainValidator({ supportedNetwork }: { supportedNetwork: string 
         setOpen(false);
       }}
       cancelButtonText="Ignore" close={() => setOpen(false)} />
-  )
+  );
 }
