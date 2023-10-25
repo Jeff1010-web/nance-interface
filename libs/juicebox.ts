@@ -460,7 +460,7 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
             ...defaultSplitDiffEntry,
             proposalId: registeredPayout.proposalId || 0,
             amount: registeredAmount
-          }
+          };
         }
       }
     } else {
@@ -545,7 +545,7 @@ function ensureSplitsSumTo100Percent(diff: SplitDiff, newLimitBG: BigNumber, cur
       version
     ) || "";
     //console.debug("adjustPercent", { oldPercent, newPercent, ratio, entry })
-  })
+  });
 
   // Calculate the total after adjustment
   const adjustedTotal = allValues.reduce((sum, entry) => sum.add(entry.split.percent), BigNumber.from(0)).toNumber();
@@ -554,10 +554,10 @@ function ensureSplitsSumTo100Percent(diff: SplitDiff, newLimitBG: BigNumber, cur
   }
 
   // If there's STILL a difference due to rounding errors, adjust the largest split
-  const difference = SPLITS_TOTAL_PERCENT - adjustedTotal
+  const difference = SPLITS_TOTAL_PERCENT - adjustedTotal;
   const largestSplitIndex = allValues.findIndex(
     entry => entry.split.percent.toNumber() === Math.max(...allValues.map(e => e.split.percent.toNumber())),
-  )
+  );
   if (allValues[largestSplitIndex]) {
     const newPercent = allValues[largestSplitIndex].split.percent.add(difference);
     //const oldPercent = allValues[largestSplitIndex].split.percent;
@@ -641,8 +641,8 @@ export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], 
     diff.newTotal = diff.newTotal.add(BigNumber.from(v.percent));
     diff.new[k] = {
       split: v,
-      oldVal: `${(v.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-      newVal: "",
+      oldVal: "",
+      newVal: `${(v.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
       proposalId: pid,
       amount: v.percent.toNumber()
     };
