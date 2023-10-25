@@ -45,7 +45,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
         <title>{meta.title}</title>
         <meta name="description" content={meta.description} />
         <meta name="viewport" content="width=device-width" />
-        <link rel="icon" href="/favicon.svg" />
+        <link rel="icon" href="/favicon.ico" />
         {/* OpenGraph Meta Tags */}
         <meta property="og:url" content={meta.url} />
         <meta property="og:type" content="website" />
