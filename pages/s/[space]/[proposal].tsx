@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { SnapshotProposal, useProposalsByID } from "../../../hooks/snapshot/Proposals";
 import SiteNav from "../../../components/SiteNav";
 import { createContext } from "react";
@@ -11,6 +12,7 @@ import { getToken } from "next-auth/jwt";
 import ProposalSidebar from "../../../components/pages/proposal/ProposalSidebar";
 import ProposalContent from "../../../components/pages/proposal/ProposalContent";
 import ProposalOptions from "../../../components/pages/proposal/ProposalOptions";
+import ProposalLoading from '../../../components/pages/proposal/ProposalLoading';
 import { getFirstParagraphOfMarkdown } from "../../../libs/markdown";
 import { useSpaceInfo } from "../../../hooks/NanceHooks";
 import { ZERO_ADDRESS } from "../../../constants/Contract";
@@ -84,14 +86,23 @@ export const ProposalContext = createContext<{ commonProps: ProposalCommonProps,
 });
 
 export default function NanceProposalPage({ space, proposal }: { space: string, proposal: Proposal | undefined }) {
+  // state
+  const [loading, setLoading] = useState<boolean>(true);
 
   const proposalHash = getLastSlash(proposal?.voteURL);
 
   const { data: spaceInfo } = useSpaceInfo({ space });
-  const { data: { proposalsData, votedData } } = useProposalsByID([proposalHash], "", proposalHash === undefined);
+  const { data: { proposalsData } } = useProposalsByID([proposalHash], "", proposalHash === undefined);
 
   const snapshotProposal = proposalsData?.[0];
   const snapshotSpace = spaceInfo?.data?.snapshotSpace;
+
+
+  useEffect(() => {
+    if (spaceInfo && snapshotProposal) {
+      setLoading(false);
+    }
+  }, [spaceInfo, snapshotProposal]);
 
   // this page need proposal to work
   if (!proposal) {
@@ -129,36 +140,37 @@ export default function NanceProposalPage({ space, proposal }: { space: string, 
         withWallet
         withSiteSuffixInTitle={false} />
 
-      <div className="min-h-full">
-        <main className="py-2">
-          <ProposalContext.Provider value={{ commonProps, proposalInfo: snapshotProposal || undefined }}>
-            <div className="mx-auto mt-4 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
-              <div className="space-y-6 lg:col-span-2 lg:col-start-1">
-                {/* Content */}
-                <section aria-labelledby="proposal-title">
-                  <ProposalContent body={commonProps.body} />
-                </section>
+      {loading ? <ProposalLoading /> :
+        <div className="min-h-full">
+          <main className="py-2">
+            <ProposalContext.Provider value={{ commonProps, proposalInfo: snapshotProposal || undefined }}>
+              <div className="mx-auto mt-4 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
+                <div className="space-y-6 lg:col-span-2 lg:col-start-1">
+                  {/* Content */}
+                  <section aria-labelledby="proposal-title">
+                    <ProposalContent body={commonProps.body} />
+                  </section>
 
-                {/* Display Options if not basic (For Against) */}
-                <section aria-labelledby="options-title">
-                  {snapshotProposal && ['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(snapshotProposal.type) && (
-                    <div className="mt-6 flow-root">
-                      <ProposalOptions proposal={snapshotProposal} />
-                    </div>
-                  )}
+                  {/* Display Options if not basic (For Against) */}
+                  <section aria-labelledby="options-title">
+                    {snapshotProposal && ['approval', 'ranked-choice', 'quadratic', 'weighted'].includes(snapshotProposal.type) && (
+                      <div className="mt-6 flow-root">
+                        <ProposalOptions proposal={snapshotProposal} />
+                      </div>
+                    )}
+                  </section>
+                </div>
+
+                <section aria-labelledby="stats-title" className="lg:col-span-1 lg:col-start-3">
+                  <ProposalSidebar space={space} proposal={proposal} snapshotProposal={snapshotProposal} />
                 </section>
               </div>
 
-              <section aria-labelledby="stats-title" className="lg:col-span-1 lg:col-start-3">
-                <ProposalSidebar space={space} proposal={proposal} snapshotProposal={snapshotProposal} />
-              </section>
-            </div>
-
-            <ScrollToBottom />
-          </ProposalContext.Provider>
-        </main>
-      </div>
-
+              <ScrollToBottom />
+            </ProposalContext.Provider>
+          </main>
+        </div>
+      }
       <Footer />
     </>
   );
