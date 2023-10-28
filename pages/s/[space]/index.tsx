@@ -2,6 +2,8 @@ import SiteNav from "../../../components/SiteNav";
 import Footer from "../../../components/Footer";
 import NanceSpace from "../../../components/pages/space/NanceSpace";
 import { NANCE_API_URL } from "../../../constants/Nance";
+import { SpaceInfo } from '../../../models/NanceTypes';
+import SpaceNotFound from '../../../components/pages/space/SpaceNotFound';
 
 export async function getServerSideProps(context: any) {
   const spaceParam: string = context.params.space;
@@ -9,18 +11,22 @@ export async function getServerSideProps(context: any) {
   // Pass data to the page via props
   return {
     props: {
-      space: spaceParam,
-      snapshotSpace: data.snapshotSpace,
+      spaceInfo: data || null
     }
   };
 }
 
-export default function NanceSpacePage({ space, snapshotSpace }: { space: string, snapshotSpace: string }) {
-  const spaceImage = (space === 'juicebox') ? '/images/opengraph/homepage.png' : `https://cdn.stamp.fyi/space/${snapshotSpace}?s=500`;
+export default function NanceSpacePage({ spaceInfo }: { spaceInfo: SpaceInfo }) {
+  const spaceImage = (!spaceInfo) ? '/images/character/Empty_Orange_2.png' : (spaceInfo.name === 'juicebox') ? '/images/opengraph/homepage.png' : `https://cdn.stamp.fyi/space/${spaceInfo.snapshotSpace}?s=500`;
+  const pageTitle = (!spaceInfo) ? 'Not Found' : `${spaceInfo.name} Governance`;
   return (
     <>
-      <SiteNav pageTitle={`${space} Governance`} description={`${space} Governance Platform`} image={spaceImage} space={space} withWallet withProposalButton={false} />
-      <NanceSpace space={space} proposalUrlPrefix={`/s/${space}/`} />
+      <SiteNav pageTitle={pageTitle} description={pageTitle} image={spaceImage} space={spaceInfo?.name} withWallet withProposalButton={false} />
+      {!spaceInfo ? (
+        <SpaceNotFound />
+      ) : (
+        <NanceSpace spaceInfo={spaceInfo} proposalUrlPrefix={`/s/${spaceInfo.name}/`} />
+      )}
       <Footer />
     </>
   );

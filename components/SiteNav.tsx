@@ -20,8 +20,9 @@ interface SiteNavProps {
 export default function SiteNav({ pageTitle, description, image, withWallet, space, proposalId, withProposalButton = true, withSiteSuffixInTitle = true }: SiteNavProps) {
   const router = useRouter();
 
+  const homePath = space ? `/s/${space}` : "/";
   const navigation = [
-    { name: 'Home', href: `/s/${space}` },
+    { name: 'Home', href: homePath },
     { name: 'Spaces', href: '/s' },
     { name: 'Docs', href: 'https://docs.nance.app' }
   ];

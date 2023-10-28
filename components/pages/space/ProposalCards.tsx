@@ -54,7 +54,7 @@ export default function ProposalCards({ loading, space, privateProposals, maxCyc
       proposalInfo: firstRes.proposalInfo,
       proposals: proposalDataArray.map((data) => data?.data.proposals).flat() || [],
       hasMore: proposalDataArray[proposalDataArray.length - 1].data.hasMore,
-    }
+    };
   }
 
   // for those proposals with no results cached by nance, we need to fetch them from snapshot
