@@ -99,10 +99,10 @@ export default function NanceProposalPage({ space, proposal }: { space: string, 
 
 
   useEffect(() => {
-    if (spaceInfo && snapshotProposal) {
+    if (spaceInfo && proposalsData) {
       setLoading(false);
     }
-  }, [spaceInfo, snapshotProposal]);
+  }, [spaceInfo, proposalsData]);
 
   // this page need proposal to work
   if (!proposal) {
