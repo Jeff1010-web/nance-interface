@@ -6,7 +6,7 @@ export default function SpaceNotFound() {
   return (
     <div className="flex flex-col items-center h-screen">
       <div className="mt-20 flex flex-col">
-        <Image src="/images/character/Empty_Orange_2.png" alt="Empty Orange" width={300} height={300} />
+        <Image src="/images/character/Empty_orange_2.png" alt="Empty orange" width={300} height={300} />
         <h1 className="mt-4 text-2xl font-bold text-center">Space Not Found</h1>
         <p className="mt-2 text-sm text-center">The space you are looking for does not exist.</p>
         <p className="mt-2 text-sm text-center">Do you want to create a new space?</p>

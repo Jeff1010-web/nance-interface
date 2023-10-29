@@ -31,7 +31,7 @@ export default function SiteNav({ pageTitle, description, image, withWallet, spa
     title: withSiteSuffixInTitle ? `${pageTitle} | Nance` : pageTitle,
     description: description || "Nance platform for automatic governance.",
     url: `https://nance.app${router.asPath}`,
-    image: image || "/images/unsplash_application.jpeg",
+    image: image || "/images/opengraph/OG_splash.png",
   };
 
   const canForkProposal = !!proposalId;
