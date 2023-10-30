@@ -134,7 +134,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req).then(async (res) => {
       console.debug("💽 Cache refresh ->", await fetch(
-        `/api/revalidate&path=[s/${space}/${metadata?.loadedProposal?.proposalId},s/${space}/${res?.data.hash}]`
+        `/api/revalidate?path=s/${space}/${metadata?.loadedProposal?.proposalId}`
       ));
       console.debug("📗 Nance.editProposal.onSignSuccess ->", res);
     }).catch((err) => {
