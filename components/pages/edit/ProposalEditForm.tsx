@@ -131,10 +131,13 @@ export default function ProposalEditForm({ space }: { space: string }) {
       proposal: payload as any
     };
     console.debug("📗 Nance.editProposal.submit ->", req);
-    trigger(req)
-      .catch((err) => {
-        console.warn("📗 Nance.editProposal.onSignError ->", err);
-      });
+    trigger(req).then((res) => {
+      router.replace(`/s/${space}/${res?.data.hash}`);
+      router.replace(`/s/${space}/${metadata.loadedProposal?.proposalId}`);
+      console.debug("📗 Nance.editProposal.onSignSuccess ->", res);
+    }).catch((err) => {
+      console.warn("📗 Nance.editProposal.onSignError ->", err);
+    });
   };
 
   // shortcut
