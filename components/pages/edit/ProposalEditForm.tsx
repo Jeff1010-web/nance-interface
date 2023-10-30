@@ -132,8 +132,10 @@ export default function ProposalEditForm({ space }: { space: string }) {
       proposal: payload as any
     };
     console.debug("📗 Nance.editProposal.submit ->", req);
-    trigger(req).then((res) => {
-      revalidatePath('/s/[space]/[proposal]');
+    trigger(req).then(async (res) => {
+      console.debug("💽 Cache refresh ->", await fetch(
+        `/api/revalidate&path=[s/${space}/${metadata?.loadedProposal?.proposalId},s/${space}/${res?.data.hash}]`
+      ));
       console.debug("📗 Nance.editProposal.onSignSuccess ->", res);
     }).catch((err) => {
       console.warn("📗 Nance.editProposal.onSignError ->", err);
