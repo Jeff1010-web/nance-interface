@@ -18,6 +18,7 @@ import { useSpaceInfo } from "../../../hooks/NanceHooks";
 import { ZERO_ADDRESS } from "../../../constants/Contract";
 
 export async function getServerSideProps({ req, params, res }: any) {
+  const ifModifiedSince = req.headers['If-Modified-Since'];
   let proposal: Proposal;
 
   // check proposal parameter type
@@ -33,9 +34,19 @@ export async function getServerSideProps({ req, params, res }: any) {
   const proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, { headers }).then(res => res.json());
   proposal = proposalResponse.data;
 
+  if (ifModifiedSince && ifModifiedSince === proposal.lastEditedTime) {
+    res.status(304).end();
+    return { props: {} };
+  }
+
   res.setHeader(
     'Cache-Control',
     'public, s-maxage=43200, stale-while-revalidate=59'
+  );
+
+  res.setHeader(
+    'Last-Modified',
+    proposal.lastEditedTime
   );
 
   // Pass data to the page via props
