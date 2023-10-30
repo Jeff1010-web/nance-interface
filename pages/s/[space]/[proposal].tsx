@@ -17,7 +17,7 @@ import { getFirstParagraphOfMarkdown } from "../../../libs/markdown";
 import { useSpaceInfo } from "../../../hooks/NanceHooks";
 import { ZERO_ADDRESS } from "../../../constants/Contract";
 
-export async function getServerSideProps({ req, params }: any) {
+export async function getServerSideProps({ req, params, res }: any) {
   let proposal: Proposal;
 
   // check proposal parameter type
@@ -32,6 +32,11 @@ export async function getServerSideProps({ req, params }: any) {
 
   const proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, { headers }).then(res => res.json());
   proposal = proposalResponse.data;
+
+  res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=43200, stale-while-revalidate=59'
+  );
 
   // Pass data to the page via props
   return {
