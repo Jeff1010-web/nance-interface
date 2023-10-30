@@ -21,7 +21,6 @@ import { DriveStep } from "driver.js";
 import UIGuide from "../../modal/UIGuide";
 import useLocalStorage from "../../../hooks/LocalStorage";
 import { formatDistance, fromUnixTime, getUnixTime } from "date-fns";
-import { revalidatePath } from 'next/cache';
 
 type ProposalFormValues = Omit<ProposalUploadRequest, "signature">
 
@@ -133,7 +132,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
     };
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req).then(async (res) => {
-      console.debug("💽 Cache refresh ->", await fetch(
+      console.log("💽 Cache refresh ->", await fetch(
         `/api/revalidate?path=s/${space}/${metadata?.loadedProposal?.proposalId}`
       ));
       console.debug("📗 Nance.editProposal.onSignSuccess ->", res);

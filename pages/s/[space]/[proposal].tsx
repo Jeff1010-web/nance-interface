@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { SnapshotProposal, useProposalsByID } from "../../../hooks/snapshot/Proposals";
 import SiteNav from "../../../components/SiteNav";
 import { createContext } from "react";
-import { getLastSlash } from "../../../libs/nance";
-import { Proposal, Action } from "../../../models/NanceTypes";
+import { getLastSlash, getNanceStaticPaths } from "../../../libs/nance";
+import { Proposal, Action, SpaceInfo, ProposalsPacket, APIResponse } from "../../../models/NanceTypes";
 import Custom404 from "../../404";
 import ScrollToBottom from "../../../components/ScrollToBottom";
 import { NANCE_API_URL } from "../../../constants/Nance";
@@ -17,33 +17,27 @@ import { getFirstParagraphOfMarkdown } from "../../../libs/markdown";
 import { useSpaceInfo } from "../../../hooks/NanceHooks";
 import { ZERO_ADDRESS } from "../../../constants/Contract";
 
-export async function getServerSideProps({ req, params, res }: any) {
-  let proposal: Proposal;
-
-  // check proposal parameter type
+export async function getStaticProps({ params }: any) {
   const proposalParam: string = params.proposal;
   const spaceParam: string = params.space;
 
-  // Attach the JWT token to the request headers
-  const token = await getToken({ req, raw: true });
-  const headers = {
-    Authorization: `Bearer ${token}`,
-  };
+  const proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`).then(res => res.json());
+  const proposal = proposalResponse.data;
 
-  const proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, { headers }).then(res => res.json());
-  proposal = proposalResponse.data;
-
-  res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=3600, stale-while-revalidate=59'
-  );
-
-  // Pass data to the page via props
   return {
     props: {
       space: spaceParam,
       proposal: proposal || null
-    }
+    },
+    revalidate: 3600
+  };
+}
+
+export async function getStaticPaths() {
+  const paths = await getNanceStaticPaths();
+  return {
+    paths,
+    fallback: "blocking"
   };
 }
 
