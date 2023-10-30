@@ -133,7 +133,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
     };
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req).then((res) => {
-      revalidatePath(`/s/${space}/${res?.data.hash}`);
       revalidatePath(`/s/${space}/${metadata.loadedProposal?.proposalId}`);
       console.debug("📗 Nance.editProposal.onSignSuccess ->", res);
     }).catch((err) => {
