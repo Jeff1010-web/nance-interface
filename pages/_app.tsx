@@ -104,7 +104,7 @@ function WagmiWrappedApp({ Component, pageProps }: any) {
 
       <Analytics />
     </>
-  )
+  );
 }
 
 export default WagmiWrappedApp;

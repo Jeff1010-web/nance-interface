@@ -217,7 +217,7 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
   refetch: (options?: any) => void
 } {
 
-  console.debug("🔧 useProposalsWithCustomQuery.args ->", { query, variables, skip });
+  // console.debug("🔧 useProposalsWithCustomQuery.args ->", { query, variables, skip });
 
   // Load proposals
   const {
@@ -240,7 +240,7 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
     },
     skip
   });
-  console.debug("🔧 useProposalsWithCustomQuery.cacheHit", cacheHit);
+  // console.debug("🔧 useProposalsWithCustomQuery.cacheHit", cacheHit);
 
   // Find voted proposals
   let votedData: { [id: string]: SnapshotVotedData } = {};
@@ -262,7 +262,7 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
     error: proposalsError || votedError,
     refetch
   };
-  console.debug("🔧 useProposalsWithCustomQuery.return ->", { ret });
+  // console.debug("🔧 useProposalsWithCustomQuery.return ->", { ret });
   return ret;
 }
 

@@ -4,7 +4,6 @@ import React from "react";
 import { useRouter } from "next/router";
 import { Proposal } from "../../../models/NanceTypes";
 import { NANCE_API_URL } from "../../../constants/Nance";
-import { markdownToHtml } from '../../../libs/markdown';
 import Footer from "../../../components/Footer";
 import { getToken } from "next-auth/jwt";
 import ProposalEditForm from "../../../components/pages/edit/ProposalEditForm";
@@ -30,9 +29,6 @@ export async function getServerSideProps({ req, query, params}: any) {
   let proposalResponse = null;
   if (proposalParam) {
     proposalResponse = await fetch(`${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`, {headers}).then(res => res.json());
-    if (proposalResponse?.data) {
-      proposalResponse.data.body = await markdownToHtml(proposalResponse.data.body);
-    }
   }
 
   // Pass data to the page via props

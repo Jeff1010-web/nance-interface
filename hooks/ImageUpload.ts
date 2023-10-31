@@ -5,9 +5,9 @@ const AUTH_HEADER = `Basic ${Buffer.from(
 ).toString('base64')}`;
 
 // https://github.com/jbx-protocol/juice-interface/blob/main/src/lib/infura/ipfs.ts
-export async function imageUpload(blobInfo: any) {
+export async function imageUpload(blob: Blob) {
   const formData = new FormData();
-  formData.append('file', blobInfo.blob());
+  formData.append('file', blob);
 
   try {
     const response = await fetch(`${API}/add`, {
