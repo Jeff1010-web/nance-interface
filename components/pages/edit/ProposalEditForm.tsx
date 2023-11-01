@@ -102,6 +102,8 @@ export default function ProposalEditForm({ space }: { space: string }) {
     };
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req).then(async (res) => {
+      // clear local cache
+      setProposalCache({ version: CACHE_VERSION, title: "", body: "", timestamp: 0 });
       console.debug("📗 Nance.editProposal.onSignSuccess ->", res);
     }).catch((err) => {
       console.warn("📗 Nance.editProposal.onSignError ->", err);
