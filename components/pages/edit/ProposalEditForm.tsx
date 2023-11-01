@@ -199,6 +199,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
                   <Controller
                     name="proposal.body"
                     control={control}
+                    defaultValue={metadata.loadedProposal?.body || TEMPLATE}
                     render={({ field: { onChange } }) =>
                       <TextEditor parentRef={editorRef} onEditorChange={(value) => {
                         if (!cacheModalIsOpen) {
