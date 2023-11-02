@@ -1,5 +1,5 @@
 import { Tooltip } from "flowbite-react";
-import { classNames } from "../utils/functions/tailwind";
+import { classNames } from "@/utils/functions/tailwind";
 
 export const JB_THRESHOLD = 80_000_000;
 
