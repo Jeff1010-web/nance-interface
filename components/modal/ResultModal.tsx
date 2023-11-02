@@ -1,7 +1,7 @@
 import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { classNames } from '../../libs/tailwind';
+import { classNames } from '../../utils/functions/tailwind';
 
 export default function ResultModal(
   { shouldOpen, close, title, description, buttonText, onClick, isSuccessful = true, cancelButtonText = "Cancel" }:

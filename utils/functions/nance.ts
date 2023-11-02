@@ -1,5 +1,5 @@
-import { NANCE_API_URL } from "../constants/Nance";
-import { APIResponse, SpaceInfo, ProposalsPacket } from '../models/NanceTypes';
+import { NANCE_API_URL } from "../../constants/Nance";
+import { APIResponse, SpaceInfo, ProposalsPacket } from '../../models/NanceTypes';
 
 export function getLastSlash(url: string | undefined): string {
   if(!url) return "";

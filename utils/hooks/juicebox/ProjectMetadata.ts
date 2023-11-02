@@ -1,6 +1,6 @@
 import useSWR, { Fetcher } from 'swr';
-import { consolidateMetadata, ProjectMetadata } from '../../libs/projectMetadata';
-import { JB_IPFS_GATEWAY } from "../../constants/Juicebox";
+import { consolidateMetadata, ProjectMetadata } from '../../functions/projectMetadata';
+import { JB_IPFS_GATEWAY } from "../../../constants/Juicebox";
 
 const fetcher: Fetcher<ProjectMetadata, string> = (uri) => fetch(`${JB_IPFS_GATEWAY}/${uri}`).then(res => res.json());
 

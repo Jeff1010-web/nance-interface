@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react';
-import { classNames } from '../../libs/tailwind';
+import { classNames } from '../../utils/functions/tailwind';
 import { ArchiveBoxIcon, ArchiveBoxXMarkIcon, BoltIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import ToggleWithLabel from './ToggleWithLabel';

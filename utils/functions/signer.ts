@@ -1,8 +1,8 @@
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { solidityKeccak256, verifyTypedData } from "ethers/lib/utils";
-import { DOMAIN, TYPES } from "../constants/Signature";
+import { DOMAIN, TYPES } from "../../constants/Signature";
 import { getPath } from "../hooks/NanceHooks";
-import { Signature } from "../models/NanceTypes";
+import { Signature } from "../../models/NanceTypes";
 
 export async function signPayload(signer: JsonRpcSigner, space: string, command: string, payload: any): Promise<Signature> {
   const timestamp = Math.floor(Date.now() / 1000);

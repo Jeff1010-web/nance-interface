@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import Image from 'next/image';
-import { classNames } from '../libs/tailwind';
+import { classNames } from '../utils/functions/tailwind';
 
 interface Includes {
   name: string;

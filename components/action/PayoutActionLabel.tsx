@@ -1,4 +1,4 @@
-import { payout2JBSplit } from "../../libs/juicebox";
+import { payout2JBSplit } from "../../utils/functions/juicebox";
 import { Payout } from "../../models/NanceTypes";
 import JBSplitEntry from "../juicebox/JBSplitEntry";
 

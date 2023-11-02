@@ -1,13 +1,13 @@
 import { useState, Fragment, useEffect } from "react";
-import useVotingPower from "../hooks/snapshot/VotingPower";
+import useVotingPower from "../utils/hooks/snapshot/VotingPower";
 import { Dialog, RadioGroup, Transition } from '@headlessui/react';
-import { SnapshotProposal } from "../hooks/snapshot/Proposals";
+import { SnapshotProposal } from "../utils/hooks/snapshot/Proposals";
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import Notification from "./Notification";
-import useVote from "../hooks/snapshot/Vote";
+import useVote from "../utils/hooks/snapshot/Vote";
 import { useForm } from "react-hook-form";
-import { classNames } from '../libs/tailwind';
+import { classNames } from '../utils/functions/tailwind';
 
 const formatter = new Intl.NumberFormat('en-GB', { notation: "compact", compactDisplay: "short" });
 const formatNumber = (num: number) => formatter.format(num);

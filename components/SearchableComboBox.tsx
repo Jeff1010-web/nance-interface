@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Combobox } from '@headlessui/react';
-import { classNames } from '../libs/tailwind';
+import { classNames } from '../utils/functions/tailwind';
 
 export interface Option {
     id: string

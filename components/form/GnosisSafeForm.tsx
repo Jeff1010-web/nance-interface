@@ -2,7 +2,7 @@ import { ErrorMessage } from "@hookform/error-message";
 import { Controller, useFormContext } from "react-hook-form";
 import { useEffect, useState } from "react";
 import ToggleSwitch from "../ToggleSwitch";
-import { useIsValidAddress } from "../../hooks/SafeHooks";
+import { useIsValidAddress } from "../../utils/hooks/SafeHooks";
 import { ExclamationCircleIcon, CheckCircleIcon,  } from '@heroicons/react/20/solid';
 
 export default function GnosisSafeForm() {

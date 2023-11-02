@@ -1,4 +1,4 @@
-import { classNames } from "../../../../libs/tailwind";
+import { classNames } from "../../../../utils/functions/tailwind";
 import LoadingArrowSpiner from "../../../LoadingArrowSpiner";
 
 export default function LoadMoreButton(

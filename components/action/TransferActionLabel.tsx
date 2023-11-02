@@ -1,5 +1,5 @@
 import { getContractLabel } from "../../constants/Contract";
-import { numToPrettyString } from "../../libs/NumberFormatter";
+import { numToPrettyString } from "../../utils/functions/NumberFormatter";
 import { Transfer } from "../../models/NanceTypes";
 import FormattedAddress from "../ethereum/FormattedAddress";
 

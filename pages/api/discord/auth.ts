@@ -2,9 +2,9 @@
 
 // https://discordjs.guide/oauth2/#a-quick-example
 // https://github.com/discordjs/guide/blob/main/code-samples/oauth/simple-oauth-webserver/index.js
-import { redis } from "../../../libs/redis";
+import { redis } from "../../../utils/functions/redis";
 import { decode, encode } from "next-auth/jwt";
-import { DISCORD_OAUTH_URL, discordRedirectBaseUrl, discordScope, DISCORD_CLIENT_ID, DISCORD_PROXY_USER_URL, DISCORD_PROXY_AUTH_SUCCESS_URL } from "../../../libs/discordURL";
+import { DISCORD_OAUTH_URL, discordRedirectBaseUrl, discordScope, DISCORD_CLIENT_ID, DISCORD_PROXY_USER_URL, DISCORD_PROXY_AUTH_SUCCESS_URL } from "../../../utils/functions/discordURL";
 import { DiscordUserAuthResponse } from '../../../models/DiscordTypes';
 
 const params = {

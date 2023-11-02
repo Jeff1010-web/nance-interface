@@ -1,10 +1,10 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { useContractReadValue } from "./ContractReadValue";
-import { JBSplit } from '../../models/JuiceboxTypes';
+import { JBSplit } from '../../../models/JuiceboxTypes';
 import { useEthersProvider } from '../ViemAdapter';
-import { NetworkContext } from '../../context/NetworkContext';
+import { NetworkContext } from '../../../context/NetworkContext';
 import { useContext } from 'react';
-import { getJBSplitsStore } from '../../libs/JuiceboxContracts';
+import { getJBSplitsStore } from '../../functions/JuiceboxContracts';
 
 export function useCurrentSplits(
   projectId: BigNumberish | undefined,

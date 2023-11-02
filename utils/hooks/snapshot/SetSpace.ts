@@ -3,8 +3,8 @@ import { useCallback, useState } from 'react';
 import { useAccount } from "wagmi";
 import { useEthersSigner } from '../ViemAdapter';
 import useSnapshotSpaceSettings from './SpaceSettings';
-import { NANCE_PUBLIC_ADDRESS } from '../../constants/Nance';
-import { SNAPSHOT_HUB } from '../../constants/Snapshot';
+import { NANCE_PUBLIC_ADDRESS } from '../../../constants/Nance';
+import { SNAPSHOT_HUB } from '../../../constants/Snapshot';
 
 function clearNull(input: any) {
   let output = {} as Record<string, any>;

@@ -2,9 +2,9 @@ import { useContext, useState } from "react";
 import { useWalletClient } from "wagmi";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
 import ResultModal from "../modal/ResultModal";
-import usePropose from "../../hooks/governor/Propose";
+import usePropose from "../../utils/hooks/governor/Propose";
 import { GenericTransactionData } from "./TransactionCreator";
-import { getTxLink } from "../../libs/EtherscanURL";
+import { getTxLink } from "../../utils/functions/EtherscanURL";
 import { NetworkContext } from "../../context/NetworkContext";
 
 export default function GovernorTransactionCreator(

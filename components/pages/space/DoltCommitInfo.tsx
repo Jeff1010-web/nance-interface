@@ -1,4 +1,4 @@
-import { getLastSlash } from "../../../libs/nance";
+import { getLastSlash } from "../../../utils/functions/nance";
 
 export default function DoltCommitInfo({ dolthubLink }: { dolthubLink: string }) {
   return (

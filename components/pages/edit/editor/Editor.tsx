@@ -1,6 +1,6 @@
 import { RefObject } from 'react';
 import { Editor } from '@toast-ui/react-editor';
-import { imageUpload } from '../../../../hooks/ImageUpload';
+import { imageUpload } from '../../../../utils/hooks/ImageUpload';
 import '@nance/nance-editor/lib/editor.css';
 import Loading from './LoadingBar';
 import { handleDrop } from './helpers';

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Combobox } from '@headlessui/react';
-import { useEtherscanContractABI } from '../../../hooks/EtherscanHooks';
+import { useEtherscanContractABI } from '../../../utils/hooks/EtherscanHooks';
 import { FunctionFragment, Interface } from 'ethers/lib/utils';
-import { classNames } from '../../../libs/tailwind';
+import { classNames } from '../../../utils/functions/tailwind';
 
 export default function FunctionSelector({ address, val, setVal, setFunctionFragment, inputStyle = "" }:
   {

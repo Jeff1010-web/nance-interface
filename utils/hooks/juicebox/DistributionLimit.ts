@@ -4,8 +4,8 @@ import { useEthersProvider } from '../ViemAdapter';
 import useControllerOfProject from './ControllerOfProject';
 import useTerminalOfProject from './TerminalOfProject';
 import { useContext } from 'react';
-import { NetworkContext } from '../../context/NetworkContext';
-import { getJBFundAccessConstraintsStore } from '../../libs/JuiceboxContracts';
+import { NetworkContext } from '../../../context/NetworkContext';
+import { getJBFundAccessConstraintsStore } from '../../functions/JuiceboxContracts';
 
 const ETH_TOKEN_ADDRESS = '0x000000000000000000000000000000000000eeee';
 

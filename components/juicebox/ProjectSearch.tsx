@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Combobox } from '@headlessui/react';
-import useProjectSearch, { ProjectSearchEntry } from '../../hooks/juicebox/ProjectSearch';
-import useProjectMetadata from '../../hooks/juicebox/ProjectMetadata';
-import { classNames } from '../../libs/tailwind';
+import useProjectSearch, { ProjectSearchEntry } from '../../utils/hooks/juicebox/ProjectSearch';
+import useProjectMetadata from '../../utils/hooks/juicebox/ProjectMetadata';
+import { classNames } from '../../utils/functions/tailwind';
 
 export interface ProjectOption {
   id: string

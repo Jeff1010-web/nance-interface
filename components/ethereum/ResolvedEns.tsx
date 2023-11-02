@@ -1,10 +1,10 @@
 import { Tooltip } from "flowbite-react";
 import { useEnsAddress } from "wagmi";
-import { shortenAddress } from "../../libs/address";
-import { classNames } from '../../libs/tailwind';
+import { shortenAddress } from "../../utils/functions/address";
+import { classNames } from '../../utils/functions/tailwind';
 import { useContext } from "react";
 import { NetworkContext } from "../../context/NetworkContext";
-import { getAddressLink } from "../../libs/EtherscanURL";
+import { getAddressLink } from "../../utils/functions/EtherscanURL";
 
 export interface Props {
   ens: string;

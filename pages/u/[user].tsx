@@ -1,15 +1,15 @@
-import { useVotesOfAddress } from "../../hooks/snapshot/Proposals";
+import { useVotesOfAddress } from "../../utils/hooks/snapshot/Proposals";
 import SiteNav from "../../components/SiteNav";
 import { formatDistanceToNow, fromUnixTime } from "date-fns";
 import { withDefault, NumberParam, useQueryParams, StringParam } from "next-query-params";
-import { processChoices } from "../../libs/snapshotUtil";
+import { processChoices } from "../../utils/functions/snapshotUtil";
 import ScrollToBottom from "../../components/ScrollToBottom";
 import Footer from "../../components/Footer";
 import Link from "next/link";
 import Pagination from "../../components/Pagination";
-import { shortenAddress } from "../../libs/address";
-import { classNames } from "../../libs/tailwind";
-import { useAllSpaceInfo } from "../../hooks/NanceHooks";
+import { shortenAddress } from "../../utils/functions/address";
+import { classNames } from "../../utils/functions/tailwind";
+import { useAllSpaceInfo } from "../../utils/hooks/NanceHooks";
 import useSWR, { Fetcher } from 'swr';
 import { ProfileResponse } from "../api/profile";
 import { Disclosure, Listbox, Transition } from "@headlessui/react";
@@ -17,7 +17,7 @@ import { Fragment, useContext } from "react";
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { NetworkContext } from "../../context/NetworkContext";
-import { getAddressLink } from "../../libs/EtherscanURL";
+import { getAddressLink } from "../../utils/functions/EtherscanURL";
 
 const getColorOfChoice = (choice: string) => {
   if (choice == 'For') {

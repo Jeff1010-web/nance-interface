@@ -1,9 +1,9 @@
 import { BigNumber } from "ethers";
-import { FundingCycleConfigProps } from "../../components/juicebox/ReconfigurationCompare";
+import { FundingCycleConfigProps } from "../../../components/juicebox/ReconfigurationCompare";
 import { useCurrentFundingCycle } from "./CurrentFundingCycle";
 import { useDistributionLimit } from "./DistributionLimit";
 import { useCurrentSplits } from "./CurrentSplits";
-import { JBConstants } from "../../models/JuiceboxTypes";
+import { JBConstants } from "../../../models/JuiceboxTypes";
 
 export function useReconfigurationOfProject(projectId: number) {
   const { value: _fc, loading: fcIsLoading } = useCurrentFundingCycle(projectId);

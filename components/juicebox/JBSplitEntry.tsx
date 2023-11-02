@@ -1,5 +1,5 @@
-import { SplitDiffEntry, keyOfSplit } from "../../libs/juicebox";
-import { classNames } from "../../libs/tailwind";
+import { SplitDiffEntry, keyOfSplit } from "../../utils/functions/juicebox";
+import { classNames } from "../../utils/functions/tailwind";
 import { JBSplit } from "../../models/JuiceboxTypes";
 import FormattedAddress from "../ethereum/FormattedAddress";
 import { Status, SectionTableData } from "../form/DiffTableWithSection";

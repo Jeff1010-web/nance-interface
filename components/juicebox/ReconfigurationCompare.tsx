@@ -1,6 +1,6 @@
 import { JBConstants, JBSplit, V2V3FundingCycleMetadata } from "../../models/JuiceboxTypes";
 import { BigNumber, utils } from "ethers";
-import { formatCurrency } from "../../libs/juicebox";
+import { formatCurrency } from "../../utils/functions/juicebox";
 import { parseEther } from "ethers/lib/utils";
 
 // 'projectId-beneficiary-allocator': mod

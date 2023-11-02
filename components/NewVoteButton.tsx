@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { SnapshotProposal } from "../hooks/snapshot/Proposals";
+import { SnapshotProposal } from "../utils/hooks/snapshot/Proposals";
 import VotingModal from "./VotingModal";
 import { useAccount } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { classNames } from "../libs/tailwind";
+import { classNames } from "../utils/functions/tailwind";
 
 
 export default function NewVoteButton(

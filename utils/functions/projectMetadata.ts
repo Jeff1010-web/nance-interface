@@ -1,4 +1,4 @@
-import { JB_IPFS_GATEWAY } from "../constants/Juicebox";
+import { JB_IPFS_GATEWAY } from "../../constants/Juicebox";
 
 type TokenRef = {
     value: string

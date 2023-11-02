@@ -1,6 +1,6 @@
 import useSWR, { Fetcher } from "swr";
-import { subgraphOf } from "../../constants/Juicebox";
-import { NetworkContext } from "../../context/NetworkContext";
+import { subgraphOf } from "../../../constants/Juicebox";
+import { NetworkContext } from "../../../context/NetworkContext";
 import { useContext } from "react";
 
 const projectQuery = `query project($id: ID!) {

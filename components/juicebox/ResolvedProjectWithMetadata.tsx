@@ -1,6 +1,6 @@
 import Image from "next/image";
-import useProjectMetadata from "../../hooks/juicebox/ProjectMetadata";
-import { classNames } from '../../libs/tailwind';
+import useProjectMetadata from "../../utils/hooks/juicebox/ProjectMetadata";
+import { classNames } from '../../utils/functions/tailwind';
 
 export interface Props {
     projectId: string;

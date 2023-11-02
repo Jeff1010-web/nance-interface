@@ -1,6 +1,6 @@
 import { Tooltip } from "flowbite-react";
-import { SnapshotProposal, useProposalVotes } from "../../../hooks/snapshot/Proposals";
-import { formatNumber } from "../../../libs/NumberFormatter";
+import { SnapshotProposal, useProposalVotes } from "../../../utils/hooks/snapshot/Proposals";
+import { formatNumber } from "../../../utils/functions/NumberFormatter";
 
 // BasicVoting: For Against Abstain
 const SUPPORTED_VOTING_TYPES_FOR_GROUP = ["basic", "single-choice", "approval"];

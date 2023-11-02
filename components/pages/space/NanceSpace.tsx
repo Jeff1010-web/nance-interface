@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { usePrivateProposals } from "../../../hooks/NanceHooks";
+import { usePrivateProposals } from "../../../utils/hooks/NanceHooks";
 import ScrollToBottom from "../../ScrollToBottom";
 import ProposalCards from "./ProposalCards";
 import CycleSelectorAndSearchBar from "./CycleSelectorAndSearchBar";

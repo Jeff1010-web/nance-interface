@@ -1,6 +1,6 @@
 import { useState, Fragment } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
-import { classNames } from '../libs/tailwind';
+import { classNames } from '../utils/functions/tailwind';
 import { Tooltip } from "flowbite-react";
 import { Controller, useFormContext } from 'react-hook-form';
 

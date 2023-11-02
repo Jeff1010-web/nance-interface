@@ -3,7 +3,7 @@ import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Combobox } from '@headlessui/react';
 import { Tooltip } from 'flowbite-react';
 import { useEnsAddress } from 'wagmi';
-import { classNames } from '../../libs/tailwind';
+import { classNames } from '../../utils/functions/tailwind';
 
 export default function ENSAddressInput({ val, setVal, inputStyle = "", disabled = false }:
   { val: string, setVal: (v: any) => void, inputStyle?: string, defaultValue?: string, disabled?: boolean }) {

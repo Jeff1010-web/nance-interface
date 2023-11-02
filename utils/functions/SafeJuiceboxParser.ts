@@ -1,7 +1,7 @@
 import { getUnixTime } from "date-fns";
 import { BigNumber, utils } from "ethers";
-import { FundingCycleConfigProps } from "../components/juicebox/ReconfigurationCompare";
-import { JBConstants, JBFundAccessConstraints, JBGroupedSplits, V2FundingCycleMetadata, V2V3FundingCycleData } from "../models/JuiceboxTypes";
+import { FundingCycleConfigProps } from "../../components/juicebox/ReconfigurationCompare";
+import { JBConstants, JBFundAccessConstraints, JBGroupedSplits, V2FundingCycleMetadata, V2V3FundingCycleData } from "../../models/JuiceboxTypes";
 import JBControllerV3 from '@jbx-protocol/juice-contracts-v3/deployments/mainnet/JBController3_1.json';
 
 export default function parseSafeJuiceboxTx(

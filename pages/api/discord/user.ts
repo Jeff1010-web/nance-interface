@@ -2,7 +2,7 @@
 
 import { NextApiRequest, NextApiResponse } from "next";
 import { decode } from "next-auth/jwt";
-import { redis } from "../../../libs/redis";
+import { redis } from "../../../utils/functions/redis";
 import { DiscordUserAuthResponse } from '../../../models/DiscordTypes';
 
 const DISCORD_API = "https://discord.com/api/v10";

@@ -1,9 +1,9 @@
 import { useQueryParams, withDefault, NumberParam, createEnumParam } from "next-query-params";
 import { useContext, useState } from "react";
-import { useProposalVotes, VOTES_PER_PAGE } from "../../../hooks/snapshot/Proposals";
-import { formatNumber } from "../../../libs/NumberFormatter";
-import { processChoices } from "../../../libs/snapshotUtil";
-import { classNames } from "../../../libs/tailwind";
+import { useProposalVotes, VOTES_PER_PAGE } from "../../../utils/hooks/snapshot/Proposals";
+import { formatNumber } from "../../../utils/functions/NumberFormatter";
+import { processChoices } from "../../../utils/functions/snapshotUtil";
+import { classNames } from "../../../utils/functions/tailwind";
 import ColorBar from "../../ColorBar";
 import FormattedAddress from "../../ethereum/FormattedAddress";
 import NewVoteButton from "../../NewVoteButton";

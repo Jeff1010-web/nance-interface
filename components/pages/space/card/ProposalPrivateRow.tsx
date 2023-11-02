@@ -1,5 +1,5 @@
 import FormattedAddress from '../../../ethereum/FormattedAddress';
-import { classNames } from '../../../../libs/tailwind';
+import { classNames } from '../../../../utils/functions/tailwind';
 import ProposalBadgeLabel from './ProposalBadgeLabel';
 
 export default function ProposalPrivateRow(

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { SnapshotProposal, useProposalsByID } from "../../../hooks/snapshot/Proposals";
+import { SnapshotProposal, useProposalsByID } from "../../../utils/hooks/snapshot/Proposals";
 import SiteNav from "../../../components/SiteNav";
 import { createContext } from "react";
-import { canEditProposal, getLastSlash } from "../../../libs/nance";
+import { canEditProposal, getLastSlash } from "../../../utils/functions/nance";
 import { Proposal, Action } from "../../../models/NanceTypes";
 import Custom404 from "../../404";
 import ScrollToBottom from "../../../components/ScrollToBottom";
@@ -13,8 +13,8 @@ import ProposalSidebar from "../../../components/pages/proposal/ProposalSidebar"
 import ProposalContent from "../../../components/pages/proposal/ProposalContent";
 import ProposalOptions from "../../../components/pages/proposal/ProposalOptions";
 import ProposalLoading from '../../../components/pages/proposal/ProposalLoading';
-import { getFirstParagraphOfMarkdown } from "../../../libs/markdown";
-import { useSpaceInfo } from "../../../hooks/NanceHooks";
+import { getFirstParagraphOfMarkdown } from "../../../utils/functions/markdown";
+import { useSpaceInfo } from "../../../utils/hooks/NanceHooks";
 import { ZERO_ADDRESS } from "../../../constants/Contract";
 
 export async function getServerSideProps({ req, params, res }: any) {

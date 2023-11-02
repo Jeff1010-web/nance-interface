@@ -1,7 +1,7 @@
 import useSWR, { Fetcher } from 'swr';
 import useSWRMutation from 'swr/mutation';
-import { DiscordGuild, DiscordUser, DiscordChannel, DiscordRole } from '../models/DiscordTypes';
-import { DISCORD_PROXY_USER_URL, DISCORD_PROXY_BOT_URL, DISCORD_PROXY_LOGOUT_URL, DISCORD_CLIENT_ID } from "../libs/discordURL";
+import { DiscordGuild, DiscordUser, DiscordChannel, DiscordRole } from '../../models/DiscordTypes';
+import { DISCORD_PROXY_USER_URL, DISCORD_PROXY_BOT_URL, DISCORD_PROXY_LOGOUT_URL, DISCORD_CLIENT_ID } from "../functions/discordURL";
 
 const USER_COMMANDS = {
   user: "users/@me",

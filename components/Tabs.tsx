@@ -1,4 +1,4 @@
-import { classNames } from '../libs/tailwind';
+import { classNames } from '../utils/functions/tailwind';
 
 export default function Tabs({ tabs, currentTab, setCurrentTab }: { tabs: string[], currentTab: string, setCurrentTab: (tab: string) => void }) {
   return (

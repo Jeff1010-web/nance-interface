@@ -1,6 +1,6 @@
 import { getAddress } from "viem";
 import { GenericTransactionData } from "./TransactionCreator";
-import { ContractType, useContractType } from "../../hooks/ContractHooks";
+import { ContractType, useContractType } from "../../utils/hooks/ContractHooks";
 import SafeTenderlySimulationButton from "./SafeTenderlySimulationButton";
 import GovernorTenderlySimulationButton from "./GovernorTenderlySimulationButton";
 import { Tooltip } from "flowbite-react";

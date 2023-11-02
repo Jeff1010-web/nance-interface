@@ -1,6 +1,6 @@
 import { ArrowLeftCircleIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import { useContext } from "react";
-import { useProposal } from "../../../hooks/NanceHooks";
+import { useProposal } from "../../../utils/hooks/NanceHooks";
 import { ProposalCommonProps, ProposalContext } from "../../../pages/s/[space]/[proposal]";
 
 export default function ProposalNavigator() {

@@ -1,6 +1,6 @@
 import { APIError, useQuery } from 'graphql-hooks';
-import { mapChoiceIndex } from '../../libs/snapshotUtil';
-import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../../constants/Snapshot';
+import { mapChoiceIndex } from '../../functions/snapshotUtil';
+import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../../../constants/Snapshot';
 
 const PROPOSALS_QUERY = `
 query Proposals($first: Int, $skip: Int, $space: String, $state: String, $keyword: String) {

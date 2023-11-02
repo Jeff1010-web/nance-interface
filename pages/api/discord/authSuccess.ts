@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { LOCAL_STORAGE_KEY_DISCORD_STATUS } from '../../../libs/discordURL';
+import { LOCAL_STORAGE_KEY_DISCORD_STATUS } from '../../../utils/functions/discordURL';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { status } = req.query;

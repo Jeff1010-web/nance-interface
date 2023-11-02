@@ -1,12 +1,12 @@
 /* eslint-disable max-lines */
 import { BigNumber, BigNumberish, Contract, utils } from "ethers";
-import { FundingCycleConfigProps, formattedSplit, calculateSplitAmount, splitAmount2Percent, isEqualPayoutSplit } from "../components/juicebox/ReconfigurationCompare";
-import { ZERO_ADDRESS } from "../constants/Contract";
-import { CURRENCY_USD, ETH_TOKEN_ADDRESS, JBConstants, JBFundingCycleData, JBSplit } from "../models/JuiceboxTypes";
-import { SQLPayout, Action, Payout, JBSplitNanceStruct } from "../models/NanceTypes";
+import { FundingCycleConfigProps, formattedSplit, calculateSplitAmount, splitAmount2Percent, isEqualPayoutSplit } from "../../components/juicebox/ReconfigurationCompare";
+import { ZERO_ADDRESS } from "../../constants/Contract";
+import { CURRENCY_USD, ETH_TOKEN_ADDRESS, JBConstants, JBFundingCycleData, JBSplit } from "../../models/JuiceboxTypes";
+import { SQLPayout, Action, Payout, JBSplitNanceStruct } from "../../models/NanceTypes";
 import { getAddress } from "viem";
-import { SectionTableData } from "../components/form/DiffTableWithSection";
-import { diff2TableEntry } from "../components/juicebox/JBSplitEntry";
+import { SectionTableData } from "../../components/form/DiffTableWithSection";
+import { diff2TableEntry } from "../../components/juicebox/JBSplitEntry";
 
 function mulDiv(a: BigNumber, b: BigNumber, denominator: BigNumberish) {
   return a.mul(b).div(denominator);

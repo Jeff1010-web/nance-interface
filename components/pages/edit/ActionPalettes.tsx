@@ -1,6 +1,6 @@
 import { Transition, Dialog, Combobox } from "@headlessui/react";
 import { Fragment } from "react";
-import { classNames } from "../../../libs/tailwind";
+import { classNames } from "../../../utils/functions/tailwind";
 import { CurrencyDollarIcon, BoltIcon, ArrowsUpDownIcon, UserGroupIcon } from "@heroicons/react/24/solid";
 
 export interface ActionItem {

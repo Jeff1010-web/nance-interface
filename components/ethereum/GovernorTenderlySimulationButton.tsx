@@ -1,9 +1,9 @@
 import { useAccount } from "wagmi";
-import { TenderlySimulateArgs } from "../../hooks/TenderlyHooks";
+import { TenderlySimulateArgs } from "../../utils/hooks/TenderlyHooks";
 import TenderlySimulationButton from "./TenderlySimulationButton";
 import { GenericTransactionData } from "./TransactionCreator";
 import { encodeFunctionData } from "viem";
-import { PROPOSE_ABI } from "../../hooks/governor/Propose";
+import { PROPOSE_ABI } from "../../utils/hooks/governor/Propose";
 import { useEffect, useState } from "react";
 
 export default function GovernorTenderlySimulationButton({ address, transactions }: { address: string, transactions: GenericTransactionData[] }) {

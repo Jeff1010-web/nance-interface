@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { classNames } from '../../libs/tailwind';
+import { classNames } from '../../utils/functions/tailwind';
 import { SafeTransactionDataPartial } from '@safe-global/safe-core-sdk-types';
 import GenericTenderlySimulationButton from '../ethereum/GenericTenderlySimulationButton';
 

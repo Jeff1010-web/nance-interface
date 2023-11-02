@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Session } from 'next-auth';
 import { DiscordChannel, DiscordGuild, DiscordRole } from '../models/DiscordTypes';
-import { addBotUrl, guildIconBaseUrl } from '../libs/discordURL';
-import { useFetchDiscordGuilds, useFetchDiscordChannels, useIsBotMemberOfGuild, useFetchDiscordGuildRoles } from "../hooks/DiscordHooks";
+import { addBotUrl, guildIconBaseUrl } from '../utils/functions/discordURL';
+import { useFetchDiscordGuilds, useFetchDiscordChannels, useIsBotMemberOfGuild, useFetchDiscordGuildRoles } from "../utils/hooks/DiscordHooks";
 import { DiscordConfig } from '../models/NanceTypes';
 import GenericListbox from './GenericListbox';
 

@@ -1,8 +1,8 @@
-import { shortenAddress } from "../../libs/address";
+import { shortenAddress } from "../../utils/functions/address";
 import { Address, useEnsName } from "wagmi";
 import { useContext, useEffect, useState } from "react";
-import { classNames } from '../../libs/tailwind';
-import { getAddressLink } from "../../libs/EtherscanURL";
+import { classNames } from '../../utils/functions/tailwind';
+import { getAddressLink } from "../../utils/functions/EtherscanURL";
 import { NetworkContext } from "../../context/NetworkContext";
 
 export interface Props {

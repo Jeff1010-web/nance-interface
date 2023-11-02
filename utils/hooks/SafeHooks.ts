@@ -1,5 +1,5 @@
 import useSWR, { Fetcher } from 'swr';
-import { RevisedSafeMultisigTransactionResponse, SafeBalanceUsdResponse, SafeDelegatesResponse, SafeInfoResponse } from '../models/SafeTypes';
+import { RevisedSafeMultisigTransactionResponse, SafeBalanceUsdResponse, SafeDelegatesResponse, SafeInfoResponse } from '../../models/SafeTypes';
 import { useCallback, useEffect, useState } from 'react';
 import { useAccount, useWalletClient } from 'wagmi';
 import SafeApiKit, { SafeMultisigTransactionListResponse } from '@safe-global/api-kit';

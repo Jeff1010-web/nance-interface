@@ -1,7 +1,7 @@
 import { useQueryParams, withDefault, NumberParam, StringParam } from "next-query-params";
 import ResolvedProject from "../../../components/juicebox/ResolvedProject";
 import Image from "next/image";
-import useProjectMetadata from "../../../hooks/juicebox/ProjectMetadata";
+import useProjectMetadata from "../../../utils/hooks/juicebox/ProjectMetadata";
 
 export default function JBProjectInfo({ metadataUri }: { metadataUri: string }) {
   const [query, setQuery] = useQueryParams({

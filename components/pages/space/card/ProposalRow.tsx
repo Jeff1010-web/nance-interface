@@ -1,7 +1,7 @@
-import { classNames } from "../../../../libs/tailwind";
+import { classNames } from "../../../../utils/functions/tailwind";
 import VotesBar from "./VotesBar";
 import FormattedAddress from "../../../ethereum/FormattedAddress";
-import { getLastSlash } from "../../../../libs/nance";
+import { getLastSlash } from "../../../../utils/functions/nance";
 import NewVoteButton from "../../../NewVoteButton";
 import getVotedIcon from "./VoteIcon";
 import ProposalBadgeLabel from "./ProposalBadgeLabel";

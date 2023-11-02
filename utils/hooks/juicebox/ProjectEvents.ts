@@ -1,6 +1,6 @@
 import { BigNumber } from "ethers";
-import { shortenAddress } from "../../libs/address";
-import { subgraphOf } from "../../constants/Juicebox";
+import { shortenAddress } from "../../functions/address";
+import { subgraphOf } from "../../../constants/Juicebox";
 
 const Query = `query ProjectEvents($first: Int, $skip: Int) {
   projectEvents(

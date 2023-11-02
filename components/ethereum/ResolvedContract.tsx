@@ -1,8 +1,8 @@
 import { Address } from "wagmi";
 import { useContext, useEffect, useState } from "react";
-import { useEtherscanContract } from "../../hooks/EtherscanHooks";
-import { classNames } from '../../libs/tailwind';
-import { getAddressLink } from "../../libs/EtherscanURL";
+import { useEtherscanContract } from "../../utils/hooks/EtherscanHooks";
+import { classNames } from '../../utils/functions/tailwind';
+import { getAddressLink } from "../../utils/functions/EtherscanURL";
 import { NetworkContext } from "../../context/NetworkContext";
 
 export interface Props {

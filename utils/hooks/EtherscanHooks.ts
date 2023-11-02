@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import { usePublicClient } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
 import { Interface } from 'ethers/lib/utils';
-import { NetworkContext } from '../context/NetworkContext';
+import { NetworkContext } from '../../context/NetworkContext';
 
 const API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_KEY;
 

@@ -1,5 +1,5 @@
 import { useQuery } from 'graphql-hooks';
-import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../../constants/Snapshot';
+import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../../../constants/Snapshot';
 
 const QUERY = `
 query SpaceInfo($spaceId: String) {

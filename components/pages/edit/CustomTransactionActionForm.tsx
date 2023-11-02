@@ -2,7 +2,7 @@ import { ErrorMessage } from "@hookform/error-message";
 import { FunctionFragment, FormatTypes } from "ethers/lib/utils";
 import { useState, useEffect } from "react";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
-import { TenderlySimulationAPIResponse, encodeTransactionInput } from "../../../hooks/TenderlyHooks";
+import { TenderlySimulationAPIResponse, encodeTransactionInput } from "../../../utils/hooks/TenderlyHooks";
 import AddressForm from "../../form/AddressForm";
 import BooleanForm from "../../form/BooleanForm";
 import NumberForm from "../../form/NumberForm";

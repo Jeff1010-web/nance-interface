@@ -1,4 +1,4 @@
-import { SNAPSHOT_HUB } from '../../constants/Snapshot';
+import { SNAPSHOT_HUB } from '../../../constants/Snapshot';
 
 export interface SpaceMetric {
     categories?: string[],

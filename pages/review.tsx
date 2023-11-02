@@ -3,15 +3,15 @@ import { useState } from "react";
 import SiteNav from "../components/SiteNav";
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
 import { AddressMap, SafeTransactionSelector, TxOption } from '../components/safe/SafeTransactionSelector';
-import useProjectInfo from '../hooks/juicebox/ProjectInfo';
+import useProjectInfo from '../utils/hooks/juicebox/ProjectInfo';
 import ProjectSearch from "../components/juicebox/ProjectSearch";
 import { RevisedSafeMultisigTransactionResponse } from '../models/SafeTypes';
-import parseSafeJuiceboxTx from '../libs/SafeJuiceboxParser';
+import parseSafeJuiceboxTx from '../utils/functions/SafeJuiceboxParser';
 import Footer from '../components/Footer';
-import { useReconfigurationOfProject } from '../hooks/juicebox/ReconfigurationOfProject';
+import { useReconfigurationOfProject } from '../utils/hooks/juicebox/ReconfigurationOfProject';
 import JBProjectInfo from '../components/pages/review/JBProjectInfo';
 import DiffTableWithSection from '../components/form/DiffTableWithSection';
-import { calcDiffTableData, comparePayouts, compareReserves } from '../libs/juicebox';
+import { calcDiffTableData, comparePayouts, compareReserves } from '../utils/functions/juicebox';
 import LoadingArrowSpiner from '../components/LoadingArrowSpiner';
 
 const CONTRACT_MAP: AddressMap = {

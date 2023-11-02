@@ -1,7 +1,7 @@
 import { ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useContext, Fragment } from "react";
-import { canEditProposal } from "../../../libs/nance";
+import { canEditProposal } from "../../../utils/functions/nance";
 import { ProposalContext } from "../../../pages/s/[space]/[proposal]";
 import FormattedAddress from "../../ethereum/FormattedAddress";
 import MarkdownWithTOC from "../../MarkdownWithTOC";

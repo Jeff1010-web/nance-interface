@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { discordContactMessage } from '../../libs/discord';
+import { discordContactMessage } from '../../utils/functions/discord';
 
 const ContactForm = () => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();

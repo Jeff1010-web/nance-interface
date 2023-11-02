@@ -1,4 +1,4 @@
-import { classNames } from "../../../../libs/tailwind";
+import { classNames } from "../../../../utils/functions/tailwind";
 
 export default function ProposalBadgeLabel({ status } : { status: string }) {
   return (

@@ -1,7 +1,7 @@
 import { DriveStep, driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import { useState } from "react";
-import useLocalStorage, { LocalStorageState } from "../../hooks/LocalStorage";
+import useLocalStorage, { LocalStorageState } from "../../utils/hooks/LocalStorage";
 import ResultModal from "./ResultModal";
 
 function getDriver(steps: DriveStep[], action: () => void | undefined) {

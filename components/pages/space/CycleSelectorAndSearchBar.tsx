@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Option } from "../../SearchableComboBox";
 
 import { DocumentMagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import { classNames } from "../../../libs/tailwind";
+import { classNames } from "../../../utils/functions/tailwind";
 import { StringParam, useQueryParams, withDefault } from "next-query-params";
 
 const allCycle = { id: "All", label: `All`, status: true };

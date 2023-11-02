@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { fetchDelegators } from '../../hooks/snapshot/Delegations';
-import { AllVotes, fetchAllVotesOfAddress } from '../../hooks/snapshot/Proposals';
-import { fetchVotingPower } from '../../hooks/snapshot/VotingPower';
-import { fetchCreatedProposals } from '../../hooks/NanceHooks';
+import { fetchDelegators } from '../../utils/hooks/snapshot/Delegations';
+import { AllVotes, fetchAllVotesOfAddress } from '../../utils/hooks/snapshot/Proposals';
+import { fetchVotingPower } from '../../utils/hooks/snapshot/VotingPower';
+import { fetchCreatedProposals } from '../../utils/hooks/NanceHooks';
 import { Proposal } from '../../models/NanceTypes';
 
 export type ProfileResponse = {

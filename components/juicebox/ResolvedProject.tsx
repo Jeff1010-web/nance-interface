@@ -1,5 +1,5 @@
-import { classNames } from '../../libs/tailwind';
-import useProjectInfo from "../../hooks/juicebox/ProjectInfo";
+import { classNames } from '../../utils/functions/tailwind';
+import useProjectInfo from "../../utils/hooks/juicebox/ProjectInfo";
 
 export interface Props {
   version?: number | undefined;

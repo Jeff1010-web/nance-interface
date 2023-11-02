@@ -1,4 +1,4 @@
-import { classNames } from '../libs/tailwind';
+import { classNames } from '../utils/functions/tailwind';
 
 export interface ScrollTabOption {
     id: string;

@@ -1,9 +1,9 @@
 import { useContractReadValue } from './ContractReadValue';
 import { BigNumberish } from '@ethersproject/bignumber';
 import { useEthersProvider } from '../ViemAdapter';
-import { NetworkContext } from '../../context/NetworkContext';
+import { NetworkContext } from '../../../context/NetworkContext';
 import { useContext } from 'react';
-import { getJBController, getJBControllerVersion, getJBDirectory } from '../../libs/JuiceboxContracts';
+import { getJBController, getJBControllerVersion, getJBDirectory } from '../../functions/JuiceboxContracts';
 
 export default function useControllerOfProject(
   projectId: BigNumberish | undefined

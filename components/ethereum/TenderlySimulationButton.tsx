@@ -1,6 +1,6 @@
 import { Tooltip } from "flowbite-react";
-import { TenderlySimulateArgs, TenderlySimulationAPIResponse, useTendelySimulate } from "../../hooks/TenderlyHooks";
-import { classNames } from "../../libs/tailwind";
+import { TenderlySimulateArgs, TenderlySimulationAPIResponse, useTendelySimulate } from "../../utils/hooks/TenderlyHooks";
+import { classNames } from "../../utils/functions/tailwind";
 import { ArrowPathIcon, CheckCircleIcon, XCircleIcon, CursorArrowRaysIcon } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
 

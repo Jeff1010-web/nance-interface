@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useWalletClient } from "wagmi";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
-import { useHistoryTransactions, useQueueTransaction } from "../../hooks/SafeHooks";
+import { useHistoryTransactions, useQueueTransaction } from "../../utils/hooks/SafeHooks";
 import ResultModal from "../modal/ResultModal";
-import { getSafeTxUrl } from "../../libs/gnosis";
+import { getSafeTxUrl } from "../../utils/functions/gnosis";
 import { MetaTransactionData, SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
 
 export default function SafeTransactionCreator(

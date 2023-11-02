@@ -1,10 +1,10 @@
 import { useContractReadValue } from './ContractReadValue';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { useEthersProvider } from '../ViemAdapter';
-import { ETH_TOKEN_ADDRESS } from '../../models/JuiceboxTypes';
+import { ETH_TOKEN_ADDRESS } from '../../../models/JuiceboxTypes';
 import { useContext } from 'react';
-import { NetworkContext } from '../../context/NetworkContext';
-import { getJBDirectory, getJBETHPaymentTerminal } from '../../libs/JuiceboxContracts';
+import { NetworkContext } from '../../../context/NetworkContext';
+import { getJBDirectory, getJBETHPaymentTerminal } from '../../functions/JuiceboxContracts';
 
 export default function useTerminalOfProject(
   projectId: BigNumberish | undefined

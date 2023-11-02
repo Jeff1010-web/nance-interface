@@ -1,13 +1,13 @@
 import { useAccount } from "wagmi";
-import { useProposalsByID, SnapshotProposal } from "../../../hooks/snapshot/Proposals";
-import { getLastSlash } from "../../../libs/nance";
+import { useProposalsByID, SnapshotProposal } from "../../../utils/hooks/snapshot/Proposals";
+import { getLastSlash } from "../../../utils/functions/nance";
 import { Proposal, ProposalsPacket } from "../../../models/NanceTypes";
 import ProposalRow, { ProposalRowSkeleton } from "./card/ProposalRow";
 import ProposalPrivateRow from "./card/ProposalPrivateRow";
 import RecommendAction from "./card/RecommendAction";
 import SortableTableHeader from "./card/SortableTableHeader";
 import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from "next-query-params";
-import { useProposalsInfinite } from "../../../hooks/NanceHooks";
+import { useProposalsInfinite } from "../../../utils/hooks/NanceHooks";
 import { useRouter } from "next/router";
 import LoadMoreButton from "./card/LoadMoreButton";
 

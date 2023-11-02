@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { ContractType, useContractType } from "../../hooks/ContractHooks";
+import { ContractType, useContractType } from "../../utils/hooks/ContractHooks";
 import SafeTransactionCreator from "../safe/SafeTransactionCreator";
 import GovernorTransactionCreator from "./GovernorTransactionCreator";
 import { NetworkContext } from "../../context/NetworkContext";

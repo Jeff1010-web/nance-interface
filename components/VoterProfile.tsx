@@ -3,7 +3,7 @@ import { ProfileResponse } from '../pages/api/profile';
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { useClearDelegate, useDelegated, useSetDelegate } from '../hooks/snapshot/Delegations';
+import { useClearDelegate, useDelegated, useSetDelegate } from '../utils/hooks/snapshot/Delegations';
 import { ZERO_ADDRESS } from '../constants/Contract';
 import Image from 'next/image';
 

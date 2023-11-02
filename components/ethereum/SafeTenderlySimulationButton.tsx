@@ -1,7 +1,7 @@
 import TenderlySimulationButton from "./TenderlySimulationButton";
 import { GenericTransactionData } from "./TransactionCreator";
-import { useCreateTransaction } from "../../hooks/SafeHooks";
-import { TenderlySimulateArgs } from "../../hooks/TenderlyHooks";
+import { useCreateTransaction } from "../../utils/hooks/SafeHooks";
+import { TenderlySimulateArgs } from "../../utils/hooks/TenderlyHooks";
 import { useEffect, useState } from "react";
 
 export default function SafeTenderlySimulationButton({ address, transactions }: { address: string, transactions: GenericTransactionData[] }) {

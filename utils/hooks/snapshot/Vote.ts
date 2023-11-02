@@ -3,7 +3,7 @@ import { Signer, Wallet } from 'ethers';
 import { useCallback, useState } from 'react';
 import { useAccount } from "wagmi";
 import { useEthersSigner } from '../ViemAdapter';
-import { SNAPSHOT_HUB } from '../../constants/Snapshot';
+import { SNAPSHOT_HUB } from '../../../constants/Snapshot';
 
 export default function useVote(
   space: string, 

@@ -1,7 +1,7 @@
 import useSWR, { Fetcher } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import useSWRInfinite from 'swr/infinite';
-import { NANCE_PROXY_API_URL } from "../constants/Nance";
+import { NANCE_PROXY_API_URL } from "../../constants/Nance";
 import {
   APIResponse,
   ProposalsRequest,
@@ -18,7 +18,7 @@ import {
   SQLPayout,
   ConfigSpacePayload,
   CreateFormValues,
-} from '../models/NanceTypes';
+} from '../../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
   return async (url) => {

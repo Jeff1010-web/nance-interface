@@ -1,7 +1,7 @@
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { format, toDate } from "date-fns";
 import { NANCE_API_URL } from "../../../constants/Nance";
-import { openInDiscord } from "../../../libs/discord";
+import { openInDiscord } from "../../../utils/functions/discord";
 import { useContext } from "react";
 import { ProposalContext } from "../../../pages/s/[space]/[proposal]";
 import ActionLabel from "../../action/ActionLabel";
