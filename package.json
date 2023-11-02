@@ -10,8 +10,7 @@
     "build": "next build",
     "export": "next export",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "typechain --target ethers-v5 --out-dir types/contracts/v2 './node_modules/@jbx-protocol/contracts-v2/deployments/mainnet/*.json'"
+    "lint": "next lint"
   },
   "dependencies": {
     "@headlessui/react": "^1.6.6",
@@ -81,7 +80,6 @@
     "eslint-config-next": "12.2.2",
     "postcss": "^8.4.14",
     "tailwindcss": "^3.3.1",
-    "typechain": "^8.1.0",
     "typescript": "^5.1.0"
   },
   "resolutions": {
