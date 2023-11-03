@@ -20,7 +20,15 @@ export default function NanceAllSpacePage() {
 }
 
 function AllSpace() {
-  const { data, error } = useAllSpaceInfo();
+  const { data, error, isLoading } = useAllSpaceInfo();
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <div className="animate-spin rounded-full h-32 w-32 border-[5px] border-t-gray-600 border-gray-400"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="m-4 flex justify-center lg:m-6 lg:px-20">
