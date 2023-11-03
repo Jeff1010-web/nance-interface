@@ -41,10 +41,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Parse the response data as JSON
     const responseData = await response.json();
 
-    // forward cache headers from response, do we need this?
-    const cacheControl = response.headers.get("Cache-Control");
-    if (cacheControl) res.setHeader("Cache-Control", cacheControl);
-
     // Return the response from the destination URL
     res.status(response.status).json(responseData);
   } catch (error) {

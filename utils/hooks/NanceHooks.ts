@@ -1,7 +1,7 @@
 import useSWR, { Fetcher } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import useSWRInfinite from 'swr/infinite';
-import { NANCE_PROXY_API_URL } from "../../constants/Nance";
+import { NANCE_API_URL, NANCE_PROXY_API_URL } from "../../constants/Nance";
 import {
   APIResponse,
   ProposalsRequest,
@@ -18,6 +18,7 @@ import {
   SQLPayout,
   ConfigSpacePayload,
   CreateFormValues,
+  SpaceConfig,
 } from '../../models/NanceTypes';
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -34,6 +35,13 @@ function jsonFetcher(): Fetcher<APIResponse<any>, string> {
 export function useAllSpaceInfo(shouldFetch: boolean = true) {
   return useSWR<APIResponse<SpaceInfo[]>>(
     shouldFetch ? `${NANCE_PROXY_API_URL}/ish/all` : null,
+    jsonFetcher()
+  );
+}
+
+export function useSpaceConfig(space: string, shouldFetch: boolean = true) {
+  return useSWR<APIResponse<SpaceConfig>, string>(
+    shouldFetch ? `${NANCE_API_URL}/ish/config/${space}` : null,
     jsonFetcher()
   );
 }

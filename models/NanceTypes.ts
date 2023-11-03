@@ -402,3 +402,27 @@ export type SnapshotVoteOptions = {
   type: string,
   choices: string[]
 };
+
+export type SpaceConfig = {
+  space: string,
+  spaceOwners: string[],
+  cid: string;
+  config: NanceConfig;
+  calendar: DateEvent[];
+  cycleTriggerTime: string;
+  cycleStageLengths: number[];
+  dialogHandlerMessageIds: DialogHandlerMessageIds;
+  lastUpdated: Date;
+  cycleDayLastUpdated: Date;
+  currentGovernanceCycle: number;
+};
+
+export type DialogHandlerMessageIds = {
+  temperatureCheckRollup: string;
+  voteRollup: string;
+  voteQuorumAlert: string;
+  voteEndAlert: string;
+  voteResultsRollup: string;
+  temperatureCheckStartAlert: string;
+  temperatureCheckEndAlert: string;
+};
