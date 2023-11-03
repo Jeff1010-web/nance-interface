@@ -1,26 +1,49 @@
 /* eslint-disable max-lines */
 import { BigNumber, BigNumberish, Contract, utils } from "ethers";
-import { FundingCycleConfigProps, formattedSplit, calculateSplitAmount, splitAmount2Percent, isEqualPayoutSplit } from "../../components/juicebox/ReconfigurationCompare";
+import {
+  FundingCycleConfigProps,
+  formattedSplit,
+  calculateSplitAmount,
+  splitAmount2Percent,
+  isEqualPayoutSplit,
+} from "./fundingCycle";
 import { ZERO_ADDRESS } from "../../constants/Contract";
-import { CURRENCY_USD, ETH_TOKEN_ADDRESS, JBConstants, JBFundingCycleData, JBSplit } from "../../models/JuiceboxTypes";
-import { SQLPayout, Action, Payout, JBSplitNanceStruct } from "../../models/NanceTypes";
+import {
+  CURRENCY_USD,
+  ETH_TOKEN_ADDRESS,
+  JBConstants,
+  JBFundingCycleData,
+  JBSplit,
+} from "../../models/JuiceboxTypes";
+import {
+  SQLPayout,
+  Action,
+  Payout,
+  JBSplitNanceStruct,
+} from "../../models/NanceTypes";
 import { getAddress } from "viem";
 import { SectionTableData } from "../../components/form/DiffTableWithSection";
-import { diff2TableEntry } from "../../components/juicebox/JBSplitEntry";
+import { diff2TableEntry } from "@/components/JuiceboxCard/JBSplitEntry";
 
 function mulDiv(a: BigNumber, b: BigNumber, denominator: BigNumberish) {
   return a.mul(b).div(denominator);
 }
 
 function formatEtherCommify(wei: BigNumberish) {
-  return utils.commify(Math.round(BigNumber.from(wei).div(BigNumber.from("1000000000000000000")).toNumber()));
+  return utils.commify(
+    Math.round(
+      BigNumber.from(wei).div(BigNumber.from("1000000000000000000")).toNumber(),
+    ),
+  );
 }
 
 // In v1, ETH = 0, USD = 1
 // In v2, ETH = 1, USD = 2, we subtract 1 to get the same value
 export const formatCurrency = (currency: BigNumber, amount: BigNumber) => {
   const symbol = currency.toNumber() == 0 ? "Ξ" : "$";
-  const formatted = amount.gte(JBConstants.UintMax) ? "∞" : formatEtherCommify(amount ?? 0);
+  const formatted = amount.gte(JBConstants.UintMax)
+    ? "∞"
+    : formatEtherCommify(amount ?? 0);
   return symbol + formatted;
 };
 
@@ -42,19 +65,33 @@ function compareBoolean(a: boolean | undefined, b: boolean | undefined) {
 // ====== Split ======
 
 export function isEqualJBSplit(a: JBSplit, b: JBSplit) {
-  return a.allocator === b.allocator
-    && a.beneficiary === b.beneficiary
-    && a.lockedUntil.eq(b.lockedUntil)
-    && a.percent.eq(b.percent)
-    && a.preferAddToBalance === b.preferAddToBalance
-    && a.preferClaimed === b.preferClaimed
-    && a.projectId.eq(b.projectId);
+  return (
+    a.allocator === b.allocator &&
+    a.beneficiary === b.beneficiary &&
+    a.lockedUntil.eq(b.lockedUntil) &&
+    a.percent.eq(b.percent) &&
+    a.preferAddToBalance === b.preferAddToBalance &&
+    a.preferClaimed === b.preferClaimed &&
+    a.projectId.eq(b.projectId)
+  );
 }
 
-export const keyOfSplit = (mod: JBSplit) => `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${mod.allocator}`;
-export const keyOfPayout2Split = (mod: Payout) => `${getAddress(mod.address || ZERO_ADDRESS)}-${mod.project ?? 0}-${ZERO_ADDRESS}`;
-export const keyOfNanceSplit2Split = (mod: JBSplitNanceStruct) => `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${mod.allocator}`;
-export const keyOfNancePayout2Split = (mod: SQLPayout) => `${getAddress(mod.payAddress || ZERO_ADDRESS)}-${mod.payProject ?? 0}-${mod.payAllocator || ZERO_ADDRESS}`;
+export const keyOfSplit = (mod: JBSplit) =>
+  `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${
+    mod.allocator
+  }`;
+export const keyOfPayout2Split = (mod: Payout) =>
+  `${getAddress(mod.address || ZERO_ADDRESS)}-${
+    mod.project ?? 0
+  }-${ZERO_ADDRESS}`;
+export const keyOfNanceSplit2Split = (mod: JBSplitNanceStruct) =>
+  `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${
+    mod.allocator
+  }`;
+export const keyOfNancePayout2Split = (mod: SQLPayout) =>
+  `${getAddress(mod.payAddress || ZERO_ADDRESS)}-${mod.payProject ?? 0}-${
+    mod.payAllocator || ZERO_ADDRESS
+  }`;
 
 // ====== Split Diff ======
 
@@ -68,44 +105,51 @@ export interface SplitDiffEntry {
 
 interface SplitDiff {
   expire: {
-    [key: string]: SplitDiffEntry
-  },
+    [key: string]: SplitDiffEntry;
+  };
   new: {
-    [key: string]: SplitDiffEntry
-  },
+    [key: string]: SplitDiffEntry;
+  };
   change: {
-    [key: string]: SplitDiffEntry
-  },
+    [key: string]: SplitDiffEntry;
+  };
   keep: {
-    [key: string]: SplitDiffEntry
-  },
-  newTotal: BigNumber
+    [key: string]: SplitDiffEntry;
+  };
+  newTotal: BigNumber;
 }
 
 const BIG_ZERO = BigNumber.from(0);
 
 // Update percent in JBSplit struct, because we have new distributionLimit
-function percentUpdaterFrom(newLimitBG: BigNumber, currency: BigNumber, version: number) {
+function percentUpdaterFrom(
+  newLimitBG: BigNumber,
+  currency: BigNumber,
+  version: number,
+) {
   return (entry: SplitDiffEntry) => {
     const newPercent = splitAmount2Percent(newLimitBG, entry.amount);
     entry.split = {
       ...entry.split,
-      percent: newPercent
+      percent: newPercent,
     };
-    entry.newVal = formattedSplit(
-      newPercent,
-      currency,
-      newLimitBG,
-      version
-    ) || "";
+    entry.newVal =
+      formattedSplit(newPercent, currency, newLimitBG, version) || "";
   };
 }
 
-export function compareRules(config: FundingCycleConfigProps, newConfig: FundingCycleConfigProps | undefined): SectionTableData[] {
+export function compareRules(
+  config: FundingCycleConfigProps,
+  newConfig: FundingCycleConfigProps | undefined,
+): SectionTableData[] {
   if (!newConfig) return [];
 
-  const discountRateDenominator = BigNumber.from(JBConstants.TotalPercent.DiscountRate[2]);
-  const reservedRateDenominator = BigNumber.from(JBConstants.TotalPercent.ReservedRate[2]);
+  const discountRateDenominator = BigNumber.from(
+    JBConstants.TotalPercent.DiscountRate[2],
+  );
+  const reservedRateDenominator = BigNumber.from(
+    JBConstants.TotalPercent.ReservedRate[2],
+  );
 
   const weight = config.fundingCycle.weight || BIG_ZERO;
   const discountRate = config.fundingCycle.discountRate || BIG_ZERO;
@@ -117,21 +161,54 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
   const newRedemptionRate = newConfig.metadata?.redemptionRate || BIG_ZERO;
 
   const weightSpecified = !newWeight.eq(0);
-  newWeight = weightSpecified ?
-    newWeight :
-    mulDiv(weight, discountRateDenominator.sub(discountRate), discountRateDenominator);
+  newWeight = weightSpecified
+    ? newWeight
+    : mulDiv(
+        weight,
+        discountRateDenominator.sub(discountRate),
+        discountRateDenominator,
+      );
 
   // Payer gets what left after reserved tokens are issued.
-  const payerWeight = weight.sub(mulDiv(weight, reservedRate, reservedRateDenominator));
-  const newPayerWeight = newWeight.sub(mulDiv(newWeight, newReservedRate, reservedRateDenominator));
+  const payerWeight = weight.sub(
+    mulDiv(weight, reservedRate, reservedRateDenominator),
+  );
+  const newPayerWeight = newWeight.sub(
+    mulDiv(newWeight, newReservedRate, reservedRateDenominator),
+  );
 
   // For display, 0.01 % precision
-  const discountRateLabel = (discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[2] * 100).toFixed(2) + "%";
-  const reservedRateLabel = (reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[2] * 100).toFixed(2) + "%";
-  const redemptionRateLabel = (redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[2] * 100).toFixed(2) + "%";
-  const newDiscountRateLabel = (newDiscountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[2] * 100).toFixed(2) + "%";
-  const newReservedRateLabel = (newReservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[2] * 100).toFixed(2) + "%";
-  const newRedemptionRateLabel = (newRedemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[2] * 100).toFixed(2) + "%";
+  const discountRateLabel =
+    (
+      (discountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[2]) *
+      100
+    ).toFixed(2) + "%";
+  const reservedRateLabel =
+    (
+      (reservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[2]) *
+      100
+    ).toFixed(2) + "%";
+  const redemptionRateLabel =
+    (
+      (redemptionRate.toNumber() / JBConstants.TotalPercent.RedemptionRate[2]) *
+      100
+    ).toFixed(2) + "%";
+  const newDiscountRateLabel =
+    (
+      (newDiscountRate.toNumber() / JBConstants.TotalPercent.DiscountRate[2]) *
+      100
+    ).toFixed(2) + "%";
+  const newReservedRateLabel =
+    (
+      (newReservedRate.toNumber() / JBConstants.TotalPercent.ReservedRate[2]) *
+      100
+    ).toFixed(2) + "%";
+  const newRedemptionRateLabel =
+    (
+      (newRedemptionRate.toNumber() /
+        JBConstants.TotalPercent.RedemptionRate[2]) *
+      100
+    ).toFixed(2) + "%";
 
   return [
     {
@@ -142,18 +219,32 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           title: "Duration",
           proposal: 0,
           oldVal: config.fundingCycle.duration?.div(86400).toString() + " days",
-          newVal: newConfig.fundingCycle.duration?.div(86400).toString() + " days",
-          status: compareBN(config.fundingCycle.duration, newConfig.fundingCycle.duration),
-          valueToBeSorted: 0
+          newVal:
+            newConfig.fundingCycle.duration?.div(86400).toString() + " days",
+          status: compareBN(
+            config.fundingCycle.duration,
+            newConfig.fundingCycle.duration,
+          ),
+          valueToBeSorted: 0,
         },
         {
           id: "payouts",
           title: "Payouts",
           proposal: 0,
-          oldVal: formatCurrency(config.fundingCycle.currency, config.fundingCycle.target),
-          newVal: formatCurrency(newConfig.fundingCycle.currency, newConfig.fundingCycle.target),
-          status: (config.fundingCycle.currency.eq(newConfig.fundingCycle.currency) && config.fundingCycle.target.eq(newConfig.fundingCycle.target)) ? "Keep" : "Edit",
-          valueToBeSorted: 0
+          oldVal: formatCurrency(
+            config.fundingCycle.currency,
+            config.fundingCycle.target,
+          ),
+          newVal: formatCurrency(
+            newConfig.fundingCycle.currency,
+            newConfig.fundingCycle.target,
+          ),
+          status:
+            config.fundingCycle.currency.eq(newConfig.fundingCycle.currency) &&
+            config.fundingCycle.target.eq(newConfig.fundingCycle.target)
+              ? "Keep"
+              : "Edit",
+          valueToBeSorted: 0,
         },
         {
           id: "editDeadline",
@@ -161,10 +252,13 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           proposal: 0,
           oldVal: config.fundingCycle.ballot,
           newVal: newConfig.fundingCycle.ballot,
-          status: config.fundingCycle.ballot === newConfig.fundingCycle.ballot ? "Keep" : "Edit",
-          valueToBeSorted: 0
-        }
-      ]
+          status:
+            config.fundingCycle.ballot === newConfig.fundingCycle.ballot
+              ? "Keep"
+              : "Edit",
+          valueToBeSorted: 0,
+        },
+      ],
     },
     {
       section: "Token",
@@ -176,7 +270,7 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           oldVal: formatEtherCommify(weight),
           newVal: formatEtherCommify(newWeight),
           status: compareBN(weight, newWeight),
-          valueToBeSorted: 0
+          valueToBeSorted: 0,
         },
         {
           id: "payerIssuanceRate",
@@ -185,7 +279,7 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           oldVal: formatEtherCommify(payerWeight),
           newVal: formatEtherCommify(newPayerWeight),
           status: compareBN(payerWeight, newPayerWeight),
-          valueToBeSorted: 0
+          valueToBeSorted: 0,
         },
         {
           id: "reservedRate",
@@ -194,7 +288,7 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           oldVal: reservedRateLabel,
           newVal: newReservedRateLabel,
           status: compareBN(reservedRate, newReservedRate),
-          valueToBeSorted: 0
+          valueToBeSorted: 0,
         },
         {
           id: "issuanceReductionRate",
@@ -203,7 +297,7 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           oldVal: discountRateLabel,
           newVal: newDiscountRateLabel,
           status: compareBN(discountRate, newDiscountRate),
-          valueToBeSorted: 0
+          valueToBeSorted: 0,
         },
         {
           id: "redemptionRate",
@@ -212,7 +306,7 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           oldVal: redemptionRateLabel,
           newVal: newRedemptionRateLabel,
           status: compareBN(redemptionRate, newRedemptionRate),
-          valueToBeSorted: 0
+          valueToBeSorted: 0,
         },
         {
           id: "ownerTokenMinting",
@@ -220,8 +314,11 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           proposal: 0,
           oldVal: getBooleanLabel(config.metadata?.allowMinting),
           newVal: getBooleanLabel(newConfig.metadata?.allowMinting),
-          status: compareBoolean(config.metadata?.allowMinting, newConfig.metadata?.allowMinting),
-          valueToBeSorted: 0
+          status: compareBoolean(
+            config.metadata?.allowMinting,
+            newConfig.metadata?.allowMinting,
+          ),
+          valueToBeSorted: 0,
         },
         {
           id: "tokenTransfers",
@@ -231,11 +328,15 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           oldVal: getBooleanLabel(!config.metadata?.global.pauseTransfers),
           // @ts-ignore
           newVal: getBooleanLabel(!newConfig.metadata?.global.pauseTransfers),
-          // @ts-ignore
-          status: compareBoolean(config.metadata?.global.pauseTransfers, newConfig.metadata?.global.pauseTransfers),
-          valueToBeSorted: 0
-        }
-      ]
+          status: compareBoolean(
+            // @ts-ignore
+            config.metadata?.global.pauseTransfers,
+            // @ts-ignore
+            newConfig.metadata?.global.pauseTransfers,
+          ),
+          valueToBeSorted: 0,
+        },
+      ],
     },
     {
       section: "Other Rules",
@@ -246,8 +347,11 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           proposal: 0,
           oldVal: getBooleanLabel(!config.metadata?.pausePay),
           newVal: getBooleanLabel(!newConfig.metadata?.pausePay),
-          status: compareBoolean(config.metadata?.pausePay, newConfig.metadata?.pausePay),
-          valueToBeSorted: 0
+          status: compareBoolean(
+            config.metadata?.pausePay,
+            newConfig.metadata?.pausePay,
+          ),
+          valueToBeSorted: 0,
         },
         {
           id: "holdFees",
@@ -255,8 +359,11 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           proposal: 0,
           oldVal: getBooleanLabel(config.metadata?.holdFees),
           newVal: getBooleanLabel(newConfig.metadata?.holdFees),
-          status: compareBoolean(config.metadata?.holdFees, newConfig.metadata?.holdFees),
-          valueToBeSorted: 0
+          status: compareBoolean(
+            config.metadata?.holdFees,
+            newConfig.metadata?.holdFees,
+          ),
+          valueToBeSorted: 0,
         },
         {
           id: "setPaymentTerminals",
@@ -264,17 +371,25 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           proposal: 0,
           oldVal: getBooleanLabel(config.metadata?.global.allowSetTerminals),
           newVal: getBooleanLabel(newConfig.metadata?.global.allowSetTerminals),
-          status: compareBoolean(config.metadata?.global.allowSetTerminals, newConfig.metadata?.global.allowSetTerminals),
-          valueToBeSorted: 0
+          status: compareBoolean(
+            config.metadata?.global.allowSetTerminals,
+            newConfig.metadata?.global.allowSetTerminals,
+          ),
+          valueToBeSorted: 0,
         },
         {
           id: "setController",
           title: "Set controller",
           proposal: 0,
           oldVal: getBooleanLabel(config.metadata?.global.allowSetController),
-          newVal: getBooleanLabel(newConfig.metadata?.global.allowSetController),
-          status: compareBoolean(config.metadata?.global.allowSetController, newConfig.metadata?.global.allowSetController),
-          valueToBeSorted: 0
+          newVal: getBooleanLabel(
+            newConfig.metadata?.global.allowSetController,
+          ),
+          status: compareBoolean(
+            config.metadata?.global.allowSetController,
+            newConfig.metadata?.global.allowSetController,
+          ),
+          valueToBeSorted: 0,
         },
         {
           id: "migratePaymentTerminal",
@@ -282,8 +397,11 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           proposal: 0,
           oldVal: getBooleanLabel(config.metadata?.allowTerminalMigration),
           newVal: getBooleanLabel(newConfig.metadata?.allowTerminalMigration),
-          status: compareBoolean(config.metadata?.allowTerminalMigration, newConfig.metadata?.allowTerminalMigration),
-          valueToBeSorted: 0
+          status: compareBoolean(
+            config.metadata?.allowTerminalMigration,
+            newConfig.metadata?.allowTerminalMigration,
+          ),
+          valueToBeSorted: 0,
         },
         {
           id: "migrateController",
@@ -291,72 +409,95 @@ export function compareRules(config: FundingCycleConfigProps, newConfig: Funding
           proposal: 0,
           oldVal: getBooleanLabel(config.metadata?.allowControllerMigration),
           newVal: getBooleanLabel(newConfig.metadata?.allowControllerMigration),
-          status: compareBoolean(config.metadata?.allowControllerMigration, newConfig.metadata?.allowControllerMigration),
-          valueToBeSorted: 0
-        }
-      ]
-    }];
+          status: compareBoolean(
+            config.metadata?.allowControllerMigration,
+            newConfig.metadata?.allowControllerMigration,
+          ),
+          valueToBeSorted: 0,
+        },
+      ],
+    },
+  ];
 }
 
-export function comparePayouts(config: FundingCycleConfigProps, newConfig: FundingCycleConfigProps | undefined, oldPayouts: JBSplit[], newPayouts: JBSplit[]) {
+export function comparePayouts(
+  config: FundingCycleConfigProps,
+  newConfig: FundingCycleConfigProps | undefined,
+  oldPayouts: JBSplit[],
+  newPayouts: JBSplit[],
+) {
   const diff: SplitDiff = {
     expire: {},
     new: {},
     change: {},
     keep: {},
-    newTotal: newConfig?.fundingCycle.target || BIG_ZERO
+    newTotal: newConfig?.fundingCycle.target || BIG_ZERO,
   };
   if (!newConfig) return diff;
 
   const newPayoutsMap = new Map<string, JBSplit>();
-  newPayouts.forEach(payout => newPayoutsMap.set(keyOfSplit(payout), payout));
+  newPayouts.forEach((payout) => newPayoutsMap.set(keyOfSplit(payout), payout));
 
   const isInfiniteLimit = config.fundingCycle.target.gte(JBConstants.UintMax);
 
   // Calculate diff
-  oldPayouts.forEach(split => {
+  oldPayouts.forEach((split) => {
     const key = keyOfSplit(split);
     const newSplit = newPayoutsMap.get(key);
     const entry = {
       split: newSplit || split,
       proposalId: 0,
-      oldVal: formattedSplit(
-        split.percent || BIG_ZERO,
-        config.fundingCycle.currency,
-        config.fundingCycle.target,
-        config.version
-      ) || "",
+      oldVal:
+        formattedSplit(
+          split.percent || BIG_ZERO,
+          config.fundingCycle.currency,
+          config.fundingCycle.target,
+          config.version,
+        ) || "",
       newVal: "",
-      amount: 0
+      amount: 0,
     };
 
     if (newSplit) {
       // keep or change
       const equal = isEqualPayoutSplit(
-        split.percent, config.fundingCycle.currency, config.fundingCycle.target,
-        newSplit.percent, newConfig.fundingCycle.currency, newConfig.fundingCycle.target);
+        split.percent,
+        config.fundingCycle.currency,
+        config.fundingCycle.target,
+        newSplit.percent,
+        newConfig.fundingCycle.currency,
+        newConfig.fundingCycle.target,
+      );
 
       if (equal) {
         diff.keep[key] = {
           ...entry,
-          newVal: formattedSplit(
-            split.percent || BIG_ZERO,
-            config.fundingCycle.currency,
+          newVal:
+            formattedSplit(
+              split.percent || BIG_ZERO,
+              config.fundingCycle.currency,
+              config.fundingCycle.target,
+              config.version,
+            ) || "",
+          amount: calculateSplitAmount(
+            split.percent,
             config.fundingCycle.target,
-            config.version
-          ) || "",
-          amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
+          ),
         };
       } else {
         diff.change[key] = {
           ...entry,
-          newVal: formattedSplit(
-            newSplit.percent || BIG_ZERO,
-            newConfig.fundingCycle.currency,
+          newVal:
+            formattedSplit(
+              newSplit.percent || BIG_ZERO,
+              newConfig.fundingCycle.currency,
+              newConfig.fundingCycle.target,
+              newConfig.version,
+            ) || "",
+          amount: calculateSplitAmount(
+            newSplit.percent,
             newConfig.fundingCycle.target,
-            newConfig.version
-          ) || "",
-          amount: calculateSplitAmount(newSplit.percent, newConfig.fundingCycle.target)
+          ),
         };
       }
     } else {
@@ -370,18 +511,22 @@ export function comparePayouts(config: FundingCycleConfigProps, newConfig: Fundi
 
   newPayoutsMap.forEach((split, key) => {
     // New entry
-    const amount = calculateSplitAmount(split.percent, newConfig.fundingCycle.target);
+    const amount = calculateSplitAmount(
+      split.percent,
+      newConfig.fundingCycle.target,
+    );
     diff.new[key] = {
       split,
       proposalId: 0,
       oldVal: "",
-      newVal: formattedSplit(
-        split.percent || BIG_ZERO,
-        newConfig.fundingCycle.currency,
-        newConfig.fundingCycle.target,
-        newConfig.version
-      ) || "",
-      amount
+      newVal:
+        formattedSplit(
+          split.percent || BIG_ZERO,
+          newConfig.fundingCycle.currency,
+          newConfig.fundingCycle.target,
+          newConfig.version,
+        ) || "",
+      amount,
     };
   });
 
@@ -389,20 +534,33 @@ export function comparePayouts(config: FundingCycleConfigProps, newConfig: Fundi
   return diff;
 }
 
-export function mergePayouts(config: FundingCycleConfigProps, currentCycle: number | undefined, onchainPayouts: JBSplit[], registeredPayouts: SQLPayout[], actionPayouts: { pid: number, action: Action }[]) {
+export function mergePayouts(
+  config: FundingCycleConfigProps,
+  currentCycle: number | undefined,
+  onchainPayouts: JBSplit[],
+  registeredPayouts: SQLPayout[],
+  actionPayouts: { pid: number; action: Action }[],
+) {
   const diff: SplitDiff = {
     expire: {},
     new: {},
     change: {},
     keep: {},
-    newTotal: config.fundingCycle.target
+    newTotal: config.fundingCycle.target,
   };
 
   // Maps
   const registeredPayoutMap = new Map<string, SQLPayout>();
-  const actionPayoutMap = new Map<string, { pid: number, action: Action }>();
-  registeredPayouts.forEach(payout => registeredPayoutMap.set(keyOfNancePayout2Split(payout), payout));
-  actionPayouts.forEach(action => actionPayoutMap.set(keyOfPayout2Split((action.action.payload as Payout)), action));
+  const actionPayoutMap = new Map<string, { pid: number; action: Action }>();
+  registeredPayouts.forEach((payout) =>
+    registeredPayoutMap.set(keyOfNancePayout2Split(payout), payout),
+  );
+  actionPayouts.forEach((action) =>
+    actionPayoutMap.set(
+      keyOfPayout2Split(action.action.payload as Payout),
+      action,
+    ),
+  );
   //console.debug("payoutsDiffOf.start", onchainPayouts, registeredPayoutMap, actionPayoutMap);
 
   // Calculate diff
@@ -410,7 +568,7 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
   //  1. expired: numberOfPayouts == (currentCycle - governanceCycleStart + 1)
   //  2. added: split not existed before
   //  3. changed: payouts amount changed
-  onchainPayouts.forEach(split => {
+  onchainPayouts.forEach((split) => {
     const key = keyOfSplit(split);
     const registeredPayout = registeredPayoutMap.get(key);
     const actionPayout = actionPayoutMap.get(key);
@@ -418,14 +576,15 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
     const defaultSplitDiffEntry = {
       split,
       proposalId: 0,
-      oldVal: formattedSplit(
-        split.percent || BIG_ZERO,
-        config.fundingCycle.currency,
-        config.fundingCycle.target,
-        config.version
-      ) || "",
+      oldVal:
+        formattedSplit(
+          split.percent || BIG_ZERO,
+          config.fundingCycle.currency,
+          config.fundingCycle.target,
+          config.version,
+        ) || "",
       newVal: "",
-      amount: calculateSplitAmount(split.percent, config.fundingCycle.target)
+      amount: calculateSplitAmount(split.percent, config.fundingCycle.target),
     };
 
     if (actionPayout) {
@@ -433,33 +592,39 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
       diff.change[key] = {
         ...defaultSplitDiffEntry,
         proposalId: actionPayout.pid,
-        amount: (actionPayout.action.payload as Payout).amountUSD
+        amount: (actionPayout.action.payload as Payout).amountUSD,
       };
     } else if (registeredPayout) {
       // Will it expire?
-      const willExpire = currentCycle && registeredPayout.numberOfPayouts < (currentCycle - registeredPayout.governanceCycleStart + 1);
+      const willExpire =
+        currentCycle &&
+        registeredPayout.numberOfPayouts <
+          currentCycle - registeredPayout.governanceCycleStart + 1;
       if (willExpire) {
         diff.expire[key] = {
           ...defaultSplitDiffEntry,
-          proposalId: registeredPayout.proposalId || 0
+          proposalId: registeredPayout.proposalId || 0,
         };
       } else {
         // We have registered payout
         // Let's see if it matched
-        const onchainAmount = calculateSplitAmount(split.percent, config.fundingCycle.target);
+        const onchainAmount = calculateSplitAmount(
+          split.percent,
+          config.fundingCycle.target,
+        );
         const registeredAmount = registeredPayout.amount;
         if (onchainAmount === registeredAmount) {
           // keep it
           diff.keep[key] = {
             ...defaultSplitDiffEntry,
-            proposalId: registeredPayout.proposalId || 0
+            proposalId: registeredPayout.proposalId || 0,
           };
         } else {
           // correct it
           diff.change[key] = {
             ...defaultSplitDiffEntry,
             proposalId: registeredPayout.proposalId || 0,
-            amount: registeredAmount
+            amount: registeredAmount,
           };
         }
       }
@@ -482,14 +647,14 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
       lockedUntil: BIG_ZERO,
       beneficiary: payout.address,
       projectId: BigNumber.from(payout.project || 0),
-      allocator: ZERO_ADDRESS
+      allocator: ZERO_ADDRESS,
     };
     diff.new[key] = {
       split,
       proposalId: action.pid,
       oldVal: "",
       newVal: "",
-      amount: payout.amountUSD
+      amount: payout.amountUSD,
     };
   });
 
@@ -498,31 +663,52 @@ export function mergePayouts(config: FundingCycleConfigProps, currentCycle: numb
   const isInfiniteLimit = config.fundingCycle.target.gte(JBConstants.UintMax);
   const oldLimit = parseInt(utils.formatEther(config.fundingCycle.target ?? 0));
   let newLimit = oldLimit;
-  Object.entries(diff.new).forEach((v) => newLimit += v[1].amount);
-  Object.entries(diff.expire).forEach((v) => newLimit -= v[1].amount);
+  Object.entries(diff.new).forEach((v) => (newLimit += v[1].amount));
+  Object.entries(diff.expire).forEach((v) => (newLimit -= v[1].amount));
   Object.entries(diff.change).forEach((v) => {
-    newLimit -= calculateSplitAmount(v[1].split.percent, config.fundingCycle.target);
+    newLimit -= calculateSplitAmount(
+      v[1].split.percent,
+      config.fundingCycle.target,
+    );
     newLimit += v[1].amount;
   });
   const newLimitBG = utils.parseEther(newLimit.toFixed(0));
   diff.newTotal = newLimitBG;
 
   // FIXME: remining funds should be allocated to project owner
-  const updatePercentAndNewVal = percentUpdaterFrom(newLimitBG, config.fundingCycle.currency, config.version);
+  const updatePercentAndNewVal = percentUpdaterFrom(
+    newLimitBG,
+    config.fundingCycle.currency,
+    config.version,
+  );
   Object.values(diff.keep).forEach(updatePercentAndNewVal);
   Object.values(diff.new).forEach(updatePercentAndNewVal);
   Object.values(diff.change).forEach(updatePercentAndNewVal);
-  ensureSplitsSumTo100Percent(diff, newLimitBG, config.fundingCycle.currency, config.version);
+  ensureSplitsSumTo100Percent(
+    diff,
+    newLimitBG,
+    config.fundingCycle.currency,
+    config.version,
+  );
 
   //console.debug("payoutsDiffOf.final", { diff, isInfiniteLimit, oldLimit, newLimit });
   return diff;
 }
 
 // Modified from https://github.com/jbx-protocol/juice-interface/blob/f17617de9577e4bf3f9d6208a51a2a2a3444188c/src/utils/v2v3/distributions.ts#L108
-function ensureSplitsSumTo100Percent(diff: SplitDiff, newLimitBG: BigNumber, currency: BigNumber, version: number) {
+function ensureSplitsSumTo100Percent(
+  diff: SplitDiff,
+  newLimitBG: BigNumber,
+  currency: BigNumber,
+  version: number,
+) {
   // Calculate the percent total of the splits
-  const allValues = Object.values(diff.keep).concat(Object.values(diff.new)).concat(Object.values(diff.change));
-  const currentTotal = allValues.reduce((sum, entry) => sum.add(entry.split.percent), BigNumber.from(0)).toNumber();
+  const allValues = Object.values(diff.keep)
+    .concat(Object.values(diff.new))
+    .concat(Object.values(diff.change));
+  const currentTotal = allValues
+    .reduce((sum, entry) => sum.add(entry.split.percent), BigNumber.from(0))
+    .toNumber();
   const SPLITS_TOTAL_PERCENT = JBConstants.TotalPercent.Splits[2];
   // If the current total is already equal to SPLITS_TOTAL_PERCENT, no adjustment needed
   if (currentTotal === SPLITS_TOTAL_PERCENT) {
@@ -534,21 +720,21 @@ function ensureSplitsSumTo100Percent(diff: SplitDiff, newLimitBG: BigNumber, cur
   const ratio = SPLITS_TOTAL_PERCENT / currentTotal;
 
   // Adjust each split
-  allValues.forEach(entry => {
-    const newPercent = BigNumber.from(Math.round(entry.split.percent.toNumber() * ratio));
+  allValues.forEach((entry) => {
+    const newPercent = BigNumber.from(
+      Math.round(entry.split.percent.toNumber() * ratio),
+    );
     //const oldPercent = entry.split.percent;
     entry.split.percent = newPercent;
-    entry.newVal = entry.newVal = formattedSplit(
-      newPercent,
-      currency,
-      newLimitBG,
-      version
-    ) || "";
+    entry.newVal = entry.newVal =
+      formattedSplit(newPercent, currency, newLimitBG, version) || "";
     //console.debug("adjustPercent", { oldPercent, newPercent, ratio, entry })
   });
 
   // Calculate the total after adjustment
-  const adjustedTotal = allValues.reduce((sum, entry) => sum.add(entry.split.percent), BigNumber.from(0)).toNumber();
+  const adjustedTotal = allValues
+    .reduce((sum, entry) => sum.add(entry.split.percent), BigNumber.from(0))
+    .toNumber();
   if (adjustedTotal === SPLITS_TOTAL_PERCENT) {
     return;
   }
@@ -556,18 +742,17 @@ function ensureSplitsSumTo100Percent(diff: SplitDiff, newLimitBG: BigNumber, cur
   // If there's STILL a difference due to rounding errors, adjust the largest split
   const difference = SPLITS_TOTAL_PERCENT - adjustedTotal;
   const largestSplitIndex = allValues.findIndex(
-    entry => entry.split.percent.toNumber() === Math.max(...allValues.map(e => e.split.percent.toNumber())),
+    (entry) =>
+      entry.split.percent.toNumber() ===
+      Math.max(...allValues.map((e) => e.split.percent.toNumber())),
   );
   if (allValues[largestSplitIndex]) {
-    const newPercent = allValues[largestSplitIndex].split.percent.add(difference);
+    const newPercent =
+      allValues[largestSplitIndex].split.percent.add(difference);
     //const oldPercent = allValues[largestSplitIndex].split.percent;
     allValues[largestSplitIndex].split.percent = newPercent;
-    allValues[largestSplitIndex].newVal = formattedSplit(
-      newPercent,
-      currency,
-      newLimitBG,
-      version
-    ) || "";
+    allValues[largestSplitIndex].newVal =
+      formattedSplit(newPercent, currency, newLimitBG, version) || "";
     //console.debug("after difference", { oldPercent, newPercent, difference, entry: allValues[largestSplitIndex] });
   }
 }
@@ -580,23 +765,27 @@ export function splitStruct2JBSplit(v: JBSplitNanceStruct) {
     lockedUntil: BigNumber.from(v.lockedUntil),
     beneficiary: v.beneficiary,
     projectId: BigNumber.from(v.projectId || 0),
-    allocator: v.allocator
+    allocator: v.allocator,
   };
   return split;
 }
 
-export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], pid: number = 0) {
+export function compareReserves(
+  oldReserves: JBSplit[],
+  newReserves: JBSplit[],
+  pid: number = 0,
+) {
   const newReserveMap = new Map<string, JBSplit>();
-  newReserves.forEach(split => newReserveMap.set(keyOfSplit(split), split));
+  newReserves.forEach((split) => newReserveMap.set(keyOfSplit(split), split));
   const diff: SplitDiff = {
     expire: {},
     new: {},
     change: {},
     keep: {},
-    newTotal: BIG_ZERO
+    newTotal: BIG_ZERO,
   };
 
-  oldReserves.forEach(ticket => {
+  oldReserves.forEach((ticket) => {
     const key = keyOfSplit(ticket);
     const reserve = newReserveMap.get(key);
 
@@ -608,29 +797,44 @@ export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], 
         // keep
         diff.keep[key] = {
           split: ticket,
-          oldVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-          newVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
+          oldVal: `${(
+            (ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2]) *
+            100
+          ).toFixed(2)}%`,
+          newVal: `${(
+            (ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2]) *
+            100
+          ).toFixed(2)}%`,
           proposalId: 0,
-          amount: ticket.percent.toNumber()
+          amount: ticket.percent.toNumber(),
         };
       } else {
         // change
         diff.change[key] = {
           split: reserve,
-          oldVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
-          newVal: `${(reserve.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
+          oldVal: `${(
+            (ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2]) *
+            100
+          ).toFixed(2)}%`,
+          newVal: `${(
+            (reserve.percent.toNumber() / JBConstants.TotalPercent.Splits[2]) *
+            100
+          ).toFixed(2)}%`,
           proposalId: pid,
-          amount: reserve.percent.toNumber()
+          amount: reserve.percent.toNumber(),
         };
       }
     } else {
       // remove
       diff.expire[key] = {
         split: ticket,
-        oldVal: `${(ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
+        oldVal: `${(
+          (ticket.percent.toNumber() / JBConstants.TotalPercent.Splits[2]) *
+          100
+        ).toFixed(2)}%`,
         newVal: "",
         proposalId: pid,
-        amount: ticket.percent.toNumber()
+        amount: ticket.percent.toNumber(),
       };
     }
 
@@ -642,9 +846,12 @@ export function compareReserves(oldReserves: JBSplit[], newReserves: JBSplit[], 
     diff.new[k] = {
       split: v,
       oldVal: "",
-      newVal: `${(v.percent.toNumber() / JBConstants.TotalPercent.Splits[2] * 100).toFixed(2)}%`,
+      newVal: `${(
+        (v.percent.toNumber() / JBConstants.TotalPercent.Splits[2]) *
+        100
+      ).toFixed(2)}%`,
       proposalId: pid,
-      amount: v.percent.toNumber()
+      amount: v.percent.toNumber(),
     };
   });
 
@@ -661,12 +868,17 @@ export function payout2JBSplit(payout: Payout) {
     lockedUntil: BIG_ZERO,
     beneficiary: payout.address,
     projectId: BigNumber.from(payout.project || 0),
-    allocator: ZERO_ADDRESS
+    allocator: ZERO_ADDRESS,
   };
   return split;
 }
 
-export function calcDiffTableData(config: FundingCycleConfigProps, newConfig: FundingCycleConfigProps | undefined, payoutsDiff: SplitDiff, reservesDiff: SplitDiff) {
+export function calcDiffTableData(
+  config: FundingCycleConfigProps,
+  newConfig: FundingCycleConfigProps | undefined,
+  payoutsDiff: SplitDiff,
+  reservesDiff: SplitDiff,
+) {
   // Table data
   //console.debug("calcDiffTableData", { config, newConfig, payoutsDiff, reservesDiff });
 
@@ -674,33 +886,60 @@ export function calcDiffTableData(config: FundingCycleConfigProps, newConfig: Fu
     ...compareRules(config, newConfig),
     {
       section: "Distribution",
-      entries: []
+      entries: [],
     },
     {
       section: "Reserve Token",
-      entries: []
-    }
+      entries: [],
+    },
   ];
 
   const payoutIndex = tableData.length - 2;
   const reserveIndex = tableData.length - 1;
   // Payout Diff
-  Object.values(payoutsDiff.new).forEach(diff2TableEntry(payoutIndex, "Add", tableData));
-  Object.values(payoutsDiff.change).forEach(diff2TableEntry(payoutIndex, "Edit", tableData));
-  Object.values(payoutsDiff.expire).forEach(diff2TableEntry(payoutIndex, "Remove", tableData));
-  Object.values(payoutsDiff.keep).forEach(diff2TableEntry(payoutIndex, "Keep", tableData));
-  tableData[payoutIndex].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
+  Object.values(payoutsDiff.new).forEach(
+    diff2TableEntry(payoutIndex, "Add", tableData),
+  );
+  Object.values(payoutsDiff.change).forEach(
+    diff2TableEntry(payoutIndex, "Edit", tableData),
+  );
+  Object.values(payoutsDiff.expire).forEach(
+    diff2TableEntry(payoutIndex, "Remove", tableData),
+  );
+  Object.values(payoutsDiff.keep).forEach(
+    diff2TableEntry(payoutIndex, "Keep", tableData),
+  );
+  tableData[payoutIndex].entries.sort(
+    (a, b) => b.valueToBeSorted - a.valueToBeSorted,
+  );
   // Reserve Diff
-  Object.values(reservesDiff.new).forEach(diff2TableEntry(reserveIndex, "Add", tableData));
-  Object.values(reservesDiff.change).forEach(diff2TableEntry(reserveIndex, "Edit", tableData));
-  Object.values(reservesDiff.expire).forEach(diff2TableEntry(reserveIndex, "Remove", tableData));
-  Object.values(reservesDiff.keep).forEach(diff2TableEntry(reserveIndex, "Keep", tableData));
-  tableData[reserveIndex].entries.sort((a, b) => b.valueToBeSorted - a.valueToBeSorted);
+  Object.values(reservesDiff.new).forEach(
+    diff2TableEntry(reserveIndex, "Add", tableData),
+  );
+  Object.values(reservesDiff.change).forEach(
+    diff2TableEntry(reserveIndex, "Edit", tableData),
+  );
+  Object.values(reservesDiff.expire).forEach(
+    diff2TableEntry(reserveIndex, "Remove", tableData),
+  );
+  Object.values(reservesDiff.keep).forEach(
+    diff2TableEntry(reserveIndex, "Keep", tableData),
+  );
+  tableData[reserveIndex].entries.sort(
+    (a, b) => b.valueToBeSorted - a.valueToBeSorted,
+  );
 
   return tableData;
 }
 
-export function encodedReconfigureFundingCyclesOf(config: FundingCycleConfigProps, payoutsDiff: SplitDiff, reservesDiff: SplitDiff, projectId: number, controller: Contract | undefined, terminalAddress: string | undefined = ZERO_ADDRESS) {
+export function encodedReconfigureFundingCyclesOf(
+  config: FundingCycleConfigProps,
+  payoutsDiff: SplitDiff,
+  reservesDiff: SplitDiff,
+  projectId: number,
+  controller: Contract | undefined,
+  terminalAddress: string | undefined = ZERO_ADDRESS,
+) {
   const BIG_ZERO = BigNumber.from(0);
   const fc = config.fundingCycle;
   const jbFundingCycleData: JBFundingCycleData = {
@@ -709,36 +948,49 @@ export function encodedReconfigureFundingCyclesOf(config: FundingCycleConfigProp
     //   if the project owner hasn't configured the subsequent funding cycle with an explicit weight.
     weight: BIG_ZERO,
     discountRate: fc?.discountRate || BIG_ZERO,
-    ballot: fc?.ballot || ZERO_ADDRESS
+    ballot: fc?.ballot || ZERO_ADDRESS,
   };
   const reconfigurationRawData = [
-    BigNumber.from(projectId),                       // _projectId
-    jbFundingCycleData,                              // _data
-    config.metadata,                          // _metadata
-    BigNumber.from(Math.floor(Date.now() / 1000)),   // _mustStartAtOrAfter
-    [                                                // _groupedSplits
+    BigNumber.from(projectId), // _projectId
+    jbFundingCycleData, // _data
+    config.metadata, // _metadata
+    BigNumber.from(Math.floor(Date.now() / 1000)), // _mustStartAtOrAfter
+    [
+      // _groupedSplits
       {
         group: JBConstants.SplitGroup.ETH,
         // gather JBSplit of payoutsDiff.new .change .keep
-        splits: Object.values(payoutsDiff.new).concat(Object.values(payoutsDiff.change)).concat(Object.values(payoutsDiff.keep)).map(v => v.split)
+        splits: Object.values(payoutsDiff.new)
+          .concat(Object.values(payoutsDiff.change))
+          .concat(Object.values(payoutsDiff.keep))
+          .map((v) => v.split),
       },
       {
         group: JBConstants.SplitGroup.RESERVED_TOKEN,
         // gather JBSplit of reservesDiff.new .change .keep
-        splits: Object.values(reservesDiff.new).concat(Object.values(reservesDiff.change)).concat(Object.values(reservesDiff.keep)).map(v => v.split)
-      }
+        splits: Object.values(reservesDiff.new)
+          .concat(Object.values(reservesDiff.change))
+          .concat(Object.values(reservesDiff.keep))
+          .map((v) => v.split),
+      },
     ],
-    [{                                                // _fundAccessConstraints
-      terminal: terminalAddress,
-      token: ETH_TOKEN_ADDRESS,
-      distributionLimit: payoutsDiff.newTotal,
-      distributionLimitCurrency: CURRENCY_USD,
-      overflowAllowance: BIG_ZERO,
-      overflowAllowanceCurrency: BIG_ZERO
-    }],
-    "Queued from Nance.QueueExecutionFlow"           // _memo
+    [
+      {
+        // _fundAccessConstraints
+        terminal: terminalAddress,
+        token: ETH_TOKEN_ADDRESS,
+        distributionLimit: payoutsDiff.newTotal,
+        distributionLimitCurrency: CURRENCY_USD,
+        overflowAllowance: BIG_ZERO,
+        overflowAllowanceCurrency: BIG_ZERO,
+      },
+    ],
+    "Queued from Nance.QueueExecutionFlow", // _memo
   ];
   console.debug("reconfigurationRawData", reconfigurationRawData);
 
-  return controller?.interface?.encodeFunctionData("reconfigureFundingCyclesOf", reconfigurationRawData);
+  return controller?.interface?.encodeFunctionData(
+    "reconfigureFundingCyclesOf",
+    reconfigurationRawData,
+  );
 }

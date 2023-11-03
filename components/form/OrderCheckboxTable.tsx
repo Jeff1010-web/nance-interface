@@ -1,23 +1,29 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import { classNames } from '../../utils/functions/tailwind';
-import { SafeTransactionDataPartial } from '@safe-global/safe-core-sdk-types';
-import GenericTenderlySimulationButton from '../ethereum/GenericTenderlySimulationButton';
+import { useLayoutEffect, useRef, useState } from "react";
+import { classNames } from "@/utils/functions/tailwind";
+import { SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
+import GenericTenderlySimulationButton from "../TenderlySimulation/GenericTenderlySimulationButton";
 
 export interface TransactionEntry {
-  title: JSX.Element
-  proposal: string
-  transactionData: SafeTransactionDataPartial
+  title: JSX.Element;
+  proposal: string;
+  transactionData: SafeTransactionDataPartial;
 }
 
-export default function OrderCheckboxTable({ address, entries }: { address: string, entries: TransactionEntry[] }) {
-
+export default function OrderCheckboxTable({
+  address,
+  entries,
+}: {
+  address: string;
+  entries: TransactionEntry[];
+}) {
   const checkbox = useRef<HTMLInputElement>(null);
   const [checked, setChecked] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<TransactionEntry[]>([]);
 
   useLayoutEffect(() => {
-    const isIndeterminate = selectedEntry.length > 0 && selectedEntry.length < entries.length;
+    const isIndeterminate =
+      selectedEntry.length > 0 && selectedEntry.length < entries.length;
     setChecked(selectedEntry.length === entries.length);
     setIndeterminate(isIndeterminate);
     checkbox.current!.indeterminate = isIndeterminate;
@@ -37,7 +43,10 @@ export default function OrderCheckboxTable({ address, entries }: { address: stri
             <div className="relative">
               {selectedEntry.length > 0 && (
                 <div className="absolute left-14 top-0 flex h-12 items-center space-x-3 bg-white sm:left-12">
-                  <GenericTenderlySimulationButton rawAddress={address} transactions={selectedEntry.map(e => e.transactionData)} />
+                  <GenericTenderlySimulationButton
+                    rawAddress={address}
+                    transactions={selectedEntry.map((e) => e.transactionData)}
+                  />
                 </div>
               )}
               <table className="min-w-full table-fixed divide-y divide-gray-300">
@@ -52,20 +61,34 @@ export default function OrderCheckboxTable({ address, entries }: { address: stri
                         onChange={toggleAll}
                       />
                     </th>
-                    <th scope="col" className="min-w-[12rem] py-3.5 pr-3 text-left text-sm font-semibold text-gray-900">
+                    <th
+                      scope="col"
+                      className="min-w-[12rem] py-3.5 pr-3 text-left text-sm font-semibold text-gray-900"
+                    >
                       Title
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >
                       Proposal
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >
                       Data
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {entries.map((entry, index) => (
-                    <tr key={index} className={selectedEntry.includes(entry) ? 'bg-gray-50' : undefined}>
+                    <tr
+                      key={index}
+                      className={
+                        selectedEntry.includes(entry) ? "bg-gray-50" : undefined
+                      }
+                    >
                       <td className="relative px-7 sm:w-12 sm:px-6">
                         {selectedEntry.includes(entry) && (
                           <div className="absolute inset-y-0 left-0 w-0.5 bg-indigo-600" />
@@ -79,22 +102,33 @@ export default function OrderCheckboxTable({ address, entries }: { address: stri
                             setSelectedEntry(
                               e.target.checked
                                 ? [...selectedEntry, entry]
-                                : selectedEntry.filter((p) => p !== entry)
+                                : selectedEntry.filter((p) => p !== entry),
                             )
                           }
                         />
                       </td>
                       <td
                         className={classNames(
-                          'whitespace-nowrap py-4 pr-3 text-sm font-medium',
-                          selectedEntry.includes(entry) ? 'text-indigo-600' : 'text-gray-900'
+                          "whitespace-nowrap py-4 pr-3 text-sm font-medium",
+                          selectedEntry.includes(entry)
+                            ? "text-indigo-600"
+                            : "text-gray-900",
                         )}
                       >
-                        {selectedEntry.includes(entry) && <span className="mr-2 underline">{"No."}{selectedEntry.indexOf(entry) + 1}</span>}
+                        {selectedEntry.includes(entry) && (
+                          <span className="mr-2 underline">
+                            {"No."}
+                            {selectedEntry.indexOf(entry) + 1}
+                          </span>
+                        )}
                         {entry.title}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{entry.proposal}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{entry.transactionData.data}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        {entry.proposal}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        {entry.transactionData.data}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

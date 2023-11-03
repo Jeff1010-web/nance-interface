@@ -1,11 +1,14 @@
-import Footer from "../components/Footer";
-import SiteNav from "../components/SiteNav";
-import Landing from "../components/pages/landing/Landing";
+import { Footer, SiteNav } from "@/components/Site";
+import Landing from "@/components/Landing";
 
 export default function LandingPage() {
   return (
     <>
-      <SiteNav pageTitle="Nance | Automate Your Governance" withProposalButton={false} withSiteSuffixInTitle={false} />
+      <SiteNav
+        pageTitle="Nance | Automate Your Governance"
+        withProposalButton={false}
+        withSiteSuffixInTitle={false}
+      />
       <Landing />
       <Footer />
     </>

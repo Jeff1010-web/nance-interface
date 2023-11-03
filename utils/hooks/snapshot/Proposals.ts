@@ -1,6 +1,6 @@
-import { APIError, useQuery } from 'graphql-hooks';
-import { mapChoiceIndex } from '../../functions/snapshotUtil';
-import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../../../constants/Snapshot';
+import { APIError, useQuery } from "graphql-hooks";
+import { mapChoiceIndex } from "../../functions/snapshotUtil";
+import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from "../../../constants/Snapshot";
 
 const PROPOSALS_QUERY = `
 query Proposals($first: Int, $skip: Int, $space: String, $state: String, $keyword: String) {
@@ -154,8 +154,8 @@ export interface SnapshotProposal {
   created: number;
   start: number;
   end: number;
-  ipfs: string;     // bafkreiete6tryrhksyt5gowckreabilu57zl4shjrl6kptkfy7oiowqd44
-  snapshot: string  // 16922147
+  ipfs: string; // bafkreiete6tryrhksyt5gowckreabilu57zl4shjrl6kptkfy7oiowqd44
+  snapshot: string; // 16922147
   // voting
   choices: string[];
   scores: number[];
@@ -177,46 +177,73 @@ export interface SnapshotVote {
   reason: string;
 }
 
-export type SnapshotVotedData = Omit<SnapshotVote & {
-  proposal: {
-    id: string;
-    choices: string[];
-    type: string;
-    title: string;
+export type SnapshotVotedData = Omit<
+  SnapshotVote & {
+    proposal: {
+      id: string;
+      choices: string[];
+      type: string;
+      title: string;
+    };
+    space: {
+      id: string;
+      name: string;
+    };
   },
-  space: {
-    id: string;
-    name: string;
-  }
-}, 'voter'>;
+  "voter"
+>;
 
-export function useProposalsByID(proposalIds: string[], address: string, skip: boolean = false) {
-  return useProposalsWithCustomQuery(PROPOSALS_BY_ID_QUERY, {
-    first: proposalIds.length,
-    proposalIds
-  }, address, skip);
+export function useProposalsByID(
+  proposalIds: string[],
+  address: string,
+  skip: boolean = false,
+) {
+  return useProposalsWithCustomQuery(
+    PROPOSALS_BY_ID_QUERY,
+    {
+      first: proposalIds.length,
+      proposalIds,
+    },
+    address,
+    skip,
+  );
 }
 
-export function useProposalsWithFilter(space: string, active: boolean, keyword: string, address: string, first: number, skip: number) {
-  return useProposalsWithCustomQuery(PROPOSALS_QUERY, {
-    space: space,
-    state: active ? "active" : "",
-    keyword: keyword,
-    first: first,
-    skip: skip
-  }, address);
+export function useProposalsWithFilter(
+  space: string,
+  active: boolean,
+  keyword: string,
+  address: string,
+  first: number,
+  skip: number,
+) {
+  return useProposalsWithCustomQuery(
+    PROPOSALS_QUERY,
+    {
+      space: space,
+      state: active ? "active" : "",
+      keyword: keyword,
+      first: first,
+      skip: skip,
+    },
+    address,
+  );
 }
 
-export function useProposalsWithCustomQuery(query: string, variables: object, address: string, skip: boolean = false): {
-  loading: boolean,
-  error: APIError<object> | undefined,
+export function useProposalsWithCustomQuery(
+  query: string,
+  variables: object,
+  address: string,
+  skip: boolean = false,
+): {
+  loading: boolean;
+  error: APIError<object> | undefined;
   data: {
-    proposalsData: SnapshotProposal[] | undefined,
-    votedData: { [id: string]: SnapshotVotedData }
-  },
-  refetch: (options?: any) => void
+    proposalsData: SnapshotProposal[] | undefined;
+    votedData: { [id: string]: SnapshotVotedData };
+  };
+  refetch: (options?: any) => void;
 } {
-
   // console.debug("🔧 useProposalsWithCustomQuery.args ->", { query, variables, skip });
 
   // Load proposals
@@ -224,31 +251,35 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
     loading: proposalsLoading,
     data: proposalsData,
     error: proposalsError,
-    cacheHit
+    cacheHit,
   } = useQuery<{ proposals: SnapshotProposal[] }>(query, { variables, skip });
   // Load voted proposals
   const {
     loading: votedLoading,
     data: votedRawData,
     error: votedError,
-    refetch
+    refetch,
   } = useQuery<{ votes: SnapshotVotedData[] }>(VOTED_PROPOSALS_QUERY, {
     variables: {
       voter: address,
-      proposalIds: proposalsData?.proposals.map(proposal => proposal.id),
-      first: Math.min(proposalsData?.proposals.length || 0, 1000)
+      proposalIds: proposalsData?.proposals.map((proposal) => proposal.id),
+      first: Math.min(proposalsData?.proposals.length || 0, 1000),
     },
-    skip
+    skip,
   });
   // console.debug("🔧 useProposalsWithCustomQuery.cacheHit", cacheHit);
 
   // Find voted proposals
   let votedData: { [id: string]: SnapshotVotedData } = {};
   if (address) {
-    votedRawData?.votes.forEach(vote => {
+    votedRawData?.votes.forEach((vote) => {
       votedData[vote.proposal.id] = {
         ...vote,
-        choice: mapChoiceIndex(vote.proposal.type, vote.proposal.choices, vote.choice)
+        choice: mapChoiceIndex(
+          vote.proposal.type,
+          vote.proposal.choices,
+          vote.choice,
+        ),
       };
     });
   }
@@ -256,11 +287,11 @@ export function useProposalsWithCustomQuery(query: string, variables: object, ad
   const ret = {
     data: {
       proposalsData: proposalsData?.proposals,
-      votedData
+      votedData,
     },
     loading: proposalsLoading || votedLoading,
     error: proposalsError || votedError,
-    refetch
+    refetch,
   };
   // console.debug("🔧 useProposalsWithCustomQuery.return ->", { ret });
   return ret;
@@ -273,40 +304,56 @@ export interface SnapshotSpaceWithVotesCount {
 }
 
 export interface AllVotes {
-  total: number,
-  for: number,
-  against: number,
-  abstain: number
+  total: number;
+  for: number;
+  against: number;
+  abstain: number;
 }
 
-export function useAllVotesOfAddress(address: string, limit: number, spaceFilter: string = ""): {
-  loading: boolean,
-  error: APIError<object> | undefined,
-  data: AllVotes
+export function useAllVotesOfAddress(
+  address: string,
+  limit: number,
+  spaceFilter: string = "",
+): {
+  loading: boolean;
+  error: APIError<object> | undefined;
+  data: AllVotes;
 } {
   // Load voted proposals
-  const { loading, data, error, cacheHit } = useQuery<{ votes: { id: string, choice: any, proposal: { type: string } }[] }>(ALL_VOTES_OF_USER, {
+  const { loading, data, error, cacheHit } = useQuery<{
+    votes: { id: string; choice: any; proposal: { type: string } }[];
+  }>(ALL_VOTES_OF_USER, {
     variables: {
       voter: address,
       first: Math.min(limit, 1000),
-      space: spaceFilter
+      space: spaceFilter,
     },
-    skip: !(address && address.length == 42)
+    skip: !(address && address.length == 42),
   });
   console.debug("🔧 useAllVotesOfAddress.cacheHit", cacheHit);
 
-  const optionCount: {[key: number]: number} = []; 
-  data?.votes?.filter(v => v.proposal.type === "basic").forEach(v => optionCount[v.choice]++);
+  const optionCount: { [key: number]: number } = [];
+  data?.votes
+    ?.filter((v) => v.proposal.type === "basic")
+    .forEach((v) => optionCount[v.choice]++);
 
-  return { loading, error, data: {
-    total: data?.votes.length ?? 0,
-    for: optionCount[1],
-    against: optionCount[2],
-    abstain: optionCount[3]
-  } };
+  return {
+    loading,
+    error,
+    data: {
+      total: data?.votes.length ?? 0,
+      for: optionCount[1],
+      against: optionCount[2],
+      abstain: optionCount[3],
+    },
+  };
 }
 
-export async function fetchAllVotesOfAddress(address: string, limit: number, spaceFilter: string = ""): Promise<AllVotes> {
+export async function fetchAllVotesOfAddress(
+  address: string,
+  limit: number,
+  spaceFilter: string = "",
+): Promise<AllVotes> {
   const ret = await fetch(`${SNAPSHOT_HUB}/graphql`, {
     method: "POST",
     headers: SNAPSHOT_HEADERS,
@@ -315,10 +362,10 @@ export async function fetchAllVotesOfAddress(address: string, limit: number, spa
       variables: {
         voter: address,
         first: Math.min(limit, 1000),
-        space: spaceFilter
-      }
+        space: spaceFilter,
+      },
     }),
-  }).then(res => res.json());
+  }).then((res) => res.json());
 
   if (ret.errors) {
     console.warn("fetchAllVotesOfAddress errors occurred: ", ret.errors);
@@ -326,84 +373,96 @@ export async function fetchAllVotesOfAddress(address: string, limit: number, spa
       total: 0,
       for: 0,
       against: 0,
-      abstain: 0
+      abstain: 0,
     };
   }
-  
+
   const votes: {
     id: string;
     choice: any;
     proposal: {
       type: string;
-    }
+    };
   }[] = ret.data?.votes;
-  const optionCount = [0,0,0,0]; 
-  votes.filter(v => v.proposal.type === "basic").forEach(v => optionCount[v.choice]++);
+  const optionCount = [0, 0, 0, 0];
+  votes
+    .filter((v) => v.proposal.type === "basic")
+    .forEach((v) => optionCount[v.choice]++);
 
   return {
     total: votes.length,
     for: optionCount[1],
     against: optionCount[2],
-    abstain: optionCount[3]
+    abstain: optionCount[3],
   };
 }
 
-export function useVotesOfAddress(address: string, skip: number, limit: number, spaceFilter: string = ""): {
-  loading: boolean,
-  error: APIError<object> | undefined,
+export function useVotesOfAddress(
+  address: string,
+  skip: number,
+  limit: number,
+  spaceFilter: string = "",
+): {
+  loading: boolean;
+  error: APIError<object> | undefined;
   data: {
-    votedData: SnapshotVotedData[],
-    spaces: SnapshotSpaceWithVotesCount[]
-  }
+    votedData: SnapshotVotedData[];
+    spaces: SnapshotSpaceWithVotesCount[];
+  };
 } {
-
   //console.debug("🔧 useProposalsWithCustomQuery.args ->", {query, variables});
 
   // Load voted proposals
-  const variables: {[key: string]: any} = {
+  const variables: { [key: string]: any } = {
     voter: address,
     first: Math.min(limit, 1000),
-    skip
+    skip,
   };
-  if(spaceFilter) {
+  if (spaceFilter) {
     variables["space"] = spaceFilter;
   }
   const {
     loading: votedLoading,
     data: votedRawData,
-    error: votedError
+    error: votedError,
   } = useQuery<{ votes: SnapshotVotedData[] }>(VOTED_PROPOSALS_QUERY, {
     variables,
-    skip: !(address && address.length == 42)
+    skip: !(address && address.length == 42),
   });
 
   // Map choices from index to option label
   let votedData: SnapshotVotedData[] = [];
   let spaces: { [id: string]: SnapshotSpaceWithVotesCount } = {};
   if (address) {
-    votedData = votedRawData?.votes?.map(vote => {
-      if (!spaces[vote.space.id]) {
-        spaces[vote.space.id] = {
-          id: vote.space.id,
-          name: vote.space.name,
-          votes: 0
-        };
-      }
-      spaces[vote.space.id].votes++;
+    votedData =
+      votedRawData?.votes?.map((vote) => {
+        if (!spaces[vote.space.id]) {
+          spaces[vote.space.id] = {
+            id: vote.space.id,
+            name: vote.space.name,
+            votes: 0,
+          };
+        }
+        spaces[vote.space.id].votes++;
 
-      return {
-        ...vote,
-        choice: mapChoiceIndex(vote.proposal.type, vote.proposal.choices, vote.choice)
-      };
-    }) || [];
+        return {
+          ...vote,
+          choice: mapChoiceIndex(
+            vote.proposal.type,
+            vote.proposal.choices,
+            vote.choice,
+          ),
+        };
+      }) || [];
   }
 
   const ret = {
     data: {
-      votedData, spaces: Object.values(spaces).sort((a, b) => b.votes - a.votes)
+      votedData,
+      spaces: Object.values(spaces).sort((a, b) => b.votes - a.votes),
     },
     loading: votedLoading,
-    error: votedError
+    error: votedError,
   };
   console.debug("🔧 useVotesOfAddress.return ->", { ret });
   return ret;
@@ -411,19 +470,30 @@ export function useVotesOfAddress(address: string, skip: number, limit: number, 
 
 export const VOTES_PER_PAGE = 150;
 
-export function useProposalVotes(proposal: SnapshotProposal | undefined, skip: number, orderBy: 'created' | 'vp' = 'created', withField: "" | "reason" | "app", skipThisHook: boolean = false, overrideLimit: number = 0): {
-  loading: boolean,
-  error: APIError<object> | undefined,
+export function useProposalVotes(
+  proposal: SnapshotProposal | undefined,
+  skip: number,
+  orderBy: "created" | "vp" = "created",
+  withField: "" | "reason" | "app",
+  skipThisHook: boolean = false,
+  overrideLimit: number = 0,
+): {
+  loading: boolean;
+  error: APIError<object> | undefined;
   data: {
-    votesData: SnapshotVote[],
-    totalVotes: number
-  },
-  refetch: (options?: any) => void
+    votesData: SnapshotVote[];
+    totalVotes: number;
+  };
+  refetch: (options?: any) => void;
 } {
-
   // sort after query if need reason
   const sortAfterQuery = withField === "reason" || withField === "app";
-  console.debug("🔧 useProposalVotes.args ->", { proposalId: proposal?.id, skip, orderBy, withField });
+  console.debug("🔧 useProposalVotes.args ->", {
+    proposalId: proposal?.id,
+    skip,
+    orderBy,
+    withField,
+  });
 
   // Load related votes
   const {
@@ -431,16 +501,20 @@ export function useProposalVotes(proposal: SnapshotProposal | undefined, skip: n
     data: voteData,
     error: voteError,
     refetch,
-    cacheHit
+    cacheHit,
   } = useQuery<{ votes: SnapshotVote[] }>(VOTES_OF_PROPOSAL_QUERY, {
     variables: {
       // Snapshot API Limit: The `first` argument must not be greater than 1000
-      first: sortAfterQuery ? Math.min(proposal?.votes ?? 0, 1000) : (overrideLimit === 0 ? VOTES_PER_PAGE : Math.min(overrideLimit, 1000)),
+      first: sortAfterQuery
+        ? Math.min(proposal?.votes ?? 0, 1000)
+        : overrideLimit === 0
+        ? VOTES_PER_PAGE
+        : Math.min(overrideLimit, 1000),
       skip: sortAfterQuery ? 0 : skip,
       orderBy: orderBy,
-      id: proposal?.id ?? ""
+      id: proposal?.id ?? "",
     },
-    skip: skipThisHook
+    skip: skipThisHook,
   });
   console.debug("🔧 useProposalVotes.cacheHit", cacheHit);
 
@@ -448,8 +522,8 @@ export function useProposalVotes(proposal: SnapshotProposal | undefined, skip: n
   let votes = voteData?.votes || [];
 
   if (sortAfterQuery) {
-    const allVotes = voteData?.votes
-      ?.filter((vote) => {
+    const allVotes =
+      voteData?.votes?.filter((vote) => {
         if (withField === "reason") {
           return vote.reason && vote.reason !== "";
         } else if (withField === "app") {
@@ -459,30 +533,32 @@ export function useProposalVotes(proposal: SnapshotProposal | undefined, skip: n
         }
       }) || [];
     totalVotes = allVotes?.length || 0;
-    votes = allVotes?.sort((a, b) => {
-      if (orderBy === 'created') {
-        return b.created - a.created;
-      } else {
-        return b.vp - a.vp;
-      }
-    }).slice(skip, skip + VOTES_PER_PAGE);
+    votes = allVotes
+      ?.sort((a, b) => {
+        if (orderBy === "created") {
+          return b.created - a.created;
+        } else {
+          return b.vp - a.vp;
+        }
+      })
+      .slice(skip, skip + VOTES_PER_PAGE);
   }
 
-  let votesData: SnapshotVote[] = votes?.map(vote => {
+  let votesData: SnapshotVote[] = votes?.map((vote) => {
     return {
       ...vote,
-      choice: mapChoiceIndex(proposal?.type, proposal?.choices, vote?.choice)
+      choice: mapChoiceIndex(proposal?.type, proposal?.choices, vote?.choice),
     };
   });
 
   const ret = {
     data: {
       votesData,
-      totalVotes
+      totalVotes,
     },
     loading: voteLoading,
     error: voteError,
-    refetch
+    refetch,
   };
   console.debug("🔧 useProposalVotes.return ->", { ret });
   return ret;

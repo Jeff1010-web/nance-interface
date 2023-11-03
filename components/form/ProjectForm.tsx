@@ -1,21 +1,34 @@
 import { ErrorMessage } from "@hookform/error-message";
 import { Controller, useFormContext } from "react-hook-form";
-import ProjectSearch from "../juicebox/ProjectSearch";
+import ProjectSearch from "../ProjectSearch";
 
-export default function ProjectForm(
-  { label, fieldName, defaultValue, showType = true, disabled = false } : { label?: string, fieldName: any, defaultValue?: number, showType?: boolean, disabled?: boolean }
-) {
-  const { control, formState: { errors } } = useFormContext();
+export default function ProjectForm({
+  label,
+  fieldName,
+  defaultValue,
+  showType = true,
+  disabled = false,
+}: {
+  label?: string;
+  fieldName: any;
+  defaultValue?: number;
+  showType?: boolean;
+  disabled?: boolean;
+}) {
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="mb-1 block text-sm font-medium text-gray-700">
         {label}
       </label>
       <div className="mt-1 flex rounded-md shadow-sm">
-        { showType && (
+        {showType && (
           <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
-                      project
+            project
           </span>
         )}
         <Controller
@@ -24,12 +37,19 @@ export default function ProjectForm(
           rules={{
             required: "Can't be empty",
             validate: {
-              positive: (v) => parseInt(v) > -1 || "Can't be negative number"
-            }
+              positive: (v) => parseInt(v) > -1 || "Can't be negative number",
+            },
           }}
-          render={({ field: { onChange, onBlur, value, ref } }) =>
-            <ProjectSearch val={value} setVal={onChange} inputStyle={`${showType ? 'rounded-none rounded-r-md' : 'rounded-md'} h-10`} disabled={disabled} />
-          }
+          render={({ field: { onChange, onBlur, value, ref } }) => (
+            <ProjectSearch
+              val={value}
+              setVal={onChange}
+              inputStyle={`${
+                showType ? "rounded-none rounded-r-md" : "rounded-md"
+              } h-10`}
+              disabled={disabled}
+            />
+          )}
           defaultValue={defaultValue}
           shouldUnregister
         />
@@ -37,7 +57,7 @@ export default function ProjectForm(
       <ErrorMessage
         errors={errors}
         name={fieldName}
-        render={({ message }) => <p className="text-red-500 mt-1">{message}</p>}
+        render={({ message }) => <p className="mt-1 text-red-500">{message}</p>}
       />
     </div>
   );

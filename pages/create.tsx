@@ -1,111 +1,143 @@
 /* eslint-disable react/jsx-no-undef */
 import Image from "next/image";
-import SiteNav from "../components/SiteNav";
 import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useRouter } from "next/router";
-import Notification from "../components/Notification";
+import Notification from "../components/common/Notification";
 import { CreateFormValues } from "../models/NanceTypes";
 import { useCreateSpace } from "../utils/hooks/NanceHooks";
-import { avatarBaseUrl, LOCAL_STORAGE_KEY_DISCORD_STATUS } from "../utils/functions/discordURL";
-import { useFetchDiscordUser, useLogoutDiscordUser } from "../utils/hooks/DiscordHooks";
+import {
+  avatarBaseUrl,
+  LOCAL_STORAGE_KEY_DISCORD_STATUS,
+} from "../utils/functions/discordURL";
+import {
+  useFetchDiscordUser,
+  useLogoutDiscordUser,
+} from "../utils/hooks/DiscordHooks";
 import { Session } from "next-auth";
 import { useEffect, useState } from "react";
-import ProjectForm from "../components/form/ProjectForm";
-import SnapshotForm from "../components/form/SnapshotForm";
-import DiscordForm from "../components/form/DiscordForm";
-import GovernanceCyleForm from "../components/form/GovernanceCycleForm";
-import ToggleSwitch from "../components/ToggleSwitch";
-import { TextInput } from "../components/form/TextForm";
-import GnosisSafeForm from "../components/form/GnosisSafeForm";
-import { discordAuthWindow } from '../utils/functions/discord';
+import ProjectForm from "@/components/form/ProjectForm";
+import ToggleSwitch from "@/components/common/ToggleSwitch";
+import { discordAuthWindow } from "@/utils/functions/discord";
+import {
+  DiscordForm,
+  GnosisSafeForm,
+  GovernanceCyleForm,
+  SnapshotForm,
+  TextForm,
+} from "@/components/CreateSpace";
+import { SiteNav } from "@/components/Site";
 
 export default function CreateSpacePage() {
-  const router = useRouter();
   // state
   const [shouldFetchDiscordUser, setShouldFetchDiscordUser] = useState(false);
   // hooks
   const { data: session, status } = useSession();
   const { openConnectModal } = useConnectModal();
   const address = session?.user?.name;
-  const { data: discordUser, isLoading: discordLoading } = useFetchDiscordUser({address}, shouldFetchDiscordUser);
-  const { trigger: discordLogoutTrigger  } = useLogoutDiscordUser({address: session?.user?.name || ''}, !!discordUser);
+  const { data: discordUser, isLoading: discordLoading } = useFetchDiscordUser(
+    { address },
+    shouldFetchDiscordUser,
+  );
+  const { trigger: discordLogoutTrigger } = useLogoutDiscordUser(
+    { address: session?.user?.name || "" },
+    !!discordUser,
+  );
 
   useEffect(() => {
     // check if there is a recent LOCAL_STORAGE_KEY_DISCORD_STATUS we can use
-    const discordStatus = localStorage.getItem(LOCAL_STORAGE_KEY_DISCORD_STATUS);
-    if (discordStatus === 'success') setShouldFetchDiscordUser(true);
+    const discordStatus = localStorage.getItem(
+      LOCAL_STORAGE_KEY_DISCORD_STATUS,
+    );
+    if (discordStatus === "success") setShouldFetchDiscordUser(true);
     function handleStorageChange(event: StorageEvent) {
       if (event.key === LOCAL_STORAGE_KEY_DISCORD_STATUS) {
-        if (event.newValue === 'success') setShouldFetchDiscordUser(true);
+        if (event.newValue === "success") setShouldFetchDiscordUser(true);
       }
     }
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 
   return (
     <>
-      <SiteNav pageTitle='nance control panel' withWallet/>
+      <SiteNav pageTitle="nance control panel" withWallet />
 
       <div className="flex justify-center">
         <div className="w-100">
-          <h1 className="text-lg text-center font-bold text-gray-900 mt-8 mb-5">Create New Nance Instance</h1>
+          <h1 className="mb-5 mt-8 text-center text-lg font-bold text-gray-900">
+            Create New Nance Instance
+          </h1>
           {status === "unauthenticated" && (
             <div className="text-center">
-              <button type="button" onClick={() => openConnectModal?.()}
-                className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium
+              <button
+                type="button"
+                onClick={() => openConnectModal?.()}
+                className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium
               text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
               >
-              Connect Wallet
+                Connect Wallet
               </button>
             </div>
           )}
 
           {status === "authenticated" && (
             <>
-              { !discordUser?.username && !discordLoading && (
+              {!discordUser?.username && !discordLoading && (
                 <div className="flex justify-center">
                   <button
-                    className="w-fit inline-flex items-center justify-center rounded-xl border border-transparent bg-purple-800 px-3 py-2 text-md font-bold disabled:text-black text-white shadow-sm hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300"
-                    onClick={ () => {
+                    className="text-md inline-flex w-fit items-center justify-center rounded-xl border border-transparent bg-purple-800 px-3 py-2 font-bold text-white shadow-sm hover:bg-purple-500 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-black disabled:opacity-50"
+                    onClick={() => {
                       localStorage.removeItem(LOCAL_STORAGE_KEY_DISCORD_STATUS);
-                      discordAuthWindow(); 
-                    } }
+                      discordAuthWindow();
+                    }}
                   >
                     Connect Discord
                   </button>
                 </div>
               )}
               <div className="flex justify-center">
-                { discordLoading && (
-                  <div className="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full" role="status" aria-label="loading">
-                  </div>
-                ) }
+                {discordLoading && (
+                  <div
+                    className="inline-block h-6 w-6 animate-spin rounded-full border-[3px] border-current border-t-transparent text-blue-600"
+                    role="status"
+                    aria-label="loading"
+                  ></div>
+                )}
               </div>
-              { !discordLoading && discordUser?.avatar && (
+              {!discordLoading && discordUser?.avatar && (
                 <>
                   <div className="flex justify-center">
                     <div className="block text-center">
                       <p className="">{`${discordUser?.username}`}</p>
-                      <a className="text-xs underline hover:cursor-pointer" onClick={ () => {
-                        discordLogoutTrigger();
-                        // set local storage to false, then refresh
-                        localStorage.removeItem(LOCAL_STORAGE_KEY_DISCORD_STATUS);
-                        window.location.assign(window.location.pathname);
-                      }
-                      }>disconnect</a>
+                      <a
+                        className="text-xs underline hover:cursor-pointer"
+                        onClick={() => {
+                          discordLogoutTrigger();
+                          // set local storage to false, then refresh
+                          localStorage.removeItem(
+                            LOCAL_STORAGE_KEY_DISCORD_STATUS,
+                          );
+                          window.location.assign(window.location.pathname);
+                        }}
+                      >
+                        disconnect
+                      </a>
                     </div>
-                    <Image className="rounded-full overflow-hidden ml-4" src={`${avatarBaseUrl}/${discordUser?.id}/${discordUser?.avatar}.png`} alt={discordUser?.username || ''} width={50} height={50} />
+                    <Image
+                      className="ml-4 overflow-hidden rounded-full"
+                      src={`${avatarBaseUrl}/${discordUser?.id}/${discordUser?.avatar}.png`}
+                      alt={discordUser?.username || ""}
+                      width={50}
+                      height={50}
+                    />
                   </div>
                 </>
               )}
-              { discordUser?.username && (
-                <Form session={session} />
-              )}
+              {discordUser?.username && <Form session={session} />}
             </>
           )}
         </div>
@@ -119,12 +151,23 @@ function Form({ session }: { session: Session }) {
   const router = useRouter();
   const dryrun = router.query.dryrun === "true";
   // hooks
-  const { isMutating, error: uploadError, trigger, data, reset } = useCreateSpace(router.isReady);
+  const {
+    isMutating,
+    error: uploadError,
+    trigger,
+    data,
+    reset,
+  } = useCreateSpace(router.isReady);
   // state
   const [juiceboxProjectDisabled, setJuiceboxProjectDisabled] = useState(false);
   // form
-  const methods = useForm<CreateFormValues>({ mode: 'onChange' });
-  const { register, handleSubmit, control, formState: { errors, isValid }, watch } = methods;
+  const methods = useForm<CreateFormValues>({ mode: "onChange" });
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid },
+    watch,
+  } = methods;
   const onSubmit: SubmitHandler<CreateFormValues> = async (formData) => {
     console.log(formData);
     const payload = { ...formData, dryrun };
@@ -140,39 +183,71 @@ function Form({ session }: { session: Session }) {
   });
 
   return (
-    <FormProvider {...methods} >
-      <Notification title="Success" description={dryrun ? JSON.stringify(data) : 'Space created!'} show={data !== undefined} close={() => {
-        reset();
-      }} checked={true} />
-      {( uploadError) &&
-          <Notification title="Error" description={'error'} show={true} close={() => {
+    <FormProvider {...methods}>
+      <Notification
+        title="Success"
+        description={dryrun ? JSON.stringify(data) : "Space created!"}
+        show={data !== undefined}
+        close={() => {
+          reset();
+        }}
+        checked={true}
+      />
+      {uploadError && (
+        <Notification
+          title="Error"
+          description={"error"}
+          show={true}
+          close={() => {
             reset();
-          }} checked={false} />
-      }
-      <form className="lg:m-6 flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-        <TextInput label="Nance space name" name="config.name" register={register} />
-        <DiscordForm session={session}/>
+          }}
+          checked={false}
+        />
+      )}
+      <form className="flex flex-col lg:m-6" onSubmit={handleSubmit(onSubmit)}>
+        <TextForm
+          label="Nance space name"
+          name="config.name"
+          register={register}
+        />
+        <DiscordForm session={session} />
         <SnapshotForm session={session} />
-        <TextInput label="Proposal ID Prefix" name="config.proposalIdPrefix" register={register} maxLength={3} placeHolder="JBP"
-          className="w-16" tooltip="Text prepended to proposal ID numbers, usually 3 letters representing your organization"
+        <TextForm
+          label="Proposal ID Prefix"
+          name="config.proposalIdPrefix"
+          register={register}
+          maxLength={3}
+          placeHolder="JBP"
+          className="w-16"
+          tooltip="Text prepended to proposal ID numbers, usually 3 letters representing your organization"
         />
 
-        <ToggleSwitch enabled={juiceboxProjectDisabled} setEnabled={setJuiceboxProjectDisabled} label="Link to a Juicebox Project?" />
-        <div className="mt-2 mb-3"><ProjectForm fieldName="config.juicebox.projectId" showType={false} disabled={!juiceboxProjectDisabled} /></div>
+        <ToggleSwitch
+          enabled={juiceboxProjectDisabled}
+          setEnabled={setJuiceboxProjectDisabled}
+          label="Link to a Juicebox Project?"
+        />
+        <div className="mb-3 mt-2">
+          <ProjectForm
+            fieldName="config.juicebox.projectId"
+            showType={false}
+            disabled={!juiceboxProjectDisabled}
+          />
+        </div>
 
         <GnosisSafeForm />
 
         <GovernanceCyleForm />
-        {(
+        {
           <button
             type="submit"
-            disabled={ !isValid || isMutating }
-            className="mt-5 ml-300 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm
-              hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 w-20"
+            disabled={!isValid || isMutating}
+            className="ml-300 mt-5 inline-flex w-20 justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white
+              shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
           >
-              Submit
+            Submit
           </button>
-        )}
+        }
       </form>
     </FormProvider>
   );
