@@ -2,8 +2,8 @@ import { SplitDiffEntry, keyOfSplit } from "@/utils/functions/juicebox";
 import { classNames } from "@/utils/functions/tailwind";
 import { JBSplit } from "@/models/JuiceboxTypes";
 import { Status, SectionTableData } from "../form/DiffTableWithSection";
-import ResolvedProject from "./ResolvedProject";
 import FormattedAddress from "../AddressCard/FormattedAddress";
+import ProjectHandleLink from "../ProjectLink";
 
 export default function JBSplitEntry({
   mod,
@@ -32,16 +32,13 @@ export default function JBSplitEntry({
           >
             (Allocator)
           </a>
-          {/* <ResolvedProject version={projectVersion} projectId={mod.projectId.toNumber()} style={subStyle} />
-          <FormattedAddress address={mod.beneficiary} style={subStyle} /> */}
         </div>
       )}
 
       {splitMode === "project" && (
         <div className="mx-1 inline-block">
           <div className="flex flex-col">
-            <ResolvedProject
-              version={projectVersion}
+            <ProjectHandleLink
               projectId={mod.projectId.toNumber()}
               style={mainStyle}
             />
@@ -66,7 +63,7 @@ export default function JBSplitEntry({
 export function diff2TableEntry(
   index: number,
   status: Status,
-  tableData: SectionTableData[],
+  tableData: SectionTableData[]
 ) {
   return (v: SplitDiffEntry) => {
     tableData[index].entries.push({
