@@ -1,7 +1,7 @@
 {
-  "name": "jbdao-interface",
-  "version": "0.1.0",
-  "funding": "https://www.juicebox.money/@twodam",
+  "name": "nance-interface",
+  "version": "1.0.0",
+  "funding": "https://juicebox.money/@nance-app",
   "private": true,
   "scripts": {
     "remotedev": "NODE_OPTIONS='--inspect' next dev -p 3001",
