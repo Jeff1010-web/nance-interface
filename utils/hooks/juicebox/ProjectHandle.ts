@@ -23,7 +23,7 @@ const fetcher: Fetcher<
     }),
   })
     .then((res) => res.json())
-    .then((res) => res.data.project);
+    .then((res) => res.data.project.handle);
 
 export default function useProjectHandle(
   projectId: number | undefined,
