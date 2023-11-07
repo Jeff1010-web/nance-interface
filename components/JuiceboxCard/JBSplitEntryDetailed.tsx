@@ -1,6 +1,6 @@
 import { JBConstants } from "@/models/JuiceboxTypes";
-import ResolvedProject from "./ResolvedProject";
 import FormattedAddress from "../AddressCard/FormattedAddress";
+import ProjectHandleLink from "../ProjectLink";
 
 export default function JBSplitEntryDetailed({
   beneficiary,
@@ -40,14 +40,14 @@ export default function JBSplitEntryDetailed({
           >
             (Allocator)
           </a>
-          <ResolvedProject version={3} projectId={project} style={subStyle} />
+          <ProjectHandleLink projectId={project} style={subStyle} />
           <FormattedAddress address={beneficiary} style={subStyle} noLink />
         </>
       )}
 
       {splitMode === "project" && (
         <>
-          <ResolvedProject version={3} projectId={project} style={mainStyle} />
+          <ProjectHandleLink projectId={project} style={mainStyle} />
           <FormattedAddress address={beneficiary} style={subStyle} noLink />
         </>
       )}
