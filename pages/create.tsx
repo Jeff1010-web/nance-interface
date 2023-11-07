@@ -28,6 +28,7 @@ import {
   TextForm,
 } from "@/components/CreateSpace";
 import { SiteNav } from "@/components/Site";
+import ConnectWalletButton from '@/components/common/ConnectWalletButton';
 
 export default function CreateSpacePage() {
   // state
@@ -73,14 +74,7 @@ export default function CreateSpacePage() {
           </h1>
           {status === "unauthenticated" && (
             <div className="text-center">
-              <button
-                type="button"
-                onClick={() => openConnectModal?.()}
-                className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium
-              text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
-              >
-                Connect Wallet
-              </button>
+              <ConnectWalletButton />
             </div>
           )}
 

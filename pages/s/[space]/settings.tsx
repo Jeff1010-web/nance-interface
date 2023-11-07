@@ -12,7 +12,7 @@ export default function Settings() {
   const spaceConfig = data?.data;
   return (
     <>
-      <SiteNav pageTitle="Space Settings" description="Space Settings" space={space} withWallet />
+      <SiteNav pageTitle="Space Settings" description="Space Settings" space={space} withProposalButton={false} withWallet />
       { spaceConfig && <SpaceSettings spaceConfig={spaceConfig} /> }
       <Footer />
     </>
