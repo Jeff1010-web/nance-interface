@@ -1,5 +1,6 @@
+import ContentNotFound from "@/components/ContentNotFound";
 import { Footer, SiteNav } from "@/components/Site";
-import { Space, SpaceNotFound } from "@/components/Space";
+import Space from "@/components/Space";
 
 import { NANCE_API_URL } from "@/constants/Nance";
 import { SpaceInfo } from "@/models/NanceTypes";
@@ -7,7 +8,7 @@ import { SpaceInfo } from "@/models/NanceTypes";
 export async function getServerSideProps(context: any) {
   const spaceParam: string = context.params.space;
   const { data } = await fetch(`${NANCE_API_URL}/${spaceParam}`).then((res) =>
-    res.json(),
+    res.json()
   );
   // Pass data to the page via props
   return {
@@ -30,7 +31,15 @@ export default function SpacePage({ spaceInfo }: { spaceInfo: SpaceInfo }) {
           image={SPACE_NOT_FOUND_IMAGE}
           withProposalButton={false}
         />
-        <SpaceNotFound />
+        <ContentNotFound
+          title="Space Not Found"
+          reason="The space you are looking for does not exist."
+          recommendationText="Do you want to create a new space?"
+          recommendationActionHref="/create"
+          recommendationActionText="Create Space"
+          fallbackActionHref="/s"
+          fallbackActionText="See All Spaces"
+        />
         <Footer />
       </>
     );
