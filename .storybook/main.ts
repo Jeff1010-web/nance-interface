@@ -11,6 +11,7 @@ const config: StorybookConfig = {
     "@storybook/addon-essentials",
     "@storybook/addon-onboarding",
     "@storybook/addon-interactions",
+    "storybook-addon-module-mock",
   ],
   framework: {
     name: "@storybook/nextjs",
