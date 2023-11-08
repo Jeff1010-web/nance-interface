@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { SpaceInfo } from "@/models/NanceTypes";
-import ProjectHandleLink from "../ProjectLink";
+import ProjectLink from "../ProjectLink";
 import ContentNotFound from "../ContentNotFound";
 
 export default function SpaceCards({
@@ -96,7 +96,7 @@ export default function SpaceCards({
               <div className="flex justify-between gap-x-4 py-3">
                 <dt className="text-gray-500">Treasury</dt>
                 <dd className="flex items-start gap-x-2">
-                  <ProjectHandleLink
+                  <ProjectLink
                     projectId={parseInt(spaceInfo.juiceboxProjectId)}
                     isTestnet={
                       spaceInfo.transactorAddress?.network === "goerli"

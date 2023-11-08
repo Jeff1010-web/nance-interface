@@ -6,7 +6,7 @@ import {
 } from "next-query-params";
 import Image from "next/image";
 import useProjectMetadata from "@/utils/hooks/juicebox/ProjectMetadata";
-import ProjectHandleLink from "../ProjectLink";
+import ProjectLink from "../ProjectLink";
 
 export default function JBProjectInfo({
   metadataUri,
@@ -34,7 +34,7 @@ export default function JBProjectInfo({
       <dd className="line-clamp-3 w-1/3 break-words text-gray-700">
         {metadata?.description || "Loading metadata..."}
       </dd>
-      <ProjectHandleLink projectId={query.project} />
+      <ProjectLink projectId={query.project} />
     </div>
   );
 }
