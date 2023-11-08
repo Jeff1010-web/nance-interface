@@ -3,15 +3,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { createMock } from "storybook-addon-module-mock";
 import * as nextAuth from "next-auth/react";
 
-import UserLoginRequire from "./UserLoginRequire";
+import WalletConnectWrapper from "./WalletConnectWrapper";
 
-const meta: Meta<typeof UserLoginRequire> = {
+const meta: Meta<typeof WalletConnectWrapper> = {
   title: "Nance Components/UserLoginRequire",
-  component: UserLoginRequire,
+  component: WalletConnectWrapper,
 };
 
 export default meta;
-type Story = StoryObj<typeof UserLoginRequire>;
+type Story = StoryObj<typeof WalletConnectWrapper>;
 
 const mockedUpdate = async (data: any) => {
   return null;

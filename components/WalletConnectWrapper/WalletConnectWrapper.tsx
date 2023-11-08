@@ -1,11 +1,11 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useSession } from "next-auth/react";
+import { PropsWithChildren } from "react";
 
-export default function UserLoginRequire({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+/**
+ * Gated component that will only render its children if the user is authenticated via connect wallet and signing.
+ */
+export default function WalletConnectWrapper({ children }: PropsWithChildren) {
   const { data: session, status } = useSession();
   const { openConnectModal } = useConnectModal();
 
