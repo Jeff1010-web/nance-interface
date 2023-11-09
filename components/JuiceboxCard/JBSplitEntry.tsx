@@ -3,7 +3,7 @@ import { classNames } from "@/utils/functions/tailwind";
 import { JBSplit } from "@/models/JuiceboxTypes";
 import { Status, SectionTableData } from "../form/DiffTableWithSection";
 import FormattedAddress from "../AddressCard/FormattedAddress";
-import ProjectHandleLink from "../ProjectLink";
+import ProjectLink from "../ProjectLink";
 
 export default function JBSplitEntry({
   mod,
@@ -38,7 +38,7 @@ export default function JBSplitEntry({
       {splitMode === "project" && (
         <div className="mx-1 inline-block">
           <div className="flex flex-col">
-            <ProjectHandleLink
+            <ProjectLink
               projectId={mod.projectId.toNumber()}
               style={mainStyle}
             />

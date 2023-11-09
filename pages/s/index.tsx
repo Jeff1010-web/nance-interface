@@ -1,5 +1,5 @@
 import { Footer, SiteNav } from "@/components/Site";
-import AllSpace from "@/components/AllSpace";
+import AllSpace from "@/components/SpaceCards";
 
 export default function NanceAllSpacePage() {
   return (
