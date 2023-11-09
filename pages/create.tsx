@@ -4,17 +4,12 @@ import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useRouter } from "next/router";
-import Notification from "../components/common/Notification";
-import { CreateFormValues } from "../models/NanceTypes";
-import { useCreateSpace } from "../utils/hooks/NanceHooks";
-import {
-  avatarBaseUrl,
-  LOCAL_STORAGE_KEY_DISCORD_STATUS,
-} from "../utils/functions/discordURL";
-import {
-  useFetchDiscordUser,
-  useLogoutDiscordUser,
-} from "../utils/hooks/DiscordHooks";
+import Notification from "@/components/common/Notification";
+import { CreateFormValues } from "@/models/NanceTypes";
+import { useCreateSpace } from "@/utils/hooks/NanceHooks";
+import { LOCAL_STORAGE_KEY_DISCORD_STATUS } from "@/utils/functions/discordURL";
+import { useFetchDiscordUser, useLogoutDiscordUser } from "@/utils/hooks/DiscordHooks";
+import { avatarBaseUrl } from "@/constants/Discord";
 import { Session } from "next-auth";
 import { useEffect, useState } from "react";
 import ProjectForm from "@/components/form/ProjectForm";

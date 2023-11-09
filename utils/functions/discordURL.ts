@@ -1,4 +1,5 @@
-export const DISCORD_OAUTH_URL = 'https://discord.com/api/oauth2/token';
+import { DiscordGuild } from '@/models/DiscordTypes';
+import { guildIconBaseUrl } from '@/constants/Discord';
 
 export const discordRedirectBaseUrl = `${process.env.NEXT_PUBLIC_DISCORD_REDIRECT_URI_BASE}/api/discord/auth`;
 
@@ -13,14 +14,17 @@ export const discordAuthUrl = () => {
   `response_type=code&scope=${encodeURIComponent(discordScope)}`;
   return url;
 };
+
+export const getGuildIconUrl = (guild?: DiscordGuild) => {
+  if (!guild) return "/images/default_server_icon.png";
+  if (!guild.icon) return "/images/default_server_icon.png";
+  return `${guildIconBaseUrl}/${guild.id}/${guild.icon}.png`;
+};
+
 const botPermissions = 326418033728; // https://discord.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags
 export const addBotUrl = (guildId: string) => {
   return `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&guild_id=${guildId}&permissions=${botPermissions}&scope=bot`;
 };
-
-export const avatarBaseUrl = "https://cdn.discordapp.com/avatars";
-
-export const guildIconBaseUrl = "https://cdn.discordapp.com/icons";
 
 export const DISCORD_PROXY_API_URL = "/api/discord";
 

@@ -50,7 +50,7 @@ export function useLogoutDiscordUser(args: { address: string }, shouldFetch: boo
   );
 }
 
-export function useFetchDiscordGuilds(args: { address: string }, shouldFetch: boolean = true) {
+export function useFetchDiscordGuilds(args: { address?: string | null }, shouldFetch: boolean = true) {
   shouldFetch = args.address ? true : false;
   return useSWR<DiscordGuild[], string>(
     shouldFetch ? `${DISCORD_PROXY_USER_URL}?address=${args.address}&command=${USER_COMMANDS.guilds}` : null,
@@ -58,7 +58,7 @@ export function useFetchDiscordGuilds(args: { address: string }, shouldFetch: bo
   );
 }
 
-export function useFetchDiscordChannels(args: { guildId: string }, shouldFetch: boolean = true) {
+export function useFetchDiscordChannels(args: { guildId?: string | null }, shouldFetch: boolean = true) {
   const command = BOT_COMMANDS.channels.replace("{guildId}", args?.guildId || '');
   shouldFetch = args.guildId ? true : false;
   return useSWRMutation<DiscordChannel[], string>(
@@ -76,7 +76,7 @@ export function useIsBotMemberOfGuild(args: { guildId?: string }, shouldFetch: b
   );
 }
 
-export function useFetchDiscordGuildRoles(args: { guildId: string }, shouldFetch: boolean = false) {
+export function useFetchDiscordGuildRoles(args: { guildId?: string | null }, shouldFetch: boolean = false) {
   const command = BOT_COMMANDS.roles.replace("{guildId}", args?.guildId || '');
   shouldFetch = args.guildId ? true : false;
   return useSWRMutation<DiscordRole[], string>(

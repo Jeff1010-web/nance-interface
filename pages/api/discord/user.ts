@@ -1,4 +1,4 @@
-// use the user auth token that was previoously fetched from Discord API and stored in redis
+// use the user auth token that was previously fetched from Discord API and stored in redis
 
 import { NextApiRequest, NextApiResponse } from "next";
 import { decode } from "next-auth/jwt";

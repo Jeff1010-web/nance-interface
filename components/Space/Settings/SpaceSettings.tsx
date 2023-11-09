@@ -11,6 +11,7 @@ import SettingsNav from './SettingsNav';
 import { SpaceConfig } from '@/models/NanceTypes';
 import General from './sub/General';
 import Tasks from './sub/Tasks';
+import Dialog from './sub/Dialog';
 
 const navigation = [
   { name: 'General', icon: IdentificationIcon },
@@ -35,6 +36,7 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
         <div className="m-4">
           { selectedSetting === 'General' && <General spaceConfig={spaceConfig}/> }
           { selectedSetting === 'Tasks' && <Tasks spaceConfig={spaceConfig}/> }
+          { selectedSetting === 'Dialog' && <Dialog spaceConfig={spaceConfig}/> }
         </div>
       </div>
     </div>
