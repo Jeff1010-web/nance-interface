@@ -3,13 +3,12 @@ import { useRouter } from "next/router";
 import { Session } from "next-auth";
 import { DiscordChannel, DiscordGuild, DiscordRole } from "@/models/DiscordTypes";
 import { addBotUrl, getGuildIconUrl } from "@/utils/functions/discordURL";
-import { formatGuilds, formatChannels, formatRoles } from '@/utils/functions/discord';
+import { formatGuilds, formatChannels, formatRoles, fetchDiscordInitialValues } from '@/utils/functions/discord';
 import {
   useFetchDiscordGuilds,
   useFetchDiscordChannels,
   useIsBotMemberOfGuild,
   useFetchDiscordGuildRoles,
-  useFetchDiscordInitialValues,
 } from "@/utils/hooks/DiscordHooks";
 import { DiscordConfig } from "@/models/NanceTypes";
 import GenericListbox from "@/components/common/GenericListbox";
@@ -54,17 +53,16 @@ export default function DiscordSelector({
       channelsTrigger();
       rolesTrigger();
     }
-    async function fullInitialValues() {
-      if (discordConfig && guilds && !configLoaded) {
-        const { guild, proposalChannel, alertChannel, role } = await useFetchDiscordInitialValues({ address: session.user?.name, discordConfig, guilds });
+    if (selectedGuild && botIsMember && !configLoaded) {
+      (async () => {
+        const { guild, proposalChannel, alertChannel, role } = await fetchDiscordInitialValues({ address: session.user?.name, discordConfig: discordConfig!, guilds });
         setConfigLoaded(true);
         setSelectedGuild(guild);
         setSelectedProposalChannel(proposalChannel);
         setSelectedAlertChannel(alertChannel);
         setSelectedAlertRole(role);
-      }
+      })();
     }
-    fullInitialValues();
   }, [selectedGuild, botIsMember, guilds]);
 
   return (

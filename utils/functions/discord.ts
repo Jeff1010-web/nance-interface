@@ -1,5 +1,5 @@
-import { MANAGE_GUILD, TEXT_CHANNEL } from '@/constants/Discord';
-import { discordAuthUrl, getGuildIconUrl } from '@/utils/functions/discordURL';
+import { MANAGE_GUILD, TEXT_CHANNEL, BOT_COMMANDS } from '@/constants/Discord';
+import { discordAuthUrl, getGuildIconUrl, DISCORD_PROXY_BOT_URL } from '@/utils/functions/discordURL';
 import { DiscordGuild, DiscordRole, DiscordChannel } from '@/models/DiscordTypes';
 import { DiscordConfig } from '@/models/NanceTypes';
 
@@ -85,3 +85,24 @@ export const formatChannels = (channels?: DiscordChannel[]): DiscordChannel[] =>
     })
     .sort((a, b) => a.name.localeCompare(b.name)); // sort alphabetically
 };
+
+export async function fetchDiscordInitialValues(args: { address?: string | null, discordConfig: DiscordConfig, guilds?: DiscordGuild[] }) {
+  const { guildId } = args?.discordConfig;
+  let guild = args?.guilds?.find(guild => guild.id === guildId);
+  if (guild) guild = formatGuilds([guild])[0];
+
+  const channelsCommand = BOT_COMMANDS.channels.replace("{guildId}", guildId);
+  const channels: DiscordChannel[] = await fetch(`${DISCORD_PROXY_BOT_URL}?command=${channelsCommand}`).then(res => res.json());
+  let proposalChannel = channels.find((channel) => channel.id === args?.discordConfig.channelIds.proposals);
+  if (proposalChannel) proposalChannel = { ...proposalChannel, name: `# ${proposalChannel.name}` };
+
+  let alertChannel = channels.find((channel) => channel.id === args?.discordConfig.reminder.channelIds[0]);
+  if (alertChannel) alertChannel = { ...alertChannel, name: `# ${alertChannel.name}` };
+
+  const rolesCommand = BOT_COMMANDS.roles.replace("{guildId}", guildId);
+  const roles: DiscordRole[] = await fetch(`${DISCORD_PROXY_BOT_URL}?command=${rolesCommand}`).then(res => res.json());
+  let role = roles.find((role) => role.id === args?.discordConfig.roles.governance);
+  if (role) role = formatRoles([role])[0];
+
+  return { guild, proposalChannel, alertChannel, role };
+}
