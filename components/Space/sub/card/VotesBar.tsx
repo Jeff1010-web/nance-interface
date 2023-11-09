@@ -24,18 +24,18 @@ export default function VotesBar({
           snapshotProposal?.type,
         ) ? (
           // sum all scores to get the total score
-          <ColorBar
-            greenScore={snapshotProposal.scores_total || 0}
-            redScore={0}
-            threshold={threshold}
-          />
-        ) : (
-          <ColorBar
-            greenScore={proposal?.voteResults?.scores[0] || 0}
-            redScore={proposal?.voteResults?.scores[1] || 0}
-            threshold={threshold}
-          />
-        )}
+            <ColorBar
+              greenScore={snapshotProposal.scores_total || 0}
+              redScore={0}
+              threshold={threshold}
+            />
+          ) : (
+            <ColorBar
+              greenScore={proposal?.voteResults?.scores[0] || 0}
+              redScore={proposal?.voteResults?.scores[1] || 0}
+              threshold={threshold}
+            />
+          )}
       </div>
     );
   } else {

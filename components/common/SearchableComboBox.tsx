@@ -27,8 +27,8 @@ export default function SearchableComboBox<T extends Option>({
     query === ""
       ? options
       : options.filter((option) => {
-          return option.label.toLowerCase().includes(query.toLowerCase());
-        });
+        return option.label.toLowerCase().includes(query.toLowerCase());
+      });
 
   return (
     <Combobox as="div" value={val} onChange={setVal}>

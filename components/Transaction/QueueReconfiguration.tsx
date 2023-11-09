@@ -122,13 +122,13 @@ export default function QueueReconfigurationModal({
   // Construct reconfiguration function data
   const encodeReconfiguration = !loading
     ? encodedReconfigureFundingCyclesOf(
-        currentConfig,
-        payoutsDiff,
-        reservesDiff,
-        projectId,
-        controller,
-        terminal?.address,
-      ) || ""
+      currentConfig,
+      payoutsDiff,
+      reservesDiff,
+      projectId,
+      controller,
+      terminal?.address,
+    ) || ""
     : "";
 
   const tableData = calcDiffTableData(

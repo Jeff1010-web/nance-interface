@@ -220,147 +220,147 @@ export default function ProposalSidebar({
           {canEditProposal(proposal?.status) &&
             status === "authenticated" &&
             proposal?.status !== "Archived" && (
-              <>
-                <ResultModal
-                  title="Are you sure you want to archive this proposal?"
-                  description="You can always unarchive it later."
-                  buttonText="Archive it"
-                  onClick={() => {
-                    setArchiveConfirmModalIsOpen(false);
-                    archiveProposal();
-                  }}
-                  close={() => setArchiveConfirmModalIsOpen(false)}
-                  shouldOpen={archiveConfirmModalIsOpen}
-                />
+            <>
+              <ResultModal
+                title="Are you sure you want to archive this proposal?"
+                description="You can always unarchive it later."
+                buttonText="Archive it"
+                onClick={() => {
+                  setArchiveConfirmModalIsOpen(false);
+                  archiveProposal();
+                }}
+                close={() => setArchiveConfirmModalIsOpen(false)}
+                shouldOpen={archiveConfirmModalIsOpen}
+              />
 
-                <ResultModal
-                  title="Are you sure you want to delete this proposal?"
-                  description="You can't undo this action."
-                  buttonText="Delete it"
-                  onClick={() => {
-                    setDeleteConfirmModalIsOpen(false);
-                    deleteProposal();
-                  }}
-                  close={() => setDeleteConfirmModalIsOpen(false)}
-                  shouldOpen={deleteConfirmModalIsOpen}
-                />
+              <ResultModal
+                title="Are you sure you want to delete this proposal?"
+                description="You can't undo this action."
+                buttonText="Delete it"
+                onClick={() => {
+                  setDeleteConfirmModalIsOpen(false);
+                  deleteProposal();
+                }}
+                close={() => setDeleteConfirmModalIsOpen(false)}
+                shouldOpen={deleteConfirmModalIsOpen}
+              />
 
-                <Listbox value={selected} onChange={setSelected} as="div">
-                  {({ open }) => (
-                    <>
-                      <Listbox.Label className="sr-only">
+              <Listbox value={selected} onChange={setSelected} as="div">
+                {({ open }) => (
+                  <>
+                    <Listbox.Label className="sr-only">
                         Change published status
-                      </Listbox.Label>
-                      <div className="relative">
-                        <div className="inline-flex w-full divide-x divide-gray-700 rounded-md shadow-sm">
-                          <button
-                            onClick={() => {
-                              if (selected.title === "Archive") {
-                                setArchiveConfirmModalIsOpen(true);
-                              } else if (selected.title === "Delete") {
-                                setDeleteConfirmModalIsOpen(true);
-                              }
-                            }}
-                            className={classNames(
-                              "inline-flex w-full items-center justify-center rounded-none rounded-l-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-black disabled:opacity-50",
-                              selected.title === "Delete"
-                                ? "bg-red-600 hover:bg-red-500"
-                                : "bg-gray-600 hover:bg-gray-500",
-                            )}
-                            disabled={nanceAPILoading}
-                          >
-                            {nanceAPILoading && (
-                              <div
-                                className="mr-2 inline-block h-6 w-6 animate-spin rounded-full border-[3px] border-current border-t-transparent text-gray-900"
-                                role="status"
-                                aria-label="loading"
-                              ></div>
-                            )}
-                            {selected.title}
-                          </button>
-                          <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-gray-600 p-2 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-gray-50">
-                            <span className="sr-only">
-                              Change proposal status
-                            </span>
-                            <ChevronDownIcon
-                              className="h-5 w-5 text-white"
-                              aria-hidden="true"
-                            />
-                          </Listbox.Button>
-                        </div>
-
-                        <Transition
-                          show={open}
-                          as={Fragment}
-                          leave="transition ease-in duration-100"
-                          leaveFrom="opacity-100"
-                          leaveTo="opacity-0"
+                    </Listbox.Label>
+                    <div className="relative">
+                      <div className="inline-flex w-full divide-x divide-gray-700 rounded-md shadow-sm">
+                        <button
+                          onClick={() => {
+                            if (selected.title === "Archive") {
+                              setArchiveConfirmModalIsOpen(true);
+                            } else if (selected.title === "Delete") {
+                              setDeleteConfirmModalIsOpen(true);
+                            }
+                          }}
+                          className={classNames(
+                            "inline-flex w-full items-center justify-center rounded-none rounded-l-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-black disabled:opacity-50",
+                            selected.title === "Delete"
+                              ? "bg-red-600 hover:bg-red-500"
+                              : "bg-gray-600 hover:bg-gray-500",
+                          )}
+                          disabled={nanceAPILoading}
                         >
-                          <Listbox.Options className="absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            {ProposalStatus.map((option) => (
-                              <Listbox.Option
-                                key={option.title}
-                                className={({ active }) =>
-                                  classNames(
-                                    active
-                                      ? option.title === "Delete"
-                                        ? "bg-red-600 text-white"
-                                        : "bg-gray-600 text-white"
-                                      : "text-gray-900",
-                                    "cursor-default select-none p-4 text-sm",
-                                  )
-                                }
-                                value={option}
-                              >
-                                {({ selected, active }) => (
-                                  <div className="flex flex-col">
-                                    <div className="flex justify-between">
-                                      <p
+                          {nanceAPILoading && (
+                            <div
+                              className="mr-2 inline-block h-6 w-6 animate-spin rounded-full border-[3px] border-current border-t-transparent text-gray-900"
+                              role="status"
+                              aria-label="loading"
+                            ></div>
+                          )}
+                          {selected.title}
+                        </button>
+                        <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-gray-600 p-2 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-gray-50">
+                          <span className="sr-only">
+                              Change proposal status
+                          </span>
+                          <ChevronDownIcon
+                            className="h-5 w-5 text-white"
+                            aria-hidden="true"
+                          />
+                        </Listbox.Button>
+                      </div>
+
+                      <Transition
+                        show={open}
+                        as={Fragment}
+                        leave="transition ease-in duration-100"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                      >
+                        <Listbox.Options className="absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          {ProposalStatus.map((option) => (
+                            <Listbox.Option
+                              key={option.title}
+                              className={({ active }) =>
+                                classNames(
+                                  active
+                                    ? option.title === "Delete"
+                                      ? "bg-red-600 text-white"
+                                      : "bg-gray-600 text-white"
+                                    : "text-gray-900",
+                                  "cursor-default select-none p-4 text-sm",
+                                )
+                              }
+                              value={option}
+                            >
+                              {({ selected, active }) => (
+                                <div className="flex flex-col">
+                                  <div className="flex justify-between">
+                                    <p
+                                      className={
+                                        selected
+                                          ? "font-semibold"
+                                          : "font-normal"
+                                      }
+                                    >
+                                      {option.title}
+                                    </p>
+                                    {selected ? (
+                                      <span
                                         className={
-                                          selected
-                                            ? "font-semibold"
-                                            : "font-normal"
+                                          active
+                                            ? "text-white"
+                                            : "text-gray-600"
                                         }
                                       >
-                                        {option.title}
-                                      </p>
-                                      {selected ? (
-                                        <span
-                                          className={
-                                            active
-                                              ? "text-white"
-                                              : "text-gray-600"
-                                          }
-                                        >
-                                          <CheckIcon
-                                            className="h-5 w-5"
-                                            aria-hidden="true"
-                                          />
-                                        </span>
-                                      ) : null}
-                                    </div>
-                                    <p
-                                      className={classNames(
-                                        active
-                                          ? "text-gray-200"
-                                          : "text-gray-500",
-                                        "mt-2",
-                                      )}
-                                    >
-                                      {option.description}
-                                    </p>
+                                        <CheckIcon
+                                          className="h-5 w-5"
+                                          aria-hidden="true"
+                                        />
+                                      </span>
+                                    ) : null}
                                   </div>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                          </Listbox.Options>
-                        </Transition>
-                      </div>
-                    </>
-                  )}
-                </Listbox>
-              </>
-            )}
+                                  <p
+                                    className={classNames(
+                                      active
+                                        ? "text-gray-200"
+                                        : "text-gray-500",
+                                      "mt-2",
+                                    )}
+                                  >
+                                    {option.description}
+                                  </p>
+                                </div>
+                              )}
+                            </Listbox.Option>
+                          ))}
+                        </Listbox.Options>
+                      </Transition>
+                    </div>
+                  </>
+                )}
+              </Listbox>
+            </>
+          )}
 
           {proposal?.status === "Archived" && status === "authenticated" && (
             <button

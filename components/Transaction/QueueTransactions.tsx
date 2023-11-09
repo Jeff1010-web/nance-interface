@@ -103,9 +103,9 @@ export default function QueueTransactionsModal({
             getContractLabel(transfer.contract) === "ETH"
               ? "0x"
               : erc20.encodeFunctionData("transfer", [
-                  transfer.to,
-                  parseUnits(transfer.amount, transfer.decimals),
-                ]),
+                transfer.to,
+                parseUnits(transfer.amount, transfer.decimals),
+              ]),
         },
       };
     }) || [];

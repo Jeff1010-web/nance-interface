@@ -112,17 +112,17 @@ export default function ProposalRow({
         {!votedData?.[getLastSlash(proposal.voteURL)] &&
         snapshotProposalDict[getLastSlash(proposal.voteURL)] &&
         snapshotSpace ? (
-          <NewVoteButton
-            snapshotSpace={snapshotSpace}
-            proposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]}
-            refetch={refetch}
-            isSmall
-          />
-        ) : (
-          <div className="flex justify-center">
-            {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
-          </div>
-        )}
+            <NewVoteButton
+              snapshotSpace={snapshotSpace}
+              proposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]}
+              refetch={refetch}
+              isSmall
+            />
+          ) : (
+            <div className="flex justify-center">
+              {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
+            </div>
+          )}
       </td>
     </tr>
   );

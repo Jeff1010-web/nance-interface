@@ -162,12 +162,12 @@ export default function CustomTransactionActionForm({
           {param.type !== "address" &&
             !param.type.includes("int") &&
             param.type !== "bool" && (
-              <StringForm
-                label={`Param: ${param.name || "_"}`}
-                fieldName={genFieldName(`args.${index}`)}
-                fieldType={param.type}
-              />
-            )}
+            <StringForm
+              label={`Param: ${param.name || "_"}`}
+              fieldName={genFieldName(`args.${index}`)}
+              fieldType={param.type}
+            />
+          )}
         </div>
       ))}
     </div>

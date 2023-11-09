@@ -28,9 +28,9 @@ export default function DiscordSelector({
 
   // state
   const [selectedGuild, setSelectedGuild] = useState<DiscordGuild | undefined>();
-  const [selectedProposalChannel, setSelectedProposalChannel] = useState<DiscordChannel | undefined>()
+  const [selectedProposalChannel, setSelectedProposalChannel] = useState<DiscordChannel | undefined>();
   const [selectedAlertChannel, setSelectedAlertChannel] = useState<DiscordChannel | undefined>();
-  const [selectedAlertRole, setSelectedAlertRole] = useState<DiscordRole | undefined>()
+  const [selectedAlertRole, setSelectedAlertRole] = useState<DiscordRole | undefined>();
   const [configLoaded, setConfigLoaded] = useState<boolean>(false);
 
   // hooks

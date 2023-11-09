@@ -408,8 +408,8 @@ function WeightedChoiceSelector({
             {isNaN(getValues((index + 1).toString())) || totalUnits == 0
               ? "0%"
               : `${Math.round(
-                  (getValues((index + 1).toString()) / totalUnits) * 100,
-                )}%`}
+                (getValues((index + 1).toString()) / totalUnits) * 100,
+              )}%`}
           </span>
         </div>
       ))}

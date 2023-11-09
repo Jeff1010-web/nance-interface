@@ -58,8 +58,8 @@ export default function ProjectSearch({
             const selectedProject = projects?.find((p) => p.projectId === val);
             return selectedProject
               ? `@${selectedProject.handle} (${
-                  selectedProject.id.split("-")[1]
-                })`
+                selectedProject.id.split("-")[1]
+              })`
               : "";
           }}
         />
