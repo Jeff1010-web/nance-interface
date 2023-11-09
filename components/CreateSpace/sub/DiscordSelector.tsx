@@ -9,6 +9,7 @@ import {
   useFetchDiscordChannels,
   useIsBotMemberOfGuild,
   useFetchDiscordGuildRoles,
+  useFetchDiscordInitialValues,
 } from "@/utils/hooks/DiscordHooks";
 import { DiscordConfig } from "@/models/NanceTypes";
 import GenericListbox from "@/components/common/GenericListbox";
@@ -17,10 +18,12 @@ export default function DiscordSelector({
   session,
   val,
   setVal,
+  discordConfig,
 }: {
   session: Session;
   val: DiscordConfig;
   setVal: (v: Partial<DiscordConfig>) => void;
+  discordConfig?: DiscordConfig;
 }) {
   const router = useRouter();
 
@@ -29,6 +32,7 @@ export default function DiscordSelector({
   const [selectedProposalChannel, setSelectedProposalChannel] = useState<DiscordChannel | undefined>()
   const [selectedAlertChannel, setSelectedAlertChannel] = useState<DiscordChannel | undefined>();
   const [selectedAlertRole, setSelectedAlertRole] = useState<DiscordRole | undefined>()
+  const [configLoaded, setConfigLoaded] = useState<boolean>(false);
 
   // hooks
   const { data: guilds } = useFetchDiscordGuilds({ address: session.user?.name });
@@ -50,7 +54,18 @@ export default function DiscordSelector({
       channelsTrigger();
       rolesTrigger();
     }
-  }, [selectedGuild, botIsMember]);
+    async function fullInitialValues() {
+      if (discordConfig && guilds && !configLoaded) {
+        const { guild, proposalChannel, alertChannel, role } = await useFetchDiscordInitialValues({ address: session.user?.name, discordConfig, guilds });
+        setConfigLoaded(true);
+        setSelectedGuild(guild);
+        setSelectedProposalChannel(proposalChannel);
+        setSelectedAlertChannel(alertChannel);
+        setSelectedAlertRole(role);
+      }
+    }
+    fullInitialValues();
+  }, [selectedGuild, botIsMember, guilds]);
 
   return (
     <div className="w-100">
@@ -62,6 +77,7 @@ export default function DiscordSelector({
           setVal({ ...val, guildId: guild.id });
         }}
         label="Select a Discord Server"
+        disabled={!guilds || !!discordConfig}
         items={formatGuilds(guilds)}
       />
 
@@ -98,7 +114,7 @@ export default function DiscordSelector({
           setVal({ ...val, channelIds: { proposals: channel.id } });
         }}
         label="Select a channel to post proposals"
-        disabled={!selectedGuild || !botIsMember || !channels}
+        disabled={!selectedGuild || !botIsMember || !channels || !!discordConfig}
         items={formatChannels(channels)}
       />
 
@@ -112,7 +128,7 @@ export default function DiscordSelector({
           setVal({ ...val, reminder: { channelIds: [channel.id] } });
         }}
         label="Select a channel to send daily alerts"
-        disabled={!selectedGuild || !botIsMember || !channels}
+        disabled={!selectedGuild || !botIsMember || !channels || !!discordConfig}
         items={formatChannels(channels)}
       />
 
@@ -126,7 +142,7 @@ export default function DiscordSelector({
           setVal({ ...val, roles: { governance: role.id } });
         }}
         label="Select a role to alert to participate in your governance"
-        disabled={!selectedGuild || !botIsMember || !roles}
+        disabled={!selectedGuild || !botIsMember || !roles || !!discordConfig}
         items={formatRoles(roles)}
       />
     </div>

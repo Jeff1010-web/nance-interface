@@ -13,16 +13,16 @@ import General from './sub/General';
 import Tasks from './sub/Tasks';
 import Dialog from './sub/Dialog';
 
-const navigation = [
-  { name: 'General', icon: IdentificationIcon },
-  { name: 'Tasks', component: undefined, icon: HandRaisedIcon },
-  { name: 'Schedule', component: undefined, icon: CalendarDaysIcon },
-  { name: 'Dialog', component: undefined, icon: ChatBubbleOvalLeftIcon },
-  { name: 'Vote', component: undefined, icon: BuildingLibraryIcon },
-  { name: 'Execution', component: undefined, icon: KeyIcon },
-];
+export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfig }) {
+  const navigation = [
+    { name: 'General', icon: IdentificationIcon, component: <General spaceConfig={spaceConfig}/> },
+    { name: 'Tasks', icon: HandRaisedIcon, component: <Tasks spaceConfig={spaceConfig}/> },
+    { name: 'Schedule', icon: CalendarDaysIcon, component: <div>Component for Schedule</div> },
+    { name: 'Dialog', icon: ChatBubbleOvalLeftIcon, component: <Dialog spaceConfig={spaceConfig}/> },
+    { name: 'Vote', icon: BuildingLibraryIcon, component: <div>Component for Vote</div> },
+    { name: 'Execution', icon: KeyIcon, component: <div>Component for Execution</div> },
+  ];
 
-export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfig}) {
   const [selectedSetting, setSelectedSetting] = useState<string>(navigation[0].name);
 
   return (
@@ -34,9 +34,11 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
         <h1 className="text-xl font-bold">{selectedSetting}</h1>
         {/* Display Area */}
         <div className="m-4">
-          { selectedSetting === 'General' && <General spaceConfig={spaceConfig}/> }
-          { selectedSetting === 'Tasks' && <Tasks spaceConfig={spaceConfig}/> }
-          { selectedSetting === 'Dialog' && <Dialog spaceConfig={spaceConfig}/> }
+          {navigation.map((item) => (
+            <div key={item.name} className={selectedSetting === item.name ? 'block' : 'none' }>
+              {selectedSetting === item.name && item.component}
+            </div>
+          ))}
         </div>
       </div>
     </div>
