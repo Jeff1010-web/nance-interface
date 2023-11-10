@@ -35,8 +35,8 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
         {/* Display Area */}
         <div className="m-4">
           {navigation.map((item) => (
-            <div key={item.name} className={selectedSetting === item.name ? 'block' : 'none' }>
-              {selectedSetting === item.name && item.component}
+            <div key={item.name} className={selectedSetting === item.name ? '' : 'hidden' }>
+              {item.component}
             </div>
           ))}
         </div>

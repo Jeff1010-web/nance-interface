@@ -49,18 +49,18 @@ export default function DiscordSelector({
     if (selectedGuild && !botIsMember) {
       memberTrigger();
     }
-    if (botIsMember) {
+    if (botIsMember && !discordConfig) {
       channelsTrigger();
       rolesTrigger();
     }
-    if (selectedGuild && botIsMember && !configLoaded) {
+    if (discordConfig && !configLoaded && guilds) {
       (async () => {
         const { guild, proposalChannel, alertChannel, role } = await fetchDiscordInitialValues({ address: session.user?.name, discordConfig: discordConfig!, guilds });
-        setConfigLoaded(true);
         setSelectedGuild(guild);
         setSelectedProposalChannel(proposalChannel);
         setSelectedAlertChannel(alertChannel);
         setSelectedAlertRole(role);
+        setConfigLoaded(true);
       })();
     }
   }, [selectedGuild, botIsMember, guilds]);

@@ -18,6 +18,7 @@ import { SessionProvider } from "next-auth/react";
 import { RainbowKitSiweNextAuthProvider } from "@rainbow-me/rainbowkit-siwe-next-auth";
 import { NetworkContext } from "../context/NetworkContext";
 import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from "../constants/Snapshot";
+import { SWRConfig } from 'swr/_internal';
 
 const graphqlClient = new GraphQLClient({
   url: `${SNAPSHOT_HUB}/graphql`,
@@ -78,7 +79,9 @@ function MyApp({ Component, pageProps }: any) {
               <Flowbite theme={theme}>
                 <ErrorBoundary>
                   <NetworkContext.Provider value={network}>
-                    <Component {...pageProps} />
+                    <SWRConfig value={{ revalidateOnFocus: false }}>
+                      <Component {...pageProps} />
+                    </SWRConfig>
                   </NetworkContext.Provider>
                 </ErrorBoundary>
               </Flowbite>
