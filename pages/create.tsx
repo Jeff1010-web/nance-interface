@@ -1,66 +1,34 @@
 /* eslint-disable react/jsx-no-undef */
-import Image from "next/image";
 import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 import { useSession } from "next-auth/react";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useRouter } from "next/router";
 import Notification from "@/components/common/Notification";
 import { CreateFormValues } from "@/models/NanceTypes";
 import { useCreateSpace } from "@/utils/hooks/NanceHooks";
-import { LOCAL_STORAGE_KEY_DISCORD_STATUS } from "@/utils/functions/discordURL";
-import { useFetchDiscordUser, useLogoutDiscordUser } from "@/utils/hooks/DiscordHooks";
-import { avatarBaseUrl } from "@/constants/Discord";
 import { Session } from "next-auth";
 import { useEffect, useState } from "react";
 import ProjectForm from "@/components/form/ProjectForm";
 import ToggleSwitch from "@/components/common/ToggleSwitch";
-import { discordAuthWindow } from "@/utils/functions/discord";
+
 import {
   DiscordForm,
   GnosisSafeForm,
-  GovernanceCyleForm,
+  GovernanceCycleForm,
   SnapshotForm,
   TextForm,
 } from "@/components/CreateSpace";
 import { SiteNav } from "@/components/Site";
 import ConnectWalletButton from '@/components/common/ConnectWalletButton';
+import DiscordUser from '@/components/CreateSpace/sub/DiscordUser';
 
 export default function CreateSpacePage() {
-  // state
-  const [shouldFetchDiscordUser, setShouldFetchDiscordUser] = useState(false);
   // hooks
   const { data: session, status } = useSession();
-  const { openConnectModal } = useConnectModal();
-  const address = session?.user?.name;
-  const { data: discordUser, isLoading: discordLoading } = useFetchDiscordUser(
-    { address },
-    shouldFetchDiscordUser,
-  );
-  const { trigger: discordLogoutTrigger } = useLogoutDiscordUser(
-    { address: session?.user?.name || "" },
-    !!discordUser,
-  );
-
-  useEffect(() => {
-    // check if there is a recent LOCAL_STORAGE_KEY_DISCORD_STATUS we can use
-    const discordStatus = localStorage.getItem(
-      LOCAL_STORAGE_KEY_DISCORD_STATUS,
-    );
-    if (discordStatus === "success") setShouldFetchDiscordUser(true);
-    function handleStorageChange(event: StorageEvent) {
-      if (event.key === LOCAL_STORAGE_KEY_DISCORD_STATUS) {
-        if (event.newValue === "success") setShouldFetchDiscordUser(true);
-      }
-    }
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
+  const address = session?.user?.name || "";
 
   return (
     <>
-      <SiteNav pageTitle="nance control panel" withWallet />
+      <SiteNav pageTitle="nance control panel" withProposalButton={false} withWallet />
 
       <div className="flex justify-center">
         <div className="w-100">
@@ -75,58 +43,8 @@ export default function CreateSpacePage() {
 
           {status === "authenticated" && (
             <>
-              {!discordUser?.username && !discordLoading && (
-                <div className="flex justify-center">
-                  <button
-                    className="text-md inline-flex w-fit items-center justify-center rounded-xl border border-transparent bg-purple-800 px-3 py-2 font-bold text-white shadow-sm hover:bg-purple-500 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-black disabled:opacity-50"
-                    onClick={() => {
-                      localStorage.removeItem(LOCAL_STORAGE_KEY_DISCORD_STATUS);
-                      discordAuthWindow();
-                    }}
-                  >
-                    Connect Discord
-                  </button>
-                </div>
-              )}
-              <div className="flex justify-center">
-                {discordLoading && (
-                  <div
-                    className="inline-block h-6 w-6 animate-spin rounded-full border-[3px] border-current border-t-transparent text-blue-600"
-                    role="status"
-                    aria-label="loading"
-                  ></div>
-                )}
-              </div>
-              {!discordLoading && discordUser?.avatar && (
-                <>
-                  <div className="flex justify-center">
-                    <div className="block text-center">
-                      <p className="">{`${discordUser?.username}`}</p>
-                      <a
-                        className="text-xs underline hover:cursor-pointer"
-                        onClick={() => {
-                          discordLogoutTrigger();
-                          // set local storage to false, then refresh
-                          localStorage.removeItem(
-                            LOCAL_STORAGE_KEY_DISCORD_STATUS,
-                          );
-                          window.location.assign(window.location.pathname);
-                        }}
-                      >
-                        disconnect
-                      </a>
-                    </div>
-                    <Image
-                      className="ml-4 overflow-hidden rounded-full"
-                      src={`${avatarBaseUrl}/${discordUser?.id}/${discordUser?.avatar}.png`}
-                      alt={discordUser?.username || ""}
-                      width={50}
-                      height={50}
-                    />
-                  </div>
-                </>
-              )}
-              {discordUser?.username && <Form session={session} />}
+              <DiscordUser address={address} />
+              <Form session={session} />
             </>
           )}
         </div>
@@ -226,7 +144,7 @@ function Form({ session }: { session: Session }) {
 
         <GnosisSafeForm />
 
-        <GovernanceCyleForm />
+        <GovernanceCycleForm />
         {
           <button
             type="submit"

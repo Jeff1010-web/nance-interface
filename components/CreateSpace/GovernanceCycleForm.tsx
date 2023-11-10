@@ -5,7 +5,7 @@ import TimePicker from "./sub/TimePicker";
 import GovernanceCalendarKey from "./sub/GovernanceCalendarKey";
 import GovernanceCalendarMini from "./sub/GovernanceCalendarMini";
 
-export default function GovernanceCyleForm() {
+export default function GovernanceCycleForm() {
   const { register, setValue } = useFormContext();
 
   const [temperatureCheckLength, setTemperatureCheckLength] = useState(3);
