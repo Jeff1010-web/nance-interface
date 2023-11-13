@@ -6,7 +6,7 @@ import * as nextAuth from "next-auth/react";
 import WalletConnectWrapper from "./WalletConnectWrapper";
 
 const meta: Meta<typeof WalletConnectWrapper> = {
-  title: "Nance Components/UserLoginRequire",
+  title: "Nance Components/WalletConnectWrapper",
   component: WalletConnectWrapper,
 };
 
