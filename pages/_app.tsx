@@ -18,8 +18,7 @@ import { SessionProvider } from "next-auth/react";
 import { RainbowKitSiweNextAuthProvider } from "@rainbow-me/rainbowkit-siwe-next-auth";
 import { NetworkContext } from "../context/NetworkContext";
 import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from "../constants/Snapshot";
-import CONFIG from "@/constants/Config";
-import { SWRConfig } from "swr";
+import { SWRConfig } from 'swr/_internal';
 
 const graphqlClient = new GraphQLClient({
   url: `${SNAPSHOT_HUB}/graphql`,
@@ -30,12 +29,12 @@ const graphqlClient = new GraphQLClient({
 // WAGMI and RainbowKit configuration
 const { chains, publicClient } = configureChains(
   [mainnet, goerli],
-  [infuraProvider({ apiKey: CONFIG.infura.key })],
+  [infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY || "" })],
 );
 
 const { connectors } = getDefaultWallets({
   appName: "Nance Interface",
-  projectId: CONFIG.walletConnect.projectId,
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
   chains,
 });
 

@@ -6,7 +6,7 @@ import { PropsWithChildren } from "react";
  * Gated component that will only render its children if the user is authenticated via connect wallet and signing.
  */
 export default function WalletConnectWrapper({ children }: PropsWithChildren) {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const { openConnectModal } = useConnectModal();
 
   if (status !== "authenticated") {

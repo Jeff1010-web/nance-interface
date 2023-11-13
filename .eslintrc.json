@@ -1,8 +1,17 @@
 {
-  "extends": ["next/core-web-vitals", "plugin:storybook/recommended"],
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:storybook/recommended"
+  ],
   "rules": {
-    "brace-style": ["warn", "1tbs"],
-    "indent": ["warn", 2],
+    "brace-style": [
+      "warn",
+      "1tbs"
+    ],
+    "indent": [
+      "warn",
+      2
+    ],
     "semi": [
       "warn",
       "always",
@@ -10,8 +19,10 @@
         "omitLastInOneLineBlock": true
       }
     ],
-    "max-lines": ["warn", 300],
-    "react-hooks/exhaustive-deps": "off",
-    "no-process-env": "warn"
+    "max-lines": [
+      "warn",
+      300
+    ],
+    "react-hooks/exhaustive-deps": "off"
   }
 }
