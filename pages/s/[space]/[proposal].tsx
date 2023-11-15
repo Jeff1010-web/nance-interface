@@ -89,7 +89,7 @@ export default function NanceProposalPage({
   const commonProps: ProposalCommonProps = {
     space,
     snapshotSpace: snapshotSpace || "",
-    status: snapshotProposal?.state || proposal.status,
+    status: proposal.status,
     title: snapshotProposal?.title || proposal.title,
     author: proposal.authorAddress || snapshotProposal?.author || "",
     coauthors: proposal.coauthors || [],

@@ -11,9 +11,9 @@ const tasks = [
   { name: 'Send Daily Alert', endpoint: `dailyAlert` },
   { name: 'Increment Governance Cycle', endpoint: 'incrementGovernanceCycle' },
   { name: 'Start Temperature Check', endpoint: 'temperatureCheckStart' },
-  { name: 'End Temperature Check', endpoint: 'temperatureCheckEnd' },
-  { name: 'Start Voting', endpoint: '' },
-  { name: 'End Voting', endpoint: '' },
+  { name: 'End Temperature Check', endpoint: 'temperatureCheckClose' },
+  { name: 'Start Voting', endpoint: 'voteSetup' },
+  { name: 'End Voting', endpoint: 'voteClose' },
 ];
 
 export default function Tasks({ spaceConfig }: { spaceConfig: SpaceConfig }) {
