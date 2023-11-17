@@ -25,7 +25,7 @@ export default function FormattedAddress({
   const anchorTarget = openInNewWindow ? "_blank" : "_self";
 
   const [label, setLabel] = useState(shortenAddress(address) || "Anon");
-  const { data: ensName } = useEnsName({ address: addr, enabled: hasAddr });
+  const { data: ensName } = useEnsName({ address: addr, enabled: hasAddr, chainId: 1 });
 
   const network = useContext(NetworkContext);
   const urlPrefix = overrideURLPrefix || getAddressLink("", network);

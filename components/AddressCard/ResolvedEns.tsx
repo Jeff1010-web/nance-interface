@@ -2,8 +2,6 @@ import { Tooltip } from "flowbite-react";
 import { useEnsAddress } from "wagmi";
 import { shortenAddress } from "@/utils/functions/address";
 import { classNames } from "@/utils/functions/tailwind";
-import { useContext } from "react";
-import { NetworkContext } from "@/context/NetworkContext";
 import { getAddressLink } from "@/utils/functions/EtherscanURL";
 
 interface Props {
@@ -13,7 +11,7 @@ interface Props {
 }
 
 export default function ResolvedEns({ ens, style, hook }: Props) {
-  const network = useContext(NetworkContext);
+  const network = "mainnet";
   const {
     data: address,
     isError,

@@ -8,6 +8,7 @@ export function getContractLabel(address: string) {
   if(CONTRACT_MAP.ETH === address) return "ETH";
   else if(CONTRACT_MAP.JBX === address) return "JBX";
   else if(CONTRACT_MAP.USDC === address) return "USDC";
+  else if(address === "0x8250e3cE89c8C380449de876882F5EDAA6EF44c7") return "GGG NFT";
   else return `Unknown(${address})`;
 }
 

@@ -11,6 +11,7 @@ import CustomTransactionActionForm from "./CustomTransactionActionForm";
 import PayoutActionForm from "./PayoutActionForm";
 import ReserveActionForm from "./ReserveActionForm";
 import TransferActionForm from "./TransferActionForm";
+import GGGTransferActionForm from './GGGTransferActionForm';
 import { ProposalMetadataContext } from "./context/ProposalMetadataContext";
 
 export default function Actions({
@@ -83,6 +84,30 @@ export default function Actions({
                 genFieldName={genFieldName(index)}
                 projectOwner={projectOwner}
               />
+            </div>
+          );
+        } else if ((field.type === "Transfer" && field.payload.contract === "0x8250e3cE89c8C380449de876882F5EDAA6EF44c7") || (field.type === "Transfer GGG NFT")) {
+          return (
+            <div
+              key={field.id}
+              className="mt-4 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6"
+            >
+              <div className="mb-2 flex justify-between">
+                <h3 className="text-xl font-semibold">Transfer GGG NFT</h3>
+                <XMarkIcon
+                  className="h-5 w-5 cursor-pointer"
+                  onClick={() => remove(index)}
+                />
+              </div>
+              <input
+                type="text"
+                {...register(`proposal.actions.${index}.type`, {
+                  shouldUnregister: true,
+                  value: field.type,
+                })}
+                className="hidden"
+              />
+              <GGGTransferActionForm genFieldName={genFieldName(index)} />
             </div>
           );
         } else if (field.type === "Transfer") {
@@ -198,6 +223,7 @@ export default function Actions({
         setOpen={setOpen}
         selectedAction={selectedAction}
         setSelectedAction={newAction}
+        space={space}
       />
     </div>
   );
