@@ -8,7 +8,7 @@ import Safe, { EthersAdapter, SafeTransactionOptionalProps } from '@safe-global/
 import { ethers } from 'ethers';
 import { MetaTransactionData, SafeTransaction, SafeTransactionDataPartial } from '@safe-global/safe-core-sdk-types';
 
-const SAFE_SERVICE_API = "https://safe-transaction-mainnet.safe.global";
+const SAFE_SERVICE_API = "https://safe-transaction-optimism.safe.global";
 const SAFE_API_V1_ROOT = SAFE_SERVICE_API + "/api/v1/";
 const SAFE_API = SAFE_API_V1_ROOT + "safes/";
 
@@ -56,6 +56,13 @@ export function useMultisigTransactions(address: string, limit: number = 10, sho
   );
 }
 
+export function useFetchSafeCollectibles(address: string, shouldFetch: boolean = true) {
+  return useSWR(
+    shouldFetch ? `${SAFE_SERVICE_API}/api/v2/safes/${address}/collectibles` : null,
+    jsonFetcher() as any,
+  );
+}
+
 // react hook wrapper for safe api kit
 // FIXME this will trigger infinite re-rendering
 export function useSafeAPIFunction<T>(functionWrapper: (safeApiKit: SafeApiKit) => Promise<T>, shouldFetch: boolean = true) {
@@ -67,7 +74,7 @@ export function useSafeAPIFunction<T>(functionWrapper: (safeApiKit: SafeApiKit) 
 
   const _functionWrapper = useCallback(
     (safeApiKit: SafeApiKit) => functionWrapper(safeApiKit), [functionWrapper]
-  )
+  );
 
   const refetch = async () => {
     if (!safeApiKit || !shouldFetch) {
@@ -87,12 +94,12 @@ export function useSafeAPIFunction<T>(functionWrapper: (safeApiKit: SafeApiKit) 
   };
 
   useEffect(() => {
-    refetch()
-  }, [safeApiKit, shouldFetch, functionWrapper])
+    refetch();
+  }, [safeApiKit, shouldFetch, functionWrapper]);
 
   return {
     value, error, loading, refetch
-  }
+  };
 }
 
 function balanceJsonFetcher(): Fetcher<SafeBalanceUsdResponse[], string> {
@@ -226,7 +233,7 @@ export function useCreateTransaction(safeAddress: string, safeTransactionData: S
 
   return {
     value, error, loading
-  }
+  };
 }
 
 export function useQueueTransaction(safeAddress: string, safeTransactionData: SafeTransactionDataPartial | MetaTransactionData[], nonce?: number) {
@@ -247,7 +254,7 @@ export function useQueueTransaction(safeAddress: string, safeTransactionData: Sa
 
     const options: SafeTransactionOptionalProps = {
       nonce // Optional
-    }
+    };
 
     setLoading(true);
 

@@ -28,7 +28,7 @@ export default function TransactionCreator({
   const _network = useContext(NetworkContext);
   const network =
     _network.toLowerCase() === "ethereum" ? "mainnet" : _network.toLowerCase();
-  const supportedNetwork = spaceInfo?.transactorAddress?.network;
+  const supportedNetwork = spaceInfo?.transactorAddress?.network.toLowerCase();
   const networkIsSupported = supportedNetwork
     ? network === supportedNetwork
     : true;

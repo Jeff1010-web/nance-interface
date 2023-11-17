@@ -99,7 +99,7 @@ export default function SpaceAction({ spaceInfo }: { spaceInfo: SpaceInfo }) {
           <QueueTransactionsModal
             open={showQueueTransactionsModal}
             setOpen={setShowQueueTransactionsModal}
-            juiceboxProjectId={projectId}
+            transactorAddress={spaceInfo.transactorAddress!.address}
             space={spaceName}
           />
         )}
