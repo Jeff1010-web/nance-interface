@@ -22,7 +22,7 @@ export default function ProposalContent({ body }: { body: string }) {
           <ArrowUturnLeftIcon className="mr-1 h-5 w-5" />
           Back
         </Link>
-        <div className="w-1 mb-2 inline-block"><ProposalBadgeLabel status={commonProps.status} /></div>
+        <div className="mb-2 inline-block"><ProposalBadgeLabel status={commonProps.status} /></div>
         <h1 id="applicant-information-title" className="text-3xl font-medium">
           {commonProps.title}
         </h1>
@@ -37,7 +37,7 @@ export default function ProposalContent({ body }: { body: string }) {
           />
         </p>
         {commonProps.coauthors.length > 0 && (
-          <p className="text-right text-sm text-gray-500">
+          <p className="text-left text-sm text-gray-500">
             co-authored by&nbsp;
             {commonProps.coauthors.map((coauthor, i) => (
               <Fragment key={i}>
