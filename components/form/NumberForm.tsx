@@ -31,7 +31,7 @@ export default function NumberForm({
         </span>
         <input
           type="number"
-          step={1}
+          step={1E-18}
           min={0}
           defaultValue={defaultValue}
           {...register(fieldName, {
