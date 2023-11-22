@@ -1,8 +1,8 @@
-import { formatDistanceToNowStrict, toDate } from "date-fns";
 import ColorBar, { JB_THRESHOLD } from "@/components/common/ColorBar";
 import { SnapshotProposal } from "@/utils/hooks/snapshot/Proposals";
 import { Proposal } from "@/models/NanceTypes";
-import { ClockIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
+import { ClockIcon } from "@heroicons/react/24/solid";
+import VotingTimeIndicator from "./VotingTimeIndicator";
 
 export default function VotesBar({
   snapshotProposal,
@@ -16,26 +16,27 @@ export default function VotesBar({
   const hasSnapshotVoting = snapshotProposal !== undefined;
 
   if (hasSnapshotVoting) {
+    const { start, end, type, scores_total } = snapshotProposal;
     return (
       <div className="flex flex-col space-y-1">
-        <VotingTimeIndicator p={snapshotProposal} />
+        <VotingTimeIndicator start={start} end={end} />
 
         {["approval", "ranked-choice", "quadratic", "weighted"].includes(
-          snapshotProposal?.type,
+          type,
         ) ? (
           // sum all scores to get the total score
-            <ColorBar
-              greenScore={snapshotProposal.scores_total || 0}
-              redScore={0}
-              threshold={threshold}
-            />
-          ) : (
-            <ColorBar
-              greenScore={proposal?.voteResults?.scores[0] || 0}
-              redScore={proposal?.voteResults?.scores[1] || 0}
-              threshold={threshold}
-            />
-          )}
+          <ColorBar
+            greenScore={scores_total || 0}
+            redScore={0}
+            threshold={threshold}
+          />
+        ) : (
+          <ColorBar
+            greenScore={proposal?.voteResults?.scores[0] || 0}
+            redScore={proposal?.voteResults?.scores[1] || 0}
+            threshold={threshold}
+          />
+        )}
       </div>
     );
   } else {
@@ -56,35 +57,5 @@ export default function VotesBar({
         )}
       </div>
     );
-  }
-}
-
-function VotingTimeIndicator({ p }: { p: SnapshotProposal }) {
-  if (!p) return null;
-
-  const currentTime = Math.floor(Date.now() / 1000);
-  const startLabel = formatDistanceToNowStrict(toDate(p.start * 1000), {
-    addSuffix: true,
-  });
-  const endLabel = formatDistanceToNowStrict(toDate(p.end * 1000), {
-    addSuffix: true,
-  });
-
-  if (currentTime < p.start) {
-    return (
-      <div className="flex place-items-center justify-center space-x-1 text-xs">
-        <PencilSquareIcon className="h-3 w-3" />
-        <p>{startLabel}</p>
-      </div>
-    );
-  } else if (currentTime >= p.start && currentTime <= p.end) {
-    return (
-      <div className="flex place-items-center justify-center space-x-1 text-xs">
-        <ClockIcon className="h-3 w-3" />
-        <p>{endLabel}</p>
-      </div>
-    );
-  } else {
-    return null;
   }
 }

@@ -7,13 +7,14 @@ import ProposalBadgeLabel from "./ProposalBadgeLabel";
 import { Proposal } from "@/models/NanceTypes";
 import ColorBar from "@/components/common/ColorBar";
 import FormattedAddress from "@/components/AddressCard/FormattedAddress";
+import { SnapshotProposal } from "@/utils/hooks/snapshot/Proposals";
 
 export default function ProposalRow({
   proposal,
   proposalIdx,
   proposalIdPrefix,
   snapshotSpace,
-  snapshotProposalDict,
+  snapshotProposal,
   votedData,
   refetch,
   proposalUrlPrefix,
@@ -23,7 +24,7 @@ export default function ProposalRow({
   proposalIdx: number;
   proposalIdPrefix: string;
   snapshotSpace: string;
-  snapshotProposalDict: any;
+  snapshotProposal: SnapshotProposal;
   votedData: any;
   refetch: any;
   proposalUrlPrefix: string;
@@ -73,9 +74,7 @@ export default function ProposalRow({
           <div className="md:hidden">
             <VotesBar
               proposal={proposal}
-              snapshotProposal={
-                snapshotProposalDict[getLastSlash(proposal.voteURL)]
-              }
+              snapshotProposal={snapshotProposal}
               threshold={threshold}
             />
           </div>
@@ -89,9 +88,7 @@ export default function ProposalRow({
       >
         <VotesBar
           proposal={proposal}
-          snapshotProposal={
-            snapshotProposalDict[getLastSlash(proposal.voteURL)]
-          }
+          snapshotProposal={snapshotProposal}
           threshold={threshold}
         />
       </td>
@@ -110,19 +107,19 @@ export default function ProposalRow({
         )}
       >
         {!votedData?.[getLastSlash(proposal.voteURL)] &&
-        snapshotProposalDict[getLastSlash(proposal.voteURL)] &&
+        snapshotProposal &&
         snapshotSpace ? (
-            <NewVoteButton
-              snapshotSpace={snapshotSpace}
-              proposal={snapshotProposalDict[getLastSlash(proposal.voteURL)]}
-              refetch={refetch}
-              isSmall
-            />
-          ) : (
-            <div className="flex justify-center">
-              {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
-            </div>
-          )}
+          <NewVoteButton
+            snapshotSpace={snapshotSpace}
+            proposal={snapshotProposal}
+            refetch={refetch}
+            isSmall
+          />
+        ) : (
+          <div className="flex justify-center">
+            {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
+          </div>
+        )}
       </td>
     </tr>
   );

@@ -45,26 +45,49 @@ function ColorDiv({ color, width }: { color: string; width: number }) {
   );
 }
 
-// Proposals with 80,000,000 or more votes (including "Abstain" and "Against" votes) and at least 66% "For" votes (not counting "Abstain" votes) will be implemented.
-// case 1: full green
-// case 2: full red
-// case 3: full gray
-// case 4: green + red, green
+interface ColorBarProps {
+  /**
+   * The number of for votes for the proposal.
+   */
+  greenScore: number;
+  /**
+   * The number of against votes for the proposal.
+   */
+  redScore: number;
+  /**
+   * Whether to show the tooltip.
+   */
+  noTooltip?: boolean;
+  /**
+   * The threshold of greenScore+redScore for the proposal to pass. Defaults to @see JB_THRESHOLD.
+   */
+  threshold?: number;
+  /**
+   * The min percent of greenScore/(greenScore+redScore) for the proposal to pass. Defaults to 0.66
+   */
+  approvalPercent?: number;
+}
+
+/**
+ * ColorBar which shows the votes weight of a proposal and the progress towards the threshold.
+ * @param greenScore The number of for votes for the proposal.
+ * @param redScore The number of against votes for the proposal.
+ * @param noTooltip Whether to show the tooltip.
+ * @param threshold The threshold of greenScore+redScore for the proposal to pass. Defaults to @see JB_THRESHOLD.
+ * @param approvalPercent The min percent of greenScore/(greenScore+redScore) for the proposal to pass. Defaults to 0.66.
+ */
 export default function ColorBar({
   greenScore,
   redScore,
   noTooltip = false,
   threshold = JB_THRESHOLD,
-}: {
-  greenScore: number;
-  redScore: number;
-  noTooltip?: boolean;
-  threshold?: number;
-}) {
+  approvalPercent = 0.66,
+}: ColorBarProps) {
   const totalScore = greenScore + redScore;
-  const hasPass = totalScore >= threshold && greenScore / totalScore >= 0.66;
+  const hasPass =
+    totalScore >= threshold && greenScore / totalScore >= approvalPercent;
   const shouldDisplayVerticalLine =
-    totalScore >= threshold && greenScore / totalScore < 0.66;
+    totalScore >= threshold && greenScore / totalScore < approvalPercent;
   const colorWidth = Math.min(
     TOTAL_WIDTH,
     Math.round((totalScore / threshold) * TOTAL_WIDTH),
@@ -76,7 +99,7 @@ export default function ColorBar({
 
   const renderBar = () => (
     <>
-      <div className="flex h-3 w-full flex-row rounded-full bg-gray-200 dark:bg-gray-700">
+      <div className="flex h-3 w-full min-w-[5rem] flex-row rounded-full bg-gray-200 dark:bg-gray-700">
         <ColorDiv color="green" width={greenWidth} />
         <ColorDiv color="red" width={redWidth} />
         <ColorDiv color="gray" width={grayWidth} />

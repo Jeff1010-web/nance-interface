@@ -2,6 +2,7 @@ import { useAccount } from "wagmi";
 import {
   useProposalsByID,
   SnapshotProposal,
+  SnapshotVotedData,
 } from "@/utils/hooks/snapshot/Proposals";
 import { getLastSlash } from "@/utils/functions/nance";
 import { Proposal, ProposalsPacket } from "@/models/NanceTypes";
@@ -33,6 +34,112 @@ const StatusValue: { [key: string]: number } = {
 };
 function getValueOfStatus(status: string) {
   return StatusValue[status] ?? -1;
+}
+
+/**
+ * Merge the snapshot proposal vote results into proposals.voteResults
+ */
+function mergeSnapshotVotes(
+  proposals: Proposal[] | undefined,
+  snapshotProposalDict: { [id: string]: SnapshotProposal },
+) {
+  return proposals?.map((p) => {
+    const snapshotProposal = snapshotProposalDict[getLastSlash(p.voteURL)];
+    if (snapshotProposal) {
+      return {
+        ...p,
+        voteResults: {
+          choices: snapshotProposal.choices,
+          scores: snapshotProposal.scores,
+          votes: snapshotProposal.votes,
+        },
+      };
+    } else {
+      return p;
+    }
+  });
+}
+
+function sortProposals(
+  proposals: Proposal[],
+  sortBy: string | null | undefined,
+  sortDesc: boolean | null | undefined,
+  keyword: string | null | undefined,
+  snapshotProposalDict: { [id: string]: SnapshotProposal },
+  votedData: { [id: string]: SnapshotVotedData } | undefined,
+) {
+  if (!sortBy || !SortOptionsArr.includes(sortBy)) {
+    if (keyword) {
+      // keep relevance order
+    } else {
+      // fall back to default sorting
+      // if no keyword
+      proposals
+        .sort(
+          (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
+        )
+        .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
+        .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0));
+    }
+  }
+
+  switch (sortBy) {
+    case "status":
+      proposals.sort(
+        (a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status),
+      );
+      break;
+    case "approval":
+      const sumScores = (p: Proposal) => {
+        return (p?.voteResults?.scores ?? []).reduce(
+          (partialSum, a) => partialSum + a,
+          0,
+        );
+      };
+      proposals.sort((a, b) => sumScores(b) - sumScores(a));
+      break;
+    case "participants":
+      proposals.sort(
+        (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
+      );
+      break;
+    case "voted":
+      const votedWeightOf = (p: Proposal) => {
+        const voted = votedData?.[getLastSlash(p.voteURL)] !== undefined;
+        const hasSnapshotVoting = snapshotProposalDict[getLastSlash(p.voteURL)];
+
+        if (hasSnapshotVoting) {
+          if (voted) return 2;
+          else return 1;
+        } else {
+          return 0;
+        }
+      };
+      proposals.sort((a, b) => votedWeightOf(b) - votedWeightOf(a));
+      break;
+    case "title":
+      proposals.sort((a, b) => {
+        const nameA = a.title;
+        const nameB = b.title;
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+
+        // names must be equal
+        return 0;
+      });
+      break;
+    default:
+      proposals.sort();
+      break;
+  }
+
+  if (!sortDesc) {
+    proposals.reverse();
+  }
 }
 
 export default function ProposalCards({
@@ -96,94 +203,28 @@ export default function ProposalCards({
     address ?? "",
     snapshotProposalIds.length === 0,
   );
+
   // convert proposalsData to dict with proposal id as key
   const snapshotProposalDict: { [id: string]: SnapshotProposal } = {};
   data?.proposalsData?.forEach((p) => (snapshotProposalDict[p.id] = p));
-  // override the snapshot proposal vote results into proposals.voteResults
-  const mergedProposals = proposalsPacket?.proposals?.map((p) => {
-    const snapshotProposal = snapshotProposalDict[getLastSlash(p.voteURL)];
-    if (snapshotProposal) {
-      return {
-        ...p,
-        voteResults: {
-          choices: snapshotProposal.choices,
-          scores: snapshotProposal.scores,
-          votes: snapshotProposal.votes,
-        },
-      };
-    } else {
-      return p;
-    }
-  });
+
+  const mergedProposals = mergeSnapshotVotes(
+    proposalsPacket?.proposals,
+    snapshotProposalDict,
+  );
   const votedData = data?.votedData;
+
   // sort proposals
   // FIXME this can only sort proposals in current page
   let sortedProposals = mergedProposals || [];
-  if (!query.sortBy || !SortOptionsArr.includes(query.sortBy)) {
-    if (query.keyword) {
-      // keep relevance order
-    } else {
-      // fall back to default sorting
-      // if no keyword
-      sortedProposals
-        .sort(
-          (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
-        )
-        .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
-        .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0));
-    }
-  } else {
-    if (query.sortBy === "status") {
-      sortedProposals.sort(
-        (a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status),
-      );
-    } else if (query.sortBy === "approval") {
-      const sumScores = (p: Proposal) => {
-        return (p?.voteResults?.scores ?? []).reduce(
-          (partialSum, a) => partialSum + a,
-          0,
-        );
-      };
-      sortedProposals.sort((a, b) => sumScores(b) - sumScores(a));
-    } else if (query.sortBy === "participants") {
-      sortedProposals.sort(
-        (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
-      );
-    } else if (query.sortBy === "voted") {
-      const votedWeightOf = (p: Proposal) => {
-        const voted = votedData?.[getLastSlash(p.voteURL)] !== undefined;
-        const hasSnapshotVoting = snapshotProposalDict[getLastSlash(p.voteURL)];
-
-        if (hasSnapshotVoting) {
-          if (voted) return 2;
-          else return 1;
-        } else {
-          return 0;
-        }
-      };
-      sortedProposals.sort((a, b) => votedWeightOf(b) - votedWeightOf(a));
-    } else if (query.sortBy === "title") {
-      sortedProposals.sort((a, b) => {
-        const nameA = a.title;
-        const nameB = b.title;
-        if (nameA < nameB) {
-          return -1;
-        }
-        if (nameA > nameB) {
-          return 1;
-        }
-
-        // names must be equal
-        return 0;
-      });
-    } else {
-      sortedProposals.sort();
-    }
-
-    if (!query.sortDesc) {
-      sortedProposals.reverse();
-    }
-  }
+  sortProposals(
+    sortedProposals,
+    query.sortBy,
+    query.sortDesc,
+    query.keyword,
+    snapshotProposalDict,
+    votedData,
+  );
 
   const isLoading = loading || snapshotLoading || proposalsLoading;
   const hasPrivateProposals =
@@ -281,7 +322,9 @@ export default function ProposalCards({
                     snapshotSpace={
                       proposalsPacket?.proposalInfo?.snapshotSpace || ""
                     }
-                    snapshotProposalDict={snapshotProposalDict}
+                    snapshotProposal={
+                      snapshotProposalDict[getLastSlash(proposal.voteURL)]
+                    }
                     votedData={votedData}
                     proposalUrlPrefix={proposalUrlPrefix}
                     refetch={refetch}
