@@ -27,17 +27,9 @@ export default function Space({
   const [showDrafts, setShowDrafts] = useState(true);
 
   // External Hooks
-  const { data: sessionData } = useSession();
-  const {
-    data: privateProposals,
-    mutate,
-    isLoading,
-  } = usePrivateProposals(spaceInfo.name);
-
-  useEffect(() => {
-    console.debug("session change", sessionData);
-    mutate();
-  }, [sessionData?.user?.name, mutate]);
+  const { data: privateProposals, isLoading } = usePrivateProposals(
+    spaceInfo.name,
+  );
 
   return (
     <div className="m-4 flex justify-center lg:m-6 lg:px-20">

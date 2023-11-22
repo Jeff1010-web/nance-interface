@@ -18,8 +18,9 @@ import {
   SQLPayout,
   ConfigSpacePayload,
   CreateFormValues,
-  SpaceConfig
-} from '../../models/NanceTypes';
+  SpaceConfig,
+} from "../../models/NanceTypes";
+import { useSession } from "next-auth/react";
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
   return async (url) => {
@@ -27,7 +28,7 @@ function jsonFetcher(): Fetcher<APIResponse<any>, string> {
     const json = await res.json();
     if (json?.success === "false" || json?.error) {
       throw new Error(
-        `An error occurred while fetching the data: ${json?.error}`
+        `An error occurred while fetching the data: ${json?.error}`,
       );
     }
     return json;
@@ -37,31 +38,31 @@ function jsonFetcher(): Fetcher<APIResponse<any>, string> {
 export function useAllSpaceInfo(shouldFetch: boolean = true) {
   return useSWR<APIResponse<SpaceInfo[]>>(
     shouldFetch ? `${NANCE_PROXY_API_URL}/ish/all` : null,
-    jsonFetcher()
+    jsonFetcher(),
   );
 }
 
 export function useSpaceConfig(space: string, shouldFetch: boolean = true) {
   return useSWR<APIResponse<SpaceConfig>, string>(
     shouldFetch ? `${NANCE_API_URL}/ish/config/${space}` : null,
-    jsonFetcher()
+    jsonFetcher(),
   );
 }
 
 export function useSpaceInfo(
   args: SpaceInfoRequest,
-  shouldFetch: boolean = true
+  shouldFetch: boolean = true,
 ) {
   return useSWR<APIResponse<SpaceInfo>, string>(
     shouldFetch ? `${NANCE_PROXY_API_URL}/${args.space}` : null,
-    jsonFetcher()
+    jsonFetcher(),
   );
 }
 
 export function useCurrentPayouts(
   space: string,
   cycle: string | undefined,
-  shouldFetch: boolean = true
+  shouldFetch: boolean = true,
 ) {
   const urlParams = new URLSearchParams();
   if (cycle) {
@@ -72,23 +73,27 @@ export function useCurrentPayouts(
     shouldFetch
       ? `${NANCE_PROXY_API_URL}/${space}/payouts?` + urlParams.toString()
       : null,
-    jsonFetcher()
+    jsonFetcher(),
   );
 }
 
 export function usePrivateProposals(
   space: string,
-  shouldFetch: boolean = true
+  shouldFetch: boolean = true,
 ) {
+  const { data: sessionData } = useSession();
+
   return useSWR<APIResponse<Proposal[]>, string>(
-    shouldFetch ? `${NANCE_PROXY_API_URL}/${space}/privateProposals` : null,
-    jsonFetcher()
+    shouldFetch
+      ? `${NANCE_PROXY_API_URL}/${space}/privateProposals?user=${sessionData?.user?.name}`
+      : null,
+    jsonFetcher(),
   );
 }
 
 export function useProposals(
   args: ProposalsRequest,
-  shouldFetch: boolean = true
+  shouldFetch: boolean = true,
 ) {
   const urlParams = new URLSearchParams();
   if (args.cycle) {
@@ -108,13 +113,13 @@ export function useProposals(
     shouldFetch
       ? `${NANCE_PROXY_API_URL}/${args.space}/proposals?` + urlParams.toString()
       : null,
-    jsonFetcher()
+    jsonFetcher(),
   );
 }
 
 export function useProposalsInfinite(
   args: ProposalsRequest,
-  shouldFetch: boolean = true
+  shouldFetch: boolean = true,
 ) {
   const urlParams = new URLSearchParams();
   if (args.cycle) {
@@ -132,7 +137,7 @@ export function useProposalsInfinite(
 
   const getKey = (
     pageIndex: number,
-    previousPageData: APIResponse<ProposalsPacket>
+    previousPageData: APIResponse<ProposalsPacket>,
   ) => {
     if (!shouldFetch || (previousPageData && !previousPageData.data.hasMore))
       return null; // reached the end
@@ -144,37 +149,37 @@ export function useProposalsInfinite(
 
   return useSWRInfinite<APIResponse<ProposalsPacket>, string>(
     getKey,
-    jsonFetcher()
+    jsonFetcher(),
   );
 }
 
 export function useProposal(
   args: ProposalRequest,
-  shouldFetch: boolean = true
+  shouldFetch: boolean = true,
 ) {
   return useSWR<APIResponse<Proposal>, string>(
     shouldFetch
       ? `${NANCE_PROXY_API_URL}/${args.space}/proposal/${args.hash}`
       : null,
-    jsonFetcher()
+    jsonFetcher(),
   );
 }
 
 export function useReconfigureRequest(
   args: FetchReconfigureRequest,
-  shouldFetch: boolean = true
+  shouldFetch: boolean = true,
 ) {
   return useSWR<APIResponse<FetchReconfigureData>, string>(
     shouldFetch
       ? `${NANCE_PROXY_API_URL}/${args.space}/reconfigure?version=${args.version}&address=${args.address}&datetime=${args.datetime}&network=${args.network}`
       : null,
-    jsonFetcher()
+    jsonFetcher(),
   );
 }
 
 async function uploader(
   url: RequestInfo | URL,
-  { arg }: { arg: ProposalUploadRequest }
+  { arg }: { arg: ProposalUploadRequest },
 ) {
   const res = await fetch(url, {
     method: "POST",
@@ -186,7 +191,7 @@ async function uploader(
   const json: APIResponse<ProposalUploadPayload> = await res.json();
   if (json.success === false) {
     throw new Error(
-      `An error occurred while uploading the data: ${json?.error}`
+      `An error occurred while uploading the data: ${json?.error}`,
     );
   }
 
@@ -195,7 +200,7 @@ async function uploader(
 
 async function creator(
   url: RequestInfo | URL,
-  { arg }: { arg: CreateFormValues }
+  { arg }: { arg: CreateFormValues },
 ) {
   const res = await fetch(url, {
     method: "POST",
@@ -207,7 +212,7 @@ async function creator(
   const json: APIResponse<ConfigSpacePayload> = await res.json();
   if (json.success === false) {
     throw new Error(
-      `An error occurred while uploading the data: ${json?.error}`
+      `An error occurred while uploading the data: ${json?.error}`,
     );
   }
 
@@ -217,7 +222,7 @@ async function creator(
 export function useProposalUpload(
   space: string,
   proposalId: string | undefined,
-  shouldFetch: boolean = true
+  shouldFetch: boolean = true,
 ) {
   let url = `${NANCE_PROXY_API_URL}/${space}/proposals`;
   let fetcher = uploader;
@@ -231,7 +236,7 @@ export function useProposalUpload(
 export function useProposalDelete(
   space: string,
   uuid: string | undefined,
-  shouldFetch: boolean = true
+  shouldFetch: boolean = true,
 ) {
   let url = `${NANCE_PROXY_API_URL}/${space}/proposal/${uuid}`;
   let fetcher = deleter;
@@ -240,7 +245,7 @@ export function useProposalDelete(
 
 async function editor(
   url: RequestInfo | URL,
-  { arg }: { arg: ProposalUploadRequest }
+  { arg }: { arg: ProposalUploadRequest },
 ) {
   const res = await fetch(url, {
     method: "PUT",
@@ -252,7 +257,7 @@ async function editor(
   const json: APIResponse<ProposalUploadPayload> = await res.json();
   if (json.success === false) {
     throw new Error(
-      `An error occurred while uploading the data: ${json?.error}`
+      `An error occurred while uploading the data: ${json?.error}`,
     );
   }
 
@@ -261,7 +266,7 @@ async function editor(
 
 async function deleter(
   url: RequestInfo | URL,
-  { arg }: { arg: ProposalDeleteRequest }
+  { arg }: { arg: ProposalDeleteRequest },
 ) {
   const res = await fetch(url, {
     method: "DELETE",
@@ -272,7 +277,7 @@ async function deleter(
   const json: APIResponse<ProposalUploadPayload> = await res.json();
   if (json.success === false) {
     throw new Error(
-      `An error occurred while deleting this proposal: ${json?.error}`
+      `An error occurred while deleting this proposal: ${json?.error}`,
     );
   }
 
@@ -292,7 +297,7 @@ export function getPath(space: string, command: string) {
 export async function fetchCreatedProposals(
   space: string | undefined,
   author: string | undefined,
-  prefix: string = ""
+  prefix: string = "",
 ) {
   if (!space || !author) {
     return {
