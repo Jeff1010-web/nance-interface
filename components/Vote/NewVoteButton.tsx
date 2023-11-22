@@ -54,7 +54,7 @@ export default function NewVoteButton({
         <span>{buttonLabel}</span>
       </button>
 
-      {proposal?.choices && (
+      {proposal?.choices && modalIsOpen && (
         <VotingModal
           modalIsOpen={modalIsOpen}
           closeModal={() => setModalIsOpen(false)}
