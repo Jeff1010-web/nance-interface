@@ -1,33 +1,9 @@
-import { useQuery } from 'graphql-hooks';
-
-const QUERY = `
-query Ranking($search: String) {
-  ranking(
-    first: 20
-    skip: 0
-    where: {search: $search }
-  ) {
-    items {
-      id
-      name
-      avatar
-      admins
-      moderators
-    }
-  }
-}
-`;
-
-export interface SpaceSearch {
-    id: string,
-    name: string,
-    avatar: string,
-    admins: string[],
-    moderators: string[]
-}
+import { useQuery } from "graphql-hooks";
+import { SPACE_RANK_QUERY } from "./queries/Space";
+import { SpaceSearch } from "@/models/SnapshotTypes";
 
 export default function useSnapshotSearch(search: string): {data: SpaceSearch[] | undefined, loading: boolean} {
-  const { loading, data } = useQuery<{ranking: { items: SpaceSearch[] }}>(QUERY, {
+  const { loading, data } = useQuery<{ranking: { items: SpaceSearch[] }}>(SPACE_RANK_QUERY, {
     variables: {
       search
     }

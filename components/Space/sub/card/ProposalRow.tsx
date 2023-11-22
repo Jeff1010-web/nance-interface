@@ -7,7 +7,7 @@ import ProposalBadgeLabel from "./ProposalBadgeLabel";
 import { Proposal } from "@/models/NanceTypes";
 import ColorBar from "@/components/common/ColorBar";
 import FormattedAddress from "@/components/AddressCard/FormattedAddress";
-import { SnapshotProposal } from "@/utils/hooks/snapshot/Proposals";
+import { SnapshotProposal } from "@/models/SnapshotTypes";
 
 export default function ProposalRow({
   proposal,
@@ -109,17 +109,17 @@ export default function ProposalRow({
         {!votedData?.[getLastSlash(proposal.voteURL)] &&
         snapshotProposal &&
         snapshotSpace ? (
-          <NewVoteButton
-            snapshotSpace={snapshotSpace}
-            proposal={snapshotProposal}
-            refetch={refetch}
-            isSmall
-          />
-        ) : (
-          <div className="flex justify-center">
-            {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
-          </div>
-        )}
+            <NewVoteButton
+              snapshotSpace={snapshotSpace}
+              proposal={snapshotProposal}
+              refetch={refetch}
+              isSmall
+            />
+          ) : (
+            <div className="flex justify-center">
+              {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
+            </div>
+          )}
       </td>
     </tr>
   );

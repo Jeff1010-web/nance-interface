@@ -1,72 +1,11 @@
 import { useQuery } from "graphql-hooks";
-
-
-const QUERY = `
-query ProposalsOverview($first: Int, $space: String, $address: String) {
-    proposals(
-      first: $first
-      skip: 0
-      where: {
-        space: $space
-      }
-      orderBy: "created",
-      orderDirection: desc
-    ) {
-      id,
-      state,
-      quorum,
-      scores_total
-    }
-    
-    votes (
-      first: $first
-      skip: 0
-      where: {
-        space: $space
-        voter: $address
-      }
-      orderBy: "created",
-      orderDirection: desc
-    ) {
-      id
-      proposal {
-        id
-      }
-    }
-}
-`;
-
-interface ProposalOverviewQueryModel {
-    proposals: {
-        id: string
-        state: string
-        quorum: number,
-        scores_total: number
-    }[],
-    votes: {
-        id: string
-        proposal: {
-            id: string
-        }
-    }[]
-}
-
-export interface SnapshotProposalsOverview {
-    [id: string]: {
-        // active closed pending
-        state: string;
-        // under quorum?
-        scores_total: number;
-        quorum: number;
-        // voted?
-        voted: boolean;
-    }
-}
+import { PROPOSALS_OVERVIEW_QUERY } from "./queries/Proposal";
+import { ProposalOverviewQueryModel, SnapshotProposalsOverview } from "@/models/SnapshotTypes";
 
 export function useProposalsOverview(space: string, first: number, address: string) {
 
   console.debug("🔧 useProposalsOverview.args ->", {space, first, address});
-  const { loading, error, data } = useQuery<ProposalOverviewQueryModel>(QUERY, {
+  const { loading, error, data } = useQuery<ProposalOverviewQueryModel>(PROPOSALS_OVERVIEW_QUERY, {
     skip: !space || !first,
     variables: { first, space, address }
   });

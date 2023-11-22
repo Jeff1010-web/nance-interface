@@ -1,5 +1,5 @@
 import { Action } from "@/models/NanceTypes";
-import { SnapshotProposal } from "@/utils/hooks/snapshot/Proposals";
+import { SnapshotProposal } from "@/models/SnapshotTypes";
 import { createContext } from "react";
 
 export interface ProposalCommonProps {

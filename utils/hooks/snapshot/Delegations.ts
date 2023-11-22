@@ -1,20 +1,11 @@
 import { formatBytes32String } from "ethers/lib/utils";
 import useSWR, { Fetcher } from "swr";
 import { useContractRead, useContractWrite, usePrepareContractWrite } from "wagmi";
-
-const QUERY = `query delegators($space: String, $address: Bytes) {
-    delegations(where: {
-      space: $space
-      delegate: $address
-    }) {
-      delegator
-    }
-  }
-`;
+import { DELEGATES_QUERY } from "./queries/Delegate";
 
 const fetcher: Fetcher<{ delegator: string }[], { space: string, address: string }> = ({ space, address }) => fetch(SUBGRAPH_URL, {
   method: "POST",
-  body: JSON.stringify({ query: QUERY, variables: { space, address } }),
+  body: JSON.stringify({ query: DELEGATES_QUERY, variables: { space, address } }),
 }).then(res => res.json()).then(res => res.data.delegations);
 
 const SUBGRAPH_URL = `https://api.thegraph.com/subgraphs/id/${process.env.NEXT_PUBLIC_SNAPSHOT_SUBGRAPH_ID}`;
@@ -31,10 +22,10 @@ export async function fetchDelegators(voter: string, space: string): Promise<{ d
   const ret = await fetch(SUBGRAPH_URL, {
     method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      query: QUERY,
+      query: DELEGATES_QUERY,
       variables: { address: voter, space }
     }),
   }).then(res => res.json());
@@ -47,14 +38,14 @@ export async function fetchDelegators(voter: string, space: string): Promise<{ d
   }
 }
 
-const SNAPSHOT_DELEGATE_REGISTRY_ADDRESS = '0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446';
+const SNAPSHOT_DELEGATE_REGISTRY_ADDRESS = "0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446";
 const SNAPSHOT_DELEGATE_REGISTRY_ABI = [{ "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "delegator", "type": "address" }, { "indexed": true, "internalType": "bytes32", "name": "id", "type": "bytes32" }, { "indexed": true, "internalType": "address", "name": "delegate", "type": "address" }], "name": "ClearDelegate", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "delegator", "type": "address" }, { "indexed": true, "internalType": "bytes32", "name": "id", "type": "bytes32" }, { "indexed": true, "internalType": "address", "name": "delegate", "type": "address" }], "name": "SetDelegate", "type": "event" }, { "inputs": [{ "internalType": "bytes32", "name": "id", "type": "bytes32" }], "name": "clearDelegate", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "", "type": "address" }, { "internalType": "bytes32", "name": "", "type": "bytes32" }], "name": "delegation", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "bytes32", "name": "id", "type": "bytes32" }, { "internalType": "address", "name": "delegate", "type": "address" }], "name": "setDelegate", "outputs": [], "stateMutability": "nonpayable", "type": "function" }];
 
 export function useSetDelegate(space: string, delegate: string) {
   const { config, error, isError } = usePrepareContractWrite({
     address: SNAPSHOT_DELEGATE_REGISTRY_ADDRESS,
     abi: SNAPSHOT_DELEGATE_REGISTRY_ABI,
-    functionName: 'setDelegate',
+    functionName: "setDelegate",
     args: [formatBytes32String(space), delegate]
   });
   const { data, isLoading, isSuccess, write } = useContractWrite(config);
@@ -66,7 +57,7 @@ export function useClearDelegate(space: string) {
   const { config, error, isError } = usePrepareContractWrite({
     address: SNAPSHOT_DELEGATE_REGISTRY_ADDRESS,
     abi: SNAPSHOT_DELEGATE_REGISTRY_ABI,
-    functionName: 'clearDelegate',
+    functionName: "clearDelegate",
     args: [formatBytes32String(space)]
   });
   const { data, isLoading, isSuccess, write } = useContractWrite(config);
@@ -78,7 +69,7 @@ export function useDelegated(space: string, delegator: string) {
   const { data, isError, isLoading } = useContractRead({
     address: SNAPSHOT_DELEGATE_REGISTRY_ADDRESS,
     abi: SNAPSHOT_DELEGATE_REGISTRY_ABI,
-    functionName: 'delegation',
+    functionName: "delegation",
     args: [delegator, formatBytes32String(space)]
   });
 

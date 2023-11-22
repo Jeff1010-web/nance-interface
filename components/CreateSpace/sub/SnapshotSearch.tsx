@@ -2,9 +2,8 @@ import { useState } from "react";
 import { CheckIcon, XCircleIcon } from "@heroicons/react/20/solid";
 import { Combobox } from "@headlessui/react";
 import { classNames } from "@/utils/functions/tailwind";
-import useSnapshotSearch, {
-  SpaceSearch,
-} from "@/utils/hooks/snapshot/SpaceSearch";
+import useSnapshotSearch from "@/utils/hooks/snapshot/SpaceSearch";
+import { SpaceSearch } from "@/models/SnapshotTypes";
 import useSetSpace from "@/utils/hooks/snapshot/SetSpace";
 import Image from "next/image";
 import { Session } from "next-auth";

@@ -1,47 +1,7 @@
-import { useQuery } from 'graphql-hooks';
-
-const SPACES_QUERY = `
-query Spaces($address: String) {
-    follows(
-        first: 25,
-        where: {
-            follower: $address
-        }
-    ) {
-        space {
-            id
-            name
-        }
-        created
-    }
-}
-`;
-
-const ACTIVE_PROPOSALS_QUERY = `
-query Proposals($spaceIds: [String]) {
-    proposals(
-      first: 250
-      skip: 0
-      where: {
-        space_in: $spaceIds,
-        state: "active"
-      }
-      orderBy: "created",
-      orderDirection: desc
-    ) {
-      space {
-        id
-      }
-      id
-    }
-  }
-`;
-
-export interface FollowedSpacesData {
-    id: string,
-    name: string,
-    activeProposals: number
-}
+import { useQuery } from "graphql-hooks";
+import { ACTIVE_PROPOSALS_QUERY } from "./queries/Proposal";
+import { SPACES_QUERY } from "./queries/Space";
+import { FollowedSpacesData } from "@/models/SnapshotTypes";
 
 export default function useFollowedSpaces(address: string): {data: FollowedSpacesData[], loading: boolean} {
   // Load spaces

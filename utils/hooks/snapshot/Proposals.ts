@@ -1,197 +1,10 @@
 import { APIError, useQuery } from "graphql-hooks";
-import { mapChoiceIndex } from "../../functions/snapshotUtil";
-import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from "../../../constants/Snapshot";
-
-const PROPOSALS_QUERY = `
-query Proposals($first: Int, $skip: Int, $space: String, $state: String, $keyword: String) {
-  proposals(
-    first: $first
-    skip: $skip
-    where: {
-      space: $space,
-      state: $state,
-      title_contains: $keyword
-    }
-    orderBy: "created",
-    orderDirection: desc
-  ) {
-    id,
-    author,
-    title,
-    body,
-    type,
-    state,
-    created,
-    start,
-    end,
-    choices,
-    scores,
-    votes,
-    quorum,
-    scores_total,
-    ipfs,
-    snapshot
-  }
-}
-`;
-
-const PROPOSALS_BY_ID_QUERY = `
-query ProposalsByID($first: Int, $proposalIds: [String]) {
-  proposals(
-    first: $first
-    skip: 0
-    where: {
-      id_in: $proposalIds
-    }
-    orderBy: "created",
-    orderDirection: desc
-  ) {
-    id,
-    author,
-    title,
-    body,
-    type,
-    state,
-    created,
-    start,
-    end,
-    choices,
-    scores,
-    votes,
-    quorum,
-    scores_total,
-    ipfs,
-    snapshot
-  }
-}
-`;
-
-const VOTES_OF_PROPOSAL_QUERY = `
-query VotesBySingleProposalId($id: String, $skip: Int, $orderBy: String, $first: Int) {
-  votes (
-    first: $first
-    skip: $skip
-    where: {
-      proposal: $id
-    }
-    orderBy: $orderBy,
-    orderDirection: desc
-  ) {
-    id
-    app
-    created
-    voter
-    choice
-    vp
-    reason
-  }
-}
-`;
-
-const VOTED_PROPOSALS_QUERY = `
-query VotedProposals($first: Int, $skip: Int, $voter: String, $proposalIds: [String], $space: String) {
-  votes (
-    first: $first,
-    skip: $skip,
-    where: {
-      voter: $voter,
-      proposal_in: $proposalIds,
-      space: $space
-    }
-    orderBy: "created",
-    orderDirection: desc
-  ) {
-    id,
-    app,
-    created,
-    choice,
-    vp,
-    reason,
-    proposal {
-      id,
-      choices,
-      type,
-      title
-    },
-    space {
-      id,
-      name
-    }
-  }
-}
-`;
-
-const ALL_VOTES_OF_USER = `
-query AllVotesOfUser($first: Int, $voter: String, $space: String) {
-  votes (
-    first: $first,
-    where: {
-      voter: $voter,
-      space: $space
-    }
-    orderBy: "created",
-    orderDirection: desc
-  ) {
-    id
-    choice
-    proposal {
-      type
-    }
-  }
-}
-`;
-
-// Model for a single proposal
-export interface SnapshotProposal {
-  id: string;
-  // content
-  author: string;
-  title: string;
-  body: string;
-  // metadata
-  type: string;
-  state: string;
-  created: number;
-  start: number;
-  end: number;
-  ipfs: string; // bafkreiete6tryrhksyt5gowckreabilu57zl4shjrl6kptkfy7oiowqd44
-  snapshot: string; // 16922147
-  // voting
-  choices: string[];
-  scores: number[];
-  votes: number;
-  quorum: number;
-  scores_total: number;
-}
-
-// Model for a single vote
-export interface SnapshotVote {
-  id: string;
-  // metadata
-  app: string;
-  created: number;
-  // voting
-  voter: string;
-  choice: any;
-  vp: number;
-  reason: string;
-}
-
-export type SnapshotVotedData = Omit<
-  SnapshotVote & {
-    proposal: {
-      id: string;
-      choices: string[];
-      type: string;
-      title: string;
-    };
-    space: {
-      id: string;
-      name: string;
-    };
-  },
-  "voter"
->;
+import { mapChoiceIndex } from "@/utils/functions/snapshotUtil";
+import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from "@/constants/Snapshot";
+import { ALL_VOTES_OF_USER } from "./queries/Vote";
+import { PROPOSALS_BY_ID_QUERY, PROPOSALS_QUERY } from "./queries/Proposal";
+import { VOTED_PROPOSALS_QUERY, VOTES_OF_PROPOSAL_QUERY } from "./queries/Vote";
+import { SnapshotProposal, SnapshotVote, SnapshotVotedData, AllVotes, SnapshotSpaceWithVotesCount } from "@/models/SnapshotTypes";
 
 export function useProposalsByID(
   proposalIds: string[],
@@ -295,19 +108,6 @@ export function useProposalsWithCustomQuery(
   };
   // console.debug("🔧 useProposalsWithCustomQuery.return ->", { ret });
   return ret;
-}
-
-export interface SnapshotSpaceWithVotesCount {
-  id: string;
-  name: string;
-  votes: number;
-}
-
-export interface AllVotes {
-  total: number;
-  for: number;
-  against: number;
-  abstain: number;
 }
 
 export function useAllVotesOfAddress(
@@ -508,8 +308,8 @@ export function useProposalVotes(
       first: sortAfterQuery
         ? Math.min(proposal?.votes ?? 0, 1000)
         : overrideLimit === 0
-        ? VOTES_PER_PAGE
-        : Math.min(overrideLimit, 1000),
+          ? VOTES_PER_PAGE
+          : Math.min(overrideLimit, 1000),
       skip: sortAfterQuery ? 0 : skip,
       orderBy: orderBy,
       id: proposal?.id ?? "",

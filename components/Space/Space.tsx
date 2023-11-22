@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePrivateProposals } from "@/utils/hooks/NanceHooks";
 import dynamic from "next/dynamic";
 import { SpaceInfo } from "@/models/NanceTypes";
@@ -27,8 +27,11 @@ export default function Space({
   const [showDrafts, setShowDrafts] = useState(true);
 
   // External Hooks
+  const { data: session } = useSession();
+  const isAddressConnected = !!session?.user?.name;
   const { data: privateProposals, isLoading } = usePrivateProposals(
     spaceInfo.name,
+    isAddressConnected
   );
 
   return (

@@ -1,7 +1,7 @@
 import { useState, Fragment, useEffect } from "react";
 import useVotingPower from "@/utils/hooks/snapshot/VotingPower";
 import { Dialog, RadioGroup, Transition } from "@headlessui/react";
-import { SnapshotProposal } from "@/utils/hooks/snapshot/Proposals";
+import { SnapshotProposal } from "@/models/SnapshotTypes";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { CheckIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 import useVote from "@/utils/hooks/snapshot/Vote";

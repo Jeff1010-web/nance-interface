@@ -1,8 +1,6 @@
 import { Tooltip } from "flowbite-react";
-import {
-  SnapshotProposal,
-  useProposalVotes,
-} from "@/utils/hooks/snapshot/Proposals";
+import { useProposalVotes } from "@/utils/hooks/snapshot/Proposals";
+import { SnapshotProposal } from "@/models/SnapshotTypes";
 import { formatNumber } from "@/utils/functions/NumberFormatter";
 
 // BasicVoting: For Against Abstain

@@ -1,9 +1,9 @@
-import { ProposalType } from '@snapshot-labs/snapshot.js/dist/sign/types';
-import { Signer, Wallet } from 'ethers';
-import { useCallback, useState } from 'react';
+import { ProposalType } from "@snapshot-labs/snapshot.js/dist/sign/types";
+import { Signer, Wallet } from "ethers";
+import { useCallback, useState } from "react";
 import { useAccount } from "wagmi";
-import { useEthersSigner } from '../ViemAdapter';
-import { SNAPSHOT_HUB } from '../../../constants/Snapshot';
+import { useEthersSigner } from "../ViemAdapter";
+import { SNAPSHOT_HUB } from "@/constants/Snapshot";
 
 export default function useVote(
   space: string, 
@@ -24,7 +24,7 @@ export default function useVote(
 
   const trigger = useCallback(async () => {
     try {
-      const client = await import('@snapshot-labs/snapshot.js').then((snapshot) => new snapshot.default.Client712(SNAPSHOT_HUB));
+      const client = await import("@snapshot-labs/snapshot.js").then((snapshot) => new snapshot.default.Client712(SNAPSHOT_HUB));
       setError(undefined);
       setLoading(true);
       const receipt = await client.vote(
@@ -36,7 +36,7 @@ export default function useVote(
                   type: type as ProposalType,
                   choice: choice as number | number[] | string,
                   reason,
-                  app: 'jbdao.org'
+                  app: "jbdao.org"
                 }
       );
       setValue(receipt);

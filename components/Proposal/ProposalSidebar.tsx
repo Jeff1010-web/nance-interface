@@ -11,7 +11,7 @@ import { Fragment, useContext, useState } from "react";
 import { canEditProposal } from "@/utils/functions/nance";
 import { classNames } from "@/utils/functions/tailwind";
 import ColorBar from "@/components/common/ColorBar";
-import { SnapshotProposal } from "@/utils/hooks/snapshot/Proposals";
+import { SnapshotProposal } from "@/models/SnapshotTypes";
 import {
   Proposal,
   ProposalDeleteRequest,

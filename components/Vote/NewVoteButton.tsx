@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { SnapshotProposal } from "@/utils/hooks/snapshot/Proposals";
+import { SnapshotProposal } from "@/models/SnapshotTypes";
 import { useAccount } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { classNames } from "@/utils/functions/tailwind";

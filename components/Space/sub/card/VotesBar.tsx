@@ -1,5 +1,5 @@
 import ColorBar, { JB_THRESHOLD } from "@/components/common/ColorBar";
-import { SnapshotProposal } from "@/utils/hooks/snapshot/Proposals";
+import { SnapshotProposal } from "@/models/SnapshotTypes";
 import { Proposal } from "@/models/NanceTypes";
 import { ClockIcon } from "@heroicons/react/24/solid";
 import VotingTimeIndicator from "./VotingTimeIndicator";
@@ -25,18 +25,18 @@ export default function VotesBar({
           type,
         ) ? (
           // sum all scores to get the total score
-          <ColorBar
-            greenScore={scores_total || 0}
-            redScore={0}
-            threshold={threshold}
-          />
-        ) : (
-          <ColorBar
-            greenScore={proposal?.voteResults?.scores[0] || 0}
-            redScore={proposal?.voteResults?.scores[1] || 0}
-            threshold={threshold}
-          />
-        )}
+            <ColorBar
+              greenScore={scores_total || 0}
+              redScore={0}
+              threshold={threshold}
+            />
+          ) : (
+            <ColorBar
+              greenScore={proposal?.voteResults?.scores[0] || 0}
+              redScore={proposal?.voteResults?.scores[1] || 0}
+              threshold={threshold}
+            />
+          )}
       </div>
     );
   } else {

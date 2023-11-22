@@ -1,19 +1,6 @@
-import { useQuery } from 'graphql-hooks';
-import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from '../../../constants/Snapshot';
-
-const QUERY = `
-query VotingPowerQuery($voter: String!, $space: String!, $proposal: String) {
-    vp (
-      voter: $voter
-      space: $space
-      proposal: $proposal
-    ) {
-      vp
-      vp_by_strategy
-      vp_state
-    }
-}
-`;
+import { useQuery } from "graphql-hooks";
+import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from "@/constants/Snapshot";
+import { VOTING_POWER_QUERY } from "./queries/Vote";
 
 export interface SnapshotVotingPower {
   vp: number;
@@ -22,7 +9,7 @@ export interface SnapshotVotingPower {
 }
 
 export default function useVotingPower(voter: string | undefined, space: string | undefined, proposal: string | undefined): { data: number, loading: boolean } {
-  const { loading, data, error } = useQuery<{ vp: SnapshotVotingPower }>(QUERY, {
+  const { loading, data, error } = useQuery<{ vp: SnapshotVotingPower }>(VOTING_POWER_QUERY, {
     skip: !voter || !space || !proposal,
     variables: { voter, space, proposal }
   });
@@ -41,7 +28,7 @@ export async function fetchVotingPower(voter: string, space: string, proposal: s
     method: "POST",
     headers: SNAPSHOT_HEADERS,
     body: JSON.stringify({
-      query: QUERY,
+      query: VOTING_POWER_QUERY,
       variables: { voter, space, proposal }
     }),
   }).then(res => res.json());

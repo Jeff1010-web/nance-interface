@@ -1,9 +1,10 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { fetchDelegators } from '../../utils/hooks/snapshot/Delegations';
-import { AllVotes, fetchAllVotesOfAddress } from '../../utils/hooks/snapshot/Proposals';
-import { fetchVotingPower } from '../../utils/hooks/snapshot/VotingPower';
-import { fetchCreatedProposals } from '../../utils/hooks/NanceHooks';
-import { Proposal } from '../../models/NanceTypes';
+import { NextApiRequest, NextApiResponse } from "next";
+import { fetchDelegators } from "../../utils/hooks/snapshot/Delegations";
+import { fetchAllVotesOfAddress } from "@/utils/hooks/snapshot/Proposals";
+import { AllVotes } from "@/models/SnapshotTypes";
+import { fetchVotingPower } from "../../utils/hooks/snapshot/VotingPower";
+import { fetchCreatedProposals } from "../../utils/hooks/NanceHooks";
+import { Proposal } from "../../models/NanceTypes";
 
 export type ProfileResponse = {
   vp: number
@@ -24,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const space = req.query.space as string;
   const proposal = req.query.proposal as string;
   const prefix = process.env.NODE_ENV === "production" ? `https://${req.headers.host}` : `http://${req.headers.host}`;
-  console.debug('api.profile', { query: req.query, prefix: prefix });
+  console.debug("api.profile", { query: req.query, prefix: prefix });
 
   const nanceSpace = NANCE_MAPPING[space];
 
@@ -44,8 +45,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=86400, stale-while-revalidate=172800'
+      "Cache-Control",
+      "public, s-maxage=86400, stale-while-revalidate=172800"
     );
     res.status(200).json(response);
   } catch (err) {
