@@ -24,7 +24,7 @@ export function useProposalsByID(
     skip,
   );
 
-  if (skip || address?.length !== 42) {
+  if (address?.length !== 42) {
     console.debug("skip");
   } else {
     console.debug("useProposalsByID", {
@@ -95,7 +95,7 @@ export function useProposalsWithCustomQuery(
       proposalIds: proposalsData?.proposals.map((proposal) => proposal.id),
       first: Math.min(proposalsData?.proposals.length || 0, 1000),
     },
-    skip: skip && address.length !== 42, // address not ready, don't run this query yet
+    skip: skip || address.length !== 42, // address not ready, don't run this query yet
   });
   // console.debug("🔧 useProposalsWithCustomQuery.cacheHit", cacheHit);
 
@@ -158,7 +158,7 @@ export function useVotesOfAddress(
     error: votedError,
   } = useQuery<{ votes: SnapshotVotedData[] }>(VOTED_PROPOSALS_QUERY, {
     variables,
-    skip: !(address && address.length == 42),
+    skip: address.length !== 42,
   });
 
   // Map choices from index to option label
