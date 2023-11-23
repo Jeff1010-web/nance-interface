@@ -1,10 +1,8 @@
 import { APIError, useQuery } from "graphql-hooks";
 import { mapChoiceIndex } from "@/utils/functions/snapshotUtil";
-import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from "@/constants/Snapshot";
-import { ALL_VOTES_OF_USER } from "./queries/Vote";
 import { PROPOSALS_BY_ID_QUERY, PROPOSALS_QUERY } from "./queries/Proposal";
 import { VOTED_PROPOSALS_QUERY, VOTES_OF_PROPOSAL_QUERY } from "./queries/Vote";
-import { SnapshotProposal, SnapshotVote, SnapshotVotedData, AllVotes, SnapshotSpaceWithVotesCount } from "@/models/SnapshotTypes";
+import { SnapshotProposal, SnapshotVote, SnapshotVotedData, SnapshotSpaceWithVotesCount } from "@/models/SnapshotTypes";
 
 export function useProposalsByID(
   proposalIds: string[],
@@ -78,7 +76,7 @@ export function useProposalsWithCustomQuery(
       proposalIds: proposalsData?.proposals.map((proposal) => proposal.id),
       first: Math.min(proposalsData?.proposals.length || 0, 1000),
     },
-    skip,
+    skip: address.length !== 42, // address not ready, don't run this query yet
   });
   // console.debug("🔧 useProposalsWithCustomQuery.cacheHit", cacheHit);
 
@@ -102,99 +100,12 @@ export function useProposalsWithCustomQuery(
       proposalsData: proposalsData?.proposals,
       votedData,
     },
-    loading: proposalsLoading || votedLoading,
+    loading: proposalsLoading && votedLoading,
     error: proposalsError || votedError,
     refetch,
   };
   // console.debug("🔧 useProposalsWithCustomQuery.return ->", { ret });
   return ret;
-}
-
-export function useAllVotesOfAddress(
-  address: string,
-  limit: number,
-  spaceFilter: string = "",
-): {
-  loading: boolean;
-  error: APIError<object> | undefined;
-  data: AllVotes;
-} {
-  // Load voted proposals
-  const { loading, data, error, cacheHit } = useQuery<{
-    votes: { id: string; choice: any; proposal: { type: string } }[];
-  }>(ALL_VOTES_OF_USER, {
-    variables: {
-      voter: address,
-      first: Math.min(limit, 1000),
-      space: spaceFilter,
-    },
-    skip: !(address && address.length == 42),
-  });
-  console.debug("🔧 useAllVotesOfAddress.cacheHit", cacheHit);
-
-  const optionCount: { [key: number]: number } = [];
-  data?.votes
-    ?.filter((v) => v.proposal.type === "basic")
-    .forEach((v) => optionCount[v.choice]++);
-
-  return {
-    loading,
-    error,
-    data: {
-      total: data?.votes.length ?? 0,
-      for: optionCount[1],
-      against: optionCount[2],
-      abstain: optionCount[3],
-    },
-  };
-}
-
-export async function fetchAllVotesOfAddress(
-  address: string,
-  limit: number,
-  spaceFilter: string = "",
-): Promise<AllVotes> {
-  const ret = await fetch(`${SNAPSHOT_HUB}/graphql`, {
-    method: "POST",
-    headers: SNAPSHOT_HEADERS,
-    body: JSON.stringify({
-      query: ALL_VOTES_OF_USER,
-      variables: {
-        voter: address,
-        first: Math.min(limit, 1000),
-        space: spaceFilter,
-      },
-    }),
-  }).then((res) => res.json());
-
-  if (ret.errors) {
-    console.warn("fetchAllVotesOfAddress errors occurred: ", ret.errors);
-    return {
-      total: 0,
-      for: 0,
-      against: 0,
-      abstain: 0,
-    };
-  }
-
-  const votes: {
-    id: string;
-    choice: any;
-    proposal: {
-      type: string;
-    };
-  }[] = ret.data?.votes;
-  const optionCount = [0, 0, 0, 0];
-  votes
-    .filter((v) => v.proposal.type === "basic")
-    .forEach((v) => optionCount[v.choice]++);
-
-  return {
-    total: votes.length,
-    for: optionCount[1],
-    against: optionCount[2],
-    abstain: optionCount[3],
-  };
 }
 
 export function useVotesOfAddress(

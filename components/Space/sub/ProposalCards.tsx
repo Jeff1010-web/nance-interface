@@ -1,7 +1,6 @@
 import { useAccount } from "wagmi";
 import { useProposalsByID } from "@/utils/hooks/snapshot/Proposals";
 import { SnapshotProposal, SnapshotVotedData } from "@/models/SnapshotTypes";
-import { getLastSlash } from "@/utils/functions/nance";
 import { Proposal, ProposalsPacket } from "@/models/NanceTypes";
 import ProposalRow, { ProposalRowSkeleton } from "./card/ProposalRow";
 import ProposalPrivateRow from "./card/ProposalPrivateRow";
@@ -41,7 +40,7 @@ function mergeSnapshotVotes(
   snapshotProposalDict: { [id: string]: SnapshotProposal },
 ) {
   return proposals?.map((p) => {
-    const snapshotProposal = snapshotProposalDict[getLastSlash(p.voteURL)];
+    const snapshotProposal = snapshotProposalDict[p.voteURL];
     if (snapshotProposal) {
       return {
         ...p,
@@ -72,9 +71,6 @@ function sortProposals(
       // fall back to default sorting
       // if no keyword
       proposals
-        .sort(
-          (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
-        )
         .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
         .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0));
     }
@@ -102,8 +98,8 @@ function sortProposals(
     break;
   case "voted":
     const votedWeightOf = (p: Proposal) => {
-      const voted = votedData?.[getLastSlash(p.voteURL)] !== undefined;
-      const hasSnapshotVoting = snapshotProposalDict[getLastSlash(p.voteURL)];
+      const voted = votedData?.[p.voteURL] !== undefined;
+      const hasSnapshotVoting = snapshotProposalDict[p.voteURL];
 
       if (hasSnapshotVoting) {
         if (voted) return 2;
@@ -154,9 +150,9 @@ export default function ProposalCards({
   proposalUrlPrefix: string;
   showDrafts: boolean;
 }) {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const router = useRouter();
-  const [query, setQuery] = useQueryParams({
+  const [query] = useQueryParams({
     keyword: StringParam,
     limit: withDefault(NumberParam, 15),
     cycle: StringParam,
@@ -168,7 +164,6 @@ export default function ProposalCards({
   const {
     data: proposalDataArray,
     isLoading: proposalsLoading,
-    error: proposalError,
     size,
     setSize,
   } = useProposalsInfinite({ space, cycle, keyword, limit }, router.isReady);
@@ -189,7 +184,7 @@ export default function ProposalCards({
   const snapshotProposalIds: string[] =
     proposalsPacket?.proposals
       ?.filter((p) => p.voteURL)
-      .map((p) => getLastSlash(p.voteURL)) || [];
+      .map((p) => p.voteURL) || [];
   const {
     data,
     loading: snapshotLoading,
@@ -320,7 +315,7 @@ export default function ProposalCards({
                       proposalsPacket?.proposalInfo?.snapshotSpace || ""
                     }
                     snapshotProposal={
-                      snapshotProposalDict[getLastSlash(proposal.voteURL)]
+                      snapshotProposalDict[proposal.voteURL]
                     }
                     votedData={votedData}
                     proposalUrlPrefix={proposalUrlPrefix}

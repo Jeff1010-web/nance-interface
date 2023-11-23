@@ -1,6 +1,5 @@
 import { classNames } from "@/utils/functions/tailwind";
 import VotesBar from "./VotesBar";
-import { getLastSlash } from "@/utils/functions/nance";
 import NewVoteButton from "@/components/Vote/NewVoteButton";
 import getVotedIcon from "./VoteIcon";
 import ProposalBadgeLabel from "./ProposalBadgeLabel";
@@ -106,9 +105,8 @@ export default function ProposalRow({
           "hidden px-3 py-3.5 text-center text-sm text-gray-500 md:table-cell",
         )}
       >
-        {!votedData?.[getLastSlash(proposal.voteURL)] &&
-        snapshotProposal &&
-        snapshotSpace ? (
+        {!votedData?.[proposal.voteURL] &&
+        snapshotProposal ? (
             <NewVoteButton
               snapshotSpace={snapshotSpace}
               proposal={snapshotProposal}
@@ -117,7 +115,7 @@ export default function ProposalRow({
             />
           ) : (
             <div className="flex justify-center">
-              {getVotedIcon(votedData?.[getLastSlash(proposal.voteURL)]?.choice)}
+              {getVotedIcon(votedData?.[proposal.voteURL]?.choice)}
             </div>
           )}
       </td>
@@ -138,7 +136,7 @@ export function ProposalRowSkeleton({
           "relative hidden py-4 pl-6 pr-3 text-sm md:table-cell",
         )}
       >
-        <ProposalBadgeLabel status="Discussion" />
+        <ProposalBadgeLabel status="" />
 
         {!isFirst ? (
           <div className="absolute -top-px left-6 right-0 h-px bg-gray-200" />
@@ -153,7 +151,7 @@ export function ProposalRowSkeleton({
       >
         <div className="flex flex-col space-y-1">
           <div className="block text-gray-900 md:hidden">
-            <ProposalBadgeLabel status="Discussion" />
+            <ProposalBadgeLabel status="" />
           </div>
           {/* cycle metadata */}
           <span className="h-4 w-20 animate-pulse rounded bg-slate-200 text-xs"></span>
