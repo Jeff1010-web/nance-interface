@@ -1,9 +1,9 @@
+/* eslint-disable max-lines */
 import { useAccount } from "wagmi";
 import { useProposalsByID } from "@/utils/hooks/snapshot/Proposals";
 import { SnapshotProposal, SnapshotVotedData } from "@/models/SnapshotTypes";
 import { Proposal, ProposalsPacket } from "@/models/NanceTypes";
-import ProposalRow, { ProposalRowSkeleton } from "./card/ProposalRow";
-import ProposalPrivateRow from "./card/ProposalPrivateRow";
+import ProposalRowSkeleton from "./card/ProposalRowSkeleton";
 import RecommendAction from "./card/RecommendAction";
 import SortableTableHeader from "./card/SortableTableHeader";
 import {
@@ -16,6 +16,11 @@ import {
 import { useProposalsInfinite } from "@/utils/hooks/NanceHooks";
 import { useRouter } from "next/router";
 import LoadMoreButton from "./card/LoadMoreButton";
+import PrivateProposalRows from "./card/PrivateProposalRows";
+import getVotedIcon from "./card/VoteIcon";
+import NewVoteButton from "@/components/Vote/NewVoteButton";
+import VotesBar from "./card/VotesBar";
+import ProposalRow from "./card/ProposalRow";
 
 const SortOptionsArr = ["status", "title", "approval", "participants", "voted"];
 const StatusValue: { [key: string]: number } = {
@@ -77,57 +82,57 @@ function sortProposals(
   }
 
   switch (sortBy) {
-  case "status":
-    proposals.sort(
-      (a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status),
-    );
-    break;
-  case "approval":
-    const sumScores = (p: Proposal) => {
-      return (p?.voteResults?.scores ?? []).reduce(
-        (partialSum, a) => partialSum + a,
-        0,
+    case "status":
+      proposals.sort(
+        (a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status),
       );
-    };
-    proposals.sort((a, b) => sumScores(b) - sumScores(a));
-    break;
-  case "participants":
-    proposals.sort(
-      (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
-    );
-    break;
-  case "voted":
-    const votedWeightOf = (p: Proposal) => {
-      const voted = votedData?.[p.voteURL] !== undefined;
-      const hasSnapshotVoting = snapshotProposalDict[p.voteURL];
+      break;
+    case "approval":
+      const sumScores = (p: Proposal) => {
+        return (p?.voteResults?.scores ?? []).reduce(
+          (partialSum, a) => partialSum + a,
+          0,
+        );
+      };
+      proposals.sort((a, b) => sumScores(b) - sumScores(a));
+      break;
+    case "participants":
+      proposals.sort(
+        (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
+      );
+      break;
+    case "voted":
+      const votedWeightOf = (p: Proposal) => {
+        const voted = votedData?.[p.voteURL] !== undefined;
+        const hasSnapshotVoting = snapshotProposalDict[p.voteURL];
 
-      if (hasSnapshotVoting) {
-        if (voted) return 2;
-        else return 1;
-      } else {
+        if (hasSnapshotVoting) {
+          if (voted) return 2;
+          else return 1;
+        } else {
+          return 0;
+        }
+      };
+      proposals.sort((a, b) => votedWeightOf(b) - votedWeightOf(a));
+      break;
+    case "title":
+      proposals.sort((a, b) => {
+        const nameA = a.title;
+        const nameB = b.title;
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+
+        // names must be equal
         return 0;
-      }
-    };
-    proposals.sort((a, b) => votedWeightOf(b) - votedWeightOf(a));
-    break;
-  case "title":
-    proposals.sort((a, b) => {
-      const nameA = a.title;
-      const nameB = b.title;
-      if (nameA < nameB) {
-        return -1;
-      }
-      if (nameA > nameB) {
-        return 1;
-      }
-
-      // names must be equal
-      return 0;
-    });
-    break;
-  default:
-    proposals.sort();
-    break;
+      });
+      break;
+    default:
+      proposals.sort();
+      break;
   }
 
   if (!sortDesc) {
@@ -135,20 +140,41 @@ function sortProposals(
   }
 }
 
-export default function ProposalCards({
-  loading,
-  space,
-  privateProposals,
-  maxCycle,
-  proposalUrlPrefix,
-  showDrafts,
+function VoteActionOrLabel({
+  snapshotSpace,
+  votedData,
+  snapshotProposal,
+  refetch,
 }: {
-  loading: boolean;
+  snapshotSpace: string;
+  votedData: SnapshotVotedData | undefined;
+  snapshotProposal: SnapshotProposal | undefined;
+  refetch: () => void;
+}) {
+  if (votedData) {
+    return (
+      <div className="flex justify-center">
+        {getVotedIcon(votedData.choice)}
+      </div>
+    );
+  } else {
+    return (
+      <NewVoteButton
+        snapshotSpace={snapshotSpace}
+        snapshotProposal={snapshotProposal}
+        refetch={refetch}
+        isSmall
+      />
+    );
+  }
+}
+
+export default function ProposalCards({
+  space,
+  maxCycle,
+}: {
   space: string;
-  privateProposals: Proposal[] | undefined;
   maxCycle: number;
-  proposalUrlPrefix: string;
-  showDrafts: boolean;
 }) {
   const { address } = useAccount();
   const router = useRouter();
@@ -218,9 +244,7 @@ export default function ProposalCards({
     votedData,
   );
 
-  const isLoading = loading || snapshotLoading || proposalsLoading;
-  const hasPrivateProposals =
-    showDrafts && !query.keyword && (privateProposals?.length ?? 0) > 0;
+  const isLoading = snapshotLoading || proposalsLoading;
 
   if (!isLoading && sortedProposals.length === 0) {
     return <RecommendAction maxCycle={maxCycle} />;
@@ -280,48 +304,40 @@ export default function ProposalCards({
                 </>
               )}
 
-              {!isLoading && hasPrivateProposals && (
-                <>
-                  {privateProposals?.map((proposal, proposalIdx) => (
-                    <ProposalPrivateRow
-                      proposal={proposal}
-                      key={proposalIdx}
-                      proposalIdx={proposalIdx}
-                      proposalIdPrefix={
-                        proposalsPacket?.proposalInfo?.proposalIdPrefix || ""
-                      }
-                      proposalUrlPrefix={proposalUrlPrefix}
-                    />
-                  ))}
-
-                  <tr>
-                    <td colSpan={5}>
-                      <hr className="border-2 border-dashed" />
-                    </td>
-                  </tr>
-                </>
-              )}
+              <PrivateProposalRows />
 
               {!isLoading &&
                 sortedProposals.map((proposal, proposalIdx) => (
                   <ProposalRow
-                    proposal={proposal}
                     key={proposal.hash}
-                    proposalIdx={proposalIdx}
+                    proposal={proposal}
+                    isFirst={proposalIdx === 0}
                     proposalIdPrefix={
                       proposalsPacket?.proposalInfo?.proposalIdPrefix || ""
                     }
-                    snapshotSpace={
-                      proposalsPacket?.proposalInfo?.snapshotSpace || ""
+                    votesBar={
+                      <VotesBar
+                        snapshotProposal={
+                          snapshotProposalDict[proposal.voteURL]
+                        }
+                        proposal={proposal}
+                        threshold={
+                          proposalsPacket?.proposalInfo
+                            ?.minTokenPassingAmount ?? 0
+                        }
+                      />
                     }
-                    snapshotProposal={
-                      snapshotProposalDict[proposal.voteURL]
-                    }
-                    votedData={votedData}
-                    proposalUrlPrefix={proposalUrlPrefix}
-                    refetch={refetch}
-                    threshold={
-                      proposalsPacket?.proposalInfo?.minTokenPassingAmount ?? 0
+                    voteActionOrStatus={
+                      <VoteActionOrLabel
+                        snapshotProposal={
+                          snapshotProposalDict[proposal.voteURL]
+                        }
+                        snapshotSpace={
+                          proposalsPacket?.proposalInfo?.snapshotSpace || ""
+                        }
+                        votedData={votedData?.[proposal.voteURL]}
+                        refetch={refetch}
+                      />
                     }
                   />
                 ))}

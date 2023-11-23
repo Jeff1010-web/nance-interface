@@ -253,7 +253,7 @@ export default function ProposalVotes({
 
       <NewVoteButton
         snapshotSpace={snapshotSpace}
-        proposal={proposalInfo}
+        snapshotProposal={proposalInfo}
         refetch={refetch}
       />
     </div>

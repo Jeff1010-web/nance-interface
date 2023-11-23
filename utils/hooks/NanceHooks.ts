@@ -84,7 +84,7 @@ export function usePrivateProposals(
   const { data: sessionData } = useSession();
 
   return useSWR<APIResponse<Proposal[]>, string>(
-    shouldFetch
+    shouldFetch && sessionData?.user?.name
       ? `${NANCE_PROXY_API_URL}/${space}/privateProposals?user=${sessionData?.user?.name}`
       : null,
     jsonFetcher(),

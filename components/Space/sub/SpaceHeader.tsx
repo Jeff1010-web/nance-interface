@@ -2,9 +2,16 @@ import Image from "next/image";
 
 import { Tooltip } from "flowbite-react";
 import { format, formatDistanceToNowStrict, parseISO } from "date-fns";
-import { SpaceInfo } from "@/models/NanceTypes";
+import { SpaceContext } from "@/context/SpaceContext";
+import { useContext } from "react";
 
-export default function SpaceHeader({ spaceInfo }: { spaceInfo: SpaceInfo }) {
+export default function SpaceHeader() {
+  const spaceInfo = useContext(SpaceContext);
+
+  if (!spaceInfo) {
+    return null;
+  }
+
   let remainingTime = "-";
   let formattedEndTime = "-";
   try {

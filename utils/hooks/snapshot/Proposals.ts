@@ -2,14 +2,19 @@ import { APIError, useQuery } from "graphql-hooks";
 import { mapChoiceIndex } from "@/utils/functions/snapshotUtil";
 import { PROPOSALS_BY_ID_QUERY, PROPOSALS_QUERY } from "./queries/Proposal";
 import { VOTED_PROPOSALS_QUERY, VOTES_OF_PROPOSAL_QUERY } from "./queries/Vote";
-import { SnapshotProposal, SnapshotVote, SnapshotVotedData, SnapshotSpaceWithVotesCount } from "@/models/SnapshotTypes";
+import {
+  SnapshotProposal,
+  SnapshotVote,
+  SnapshotVotedData,
+  SnapshotSpaceWithVotesCount,
+} from "@/models/SnapshotTypes";
 
 export function useProposalsByID(
   proposalIds: string[],
   address: string,
   skip: boolean = false,
 ) {
-  return useProposalsWithCustomQuery(
+  const ret = useProposalsWithCustomQuery(
     PROPOSALS_BY_ID_QUERY,
     {
       first: proposalIds.length,
@@ -18,6 +23,20 @@ export function useProposalsByID(
     address,
     skip,
   );
+
+  if (skip || address?.length !== 42) {
+    console.debug("skip");
+  } else {
+    console.debug("useProposalsByID", {
+      proposalIds,
+      address,
+      skip,
+      loading: ret.loading,
+      data: ret.data,
+    });
+  }
+
+  return ret;
 }
 
 export function useProposalsWithFilter(
@@ -76,7 +95,7 @@ export function useProposalsWithCustomQuery(
       proposalIds: proposalsData?.proposals.map((proposal) => proposal.id),
       first: Math.min(proposalsData?.proposals.length || 0, 1000),
     },
-    skip: address.length !== 42, // address not ready, don't run this query yet
+    skip: skip && address.length !== 42, // address not ready, don't run this query yet
   });
   // console.debug("🔧 useProposalsWithCustomQuery.cacheHit", cacheHit);
 
@@ -100,7 +119,7 @@ export function useProposalsWithCustomQuery(
       proposalsData: proposalsData?.proposals,
       votedData,
     },
-    loading: proposalsLoading && votedLoading,
+    loading: proposalsLoading || votedLoading,
     error: proposalsError || votedError,
     refetch,
   };

@@ -6,32 +6,33 @@ import { classNames } from "@/utils/functions/tailwind";
 import VotingModal from "./VotingModal";
 
 export default function NewVoteButton({
-  proposal,
+  snapshotProposal,
   snapshotSpace,
   refetch,
   isSmall = false,
 }: {
-  proposal: SnapshotProposal | undefined;
+  snapshotProposal: SnapshotProposal | undefined;
   snapshotSpace: string;
   refetch: (option?: any) => void;
   isSmall?: boolean;
 }) {
   // state
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [buttonLabel, setButtonLabel] = useState("Vote");
   // external hook
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
 
-  useEffect(() => {
-    if (proposal?.state !== "active") {
-      setButtonLabel("Voting Closed");
-    } else if (isConnected) {
-      setButtonLabel("Vote");
-    } else {
-      setButtonLabel("Connect Wallet");
-    }
-  }, [isConnected, proposal]);
+  let buttonLabel = "Vote";
+  if (snapshotProposal === undefined) {
+    buttonLabel = "Loading";
+  }
+  if (snapshotProposal?.state !== "active") {
+    buttonLabel = "Voting Closed";
+  } else if (isConnected) {
+    buttonLabel = "Vote";
+  } else {
+    buttonLabel = "Connect Wallet";
+  }
 
   return (
     <div className={isSmall ? "" : "my-4"}>
@@ -49,18 +50,18 @@ export default function NewVoteButton({
             openConnectModal?.();
           }
         }}
-        disabled={proposal?.state !== "active"}
+        disabled={snapshotProposal?.state !== "active"}
       >
         <span>{buttonLabel}</span>
       </button>
 
-      {proposal?.choices && modalIsOpen && (
+      {snapshotProposal?.choices && modalIsOpen && (
         <VotingModal
           modalIsOpen={modalIsOpen}
           closeModal={() => setModalIsOpen(false)}
           address={address}
           spaceId={snapshotSpace}
-          proposal={proposal}
+          proposal={snapshotProposal}
           spaceHideAbstain={true}
           refetch={refetch}
         />

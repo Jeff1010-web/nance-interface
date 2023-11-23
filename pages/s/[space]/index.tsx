@@ -3,12 +3,13 @@ import { Footer, SiteNav } from "@/components/Site";
 import Space from "@/components/Space";
 
 import { NANCE_API_URL } from "@/constants/Nance";
+import { SpaceContext } from "@/context/SpaceContext";
 import { SpaceInfo } from "@/models/NanceTypes";
 
 export async function getServerSideProps(context: any) {
   const spaceParam: string = context.params.space;
   const { data } = await fetch(`${NANCE_API_URL}/${spaceParam}`).then((res) =>
-    res.json()
+    res.json(),
   );
   // Pass data to the page via props
   return {
@@ -62,7 +63,11 @@ export default function SpacePage({ spaceInfo }: { spaceInfo: SpaceInfo }) {
         withWallet
         withProposalButton={false}
       />
-      <Space spaceInfo={spaceInfo} proposalUrlPrefix={`/s/${name}/`} />
+
+      <SpaceContext.Provider value={spaceInfo}>
+        <Space />
+      </SpaceContext.Provider>
+
       <Footer />
     </>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -29,7 +29,7 @@ const QueueTransactionsModal = dynamic(
   },
 );
 
-export default function SpaceAction({ spaceInfo }: { spaceInfo: SpaceInfo }) {
+export default function SpaceAction() {
   const [showQueueReconfigurationModal, setShowQueueReconfigurationModal] =
     useState(false);
   const [showQueueTransactionsModal, setShowQueueTransactionsModal] =
@@ -38,6 +38,12 @@ export default function SpaceAction({ spaceInfo }: { spaceInfo: SpaceInfo }) {
   const [query, setQuery] = useQueryParams({
     cycle: StringParam,
   });
+
+  const spaceInfo = useContext(SpaceContext);
+
+  if (!spaceInfo) {
+    return null;
+  }
 
   const spaceName = spaceInfo.name;
   const projectId = parseInt(spaceInfo.juiceboxProjectId || "1");
@@ -62,57 +68,55 @@ export default function SpaceAction({ spaceInfo }: { spaceInfo: SpaceInfo }) {
         Review Reconfiguration
       </Link>
 
-      <SpaceContext.Provider value={spaceInfo}>
-        <button
-          type="button"
-          onClick={() => {
-            setQuery({ cycle: currentCycle });
-            setShowQueueReconfigurationModal(true);
-          }}
-          className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <BanknotesIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-          Queue Reconfiguration
-        </button>
-        {showQueueReconfigurationModal && (
-          <QueueReconfigurationModal
-            open={showQueueReconfigurationModal}
-            setOpen={setShowQueueReconfigurationModal}
-            juiceboxProjectId={projectId}
-            space={spaceName}
-            currentCycle={spaceInfo.currentCycle}
-          />
-        )}
+      <button
+        type="button"
+        onClick={() => {
+          setQuery({ cycle: currentCycle });
+          setShowQueueReconfigurationModal(true);
+        }}
+        className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <BanknotesIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+        Queue Reconfiguration
+      </button>
+      {showQueueReconfigurationModal && (
+        <QueueReconfigurationModal
+          open={showQueueReconfigurationModal}
+          setOpen={setShowQueueReconfigurationModal}
+          juiceboxProjectId={projectId}
+          space={spaceName}
+          currentCycle={spaceInfo.currentCycle}
+        />
+      )}
 
-        <button
-          type="button"
-          onClick={() => {
-            setQuery({ cycle: currentCycle });
-            setShowQueueTransactionsModal(true);
-          }}
-          className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <BoltIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-          Queue Transactions
-        </button>
-        {showQueueTransactionsModal && (
-          <QueueTransactionsModal
-            open={showQueueTransactionsModal}
-            setOpen={setShowQueueTransactionsModal}
-            transactorAddress={spaceInfo.transactorAddress!.address}
-            space={spaceName}
-          />
-        )}
+      <button
+        type="button"
+        onClick={() => {
+          setQuery({ cycle: currentCycle });
+          setShowQueueTransactionsModal(true);
+        }}
+        className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <BoltIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+        Queue Transactions
+      </button>
+      {showQueueTransactionsModal && (
+        <QueueTransactionsModal
+          open={showQueueTransactionsModal}
+          setOpen={setShowQueueTransactionsModal}
+          transactorAddress={spaceInfo.transactorAddress!.address}
+          space={spaceName}
+        />
+      )}
 
-        <Link
-          id="settings-button"
-          href={`/s/${spaceName}/settings`}
-          className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 md:ml-2"
-        >
-          <Cog8ToothIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+      <Link
+        id="settings-button"
+        href={`/s/${spaceName}/settings`}
+        className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 md:ml-2"
+      >
+        <Cog8ToothIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
         Settings
-        </Link>
-      </SpaceContext.Provider>
+      </Link>
     </div>
   );
 }
