@@ -119,7 +119,8 @@ export function useProposalsWithCustomQuery(
       proposalsData: proposalsData?.proposals,
       votedData,
     },
-    loading: proposalsLoading || votedLoading,
+    // FIXME: this is a hack to get around the flashing issue, need to find a better way
+    loading: proposalsLoading && votedLoading,
     error: proposalsError || votedError,
     refetch,
   };
