@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { fetchDelegators } from "../../utils/hooks/snapshot/Delegations";
-import { fetchAllVotesOfAddress } from "@/utils/hooks/snapshot/Proposals";
+import { fetchAllVotesOfAddress } from "@/utils/hooks/snapshot/Vote";
 import { AllVotes } from "@/models/SnapshotTypes";
 import { fetchVotingPower } from "../../utils/hooks/snapshot/VotingPower";
 import { fetchCreatedProposals } from "../../utils/hooks/NanceHooks";
