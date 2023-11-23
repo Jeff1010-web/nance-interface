@@ -1,5 +1,8 @@
 import { classNames } from "@/utils/functions/tailwind";
 
+/**
+ * Simple badge label for proposal status
+ */
 export default function ProposalBadgeLabel({ status }: { status: string }) {
   return (
     <span
