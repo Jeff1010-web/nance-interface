@@ -11,8 +11,3 @@ export const proposalSetStatuses = {
   2: "Revoked",
   3: "Archived",
 };
-
-export const SUPPORTED_NFTS = [
-  "0x8250e3cE89c8C380449de876882F5EDAA6EF44c7", // GGG NFT on OP Mainnet
-  "0xAabC2A962301b75F691AfF5dcc6d31A255c037A5", // test NFT on OP Mainnet
-];

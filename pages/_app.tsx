@@ -5,7 +5,7 @@ import memCache from "graphql-hooks-memcache";
 
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { WagmiConfig, createConfig, configureChains, useNetwork } from "wagmi";
-import { mainnet, goerli, optimism } from "wagmi/chains";
+import { mainnet, goerli } from "wagmi/chains";
 import { infuraProvider } from "wagmi/providers/infura";
 
 import { NextQueryParamProvider } from "next-query-params";
@@ -28,7 +28,7 @@ const graphqlClient = new GraphQLClient({
 
 // WAGMI and RainbowKit configuration
 const { chains, publicClient } = configureChains(
-  [mainnet, goerli, optimism],
+  [mainnet, goerli],
   [infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY || "" })],
 );
 

@@ -8,7 +8,7 @@ import Safe, { EthersAdapter, SafeTransactionOptionalProps } from '@safe-global/
 import { ethers } from 'ethers';
 import { MetaTransactionData, SafeTransaction, SafeTransactionDataPartial } from '@safe-global/safe-core-sdk-types';
 
-const SAFE_SERVICE_API = "https://safe-transaction-optimism.safe.global";
+const SAFE_SERVICE_API = "https://safe-transaction-mainnet.safe.global";
 const SAFE_API_V1_ROOT = SAFE_SERVICE_API + "/api/v1/";
 const SAFE_API = SAFE_API_V1_ROOT + "safes/";
 
@@ -53,13 +53,6 @@ export function useMultisigTransactions(address: string, limit: number = 10, sho
   return useSWR(
     shouldFetch ? `${SAFE_API}${address}/multisig-transactions/?trusted=true&limit=${limit}` : null,
     jsonFetcher(),
-  );
-}
-
-export function useFetchSafeCollectibles(address: string, shouldFetch: boolean = true) {
-  return useSWR(
-    shouldFetch ? `${SAFE_SERVICE_API}/api/v2/safes/${address}/collectibles` : null,
-    jsonFetcher() as any,
   );
 }
 

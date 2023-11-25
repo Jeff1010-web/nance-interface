@@ -22,8 +22,6 @@ import OrderCheckboxTable, {
 import TransferActionLabel from "../ActionLabel/TransferActionLabel";
 import CustomTransactionActionLabel from "../ActionLabel/CustomTransactionActionLabel";
 import TransactionCreator from "./TransactionCreator";
-import { SUPPORTED_NFTS } from '@/constants/Nance';
-import { useFetchSafeCollectibles } from '@/utils/hooks/SafeHooks';
 
 export default function QueueTransactionsModal({
   open,
@@ -50,8 +48,6 @@ export default function QueueTransactionsModal({
   const { data: proposalDataArray, isLoading: proposalsLoading } =
     useProposalsInfinite({ space, cycle, keyword, limit }, router.isReady);
 
-  const { data: safeCollectibles} = useFetchSafeCollectibles(transactorAddress as string);
-
   // Gather all actions in current fundingCycle
   const actionWithPIDArray = proposalDataArray
     ?.map((r) => r.data?.proposals)
@@ -71,10 +67,7 @@ export default function QueueTransactionsModal({
       });
     });
   const transferActions = actionWithPIDArray?.filter(
-    (v) => v.action.type === "Transfer" && !SUPPORTED_NFTS.includes((v.action.payload as Transfer).contract),
-  );
-  const nftTransferActions = actionWithPIDArray?.filter(
-    (v) => v.action.type === "Transfer" && SUPPORTED_NFTS.includes((v.action.payload as Transfer).contract)
+    (v) => v.action.type === "Transfer",
   );
   const customTransactionActions = actionWithPIDArray?.filter(
     (v) => v.action.type === "Custom Transaction",
@@ -106,42 +99,6 @@ export default function QueueTransactionsModal({
         },
       };
     }) || [];
-
-  if (nftTransferActions) {
-    const tokenIds = safeCollectibles?.results.map((nft: any) => {
-      return nft.id;
-    });
-    console.log("tokenIds", tokenIds);
-    const erc721 = new Interface([
-      "function safeTransferFrom(address from, address to, uint256 tokenId) external",
-    ]);
-    nftTransferActions?.forEach((v, index) => {
-      const transfer = v.action.payload as Transfer;
-      if (tokenIds) {
-        transferEntries.push({
-          title: (
-            <div className="line-clamp-5">
-              {getContractLabel(transfer.contract)}
-              &nbsp;to
-              <span className="ml-1">
-                {transfer.to}
-              </span>
-            </div>
-          ),
-          proposal: v.pid.toString(),
-          transactionData: {
-            to: transfer.contract,
-            value: "0",
-            data: erc721.encodeFunctionData("safeTransferFrom", [
-              transactorAddress,
-              transfer.to,
-              tokenIds[index],
-            ]),
-          },
-        });
-      }
-    });
-  }
 
   const customTransactionEntries: TransactionEntry[] =
     customTransactionActions?.map((v) => {

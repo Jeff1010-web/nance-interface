@@ -6,9 +6,6 @@ import {
   BoltIcon,
   ArrowsUpDownIcon,
   UserGroupIcon,
-  LightBulbIcon,
-  TrophyIcon,
-  TicketIcon,
 } from "@heroicons/react/24/solid";
 
 export interface ActionItem {
@@ -18,7 +15,6 @@ export interface ActionItem {
   url: string;
   color: string;
   icon: any;
-  disabled?: boolean;
 }
 
 const items: ActionItem[] = [
@@ -54,32 +50,6 @@ const items: ActionItem[] = [
     color: "bg-blue-500",
     icon: BoltIcon,
   },
-  {
-    id: 5,
-    name: "Transfer GGG NFT",
-    description: "Request the transfer of a GGG Full Access Ticket.",
-    url: "#",
-    color: "bg-blue-500",
-    icon: TicketIcon,
-  },
-  {
-    id: 6,
-    name: "Create a Jokerace",
-    description: "Create a Jokerace contest from your Safe. Coming soon...",
-    url: "#",
-    color: "bg-gray-300",
-    icon: LightBulbIcon,
-    disabled: true,
-  },
-  {
-    id: 7,
-    name: "Assign Hat to an Address",
-    description: "Assign Hat from a Hats Protocol Tree. Coming soon...",
-    url: "#",
-    color: "bg-gray-300",
-    icon: TrophyIcon,
-    disabled: true,
-  }
   // More items...
 ];
 
@@ -122,7 +92,6 @@ export default function ActionPalettes({
                   className="max-h-96 scroll-py-3 overflow-y-auto p-3"
                 >
                   {items.map((item) => {
-                    if ((space !== "waterbox" && space !== "DAOxperience") && item.id > 4) return null;
                     return (
                       <Combobox.Option
                         key={item.id}
@@ -131,10 +100,8 @@ export default function ActionPalettes({
                           classNames(
                             "flex cursor-default select-none rounded-xl p-3",
                             active && "bg-gray-100",
-                            item.disabled && "cursor-not-allowed",
                           )
                         }
-                        disabled={item.disabled} // Add disabled attribute
                       >
                         {({ active }) => (
                           <>
