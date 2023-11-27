@@ -82,57 +82,57 @@ function sortProposals(
   }
 
   switch (sortBy) {
-  case "status":
-    proposals.sort(
-      (a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status),
-    );
-    break;
-  case "approval":
-    const sumScores = (p: Proposal) => {
-      return (p?.voteResults?.scores ?? []).reduce(
-        (partialSum, a) => partialSum + a,
-        0,
+    case "status":
+      proposals.sort(
+        (a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status),
       );
-    };
-    proposals.sort((a, b) => sumScores(b) - sumScores(a));
-    break;
-  case "participants":
-    proposals.sort(
-      (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
-    );
-    break;
-  case "voted":
-    const votedWeightOf = (p: Proposal) => {
-      const voted = votedData?.[p.voteURL] !== undefined;
-      const hasSnapshotVoting = snapshotProposalDict[p.voteURL];
+      break;
+    case "approval":
+      const sumScores = (p: Proposal) => {
+        return (p?.voteResults?.scores ?? []).reduce(
+          (partialSum, a) => partialSum + a,
+          0,
+        );
+      };
+      proposals.sort((a, b) => sumScores(b) - sumScores(a));
+      break;
+    case "participants":
+      proposals.sort(
+        (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
+      );
+      break;
+    case "voted":
+      const votedWeightOf = (p: Proposal) => {
+        const voted = votedData?.[p.voteURL] !== undefined;
+        const hasSnapshotVoting = snapshotProposalDict[p.voteURL];
 
-      if (hasSnapshotVoting) {
-        if (voted) return 2;
-        else return 1;
-      } else {
+        if (hasSnapshotVoting) {
+          if (voted) return 2;
+          else return 1;
+        } else {
+          return 0;
+        }
+      };
+      proposals.sort((a, b) => votedWeightOf(b) - votedWeightOf(a));
+      break;
+    case "title":
+      proposals.sort((a, b) => {
+        const nameA = a.title;
+        const nameB = b.title;
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+
+        // names must be equal
         return 0;
-      }
-    };
-    proposals.sort((a, b) => votedWeightOf(b) - votedWeightOf(a));
-    break;
-  case "title":
-    proposals.sort((a, b) => {
-      const nameA = a.title;
-      const nameB = b.title;
-      if (nameA < nameB) {
-        return -1;
-      }
-      if (nameA > nameB) {
-        return 1;
-      }
-
-      // names must be equal
-      return 0;
-    });
-    break;
-  default:
-    proposals.sort();
-    break;
+      });
+      break;
+    default:
+      proposals.sort();
+      break;
   }
 
   if (!sortDesc) {
@@ -151,7 +151,7 @@ function VoteActionOrLabel({
   snapshotProposal: SnapshotProposal | undefined;
   refetch: () => void;
 }) {
-  if (votedData || !snapshotProposal) {
+  if (votedData || snapshotProposal?.state !== "active") {
     return (
       <div className="flex justify-center">
         {getVotedIcon(votedData?.choice)}
