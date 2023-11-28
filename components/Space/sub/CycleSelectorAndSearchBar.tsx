@@ -138,6 +138,7 @@ export default function CycleSelectorAndSearchBar({
                 if (e.key == "Enter") {
                   setQuery({
                     keyword: keywordInput,
+                    cycle: 'All'
                   });
                 }
               }}
