@@ -1,6 +1,6 @@
 import { useFormContext } from "react-hook-form";
 import AddressForm from "../form/AddressForm";
-import NumberForm from "../form/NumberForm";
+import UIntForm from "../form/UIntForm";
 import ProjectForm from "../form/ProjectForm";
 import SelectForm from "../form/SelectForm";
 
@@ -28,14 +28,14 @@ export default function PayoutActionForm({
         />
       </div>
       <div className="col-span-4 sm:col-span-1">
-        <NumberForm
+        <UIntForm
           label="Duration(Cycles)"
           fieldName={genFieldName("count")}
           decimal={1}
         />
       </div>
       <div className="col-span-4 sm:col-span-2">
-        <NumberForm
+        <UIntForm
           label="Amount"
           fieldName={genFieldName("amountUSD")}
           fieldType="$"

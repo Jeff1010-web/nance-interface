@@ -1,57 +1,57 @@
+import { Tooltip } from "flowbite-react";
 import { ErrorMessage } from "@hookform/error-message";
 import { useFormContext } from "react-hook-form";
-import GenericButton from "../common/GenericButton";
 
 export default function NumberForm({
   label,
   fieldName,
-  fieldType = "uint256",
-  decimal = 18,
-  defaultValue = 0,
+  defaultValue,
+  tooltipContent,
+  badgeContent = "days",
 }: {
   label: string;
-  fieldName: any;
-  fieldType?: string;
-  decimal?: number;
-  defaultValue?: number;
+  fieldName: string;
+  defaultValue: number;
+  tooltipContent?: string;
+  badgeContent?: string;
 }) {
   const {
     register,
-    setValue,
-    getValues,
     formState: { errors },
   } = useFormContext();
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
-      <div className="mt-1 flex rounded-md shadow-sm">
-        <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
-          {fieldType}
-        </span>
-        <input
-          type="number"
-          step={1E-18}
-          min={0}
-          defaultValue={defaultValue}
-          {...register(fieldName, {
-            shouldUnregister: true,
-            required: "Can't be empty",
-          })}
-          className="block h-10 w-full flex-1 rounded-none border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-        <GenericButton
-          onClick={() =>
-            setValue(
-              fieldName,
-              getValues<string>(fieldName).concat("0".repeat(decimal)),
-            )
-          }
-          className="m-0 inline-flex items-center rounded-none rounded-r-md border border-l-0 border-gray-300"
-        >
-          {decimal}
-        </GenericButton>
+      <div className="mb-2 mt-2 flex w-80">
+        <label className="mt-2 block text-sm font-medium text-gray-700">
+          {label}
+        </label>
+        {tooltipContent && (
+          <div className="ml-1 mt-1">
+            <Tooltip content={tooltipContent}>
+              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-400 text-xs text-white">
+                ?
+              </span>
+            </Tooltip>
+          </div>
+        )}
       </div>
+      <div className="mt-1 flex">
+        <div className="flex rounded-md border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-indigo-500 sm:text-sm">
+          <input
+            {...register(fieldName, { shouldUnregister: true })}
+            className="block h-10 w-16 rounded-md rounded-r-none border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            type="number"
+            step={1e-18}
+            min={0}
+            defaultValue={defaultValue}
+          ></input>
+          <span className="flex items-center rounded-l-none rounded-r-md border border-l-0 border-gray-300 bg-gray-100 px-3 text-sm text-gray-500">
+            {badgeContent}
+          </span>
+        </div>
+      </div>
+
       <ErrorMessage
         errors={errors}
         name={fieldName}

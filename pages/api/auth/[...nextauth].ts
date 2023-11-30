@@ -5,6 +5,7 @@ import { SiweMessage } from "siwe";
 
 // For more information on each option (and a full list of options) go to
 // https://next-auth.js.org/configuration/options
+// FIXME: wallet not unlocked can bring a strange case
 export default async function auth(req: any, res: any) {
   const providers = [
     CredentialsProvider({
@@ -23,16 +24,25 @@ export default async function auth(req: any, res: any) {
       },
       async authorize(credentials) {
         try {
-          const siwe = new SiweMessage(JSON.parse(credentials?.message || "{}"));
-          const nextAuthDomains = process.env.NEXTAUTH_DOMAINS?.split(',');
+          const siwe = new SiweMessage(
+            JSON.parse(credentials?.message || "{}"),
+          );
+          const nextAuthDomains = process.env.NEXTAUTH_DOMAINS?.split(",");
           if (!nextAuthDomains) return null;
           const csrf = await getCsrfToken({ req });
           const domain = JSON.parse(credentials?.message || "")?.domain;
-          const domainPattern = nextAuthDomains.filter((domain) => domain.includes('*'))[0]; // support 1 domain pattern
+          const domainPattern = nextAuthDomains.filter((domain) =>
+            domain.includes("*"),
+          )[0]; // support 1 domain pattern
           let regexPattern = /.*/; // initialize as any string
-          if (domainPattern) regexPattern = new RegExp(`^${domainPattern.replace(/\*/g, '.*')}`); // make domain pattern new regex
+          if (domainPattern)
+            regexPattern = new RegExp(`^${domainPattern.replace(/\*/g, ".*")}`); // make domain pattern new regex
           if (!nextAuthDomains.includes(domain) && !regexPattern.test(domain)) {
-            console.log("❌ NextAuth.authorize.error", "Invalid domain", domain);
+            console.log(
+              "❌ NextAuth.authorize.error",
+              "Invalid domain",
+              domain,
+            );
             // FIXME to return meaningful error message
             return null;
           }

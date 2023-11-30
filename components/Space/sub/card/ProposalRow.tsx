@@ -69,9 +69,9 @@ export default function ProposalRow({
           <div className="block text-gray-900 md:hidden">
             <ProposalBadgeLabel status={status} />
           </div>
-          <span className="text-xs">
-            {proposalTitle}
-            <FormattedAddress address={authorAddress} noLink />
+          <span className="flex space-x-1 text-xs">
+            <span>{proposalTitle}</span>
+            <FormattedAddress address={authorAddress} minified />
           </span>
 
           <p className="break-words text-base text-black">{title}</p>

@@ -1,6 +1,6 @@
 import { CONTRACT_MAP } from "@/constants/Contract";
 import AddressForm from "../form/AddressForm";
-import NumberForm from "../form/NumberForm";
+import UIntForm from "../form/UIntForm";
 import SelectForm from "../form/SelectForm";
 
 export default function TransferActionForm({
@@ -15,7 +15,7 @@ export default function TransferActionForm({
       </div>
 
       <div className="col-span-4 sm:col-span-1">
-        <NumberForm label="Amount" fieldName={genFieldName("amount")} />
+        <UIntForm label="Amount" fieldName={genFieldName("amount")} />
       </div>
 
       <div className="col-span-4 sm:col-span-1">

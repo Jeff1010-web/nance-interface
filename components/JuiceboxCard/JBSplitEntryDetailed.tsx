@@ -41,21 +41,21 @@ export default function JBSplitEntryDetailed({
             (Allocator)
           </a>
           <ProjectLink projectId={project} style={subStyle} />
-          <FormattedAddress address={beneficiary} style={subStyle} noLink />
+          <FormattedAddress address={beneficiary} style={subStyle} minified />
         </>
       )}
 
       {splitMode === "project" && (
         <>
           <ProjectLink projectId={project} style={mainStyle} />
-          <FormattedAddress address={beneficiary} style={subStyle} noLink />
+          <FormattedAddress address={beneficiary} style={subStyle} minified />
         </>
       )}
 
       {/* Address mode */}
       {splitMode === "address" && (
         <>
-          <FormattedAddress address={beneficiary} style={mainStyle} noLink />
+          <FormattedAddress address={beneficiary} style={mainStyle} minified />
         </>
       )}
 

@@ -9,7 +9,7 @@ import {
 import FunctionSelector from "./FunctionSelector";
 import TenderlySimulationButton from "@/components/TenderlySimulation/TenderlySimulationButton";
 import AddressForm from "../form/AddressForm";
-import NumberForm from "../form/NumberForm";
+import UIntForm from "../form/UIntForm";
 import StringForm from "../form/StringForm";
 import BooleanForm from "../form/BooleanForm";
 
@@ -101,7 +101,7 @@ export default function CustomTransactionActionForm({
       </div>
 
       <div className="col-span-4 sm:col-span-1">
-        <NumberForm label="ETH Value" fieldName={genFieldName("value")} />
+        <UIntForm label="ETH Value" fieldName={genFieldName("value")} />
       </div>
 
       {watch(genFieldName("contract"))?.length === 42 && (
@@ -145,7 +145,7 @@ export default function CustomTransactionActionForm({
           )}
 
           {param.type.includes("int") && (
-            <NumberForm
+            <UIntForm
               label={`Param: ${param.name || "_"}`}
               fieldName={genFieldName(`args.${index}`)}
               fieldType={param.type}
@@ -162,12 +162,12 @@ export default function CustomTransactionActionForm({
           {param.type !== "address" &&
             !param.type.includes("int") &&
             param.type !== "bool" && (
-            <StringForm
-              label={`Param: ${param.name || "_"}`}
-              fieldName={genFieldName(`args.${index}`)}
-              fieldType={param.type}
-            />
-          )}
+              <StringForm
+                label={`Param: ${param.name || "_"}`}
+                fieldName={genFieldName(`args.${index}`)}
+                fieldType={param.type}
+              />
+            )}
         </div>
       ))}
     </div>

@@ -18,7 +18,7 @@ import { SessionProvider } from "next-auth/react";
 import { RainbowKitSiweNextAuthProvider } from "@rainbow-me/rainbowkit-siwe-next-auth";
 import { NetworkContext } from "../context/NetworkContext";
 import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from "../constants/Snapshot";
-import { SWRConfig } from 'swr/_internal';
+import { SWRConfig } from "swr";
 
 const graphqlClient = new GraphQLClient({
   url: `${SNAPSHOT_HUB}/graphql`,
@@ -48,8 +48,7 @@ const theme = {
   theme: {
     tooltip: {
       target: "",
-      content:
-        "relative z-20 max-w-[200px] lg:max-w-[300px] 2xl:max-w-[500px] break-words",
+      content: "relative z-20 max-w-[200px] lg:max-w-[300px] 2xl:max-w-[500px]",
     },
   },
 };

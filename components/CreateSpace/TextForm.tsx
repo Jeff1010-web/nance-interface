@@ -28,7 +28,7 @@ export default function TextForm({
   disabled,
 }: Partial<TextInputProps>) {
   return (
-    <div className="mb-2 mt-2 flex w-80 flex-col">
+    <div className="mb-2 mt-2 flex w-fit flex-col">
       <label
         htmlFor={name}
         className="relative flex text-sm font-medium text-gray-700"

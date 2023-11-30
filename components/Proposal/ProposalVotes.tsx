@@ -164,12 +164,12 @@ export default function ProposalVotes({
                 >
                   {isSimpleVoting && (
                     <div className="flex justify-between text-sm">
-                      <div>
+                      <div className="flex">
                         <div className="inline">
                           <FormattedAddress
                             address={vote.voter}
                             style="text-gray-900"
-                            noLink={true}
+                            minified
                           />
                         </div>
                         &nbsp;
@@ -209,7 +209,7 @@ export default function ProposalVotes({
                         <FormattedAddress
                           address={vote.voter}
                           style="text-gray-900"
-                          noLink={true}
+                          minified
                         />
                       </div>
 

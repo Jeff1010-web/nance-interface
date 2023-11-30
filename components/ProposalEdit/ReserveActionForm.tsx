@@ -10,7 +10,7 @@ import { JBConstants } from "@/models/JuiceboxTypes";
 import { JBSplitNanceStruct } from "@/models/NanceTypes";
 import AddressForm from "../form/AddressForm";
 import BooleanForm from "../form/BooleanForm";
-import NumberForm from "../form/NumberForm";
+import UIntForm from "../form/UIntForm";
 import ProjectForm from "../form/ProjectForm";
 import JBSplitEntryDetailed from "@/components/JuiceboxCard/JBSplitEntryDetailed";
 import GenericButton from "@/components/common/GenericButton";
@@ -146,7 +146,7 @@ export default function ReserveActionForm({
                 />
               </div>
               <div className="col-span-4 sm:col-span-1">
-                <NumberForm
+                <UIntForm
                   label="Percent"
                   fieldName={genFieldName(`splits.${index}.percent`)}
                   fieldType="per billion"
@@ -172,7 +172,7 @@ export default function ReserveActionForm({
 
               <div className="col-span-4 sm:col-span-2">
                 {/* todo date timestamp param */}
-                <NumberForm
+                <UIntForm
                   label="lockedUntil"
                   fieldName={genFieldName(`splits.${index}.lockedUntil`)}
                   fieldType="timestamp"

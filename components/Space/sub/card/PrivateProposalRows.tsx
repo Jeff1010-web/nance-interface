@@ -2,17 +2,11 @@ import { SpaceContext } from "@/context/SpaceContext";
 import { usePrivateProposals } from "@/utils/hooks/NanceHooks";
 import ProposalRow from "./ProposalRow";
 import { useContext } from "react";
-import {
-  BooleanParam,
-  StringParam,
-  useQueryParams,
-  withDefault,
-} from "next-query-params";
+import { StringParam, useQueryParams } from "next-query-params";
 
 export default function PrivateProposalRows() {
   const [query, setQuery] = useQueryParams({
     keyword: StringParam,
-    showDrafts: withDefault(BooleanParam, true),
   });
   const spaceInfo = useContext(SpaceContext);
   const { data } = usePrivateProposals(
@@ -20,8 +14,8 @@ export default function PrivateProposalRows() {
     spaceInfo?.name !== undefined,
   );
 
-  const { keyword, showDrafts } = query;
-  const shouldDisplay = showDrafts && !keyword; // shouldn't display if keyword is specified
+  const { keyword } = query;
+  const shouldDisplay = !keyword; // shouldn't display if keyword is specified
   const privateProposals = data?.data;
 
   if (

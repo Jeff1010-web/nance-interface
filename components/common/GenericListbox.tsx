@@ -10,13 +10,31 @@ interface Includes {
   icon?: string;
 }
 interface GenericListboxProps<T> {
+  /**
+   * The selected value of the listbox
+   */
   value: T & Includes;
+  /**
+   * The available items to display in the listbox
+   */
   items: (T & Includes)[];
+  /**
+   * The function to call when the value of the listbox changes
+   */
   onChange: (value: T) => void;
+  /**
+   * Whether the listbox is disabled
+   */
   disabled?: boolean;
+  /**
+   * The label of the listbox
+   */
   label: string;
 }
 
+/**
+ * GenericListbox which supports icons
+ */
 export default function GenericListbox<T>({
   value,
   items,

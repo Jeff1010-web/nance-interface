@@ -4,6 +4,7 @@ import { Tooltip } from "flowbite-react";
 import { format, formatDistanceToNowStrict, parseISO } from "date-fns";
 import { SpaceContext } from "@/context/SpaceContext";
 import { useContext } from "react";
+import SpaceAction from "./SpaceAction";
 
 export default function SpaceHeader() {
   const spaceInfo = useContext(SpaceContext);
@@ -32,7 +33,7 @@ export default function SpaceHeader() {
   } = spaceInfo;
 
   return (
-    <div className="max-w-7xl rounded-md bg-white p-6 shadow md:flex md:space-x-5">
+    <div className="mb-6 hidden max-w-7xl rounded-md bg-white p-6 shadow md:flex md:flex-col md:space-x-5">
       <div className="flex w-full flex-col items-center space-x-0 space-y-6 md:flex-row md:justify-between md:space-x-6 md:space-y-0">
         <div className="flex flex-shrink-0 space-x-3 md:w-5/12">
           <Image

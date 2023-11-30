@@ -31,11 +31,18 @@ type Params = {
   archived?: boolean;
   orderDirection?: string;
   pageSize?: number;
+  projectId?: number;
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function useJuiceboxProjects(params: Params) {
+/**
+ * Search for projects on Juicebox with JBM Search API
+ */
+export default function useJBMSearch(
+  params: Params,
+  shouldFetch: boolean = true,
+) {
   const [queryParams, setQueryParams] = useState<Params>(params);
 
   const queryString = useCallback(() => {
@@ -49,8 +56,8 @@ export default function useJuiceboxProjects(params: Params) {
   }, [queryParams]);
 
   const { data, error } = useSWR<JuiceboxProjectAPIResponse[], any>(
-    `https://juicebox.money/api/projects?${queryString()}`,
-    fetcher
+    shouldFetch ? `https://juicebox.money/api/projects?${queryString()}` : null,
+    fetcher,
   );
 
   const loading = !data && !error;

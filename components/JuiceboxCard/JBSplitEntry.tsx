@@ -12,58 +12,52 @@ export default function JBSplitEntry({
   mod: JBSplit;
   projectVersion?: number;
 }) {
+  const { allocator, projectId, beneficiary } = mod;
+
   let splitMode = "address";
-  if (mod.allocator !== "0x0000000000000000000000000000000000000000")
+  if (allocator !== "0x0000000000000000000000000000000000000000") {
     splitMode = "allocator";
-  else if (mod.projectId.toNumber() !== 0) splitMode = "project";
+  } else if (projectId.toNumber() !== 0) {
+    splitMode = "project";
+  }
 
   const mainStyle = "text-sm";
-  const subStyle = "text-xs text-gray-500";
+
+  if (splitMode === "project") {
+    return (
+      <div className="mx-1 inline-block">
+        <ProjectLink
+          projectId={projectId.toNumber()}
+          style={mainStyle}
+          subText={`token: ${beneficiary}`}
+        />
+      </div>
+    );
+  }
+
+  if (splitMode === "allocator") {
+    return (
+      <div className="mx-1 inline-block">
+        <FormattedAddress
+          address={allocator}
+          style={mainStyle}
+          subText="allocator contract"
+        />
+      </div>
+    );
+  }
 
   return (
-    <>
-      {splitMode === "allocator" && (
-        <div className="mx-1 inline-block">
-          <FormattedAddress address={mod.allocator} style={mainStyle} />
-          <a
-            href="https://info.juicebox.money/dev/learn/glossary/split-allocator/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            (Allocator)
-          </a>
-        </div>
-      )}
-
-      {splitMode === "project" && (
-        <div className="mx-1 inline-block">
-          <div className="flex flex-col">
-            <ProjectLink
-              projectId={mod.projectId.toNumber()}
-              style={mainStyle}
-            />
-            <div>
-              <span className={classNames(subStyle, "ml-1")}>Token: </span>
-              <FormattedAddress address={mod.beneficiary} style={subStyle} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Address mode */}
-      {splitMode === "address" && (
-        <div className="mx-1 inline-block">
-          <FormattedAddress address={mod.beneficiary} style={mainStyle} />
-        </div>
-      )}
-    </>
+    <div className="mx-1 inline-block">
+      <FormattedAddress address={beneficiary} style={mainStyle} />
+    </div>
   );
 }
 
 export function diff2TableEntry(
   index: number,
   status: Status,
-  tableData: SectionTableData[]
+  tableData: SectionTableData[],
 ) {
   return (v: SplitDiffEntry) => {
     tableData[index].entries.push({

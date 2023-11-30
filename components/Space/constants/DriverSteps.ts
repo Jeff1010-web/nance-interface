@@ -1,16 +1,8 @@
 import { DriveStep } from "driver.js";
 
+export const UIGUIDE_SPACE_NAME = "SpacePage";
+
 export const driverSteps: DriveStep[] = [
-  {
-    element: "#new-proposal-button",
-    popover: {
-      title: "Create new proposal",
-      description:
-        "You can request payouts, reserve tokens and custom transactions.",
-      side: "left",
-      align: "start",
-    },
-  },
   {
     element: "#cycle-select-box",
     popover: {
@@ -32,6 +24,26 @@ export const driverSteps: DriveStep[] = [
     },
   },
   {
+    element: "#new-proposal-button",
+    popover: {
+      title: "Create new proposal",
+      description:
+        "You can request payouts, reserve tokens and custom transactions.",
+      side: "left",
+      align: "start",
+    },
+  },
+  {
+    element: "#advanced-actions",
+    popover: {
+      title: "Advanced actions",
+      description:
+        "You can create proposals or change space settings with this menu.",
+      side: "left",
+      align: "start",
+    },
+  },
+  {
     element: "#proposals-table",
     popover: {
       title: "View proposals",
@@ -48,16 +60,6 @@ export const driverSteps: DriveStep[] = [
       description:
         "You can sort proposals by clicking the table headers. And to reverse the order, just click again.",
       side: "bottom",
-      align: "start",
-    },
-  },
-  {
-    element: "#pagination-div",
-    popover: {
-      title: "Check other pages",
-      description:
-        "You can check other pages by clicking the left or right arrow.",
-      side: "top",
       align: "start",
     },
   },

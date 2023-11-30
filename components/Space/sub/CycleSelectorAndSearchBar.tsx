@@ -1,16 +1,10 @@
-import { Switch } from "@headlessui/react";
 import SearchableComboBoxMultiple from "@/components/common/SearchableComboBoxMultiple";
 import { useState } from "react";
 import { Option } from "@/components/common/SearchableComboBox";
 
 import { DocumentMagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import { classNames } from "@/utils/functions/tailwind";
-import {
-  BooleanParam,
-  StringParam,
-  useQueryParams,
-  withDefault,
-} from "next-query-params";
+import { StringParam, useQueryParams, withDefault } from "next-query-params";
+import SpaceAction from "./SpaceAction";
 
 const allCycle = { id: "All", label: `All`, status: true };
 
@@ -59,44 +53,15 @@ export default function CycleSelectorAndSearchBar({
   const [query, setQuery] = useQueryParams({
     keyword: StringParam,
     cycle: withDefault(StringParam, currentCycle?.toString()),
-    showDrafts: withDefault(BooleanParam, true),
   });
-  const { keyword, cycle, showDrafts } = query;
+  const { keyword, cycle } = query;
   const options = genOptions(currentCycle);
 
   const [keywordInput, setKeywordInput] = useState<string>(keyword || "");
 
   return (
-    <div className="mt-6 flex flex-col space-y-2 md:flex-row md:justify-between md:space-x-4 md:space-y-0">
-      <div className="md:w-1/12">
-        <Switch.Group as="div" className="flex flex-col">
-          <Switch.Label as="span" className="text-sm">
-            <span className="font-medium text-gray-900">Show drafts</span>
-          </Switch.Label>
-          <Switch
-            checked={showDrafts}
-            onChange={(checked) => {
-              setQuery({
-                showDrafts: checked,
-              });
-            }}
-            className={classNames(
-              showDrafts ? "bg-indigo-600" : "bg-gray-200",
-              "relative mt-2 inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2",
-            )}
-          >
-            <span
-              aria-hidden="true"
-              className={classNames(
-                showDrafts ? "translate-x-5" : "translate-x-0",
-                "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-              )}
-            />
-          </Switch>
-        </Switch.Group>
-      </div>
-
-      <div id="cycle-select-box" className="md:w-2/12">
+    <div className="flex flex-col space-y-2 md:flex-row md:justify-between md:space-x-4 md:space-y-0">
+      <div id="cycle-select-box" className="md:w-3/12">
         <SearchableComboBoxMultiple
           val={genSelectedOptions(options, cycle)}
           setVal={(options) => {
@@ -110,7 +75,7 @@ export default function CycleSelectorAndSearchBar({
       </div>
 
       {/* Search bar and limit */}
-      <div className="md:w-9/12" id="search-bar">
+      <div className="md:w-6/12" id="search-bar">
         <label
           htmlFor="keyword"
           className="block text-sm font-medium text-gray-700"
@@ -145,6 +110,10 @@ export default function CycleSelectorAndSearchBar({
             />
           </div>
         </div>
+      </div>
+
+      <div className="flex flex-col justify-end md:w-3/12">
+        <SpaceAction />
       </div>
     </div>
   );

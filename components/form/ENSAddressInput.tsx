@@ -1,24 +1,33 @@
-import { useState } from 'react';
-import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
-import { Combobox } from '@headlessui/react';
-import { Tooltip } from 'flowbite-react';
-import { useEnsAddress } from 'wagmi';
-import { classNames } from '../../utils/functions/tailwind';
+import { useState } from "react";
+import { CheckIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
+import { Combobox } from "@headlessui/react";
+import { Tooltip } from "flowbite-react";
+import { useEnsAddress } from "wagmi";
+import { classNames } from "../../utils/functions/tailwind";
 
-export default function ENSAddressInput({ val, setVal, inputStyle = "", disabled = false }:
-  { val: string, setVal: (v: any) => void, inputStyle?: string, defaultValue?: string, disabled?: boolean }) {
-
-  const [query, setQuery] = useState('');
+/**
+ * A component that allows users to enter an address or ENS name. If the user enters an ENS name, it will resolve to an address.
+ */
+export default function ENSAddressInput({
+  val,
+  setVal,
+  inputStyle = "",
+  disabled = false,
+}: {
+  val: string;
+  setVal: (v: any) => void;
+  inputStyle?: string;
+  defaultValue?: string;
+  disabled?: boolean;
+}) {
+  const [query, setQuery] = useState("");
   const { data: address, isLoading } = useEnsAddress({
     name: query,
     chainId: 1, // always use mainnet for ENS for now
-    enabled: query.endsWith('.eth')
+    enabled: query.endsWith(".eth"),
   });
 
-  const filteredOption =
-    query.endsWith('.eth') && address
-      ? [address]
-      : [];
+  const filteredOption = query.endsWith(".eth") && address ? [address] : [];
 
   const renderComboboxInput = () => {
     return (
@@ -27,11 +36,11 @@ export default function ENSAddressInput({ val, setVal, inputStyle = "", disabled
           "w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm",
           isLoading && "animate-pulse",
           inputStyle,
-          disabled && "bg-gray-100 cursor-not-allowed"
+          disabled && "cursor-not-allowed bg-gray-100",
         )}
         onChange={(event) => {
           setQuery(event.target.value);
-          if (!query.endsWith('.eth')) {
+          if (!query.endsWith(".eth")) {
             setVal(event.target.value);
           }
         }}
@@ -42,10 +51,15 @@ export default function ENSAddressInput({ val, setVal, inputStyle = "", disabled
   };
 
   return (
-    <Combobox as="div" value={val} onChange={setVal} className="w-full" disabled={disabled}>
+    <Combobox
+      as="div"
+      value={val}
+      onChange={setVal}
+      className="w-full"
+      disabled={disabled}
+    >
       <div className="relative">
-
-        { disabled ? (
+        {disabled ? (
           <Tooltip content="Default token beneficiary must be set to Juicebox project owner">
             {renderComboboxInput()}
           </Tooltip>
@@ -54,7 +68,10 @@ export default function ENSAddressInput({ val, setVal, inputStyle = "", disabled
         )}
 
         <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
-          <ChevronDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <ChevronDownIcon
+            className="h-5 w-5 text-gray-400"
+            aria-hidden="true"
+          />
         </Combobox.Button>
 
         {filteredOption.length > 0 && (
@@ -65,8 +82,8 @@ export default function ENSAddressInput({ val, setVal, inputStyle = "", disabled
                 value={option}
                 className={({ active }) =>
                   classNames(
-                    'relative cursor-default select-none py-2 pl-3 pr-9',
-                    active ? 'bg-indigo-600 text-white' : 'text-gray-900'
+                    "relative cursor-default select-none py-2 pl-3 pr-9",
+                    active ? "bg-indigo-600 text-white" : "text-gray-900",
                   )
                 }
               >
@@ -77,7 +94,12 @@ export default function ENSAddressInput({ val, setVal, inputStyle = "", disabled
                         className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-green-400"
                         aria-hidden="true"
                       />
-                      <span className={classNames('ml-3 truncate', selected && 'font-semibold')}>
+                      <span
+                        className={classNames(
+                          "ml-3 truncate",
+                          selected && "font-semibold",
+                        )}
+                      >
                         {option}
                       </span>
                     </div>
@@ -85,8 +107,8 @@ export default function ENSAddressInput({ val, setVal, inputStyle = "", disabled
                     {selected && (
                       <span
                         className={classNames(
-                          'absolute inset-y-0 right-0 flex items-center pr-4',
-                          active ? 'text-white' : 'text-indigo-600'
+                          "absolute inset-y-0 right-0 flex items-center pr-4",
+                          active ? "text-white" : "text-indigo-600",
                         )}
                       >
                         <CheckIcon className="h-5 w-5" aria-hidden="true" />

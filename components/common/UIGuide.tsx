@@ -23,7 +23,7 @@ function getDriver(steps: DriveStep[], action: () => void | undefined) {
   return driverObj;
 }
 
-interface GuideRecord extends LocalStorageState {
+export interface GuideRecord extends LocalStorageState {
   shouldOpen: boolean;
 }
 
