@@ -18,6 +18,10 @@ interface Props {
    * Whether or not the project deployed on testnet (goerli).
    */
   isTestnet?: boolean;
+  /**
+   * Whether or not to minify the link.
+   */
+  minified?: boolean;
 }
 
 /**
@@ -28,6 +32,7 @@ export default function ProjectLink({
   subText,
   style,
   isTestnet = false,
+  minified = false,
 }: Props) {
   const { projects } = useJBMSearch(
     { pv: "2", projectId },
@@ -57,6 +62,24 @@ export default function ProjectLink({
 
   const networkSuffix = isTestnet ? " (goerli)" : "";
   const name = (projects?.[0]?.name || "Untitled") + networkSuffix;
+  const displayMinifiedName =
+    (projects?.[0]?.name || projectLabel) + networkSuffix;
+
+  if (minified) {
+    return (
+      <Link
+        target="_blank"
+        rel="noopener noreferrer"
+        className={classNames(style, "hover:underline")}
+        href={projectUrl}
+      >
+        <p>
+          {displayMinifiedName}{" "}
+          <span className="text-xs text-gray-400">{subText}</span>
+        </p>
+      </Link>
+    );
+  }
 
   return (
     <Link

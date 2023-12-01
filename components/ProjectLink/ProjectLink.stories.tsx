@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react";
 import ProjectLink from "./ProjectLink";
 
 const meta: Meta<typeof ProjectLink> = {
-  title: "Nance Components/Juicebox/ProjectLink",
   component: ProjectLink,
 };
 
@@ -23,16 +22,23 @@ export const ProjectIdOnTestnet: Story = {
   },
 };
 
+export const ProjectIdOnTestnetMinified: Story = {
+  args: {
+    ...ProjectIdOnTestnet.args,
+    minified: true,
+  },
+};
+
 export const ProjectWithHandle: Story = {
   args: {
     projectId: 1,
   },
 };
 
-export const ProjectWithHandleOnTestnet: Story = {
+export const ProjectWithHandleMinified: Story = {
   args: {
     ...ProjectWithHandle.args,
-    isTestnet: true,
+    minified: true,
   },
 };
 

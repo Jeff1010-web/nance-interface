@@ -4,6 +4,7 @@ import { JBSplit } from "@/models/JuiceboxTypes";
 import { Status, SectionTableData } from "../form/DiffTableWithSection";
 import FormattedAddress from "../AddressCard/FormattedAddress";
 import ProjectLink from "../ProjectLink";
+import { shortenAddress } from "@/utils/functions/address";
 
 export default function JBSplitEntry({
   mod,
@@ -29,7 +30,8 @@ export default function JBSplitEntry({
         <ProjectLink
           projectId={projectId.toNumber()}
           style={mainStyle}
-          subText={`token: ${beneficiary}`}
+          subText={`token: ${shortenAddress(beneficiary)}`}
+          minified
         />
       </div>
     );
@@ -42,6 +44,7 @@ export default function JBSplitEntry({
           address={allocator}
           style={mainStyle}
           subText="allocator contract"
+          minified
         />
       </div>
     );
@@ -49,7 +52,7 @@ export default function JBSplitEntry({
 
   return (
     <div className="mx-1 inline-block">
-      <FormattedAddress address={beneficiary} style={mainStyle} />
+      <FormattedAddress address={beneficiary} style={mainStyle} minified />
     </div>
   );
 }

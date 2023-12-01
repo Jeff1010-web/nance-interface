@@ -50,6 +50,7 @@ export default function ProposalContent({ body }: { body: string }) {
                   style="text-gray-500"
                   overrideURLPrefix="/u/"
                   openInNewWindow={false}
+                  minified
                 />
                 {i < commonProps!.coauthors.length - 1 && ", "}
               </Fragment>

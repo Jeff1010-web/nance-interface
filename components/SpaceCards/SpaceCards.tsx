@@ -101,6 +101,7 @@ export default function SpaceCards({
                     isTestnet={
                       spaceInfo.transactorAddress?.network === "goerli"
                     }
+                    minified
                   />
                 </dd>
               </div>
@@ -117,21 +118,21 @@ function SpaceCardSkeleton() {
     <li className="overflow-hidden rounded-xl border border-gray-200">
       <div className="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
         <a href="#">
-          <div className="h-12 w-12 flex-none rounded-lg animate-pulse bg-gray-200" />
+          <div className="h-12 w-12 flex-none animate-pulse rounded-lg bg-gray-200" />
         </a>
         <a
           href="#"
-          className="bg-gray-200 rounded w-[150px] animate-pulse h-6 cursor-not-allowed"
+          className="h-6 w-[150px] animate-pulse cursor-not-allowed rounded bg-gray-200"
         ></a>
       </div>
       <dl className="-my-3 divide-y divide-gray-100 px-6 py-4 text-sm leading-6">
         <div className="flex justify-between gap-x-4 py-3">
           <dt className="text-gray-500">Current cycle</dt>
-          <dd className="bg-gray-200 rounded w-20 animate-pulse h-6"></dd>
+          <dd className="h-6 w-20 animate-pulse rounded bg-gray-200"></dd>
         </div>
         <div className="flex justify-between gap-x-4 py-3">
           <dt className="text-gray-500">Treasury</dt>
-          <dd className="bg-gray-200 rounded w-20 animate-pulse h-6"></dd>
+          <dd className="h-6 w-20 animate-pulse rounded bg-gray-200"></dd>
         </div>
       </dl>
     </li>

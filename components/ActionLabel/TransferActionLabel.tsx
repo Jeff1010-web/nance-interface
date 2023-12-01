@@ -13,7 +13,9 @@ export default function TransferActionLabel({
       {numToPrettyString(Number(transfer.amount))}
       &nbsp;{getContractLabel(transfer.contract)}
       &nbsp;to
-      <FormattedAddress address={transfer.to} style="inline ml-1" />
+      <div className="mx-1 inline-block">
+        <FormattedAddress address={transfer.to} style="inline ml-1" minified />
+      </div>
     </span>
   );
 }
