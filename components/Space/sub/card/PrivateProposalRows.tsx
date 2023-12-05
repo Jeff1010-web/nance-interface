@@ -38,7 +38,7 @@ export default function PrivateProposalRows() {
       ))}
 
       <tr>
-        <td colSpan={5}>
+        <td colSpan={6}>
           <hr className="border-2 border-dashed" />
         </td>
       </tr>

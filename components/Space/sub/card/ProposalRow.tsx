@@ -5,6 +5,7 @@ import { Proposal } from "@/models/NanceTypes";
 import { SpaceContext } from "@/context/SpaceContext";
 import { useContext } from "react";
 import Link from "next/link";
+import { format } from "date-fns";
 
 export default function ProposalRow({
   proposal,
@@ -23,6 +24,7 @@ export default function ProposalRow({
     | "authorAddress"
     | "title"
     | "voteResults"
+    | "date"
   >;
   isFirst?: boolean;
   isDraft?: boolean;
@@ -40,6 +42,7 @@ export default function ProposalRow({
   const proposalTitle = isDraft
     ? "Draft - by "
     : `GC-${governanceCycle}, ${proposalIdPrefix}${proposalId || "tbd"} - by `;
+  const proposalDate = proposal.date ? format(new Date(proposal?.date), "MM/dd/yy") : "";
 
   return (
     <tr className="hover:bg-slate-100">
@@ -50,7 +53,7 @@ export default function ProposalRow({
         )}
       >
         <Link href={proposalUrl}>
-          <div className="py-4 pl-6 pr-3">
+          <div className="py-7 pl-6 pr-3">
             <ProposalBadgeLabel status={status} />
           </div>
         </Link>
@@ -66,7 +69,7 @@ export default function ProposalRow({
         )}
       >
         <Link href={proposalUrl}>
-          <div className="flex flex-col space-y-1 px-3 py-3.5">
+          <div className="flex flex-col space-y-1 px-3 py-3.5 max-w-md">
             <div className="block text-gray-900 md:hidden">
               <ProposalBadgeLabel status={status} />
             </div>
@@ -84,11 +87,12 @@ export default function ProposalRow({
       <td
         className={classNames(
           isFirst ? "" : "border-t border-gray-200",
-          "hidden text-center text-sm text-gray-500 md:table-cell",
-        )}
-      >
+          "hidden text-left text-sm text-gray-500 md:table-cell",
+        )}>
         <Link href={proposalUrl}>
-          <div className="px-3 py-3.5">{votesBar}</div>
+          <div className="py-3.5 text-xs text-left text-gray-500 md:table-cell">
+            {proposalDate}
+          </div>
         </Link>
       </td>
       <td
@@ -98,7 +102,17 @@ export default function ProposalRow({
         )}
       >
         <Link href={proposalUrl}>
-          <div className="px-3 py-3.5">{votes}</div>
+          <div className="px-3 py-8">{votesBar}</div>
+        </Link>
+      </td>
+      <td
+        className={classNames(
+          isFirst ? "" : "border-t border-gray-200",
+          "hidden text-center text-sm text-gray-500 md:table-cell",
+        )}
+      >
+        <Link href={proposalUrl}>
+          <div className="px-3 py-7">{votes}</div>
         </Link>
       </td>
       <td

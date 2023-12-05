@@ -1,7 +1,7 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
 import { BooleanParam, StringParam, useQueryParams, withDefault } from 'next-query-params';
 
-type SortOptions = "" | "status" | "title" | "approval" | "participants" | "voted";
+type SortOptions = "" | "status" | "title" | "approval" | "participants" | "voted" | "date";
 
 export default function SortableTableHeader({ val, label }: { val: SortOptions, label: string }) {
   const [query, setQuery] = useQueryParams({

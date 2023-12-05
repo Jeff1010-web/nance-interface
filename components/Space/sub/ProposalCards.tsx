@@ -70,69 +70,67 @@ function sortProposals(
   votedData: { [id: string]: SnapshotVotedData } | undefined,
 ) {
   if (!sortBy || !SortOptionsArr.includes(sortBy)) {
-    if (keyword) {
-      // keep relevance order
-    } else {
-      // fall back to default sorting
-      // if no keyword
-      proposals
-        .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
-        .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0));
-    }
+
+    // fall back to default sorting
+    // if no keyword
+    proposals
+      .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
+      .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0));
+
   }
 
   switch (sortBy) {
-    case "status":
-      proposals.sort(
-        (a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status),
+  case "status":
+    proposals.sort(
+      (a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status),
+    );
+    break;
+  case "approval":
+    const sumScores = (p: Proposal) => {
+      return (p?.voteResults?.scores ?? []).reduce(
+        (partialSum, a) => partialSum + a,
+        0,
       );
-      break;
-    case "approval":
-      const sumScores = (p: Proposal) => {
-        return (p?.voteResults?.scores ?? []).reduce(
-          (partialSum, a) => partialSum + a,
-          0,
-        );
-      };
-      proposals.sort((a, b) => sumScores(b) - sumScores(a));
-      break;
-    case "participants":
-      proposals.sort(
-        (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
-      );
-      break;
-    case "voted":
-      const votedWeightOf = (p: Proposal) => {
-        const voted = votedData?.[p.voteURL] !== undefined;
-        const hasSnapshotVoting = snapshotProposalDict[p.voteURL];
+    };
+    proposals.sort((a, b) => sumScores(b) - sumScores(a));
+    break;
+  case "participants":
+    proposals.sort(
+      (a, b) => (b.voteResults?.votes ?? 0) - (a.voteResults?.votes ?? 0),
+    );
+    break;
+  case "voted":
+    const votedWeightOf = (p: Proposal) => {
+      const voted = votedData?.[p.voteURL] !== undefined;
+      const hasSnapshotVoting = snapshotProposalDict[p.voteURL];
 
-        if (hasSnapshotVoting) {
-          if (voted) return 2;
-          else return 1;
-        } else {
-          return 0;
-        }
-      };
-      proposals.sort((a, b) => votedWeightOf(b) - votedWeightOf(a));
-      break;
-    case "title":
-      proposals.sort((a, b) => {
-        const nameA = a.title;
-        const nameB = b.title;
-        if (nameA < nameB) {
-          return -1;
-        }
-        if (nameA > nameB) {
-          return 1;
-        }
-
-        // names must be equal
+      if (hasSnapshotVoting) {
+        if (voted) return 2;
+        else return 1;
+      } else {
         return 0;
-      });
-      break;
-    default:
-      proposals.sort();
-      break;
+      }
+    };
+    proposals.sort((a, b) => votedWeightOf(b) - votedWeightOf(a));
+    break;
+  case "title":
+    proposals.sort((a, b) => {
+      const nameA = a.title;
+      const nameB = b.title;
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+
+      // names must be equal
+      return 0;
+    });
+    break;
+  default:
+    proposals.sort();
+    break;
   }
 
   if (!sortDesc) {
@@ -271,6 +269,12 @@ export default function ProposalCards({
                   className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >
                   <SortableTableHeader val="title" label="Title" />
+                </th>
+                <th
+                  scope="col"
+                  className="py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  <SortableTableHeader val="date" label="Date" />
                 </th>
                 <th
                   scope="col"
