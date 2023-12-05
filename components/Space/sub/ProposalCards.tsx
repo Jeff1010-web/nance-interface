@@ -272,7 +272,7 @@ export default function ProposalCards({
                 </th>
                 <th
                   scope="col"
-                  className="py-3.5 text-left text-sm font-semibold text-gray-900"
+                  className="hidden py-3.5 text-left text-sm font-semibold text-gray-900 md:table-cell"
                 >
                   <SortableTableHeader val="date" label="Date" />
                 </th>
