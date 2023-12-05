@@ -4,6 +4,7 @@ import ProposalBadgeLabel from "./ProposalBadgeLabel";
 import { Proposal } from "@/models/NanceTypes";
 import { SpaceContext } from "@/context/SpaceContext";
 import { useContext } from "react";
+import Link from "next/link";
 
 export default function ProposalRow({
   proposal,
@@ -41,19 +42,18 @@ export default function ProposalRow({
     : `GC-${governanceCycle}, ${proposalIdPrefix}${proposalId || "tbd"} - by `;
 
   return (
-    <tr
-      className="hover:cursor-pointer hover:bg-slate-100"
-      onClick={() => {
-        window.location.href = proposalUrl;
-      }}
-    >
+    <tr className="hover:bg-slate-100">
       <td
         className={classNames(
           isFirst ? "" : "border-t border-transparent",
-          "relative hidden py-4 pl-6 pr-3 text-sm md:table-cell",
+          "relative hidden text-sm md:table-cell",
         )}
       >
-        <ProposalBadgeLabel status={status} />
+        <Link href={proposalUrl}>
+          <div className="py-4 pl-6 pr-3">
+            <ProposalBadgeLabel status={status} />
+          </div>
+        </Link>
 
         {!isFirst ? (
           <div className="absolute -top-px left-6 right-0 h-px bg-gray-200" />
@@ -62,38 +62,44 @@ export default function ProposalRow({
       <td
         className={classNames(
           isFirst ? "" : "border-t border-gray-200",
-          "px-3 py-3.5 text-sm text-gray-500",
+          "text-sm text-gray-500",
         )}
       >
-        <div className="flex flex-col space-y-1">
-          <div className="block text-gray-900 md:hidden">
-            <ProposalBadgeLabel status={status} />
+        <Link href={proposalUrl}>
+          <div className="flex flex-col space-y-1 px-3 py-3.5">
+            <div className="block text-gray-900 md:hidden">
+              <ProposalBadgeLabel status={status} />
+            </div>
+            <span className="flex space-x-1 text-xs">
+              <span>{proposalTitle}</span>
+              <FormattedAddress address={authorAddress} minified />
+            </span>
+
+            <p className="break-words text-base text-black">{title}</p>
+
+            <div className="md:hidden">{votesBar}</div>
           </div>
-          <span className="flex space-x-1 text-xs">
-            <span>{proposalTitle}</span>
-            <FormattedAddress address={authorAddress} minified />
-          </span>
-
-          <p className="break-words text-base text-black">{title}</p>
-
-          <div className="md:hidden">{votesBar}</div>
-        </div>
+        </Link>
       </td>
       <td
         className={classNames(
           isFirst ? "" : "border-t border-gray-200",
-          "hidden px-3 py-3.5 text-center text-sm text-gray-500 md:table-cell",
+          "hidden text-center text-sm text-gray-500 md:table-cell",
         )}
       >
-        {votesBar}
+        <Link href={proposalUrl}>
+          <div className="px-3 py-3.5">{votesBar}</div>
+        </Link>
       </td>
       <td
         className={classNames(
           isFirst ? "" : "border-t border-gray-200",
-          "hidden px-3 py-3.5 text-center text-sm text-gray-500 md:table-cell",
+          "hidden text-center text-sm text-gray-500 md:table-cell",
         )}
       >
-        {votes}
+        <Link href={proposalUrl}>
+          <div className="px-3 py-3.5">{votes}</div>
+        </Link>
       </td>
       <td
         className={classNames(
