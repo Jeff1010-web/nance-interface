@@ -1,6 +1,8 @@
-import { Fragment, PropsWithChildren } from "react";
+import { Fragment, PropsWithChildren, useState } from "react";
 import { Popover, Transition } from "@headlessui/react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { EllipsisHorizontalIcon } from "@heroicons/react/24/outline";
+import { usePopper } from "react-popper";
+import { Placement } from "@popperjs/core";
 
 interface MenuEntry {
   name: string;
@@ -11,23 +13,30 @@ interface MenuEntry {
 }
 
 interface Props {
-  label: string;
   entries: MenuEntry[];
   callToActions?: Omit<MenuEntry, "description">[];
-  overridePanelClassName?: string;
+  placement?: Placement;
 }
 
 export default function FlyoutMenu({
-  label,
   entries,
   callToActions,
-  overridePanelClassName = "absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 px-4",
+  placement = "left",
 }: Props) {
+  let [referenceElement, setReferenceElement] =
+    useState<HTMLButtonElement | null>(null);
+  let [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
+  let { styles, attributes } = usePopper(referenceElement, popperElement, {
+    placement,
+  });
+
   return (
-    <Popover className="relative">
-      <Popover.Button className="inline-flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900">
-        <span>{label}</span>
-        <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
+    <Popover className="flex items-center">
+      <Popover.Button ref={setReferenceElement}>
+        <EllipsisHorizontalIcon
+          className="h-10 w-10 rounded-full border-[1px] p-1"
+          aria-hidden="true"
+        />
       </Popover.Button>
 
       <Transition
@@ -39,8 +48,12 @@ export default function FlyoutMenu({
         leaveFrom="opacity-100 translate-y-0"
         leaveTo="opacity-0 translate-y-1"
       >
-        <Popover.Panel className={overridePanelClassName}>
-          <div className="w-screen max-w-md flex-auto overflow-hidden rounded-3xl bg-white text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
+        <Popover.Panel
+          ref={setPopperElement}
+          style={styles.popper}
+          {...attributes.popper}
+        >
+          <div className="w-[75vw] max-w-md flex-auto overflow-hidden rounded-3xl bg-white text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
             <div className="p-4">
               {entries.map((item) => (
                 <div

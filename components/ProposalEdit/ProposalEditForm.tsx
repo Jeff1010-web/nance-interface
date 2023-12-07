@@ -297,15 +297,15 @@ export default function ProposalEditForm({ space }: { space: string }) {
           loadedActions={
             (metadata.fork
               ? metadata.loadedProposal?.actions?.map(
-                ({ uuid, ...rest }) => rest,
-              )
+                  ({ uuid, ...rest }) => rest,
+                )
               : metadata.loadedProposal?.actions) || []
           }
         />
 
-        <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
+        <div className="rounded-lg bg-white px-4 py-5 shadow sm:p-6">
           <div>
-            <div className="mt-5 md:mt-0">
+            <div>
               <div className=" gap-6">
                 <div id="proposal-title">
                   <input

@@ -69,16 +69,15 @@ export default function SpaceAction() {
       <Link
         id="new-proposal-button"
         href={`/s/${spaceName}/edit`}
-        className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 md:ml-2"
+        className="inline-flex grow items-center justify-center gap-x-1.5 rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold shadow-sm md:ml-2"
       >
         <DocumentTextIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-        Propose
+        New Proposal
       </Link>
 
-      <div id="advanced-actions">
+      <div id="advanced-actions" className="flex justify-center">
         <FlyoutMenu
-          label="Advanced"
-          overridePanelClassName="absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 px-4"
+          placement="left"
           entries={[
             {
               name: "Settings",

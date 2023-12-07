@@ -19,7 +19,6 @@ type Story = StoryObj<typeof FlyoutMenu>;
 
 export const Basic: Story = {
   args: {
-    label: "Solutions",
     entries: [
       {
         name: "Analytics",

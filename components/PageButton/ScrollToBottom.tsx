@@ -49,7 +49,7 @@ export default function ScrollToBottom() {
     <div className="fixed bottom-0 z-50 opacity-50">
       {showTopButton && (
         <button
-          className="md:h-15 md:w-15 fixed bottom-2 left-2 h-10 w-10 rounded-full border bg-white md:bottom-6 md:left-6"
+          className="md:h-15 md:w-15 fixed bottom-2 left-2 h-10 w-10 rounded-full border bg-white p-2 md:bottom-6 md:left-6"
           onClick={handleTopClick}
         >
           <ChevronUpIcon />
@@ -57,7 +57,7 @@ export default function ScrollToBottom() {
       )}
       {showBottomButton && (
         <button
-          className="md:h-15 md:w-15 fixed bottom-2 right-2 h-10 w-10 rounded-full border bg-white md:bottom-6 md:right-6"
+          className="md:h-15 md:w-15 fixed bottom-2 right-2 h-10 w-10 rounded-full border bg-white p-2 md:bottom-6 md:right-6"
           onClick={handleBottomClick}
         >
           <ChevronDownIcon />
