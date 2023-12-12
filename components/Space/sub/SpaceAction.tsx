@@ -65,11 +65,11 @@ export default function SpaceAction() {
   const currentCycle = spaceInfo.currentCycle.toString();
 
   return (
-    <div className="flex space-x-4">
+    <>
       <Link
         id="new-proposal-button"
         href={`/s/${spaceName}/edit`}
-        className="inline-flex grow items-center justify-center gap-x-1.5 rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold shadow-sm md:ml-2"
+        className="inline-flex grow items-center justify-center gap-x-1.5 rounded-md bg-[#0E76FD] px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm md:ml-2"
       >
         <DocumentTextIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
         New Proposal
@@ -154,6 +154,6 @@ export default function SpaceAction() {
           space={spaceName}
         />
       )}
-    </div>
+    </>
   );
 }

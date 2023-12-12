@@ -264,9 +264,15 @@ export default function ProposalCards({
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 md:table-cell"
                 >
                   <SortableTableHeader val="title" label="Title" />
+                </th>
+                <th
+                  scope="col"
+                  className="table-cell px-3 py-3.5 text-left text-sm font-semibold text-gray-900 md:hidden"
+                >
+                  <SortableTableHeader val="title" label="Proposals" />
                 </th>
                 <th
                   scope="col"

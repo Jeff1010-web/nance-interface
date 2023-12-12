@@ -63,37 +63,40 @@ export default function CycleSelectorAndSearchBar({
   const [keywordInput, setKeywordInput] = useState<string>(keyword || "");
 
   return (
-    <div className="flex flex-col space-y-2 md:flex-row md:justify-between">
-      <div className="mt-1 flex grow" id="search-bar">
-        <div className="relative flex flex-grow items-stretch focus-within:z-10">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <MagnifyingGlassIcon
-              className="h-5 w-5 text-gray-400"
-              aria-hidden="true"
-            />
-          </div>
-          <input
-            type="text"
-            name="keyword"
-            id="keyword"
-            className="block w-full rounded-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            placeholder="Search"
-            value={keywordInput}
-            onChange={(e) => setKeywordInput(e.target.value)}
-            onKeyUp={(e) => {
-              // FIXME: use bouncing hook
-              if (e.key == "Enter") {
-                setQuery({
-                  keyword: keywordInput,
-                  cycle: "All",
-                });
-              }
-            }}
+    <div className="flex flex-col space-x-0 space-y-2 md:flex-row md:justify-between md:space-x-8 md:space-y-0">
+      <div
+        className="relative flex grow items-stretch focus-within:z-10"
+        id="search-bar"
+      >
+        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <MagnifyingGlassIcon
+            className="h-5 w-5 text-gray-400"
+            aria-hidden="true"
           />
         </div>
+        <input
+          type="text"
+          name="keyword"
+          id="keyword"
+          className="block w-full rounded-md border-gray-300 pl-10 focus:border-[#0E76FD] focus:ring-[#0E76FD] sm:text-sm"
+          placeholder="Search"
+          value={keywordInput}
+          onChange={(e) => setKeywordInput(e.target.value)}
+          onKeyUp={(e) => {
+            // FIXME: use bouncing hook
+            if (e.key == "Enter") {
+              setQuery({
+                keyword: keywordInput,
+                cycle: "All",
+              });
+            }
+          }}
+        />
       </div>
 
-      <SpaceAction />
+      <div className="flex space-x-4">
+        <SpaceAction />
+      </div>
     </div>
   );
 }
