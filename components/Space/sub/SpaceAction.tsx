@@ -8,6 +8,7 @@ import {
   DocumentTextIcon,
   ShieldCheckIcon,
   Cog8ToothIcon,
+  EllipsisHorizontalIcon,
 } from "@heroicons/react/24/solid";
 import { PhoneIcon, PlayCircleIcon } from "@heroicons/react/20/solid";
 
@@ -133,7 +134,12 @@ export default function SpaceAction() {
               icon: PhoneIcon,
             },
           ]}
-        />
+        >
+          <EllipsisHorizontalIcon
+            className="h-10 w-10 rounded-full border-[1px] p-1"
+            aria-hidden="true"
+          />
+        </FlyoutMenu>
       </div>
 
       {showQueueReconfigurationModal && (

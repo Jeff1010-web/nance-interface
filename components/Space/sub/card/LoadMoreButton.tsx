@@ -13,11 +13,11 @@ export default function LoadMoreButton({
   hasMore?: boolean;
 }) {
   return (
-    <div className="isolate col-span-4 inline-flex rounded-md">
+    <div className="col-span-4 inline-flex rounded-md">
       <button
         type="button"
         className={classNames(
-          "relative inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 disabled:cursor-not-allowed disabled:opacity-50",
+          "inline-flex items-center gap-x-1.5 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 disabled:cursor-not-allowed",
           loading ? "" : "hover:bg-gray-50 focus:z-10",
         )}
         disabled={loading || !hasMore}
@@ -25,7 +25,7 @@ export default function LoadMoreButton({
       >
         Load more
       </button>
-      <div className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300">
+      <div className="-ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300">
         {loading ? <LoadingArrowSpiner /> : dataLength}
       </div>
     </div>
