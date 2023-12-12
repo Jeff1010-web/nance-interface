@@ -1,15 +1,14 @@
 import { Fragment, PropsWithChildren, useState } from "react";
 import { Popover, Transition } from "@headlessui/react";
-import { EllipsisHorizontalIcon } from "@heroicons/react/24/outline";
 import { usePopper } from "react-popper";
 import { Placement } from "@popperjs/core";
 
-interface MenuEntry {
+export interface MenuEntry {
   name: string;
   description: string;
   href: string;
   onClick?: () => void;
-  icon: any;
+  icon?: any;
 }
 
 interface Props {
@@ -22,7 +21,8 @@ export default function FlyoutMenu({
   entries,
   callToActions,
   placement = "left",
-}: Props) {
+  children,
+}: PropsWithChildren<Props>) {
   let [referenceElement, setReferenceElement] =
     useState<HTMLButtonElement | null>(null);
   let [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
@@ -32,12 +32,7 @@ export default function FlyoutMenu({
 
   return (
     <Popover className="flex items-center">
-      <Popover.Button ref={setReferenceElement}>
-        <EllipsisHorizontalIcon
-          className="h-10 w-10 rounded-full border-[1px] p-1"
-          aria-hidden="true"
-        />
-      </Popover.Button>
+      <Popover.Button ref={setReferenceElement}>{children}</Popover.Button>
 
       <Transition
         as={Fragment}
@@ -53,19 +48,21 @@ export default function FlyoutMenu({
           style={styles.popper}
           {...attributes.popper}
         >
-          <div className="w-[75vw] max-w-md flex-auto overflow-hidden rounded-3xl bg-white text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
-            <div className="p-4">
+          <div className="ring-gray-900/5z-20z-20 w-[75vw] max-w-md flex-auto overflow-hidden rounded-3xl bg-white text-sm leading-6 shadow-lg ring-1">
+            <div className="max-h-screen overflow-y-auto p-4">
               {entries.map((item) => (
                 <div
                   key={item.name}
                   className="group relative flex gap-x-6 rounded-lg p-4 hover:bg-gray-50"
                 >
-                  <div className="mt-1 flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
-                    <item.icon
-                      className="h-6 w-6 text-gray-600 group-hover:text-indigo-600"
-                      aria-hidden="true"
-                    />
-                  </div>
+                  {item.icon && (
+                    <div className="mt-1 flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
+                      <item.icon
+                        className="h-6 w-6 text-gray-600 group-hover:text-indigo-600"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  )}
                   <div>
                     <Entry entry={item}>
                       {item.name}
