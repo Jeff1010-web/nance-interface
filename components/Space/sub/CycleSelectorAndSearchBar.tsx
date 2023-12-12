@@ -9,6 +9,7 @@ import {
   CalendarDaysIcon,
 } from "@heroicons/react/24/solid";
 import FlyoutMenu, { MenuEntry } from "@/components/FlyoutMenu/FlyoutMenu";
+import { useDebounce } from "@/utils/hooks/UseDebounce";
 
 function genOptions(
   setCycle: (c: string) => void,
@@ -66,6 +67,7 @@ export default function CycleSelectorAndSearchBar({
   );
 
   const [keywordInput, setKeywordInput] = useState<string>(keyword || "");
+  useDebounce(keywordInput, 300, (k: string) => setQuery({ keyword: k }));
 
   return (
     <div className="flex flex-col space-x-0 space-y-2 md:flex-row md:justify-between md:space-x-8 md:space-y-0">
@@ -88,15 +90,6 @@ export default function CycleSelectorAndSearchBar({
             placeholder="Search"
             value={keywordInput}
             onChange={(e) => setKeywordInput(e.target.value)}
-            onKeyUp={(e) => {
-              // FIXME: use bouncing hook
-              if (e.key == "Enter") {
-                setQuery({
-                  keyword: keywordInput,
-                  cycle: "All",
-                });
-              }
-            }}
           />
         </div>
         <div className="-ml-px flex items-center rounded-r-md border-[1px] border-gray-300 bg-white p-3">
