@@ -7,6 +7,7 @@ import FormattedAddress from "@/components/AddressCard/FormattedAddress";
 import MarkdownWithTOC from "@/components/Markdown/MarkdownWithTOC";
 import { ProposalContext } from "./context/ProposalContext";
 import ProposalBadgeLabel from "../Space/sub/card/ProposalBadgeLabel";
+import { format, toDate } from "date-fns";
 
 export default function ProposalContent({ body }: { body: string }) {
   const { commonProps } = useContext(ProposalContext);
@@ -39,22 +40,26 @@ export default function ProposalContent({ body }: { body: string }) {
           </span>
         </p>
         {commonProps.coauthors.length > 0 && (
-          <p className="text-left text-sm text-gray-500">
-            co-authored by&nbsp;
+          <p className="text-sm text-gray-500">
+            co-authored with&nbsp;
             {commonProps.coauthors.map((coauthor, i) => (
-              <Fragment key={i}>
+              <span key={coauthor} className="inline-flex">
                 <FormattedAddress
                   address={coauthor}
                   style="text-gray-500"
-                  overrideURLPrefix="/u/"
                   openInNewWindow={false}
                   minified
                 />
-                {i < commonProps!.coauthors.length - 1 && ", "}
-              </Fragment>
+                <span>{i < commonProps!.coauthors.length - 1 && ", "}</span>
+              </span>
             ))}
           </p>
         )}
+
+        <p className="text-sm text-gray-500">
+          on&nbsp;
+          {format(toDate(commonProps.created * 1000), "LLL dd, u KK:mm a")}
+        </p>
 
         <ProposalMetadata />
       </div>

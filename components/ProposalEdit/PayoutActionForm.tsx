@@ -3,13 +3,16 @@ import AddressForm from "../form/AddressForm";
 import UIntForm from "../form/UIntForm";
 import ProjectForm from "../form/ProjectForm";
 import SelectForm from "../form/SelectForm";
+import { dateRangesOfCycles } from "@/utils/functions/GovernanceCycle";
 
 export default function PayoutActionForm({
   genFieldName,
   projectOwner,
+  currentCycle,
 }: {
   genFieldName: (field: string) => any;
   projectOwner: string;
+  currentCycle: number;
 }) {
   const { watch, getValues } = useFormContext();
   return (
@@ -33,6 +36,12 @@ export default function PayoutActionForm({
           fieldName={genFieldName("count")}
           decimal={1}
         />
+        <span className="text-xs text-gray-900">
+          {dateRangesOfCycles(
+            currentCycle + 2,
+            getValues(genFieldName("count")),
+          )}
+        </span>
       </div>
       <div className="col-span-4 sm:col-span-2">
         <UIntForm

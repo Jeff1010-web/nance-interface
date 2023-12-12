@@ -12,15 +12,7 @@ export default function ProposalMetadata() {
 
   return (
     <div className="my-4 rounded-md border bg-gray-100 px-4 py-5 sm:px-6">
-      <h2 className="mb-3 text-gray-500">
-        Metadata
-        <a
-          href={`${NANCE_API_URL}/${commonProps.space}/proposal/${commonProps.uuid}`}
-          className="ml-2"
-        >
-          <ArrowTopRightOnSquareIcon className="inline h-4 w-4" />
-        </a>
-      </h2>
+      <h2 className="mb-3 text-gray-500">Metadata</h2>
 
       <div className="gaps-4">
         {commonProps.actions.length > 0 && (
@@ -53,21 +45,6 @@ export default function ProposalMetadata() {
                   {commonProps!.governanceCycle}
                   <ArrowTopRightOnSquareIcon className="inline h-3 w-3 text-xs" />
                 </Link>
-                &nbsp;(
-                {format(
-                  toDate(commonProps!.created * 1000),
-                  "LLL dd, u KK:mm a",
-                )}
-                {commonProps!.end > 0 && (
-                  <span>
-                    -{" "}
-                    {format(
-                      toDate(commonProps!.end * 1000),
-                      "LLL dd, u KK:mm a",
-                    )}
-                  </span>
-                )}
-                )
               </span>
             </>
           )}
