@@ -36,7 +36,7 @@ export default function PayoutActionForm({
           fieldName={genFieldName("count")}
           decimal={1}
         />
-        <span className="text-xs text-gray-900">
+        <span className="text-xs text-gray-400">
           {dateRangesOfCycles(
             currentCycle + 2,
             getValues(genFieldName("count")),
