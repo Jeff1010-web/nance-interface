@@ -14,15 +14,13 @@ export default function ProposalContent({ body }: { body: string }) {
   return (
     <div className="">
       <div className="flex flex-col px-4 py-5 sm:px-6">
-        <Link
-          href={`/s/${commonProps.space}`}
-          className="border-1 mb-4 flex w-fit rounded-md p-2 shadow-sm"
-        >
-          <ArrowUturnLeftIcon className="mr-1 h-5 w-5" />
-          Back
-        </Link>
-        <div className="mb-2 inline-block">
-          <ProposalBadgeLabel status={commonProps.status} />
+        <div className="flex items-center justify-between">
+          <div className="inline-block">
+            <ProposalBadgeLabel status={commonProps.status} />
+          </div>
+          <Link href={`/s/${commonProps.space}`} className="w-fit">
+            <ArrowUturnLeftIcon className="h-5 w-5" />
+          </Link>
         </div>
         <h1 id="applicant-information-title" className="text-3xl font-medium">
           {commonProps.title}
