@@ -304,6 +304,8 @@ export default function ProposalCards({
               </tr>
             </thead>
             <tbody>
+              <PrivateProposalRows />
+
               {isLoading && (
                 <>
                   <ProposalRowSkeleton isFirst />
@@ -311,9 +313,6 @@ export default function ProposalCards({
                   <ProposalRowSkeleton />
                 </>
               )}
-
-              <PrivateProposalRows />
-
               {!isLoading &&
                 sortedProposals.map((proposal, proposalIdx) => (
                   <ProposalRow
