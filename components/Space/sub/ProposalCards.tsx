@@ -168,9 +168,11 @@ function VoteActionOrLabel({
 export default function ProposalCards({
   space,
   maxCycle,
+  clearKeywordInput,
 }: {
   space: string;
   maxCycle: number;
+  clearKeywordInput: () => void;
 }) {
   const { address } = useAccount();
   const router = useRouter();
@@ -243,7 +245,7 @@ export default function ProposalCards({
   const isLoading = snapshotLoading || proposalsLoading;
 
   if (!isLoading && sortedProposals.length === 0) {
-    return <RecommendAction maxCycle={maxCycle} />;
+    return <RecommendAction maxCycle={maxCycle} clearKeywordInput={clearKeywordInput} />;
   }
 
   return (

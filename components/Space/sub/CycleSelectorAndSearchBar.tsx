@@ -1,7 +1,3 @@
-import SearchableComboBoxMultiple from "@/components/common/SearchableComboBoxMultiple";
-import { useState } from "react";
-import { Option } from "@/components/common/SearchableComboBox";
-
 import { StringParam, useQueryParams, withDefault } from "next-query-params";
 import SpaceAction from "./SpaceAction";
 import {
@@ -9,7 +5,6 @@ import {
   CalendarDaysIcon,
 } from "@heroicons/react/24/solid";
 import FlyoutMenu, { MenuEntry } from "@/components/FlyoutMenu/FlyoutMenu";
-import { useDebounce } from "@/utils/hooks/UseDebounce";
 
 function genOptions(
   setCycle: (c: string) => void,
@@ -52,28 +47,19 @@ function genOptions(
 }
 
 export default function CycleSelectorAndSearchBar({
-  currentCycle,
+  currentCycle, keywordInput, setKeywordInput
 }: {
   currentCycle: number | undefined;
+  keywordInput: string | undefined;
+  setKeywordInput: (s: string) => void;
 }) {
   const [query, setQuery] = useQueryParams({
-    keyword: withDefault(StringParam, undefined),
     cycle: withDefault(StringParam, "All"),
   });
-  const { keyword, cycle } = query;
+  const { cycle } = query;
   const options = genOptions(
     (c: string) => setQuery({ cycle: c }),
     currentCycle,
-  );
-
-  console.debug("query", query);
-  const [keywordInput, setKeywordInput] = useState<string | undefined>(keyword);
-  useDebounce<string | undefined>(
-    keywordInput,
-    300,
-    (k: string | undefined) => {
-      setQuery({ keyword: k || undefined });
-    },
   );
 
   return (

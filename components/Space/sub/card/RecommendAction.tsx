@@ -11,14 +11,17 @@ function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
 }
 
-export default function RecommendAction({ maxCycle }: { maxCycle: number }) {
+export default function RecommendAction({
+  maxCycle,
+  clearKeywordInput,
+}: {
+  maxCycle: number;
+  clearKeywordInput: () => void;
+}) {
   const [query, setQuery] = useQueryParams({
     keyword: StringParam,
-    limit: withDefault(NumberParam, 15),
     page: withDefault(NumberParam, 1),
-    sortBy: withDefault(StringParam, ""),
-    sortDesc: withDefault(BooleanParam, true),
-    cycle: StringParam,
+    cycle: withDefault(StringParam, "All"),
   });
 
   return (
@@ -31,7 +34,7 @@ export default function RecommendAction({ maxCycle }: { maxCycle: number }) {
           className="w-1/2 items-center rounded border border-transparent bg-[#0E76FD] px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
           onClick={router.back}
         >
-          Back
+          Back to previous page
         </button>
 
         {query.page && query.page > 1 && (
@@ -48,13 +51,15 @@ export default function RecommendAction({ maxCycle }: { maxCycle: number }) {
           <button
             type="button"
             className="w-1/2 items-center rounded border border-transparent bg-[#0E76FD] px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
-            onClick={() => setQuery({ keyword: "" })}
+            onClick={() => {
+              clearKeywordInput();
+            }}
           >
             Clear the keyword
           </button>
         )}
 
-        {query.keyword && query.cycle && (
+        {query.keyword && query.cycle && query.cycle !== "All" && (
           <button
             type="button"
             className="w-1/2 items-center rounded border border-transparent bg-[#0E76FD] px-2.5 py-1.5 text-sm font-medium text-white shadow-sm"
