@@ -24,18 +24,6 @@ export function useProposalsByID(
     skip,
   );
 
-  if (address?.length !== 42) {
-    console.debug("skip");
-  } else {
-    console.debug("useProposalsByID", {
-      proposalIds,
-      address,
-      skip,
-      loading: ret.loading,
-      data: ret.data,
-    });
-  }
-
   return ret;
 }
 
