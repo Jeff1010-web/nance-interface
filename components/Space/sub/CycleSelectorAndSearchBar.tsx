@@ -57,8 +57,8 @@ export default function CycleSelectorAndSearchBar({
   currentCycle: number | undefined;
 }) {
   const [query, setQuery] = useQueryParams({
-    keyword: StringParam,
-    cycle: withDefault(StringParam, currentCycle?.toString()),
+    keyword: withDefault(StringParam, undefined),
+    cycle: withDefault(StringParam, "All"),
   });
   const { keyword, cycle } = query;
   const options = genOptions(
@@ -66,8 +66,15 @@ export default function CycleSelectorAndSearchBar({
     currentCycle,
   );
 
-  const [keywordInput, setKeywordInput] = useState<string>(keyword || "");
-  useDebounce(keywordInput, 300, (k: string) => setQuery({ keyword: k }));
+  console.debug("query", query);
+  const [keywordInput, setKeywordInput] = useState<string | undefined>(keyword);
+  useDebounce<string | undefined>(
+    keywordInput,
+    300,
+    (k: string | undefined) => {
+      setQuery({ keyword: k || undefined });
+    },
+  );
 
   return (
     <div className="flex flex-col space-x-0 space-y-2 md:flex-row md:justify-between md:space-x-8 md:space-y-0">

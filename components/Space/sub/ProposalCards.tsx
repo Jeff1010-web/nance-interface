@@ -176,8 +176,8 @@ export default function ProposalCards({
   const router = useRouter();
   const [query] = useQueryParams({
     keyword: StringParam,
-    limit: withDefault(NumberParam, 15),
-    cycle: StringParam,
+    limit: withDefault(NumberParam, 10),
+    cycle: withDefault(StringParam, "All"),
     sortBy: withDefault(StringParam, ""),
     sortDesc: withDefault(BooleanParam, true),
   });
