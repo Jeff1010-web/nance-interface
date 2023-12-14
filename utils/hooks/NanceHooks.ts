@@ -307,6 +307,7 @@ export async function fetchCreatedProposals(
           snapshotSpace: "",
           proposalIdPrefix: "",
           minTokenPassingAmount: 0,
+          nextProposalId: 0,
         },
         proposals: [],
         privateProposals: [],

@@ -24,6 +24,7 @@ const data: SpaceInfo[] = [
     juiceboxProjectId: "0",
     dolthubLink:
       "https://www.dolthub.com/repositories/jigglyjams/AfricaDeFiAllianceDAO/compare/main/https://www.dolthub.com/repositories/jigglyjams/AfricaDeFiAllianceDAO/compare/main/m71kfapllag73p3dugpo0bf6ujkmuvhq",
+    nextProposalId: 2,
   },
   {
     name: "Slice",
@@ -41,6 +42,7 @@ const data: SpaceInfo[] = [
     juiceboxProjectId: "0",
     dolthubLink:
       "https://www.dolthub.com/repositories/jigglyjams/Slice/compare/main/https://www.dolthub.com/repositories/jigglyjams/Slice/compare/main/9t2fedptl4m45ckvu52602qdlf870ld6",
+    nextProposalId: 2,
     transactorAddress: {
       type: "safe",
       network: "mainnet",
@@ -60,6 +62,7 @@ const data: SpaceInfo[] = [
     juiceboxProjectId: "488",
     dolthubLink:
       "https://www.dolthub.com/repositories/nance/bananapus/compare/main/https://www.dolthub.com/repositories/nance/bananapus/compare/main/nqo759gf9brk383bnj2a0sfmjmr6ahrv",
+    nextProposalId: 2,
     transactorAddress: {
       type: "governor",
       network: "mainnet",
@@ -84,6 +87,7 @@ const data: SpaceInfo[] = [
     juiceboxProjectId: "1098",
     dolthubLink:
       "https://www.dolthub.com/repositories/jigglyjams/gnance/compare/main/https://www.dolthub.com/repositories/jigglyjams/gnance/compare/main/2rsiopi6rfgfl39t8h74fqnnp773nobm",
+    nextProposalId: 2,
     transactorAddress: {
       type: "governor",
       network: "goerli",
@@ -107,6 +111,7 @@ const data: SpaceInfo[] = [
     juiceboxProjectId: "1",
     dolthubLink:
       "https://www.dolthub.com/repositories/jigglyjams/juicebox/compare/main/https://www.dolthub.com/repositories/jigglyjams/juicebox/compare/main/dh1puvb7gc1rr4i69u6q16tnv8l7sa0m",
+    nextProposalId: 2,
     transactorAddress: {
       type: "safe",
       network: "mainnet",
@@ -124,6 +129,7 @@ const data: SpaceInfo[] = [
     spaceOwners: ["0x974957529c376F75647615407f3AeFDA12576D0E"],
     snapshotSpace: "tomoondao.eth",
     juiceboxProjectId: "0",
+    nextProposalId: 2,
     dolthubLink:
       "https://www.dolthub.com/repositories/jigglyjams/moondao/compare/main/https://www.dolthub.com/repositories/jigglyjams/moondao/compare/main/m34cg4e01ntuqilcd9j5upg51pd8cj42",
   },
@@ -144,6 +150,7 @@ const data: SpaceInfo[] = [
     juiceboxProjectId: "477",
     dolthubLink:
       "https://www.dolthub.com/repositories/jigglyjams/nance/compare/main/https://www.dolthub.com/repositories/jigglyjams/nance/compare/main/82povgp0t1sf00udh0n6p9i29adr7olq",
+    nextProposalId: 2,
     transactorAddress: {
       type: "safe",
       network: "mainnet",
@@ -163,6 +170,7 @@ const data: SpaceInfo[] = [
     juiceboxProjectId: "507",
     dolthubLink:
       "https://www.dolthub.com/repositories/nance/thirstythirsty/compare/main/https://www.dolthub.com/repositories/nance/thirstythirsty/compare/main/83oub7t56eiguhqgi2llcvhjc4i7kmoq",
+    nextProposalId: 2,
     transactorAddress: {
       type: "safe",
       network: "mainnet",
@@ -186,6 +194,7 @@ const data: SpaceInfo[] = [
     juiceboxProjectId: "1",
     dolthubLink:
       "https://www.dolthub.com/repositories/jigglyjams/waterbox/compare/main/https://www.dolthub.com/repositories/jigglyjams/waterbox/compare/main/gb118foner9g4s0g7t67g2tgp6nhahh9",
+    nextProposalId: 2,
     transactorAddress: {
       type: "safe",
       network: "mainnet",

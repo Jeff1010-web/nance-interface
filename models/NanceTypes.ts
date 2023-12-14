@@ -23,6 +23,7 @@ export type SpaceInfo = {
     network: string;
     address: string;
   }
+  nextProposalId: number;
 };
 
 export type ProposalInfo = {

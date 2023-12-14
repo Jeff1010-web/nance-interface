@@ -25,6 +25,7 @@ export interface ProposalCommonProps {
 export const ProposalContext = createContext<{
   commonProps: ProposalCommonProps;
   proposalInfo: SnapshotProposal | undefined;
+  nextProposalId: number;
 }>({
   commonProps: {
     space: "",
@@ -46,4 +47,5 @@ export const ProposalContext = createContext<{
     proposalId: 0,
   },
   proposalInfo: undefined,
+  nextProposalId: 0,
 });

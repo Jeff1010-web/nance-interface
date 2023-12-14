@@ -135,6 +135,7 @@ export default function NanceProposalPage({
               value={{
                 commonProps,
                 proposalInfo: snapshotProposal || undefined,
+                nextProposalId: spaceInfo?.data?.nextProposalId || 0,
               }}
             >
               <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
@@ -153,10 +154,10 @@ export default function NanceProposalPage({
                         "quadratic",
                         "weighted",
                       ].includes(snapshotProposal.type) && (
-                        <div className="mt-6 flow-root">
-                          <ProposalOptions proposal={snapshotProposal} />
-                        </div>
-                      )}
+                      <div className="mt-6 flow-root">
+                        <ProposalOptions proposal={snapshotProposal} />
+                      </div>
+                    )}
                   </section>
                 </div>
 
