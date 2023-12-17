@@ -14,7 +14,7 @@ import {
   startOfToday,
   endOfWeek,
 } from "date-fns";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
@@ -167,7 +167,7 @@ export default function GovernanceCalendarMini({
                   dateInRange(day, executionDates) &&
                     VOTE_PERIOD_COLOR["execution"],
                   dateInRange(day, delayDates) && VOTE_PERIOD_COLOR["delay"],
-                  "mx-auto flex h-9 w-9 items-center justify-center rounded-full",
+                  "mx-auto flex h-9 w-9 items-center justify-center",
                 )}
               >
                 <time dateTime={format(day, "yyyy-MM-dd")}>
@@ -183,10 +183,10 @@ export default function GovernanceCalendarMini({
 }
 
 export const VOTE_PERIOD_COLOR = {
-  tempCheck: "bg-gray-200",
-  voting: "bg-green-200",
-  execution: "bg-red-200",
-  delay: "bg-orange-200",
+  tempCheck: "bg-red-200",
+  voting: "bg-orange-200",
+  execution: "bg-green-200",
+  delay: "bg-blue-200",
 };
 
 const colStartClasses = [

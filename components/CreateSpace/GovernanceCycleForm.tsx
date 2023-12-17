@@ -151,7 +151,7 @@ const SmallNumberInput = ({
             min={0}
             defaultValue={defaultValue}
             onChange={(e) => {
-              onChange(e.target.value);
+              onChange(Number(e.target.value));
             }}
           ></input>
           <span

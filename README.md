@@ -39,13 +39,6 @@ To find delegations, we need to specify the subgraph url of [Snapshot](https://t
 
 To support session, you need to implement backend for NextAuth and set two env variables: [`NEXTAUTH_DOMAINS`](https://next-auth.js.org/configuration/options#nextauth_url) (a comma separated list of approved domains, no https://) and [`NEXTAUTH_SECRET`](https://next-auth.js.org/configuration/options#nextauth_secret)
 
-#### RichText Editor
-
-We use [TinyMCE](https://www.tiny.cloud/) editor for editing RichText and Infura IPFS Gateway for uploading images.
-Env: 
-* `NEXT_PUBLIC_TINY_KEY`
-* `NEXT_PUBLIC_INFURA_IPFS_ID` & `NEXT_PUBLIC_INFURA_IPFS_SECRET`
-
 #### Etherscan API
 
 `NEXT_PUBLIC_ETHERSCAN_KEY` Etherscan API Key, used to retrieve contract ABI when adding custom transaction action to proposal.
