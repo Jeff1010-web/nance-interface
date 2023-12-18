@@ -1,4 +1,5 @@
 // https://github.com/samselikoff/2022-05-11-tailwind-ui-interactive-calendar
+import { classNames } from "@/utils/functions/tailwind";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import {
   add,
@@ -6,23 +7,21 @@ import {
   endOfMonth,
   format,
   getDay,
-  isEqual,
   isSameDay,
   isSameMonth,
   isToday,
   parse,
   startOfToday,
   endOfWeek,
+  getHours,
+  differenceInDays
 } from "date-fns";
 import { useState } from "react";
-
-function classNames(...classes: any) {
-  return classes.filter(Boolean).join(" ");
-}
 
 export default function GovernanceCalendarMini({
   selectedDate,
   setSelectedDate,
+  mergeDayWithTime,
   temperatureCheckLength,
   votingLength,
   executionLength,
@@ -31,6 +30,7 @@ export default function GovernanceCalendarMini({
 }: {
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;
+  mergeDayWithTime: (day: Date) => Date;
   temperatureCheckLength: number;
   votingLength: number;
   executionLength: number;
@@ -44,7 +44,7 @@ export default function GovernanceCalendarMini({
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
     end: endOfWeek(endOfMonth(firstDayCurrentMonth)),
-  });
+  }).map(day => mergeDayWithTime(day));
 
   function previousMonth() {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
@@ -56,49 +56,48 @@ export default function GovernanceCalendarMini({
     setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
   }
 
-  const FORWARD_INTERVALS = Math.ceil(31 / totalCycleLength);
+  const votingIdx = temperatureCheckLength + 1;
+  const executionIdx = temperatureCheckLength + votingLength + 1;
+  const delayIdx = temperatureCheckLength + votingLength + executionLength + 1;
+  const fullDayInStage = getHours(selectedDate) === 0;
 
-  const repeatDatesArray = (
-    startDate: Date,
-    lengthOfDates: number,
-    repeatAfterNumberOfDays: number,
-  ) => {
-    let dates = [];
-    for (let i = 0; i < FORWARD_INTERVALS; i++) {
-      const start = add(startDate, { days: repeatAfterNumberOfDays * i });
-      const end = add(start, { days: lengthOfDates });
-      dates.push(...eachDayOfInterval({ start, end }));
+  const daysWithStageColor = days?.map((day, index) => {
+    let bgColor = "";
+    let dayIdxInCycle = differenceInDays(day, selectedDate) % totalCycleLength + 1;
+    if (dayIdxInCycle <= 0) {
+      dayIdxInCycle += totalCycleLength;
+    } else {
+      // add background color to indicate stage
+      if (dayIdxInCycle < votingIdx && dayIdxInCycle >= 1) {
+        bgColor = VOTE_PERIOD_COLOR["tempCheck"];
+      } else if (dayIdxInCycle < executionIdx && dayIdxInCycle >= votingIdx) {
+        bgColor = VOTE_PERIOD_COLOR["voting"];
+      } else if (dayIdxInCycle < delayIdx && dayIdxInCycle >= executionIdx) {
+        bgColor = VOTE_PERIOD_COLOR["execution"];
+      } else if (dayIdxInCycle <= totalCycleLength && dayIdxInCycle >= delayIdx) {
+        bgColor = VOTE_PERIOD_COLOR["delay"];
+      }
+
+      // add gradient color if not fullDayInStage
+      if (!fullDayInStage) {
+        if (isSameDay(day, selectedDate)) {
+          bgColor = VOTE_PERIOD_COLOR["emptyToTempCheck"];
+        } else if (dayIdxInCycle === 1) {
+          bgColor = VOTE_PERIOD_COLOR["delayToTempCheck"];
+        } else if (dayIdxInCycle === votingIdx) {
+          bgColor = VOTE_PERIOD_COLOR["tempCheckToVoting"];
+        } else if (dayIdxInCycle === executionIdx) {
+          bgColor = VOTE_PERIOD_COLOR["votingToExecution"];
+        } else if (dayIdxInCycle === delayIdx) {
+          bgColor = VOTE_PERIOD_COLOR["executionToDelay"];
+        }
+      }
     }
-    return dates;
-  };
 
-  const temperatureCheckDates = repeatDatesArray(
-    selectedDate,
-    temperatureCheckLength,
-    totalCycleLength,
-  );
-  const votingStartDate = add(selectedDate, { days: temperatureCheckLength });
-  const votingDates = repeatDatesArray(
-    votingStartDate,
-    votingLength,
-    totalCycleLength,
-  );
-  const executionStartDate = add(votingStartDate, { days: votingLength });
-  const executionDates = repeatDatesArray(
-    executionStartDate,
-    executionLength,
-    totalCycleLength,
-  );
-  const delayStartDate = add(executionStartDate, { days: executionLength });
-  const delayDates = repeatDatesArray(
-    delayStartDate,
-    delayLength,
-    totalCycleLength,
-  );
-
-  const dateInRange = (date: Date, range: Date[]) => {
-    return range.some((rangeDate) => isSameDay(date, rangeDate));
-  };
+    return {
+      day, dayIdxInCycle, bgColor
+    }
+  });
 
   return (
     <div className="pt-4">
@@ -134,44 +133,41 @@ export default function GovernanceCalendarMini({
           <div>S</div>
         </div>
         <div className="mt-2 grid grid-cols-7 text-sm">
-          {days.map((day, dayIdx) => (
+          {daysWithStageColor.map((dayWSC, dayIdx) => (
             <div
-              key={day.toString()}
+              key={dayWSC.day.toString()}
               className={classNames(
-                dayIdx === 0 && colStartClasses[getDay(day)],
+                dayIdx === 0 && colStartClasses[getDay(dayWSC.day)],
                 "py-1",
               )}
             >
               <button
                 type="button"
-                onClick={() => setSelectedDate(day)}
+                onClick={() => setSelectedDate(dayWSC.day)}
                 className={classNames(
-                  isEqual(day, selectedDate) &&
+                  // highlight selected status
+                  isSameDay(dayWSC.day, selectedDate) &&
                     "font-semibold text-gray-900 ring-2 ring-indigo-500",
-                  !isEqual(day, selectedDate) &&
-                    isToday(day) &&
+                  !isSameDay(dayWSC.day, selectedDate) &&
+                    isToday(dayWSC.day) &&
                     "text-blue-600",
-                  !isEqual(day, selectedDate) &&
-                    !isToday(day) &&
-                    isSameMonth(day, firstDayCurrentMonth) &&
+                  !isSameDay(dayWSC.day, selectedDate) &&
+                    !isToday(dayWSC.day) &&
+                    isSameMonth(dayWSC.day, firstDayCurrentMonth) &&
                     "text-gray-900",
-                  !isEqual(day, selectedDate) &&
-                    !isToday(day) &&
-                    !isSameMonth(day, firstDayCurrentMonth) &&
+                  !isSameDay(dayWSC.day, selectedDate) &&
+                    !isToday(dayWSC.day) &&
+                    !isSameMonth(dayWSC.day, firstDayCurrentMonth) &&
                     "text-gray-400",
-                  !isEqual(day, selectedDate) && "hover:bg-gray-200",
-                  isToday(day) && "font-semibold",
-                  dateInRange(day, temperatureCheckDates) &&
-                    VOTE_PERIOD_COLOR["tempCheck"],
-                  dateInRange(day, votingDates) && VOTE_PERIOD_COLOR["voting"],
-                  dateInRange(day, executionDates) &&
-                    VOTE_PERIOD_COLOR["execution"],
-                  dateInRange(day, delayDates) && VOTE_PERIOD_COLOR["delay"],
+                  !isSameDay(dayWSC.day, selectedDate) && "hover:bg-gray-200",
+                  isToday(dayWSC.day) && "font-semibold",
+                  // colored background for stages
+                  dayWSC.bgColor,
                   "mx-auto flex h-9 w-9 items-center justify-center",
                 )}
               >
-                <time dateTime={format(day, "yyyy-MM-dd")}>
-                  {format(day, "d")}
+                <time dateTime={format(dayWSC.day, "yyyy-MM-dd")}>
+                  {format(dayWSC.day, "d")}
                 </time>
               </button>
             </div>
@@ -183,10 +179,16 @@ export default function GovernanceCalendarMini({
 }
 
 export const VOTE_PERIOD_COLOR = {
+  emptyToTempCheck: "bg-gradient-to-r from-gray-100 to-red-200",
   tempCheck: "bg-red-200",
+  tempCheckToVoting: "bg-gradient-to-r from-red-200 to-orange-200",
   voting: "bg-orange-200",
+  votingToExecution: "bg-gradient-to-r from-orange-200 to-green-200",
   execution: "bg-green-200",
+  executionToDelay: "bg-gradient-to-r from-green-200 to-blue-200",
   delay: "bg-blue-200",
+  delayToTempCheck: "bg-gradient-to-r from-blue-200 to-red-200",
+  delayToEmpty: "bg-gradient-to-r from-blue-200 to-gray-100",
 };
 
 const colStartClasses = [

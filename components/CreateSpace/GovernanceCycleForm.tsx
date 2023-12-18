@@ -24,7 +24,9 @@ export default function GovernanceCycleForm() {
     const ampm = getValues("governanceCycleForm.time.ampm");
     const hours = ampm === "AM" ? _hours : _hours + 12;
     const minutes = getValues("governanceCycleForm.time.minute");
-    day.setHours(hours, minutes);
+    if (_hours && minutes) {
+      day.setHours(hours, minutes);
+    }
     return day;
   }
 
@@ -44,12 +46,12 @@ export default function GovernanceCycleForm() {
           rules={{
             required: "Can't be empty",
           }}
-          // TODO: match with governanceCycleForm.time.hour minute and AM/PM
-          defaultValue={new Date()}
+          defaultValue={mergeDayWithTime(new Date())}
           render={({ field: { onChange, value } }) => (
             <GovernanceCalendarMini
               selectedDate={value}
-              setSelectedDate={(day: Date) => onChange(mergeDayWithTime(day))}
+              setSelectedDate={onChange}
+              mergeDayWithTime={mergeDayWithTime}
               temperatureCheckLength={temperatureCheckLength}
               votingLength={voteLength}
               executionLength={executionLength}

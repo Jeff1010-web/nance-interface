@@ -2,7 +2,7 @@ import { Tooltip } from "flowbite-react";
 import { Controller, useFormContext } from "react-hook-form";
 import SmallListbox from "@/components/common/SmallListBox";
 
-const hours = Array.from(Array(12).keys()).map((i) => i + 1);
+const hours = Array.from(Array(12).keys()).map((i) => i);
 const minutes = ["00", "30"];
 const ampm = ["AM", "PM"];
 
