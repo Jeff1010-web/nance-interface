@@ -2,12 +2,16 @@ import { Tooltip } from "flowbite-react";
 import { Controller, useFormContext } from "react-hook-form";
 import SmallListbox from "@/components/common/SmallListBox";
 
-const hours = Array.from(Array(12).keys()).map((i) => i);
+const hours = Array.from(Array(12).keys()).map((i) => i + 1);
 const minutes = ["00", "30"];
 const ampm = ["AM", "PM"];
 
-export default function TimePicker() {
-  const { control } = useFormContext();
+export default function TimePicker({mergeDayWithTime}:{mergeDayWithTime: (day: Date) => Date}) {
+  const { control, setValue, getValues } = useFormContext();
+
+  function updateSelectedDate() {
+    setValue("governanceCycleForm.startDate", mergeDayWithTime(getValues("governanceCycleForm.startDate")));
+  }
 
   return (
     <>
@@ -35,7 +39,10 @@ export default function TimePicker() {
             <SmallListbox
               options={hours}
               selected={field.value}
-              setSelected={field.onChange}
+              setSelected={(v) => {
+                field.onChange(v);
+                updateSelectedDate();
+              }}
             />
           )}
         />
@@ -50,7 +57,10 @@ export default function TimePicker() {
             <SmallListbox
               options={minutes}
               selected={field.value}
-              setSelected={field.onChange}
+              setSelected={(v) => {
+                field.onChange(v);
+                updateSelectedDate();
+              }}
               addClass="ml-2"
             />
           )}
@@ -63,7 +73,10 @@ export default function TimePicker() {
             <SmallListbox
               options={ampm}
               selected={field.value}
-              setSelected={field.onChange}
+              setSelected={(v) => {
+                field.onChange(v);
+                updateSelectedDate();
+              }}
               addClass="ml-2"
             />
           )}

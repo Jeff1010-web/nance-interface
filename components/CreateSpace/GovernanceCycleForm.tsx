@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { Tooltip } from "flowbite-react";
 import TimePicker from "./sub/TimePicker";
@@ -9,7 +9,7 @@ import GovernanceCalendarMini, {
 import { classNames } from "@/utils/functions/tailwind";
 
 export default function GovernanceCycleForm() {
-  const { register, control, getValues } = useFormContext();
+  const { register, control, getValues, setValue } = useFormContext();
 
   const [temperatureCheckLength, setTemperatureCheckLength] = useState(3);
   const [voteLength, setVoteLength] = useState(4);
@@ -22,13 +22,19 @@ export default function GovernanceCycleForm() {
   function mergeDayWithTime(day: Date) {
     const _hours = getValues("governanceCycleForm.time.hour");
     const ampm = getValues("governanceCycleForm.time.ampm");
-    const hours = ampm === "AM" ? _hours : _hours + 12;
+    const hours = (ampm === "AM" ? _hours : _hours + 12) % 24;
     const minutes = getValues("governanceCycleForm.time.minute");
     if (_hours && minutes) {
-      day.setHours(hours, minutes);
+      day.setHours(hours, minutes, 0, 0);
     }
     return day;
   }
+
+  // update default startDate with current timePicker values
+  //   after initial render while getValues will be available
+  useEffect(() => {
+    setValue("governanceCycleForm.startDate", mergeDayWithTime(new Date()));
+  }, [getValues])
 
   return (
     <div className="flex flex-col space-x-8 md:flex-row">
@@ -46,7 +52,7 @@ export default function GovernanceCycleForm() {
           rules={{
             required: "Can't be empty",
           }}
-          defaultValue={mergeDayWithTime(new Date())}
+          defaultValue={new Date()}
           render={({ field: { onChange, value } }) => (
             <GovernanceCalendarMini
               selectedDate={value}
@@ -64,7 +70,7 @@ export default function GovernanceCycleForm() {
       </div>
 
       <div>
-        <TimePicker />
+        <TimePicker mergeDayWithTime={mergeDayWithTime} />
         <SmallNumberInput
           label="Temperature Check Length"
           name="governanceCycleForm.temperatureCheckLength"
