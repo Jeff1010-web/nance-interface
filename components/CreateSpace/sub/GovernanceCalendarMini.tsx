@@ -148,7 +148,7 @@ export default function GovernanceCalendarMini({
                 className={classNames(
                   // highlight selected status
                   isSameDay(dayWSC.day, selectedDate) &&
-                    "font-semibold text-gray-900 ring-2 ring-indigo-500",
+                    "italic font-semibold text-gray-900",
                   !isSameDay(dayWSC.day, selectedDate) &&
                     isToday(dayWSC.day) &&
                     "text-blue-600",
