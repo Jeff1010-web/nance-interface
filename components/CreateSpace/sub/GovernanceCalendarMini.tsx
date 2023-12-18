@@ -63,8 +63,9 @@ export default function GovernanceCalendarMini({
 
   const daysWithStageColor = days?.map((day, index) => {
     let bgColor = "";
-    let dayIdxInCycle = differenceInDays(day, selectedDate) % totalCycleLength + 1;
-    if (dayIdxInCycle <= 0) {
+    const diff = differenceInDays(day, selectedDate);
+    let dayIdxInCycle = diff % totalCycleLength + 1;
+    if (diff < 0) {
       dayIdxInCycle += totalCycleLength;
     } else {
       // add background color to indicate stage
