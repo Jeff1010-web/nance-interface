@@ -6,7 +6,7 @@ import {
   useQueueTransaction,
 } from "@/utils/hooks/SafeHooks";
 import ResultModal from "../modal/ResultModal";
-import { getSafeTxUrl } from "@/utils/functions/gnosis";
+import { getSafeTxUrl } from "@/utils/functions/safe";
 import {
   MetaTransactionData,
   SafeTransactionDataPartial,

@@ -1,4 +1,5 @@
 /* eslint-disable react/jsx-no-undef */
+import { useContext } from "react";
 import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -20,6 +21,8 @@ import WalletConnectWrapper from "@/components/WalletConnectWrapper/WalletConnec
 import MultipleStep from "@/components/MultipleStep/MultipleStep";
 import { isValidSafe } from "@/utils/hooks/SafeHooks";
 import DescriptionCardWrapper from "@/components/DescriptionCardWrapper/DescriptionCardWrapper";
+import { NetworkContext } from "@/context/NetworkContext";
+import { safeServiceURL, SupportedSafeNetwork } from "@/constants/SafeGlobal";
 
 export default function CreateSpacePage() {
   return (
@@ -79,7 +82,10 @@ function Form() {
     });
   };
 
+  const network = useContext(NetworkContext);
+
   return (
+
     <FormProvider {...methods}>
       <Notification
         title="Success"
@@ -189,7 +195,8 @@ function Form() {
                     fieldName="config.juicebox.gnosisSafeAddress"
                     showType={false}
                     validate={async (e) => {
-                      const isSafe = await isValidSafe(e);
+                      if (!Object.keys(safeServiceURL).includes(network as SupportedSafeNetwork)) return "Invalid network";
+                      const isSafe = await isValidSafe(e, network as SupportedSafeNetwork);
                       if (!isSafe) {
                         return "Invalid Safe address";
                       }

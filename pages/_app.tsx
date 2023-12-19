@@ -3,10 +3,10 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { GraphQLClient, ClientContext } from "graphql-hooks";
 import memCache from "graphql-hooks-memcache";
 
-import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import { WagmiConfig, createConfig, configureChains, useNetwork } from "wagmi";
-import { mainnet, goerli } from "wagmi/chains";
-import { infuraProvider } from "wagmi/providers/infura";
+import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { WagmiConfig, useNetwork } from "wagmi";
+import { mainnet } from "wagmi/chains";
+import { wagmiConfig, chains } from "../config/wagmi";
 
 import { NextQueryParamProvider } from "next-query-params";
 
@@ -24,24 +24,6 @@ const graphqlClient = new GraphQLClient({
   url: `${SNAPSHOT_HUB}/graphql`,
   headers: SNAPSHOT_HEADERS,
   cache: memCache({ size: 200 }),
-});
-
-// WAGMI and RainbowKit configuration
-const { chains, publicClient } = configureChains(
-  [mainnet, goerli],
-  [infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY || "" })],
-);
-
-const { connectors } = getDefaultWallets({
-  appName: "Nance Interface",
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
-  chains,
-});
-
-const wagmiConfig = createConfig({
-  autoConnect: true,
-  connectors,
-  publicClient,
 });
 
 const theme = {
@@ -69,8 +51,8 @@ function MyApp({ Component, pageProps }: any) {
         <RainbowKitProvider
           chains={chains}
           appInfo={{
-            appName: "JBDAO",
-            learnMoreUrl: "https://jbdao.org",
+            appName: "Nance",
+            learnMoreUrl: "https://docs.nance.app",
           }}
         >
           <ClientContext.Provider value={graphqlClient}>
