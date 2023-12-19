@@ -97,7 +97,7 @@ export default function GovernanceCalendarMini({
 
     return {
       day, dayIdxInCycle, bgColor
-    }
+    };
   });
 
   return (

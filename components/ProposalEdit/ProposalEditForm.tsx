@@ -297,8 +297,8 @@ export default function ProposalEditForm({ space }: { space: string }) {
           loadedActions={
             (metadata.fork
               ? metadata.loadedProposal?.actions?.map(
-                  ({ uuid, ...rest }) => rest,
-                )
+                ({ uuid, ...rest }) => rest,
+              )
               : metadata.loadedProposal?.actions) || []
           }
         />

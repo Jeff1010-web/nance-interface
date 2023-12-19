@@ -154,13 +154,13 @@ export default function MultipleStep({
           >
             {step.contentRender
               ? step.contentRender(
-                  currentStepIdx - 1 >= 0
-                    ? () => setCurrentStepIdxWithScroll(currentStepIdx - 1)
-                    : undefined,
-                  currentStepIdx + 1 <= steps.length - 1
-                    ? () => setCurrentStepIdxWithScroll(currentStepIdx + 1)
-                    : undefined,
-                )
+                currentStepIdx - 1 >= 0
+                  ? () => setCurrentStepIdxWithScroll(currentStepIdx - 1)
+                  : undefined,
+                currentStepIdx + 1 <= steps.length - 1
+                  ? () => setCurrentStepIdxWithScroll(currentStepIdx + 1)
+                  : undefined,
+              )
               : step.content}
           </div>
         ))}

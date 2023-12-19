@@ -34,7 +34,7 @@ export default function GovernanceCycleForm() {
   //   after initial render while getValues will be available
   useEffect(() => {
     setValue("governanceCycleForm.startDate", mergeDayWithTime(new Date()));
-  }, [getValues])
+  }, [getValues]);
 
   return (
     <div className="flex flex-col space-x-8 md:flex-row">

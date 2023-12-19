@@ -13,6 +13,7 @@ type Story = StoryObj<typeof SpaceCards>;
 const data: SpaceInfo[] = [
   {
     name: "AfricaDeFiAllianceDAO",
+    displayName: "AfricaDeFiAllianceDAO",
     currentCycle: 1,
     currentEvent: {
       title: "Snapshot Vote",
@@ -28,6 +29,7 @@ const data: SpaceInfo[] = [
   },
   {
     name: "Slice",
+    displayName: "Slice",
     currentCycle: 4,
     currentEvent: {
       title: "Delay",
@@ -51,6 +53,7 @@ const data: SpaceInfo[] = [
   },
   {
     name: "bananapus",
+    displayName: "bananapus",
     currentCycle: 5,
     currentEvent: {
       title: "NULL",
@@ -71,6 +74,7 @@ const data: SpaceInfo[] = [
   },
   {
     name: "gnance",
+    displayName: "gnance",
     currentCycle: 3,
     currentEvent: {
       title: "NULL",
@@ -96,6 +100,7 @@ const data: SpaceInfo[] = [
   },
   {
     name: "juicebox",
+    displayName: "juicebox",
     currentCycle: 61,
     currentEvent: {
       title: "Snapshot Vote",
@@ -120,6 +125,7 @@ const data: SpaceInfo[] = [
   },
   {
     name: "moondao",
+    displayName: "moondao",
     currentCycle: 1,
     currentEvent: {
       title: "Snapshot Vote",
@@ -135,6 +141,7 @@ const data: SpaceInfo[] = [
   },
   {
     name: "nance",
+    displayName: "nance",
     currentCycle: 3,
     currentEvent: {
       title: "Snapshot Vote",
@@ -159,6 +166,7 @@ const data: SpaceInfo[] = [
   },
   {
     name: "thirstythirsty",
+    displayName: "thirstythirsty",
     currentCycle: 10,
     currentEvent: {
       title: "Snapshot Vote",
@@ -179,6 +187,7 @@ const data: SpaceInfo[] = [
   },
   {
     name: "waterbox",
+    displayName: "waterbox",
     currentCycle: 50,
     currentEvent: {
       title: "Snapshot Vote",
