@@ -160,7 +160,7 @@ export default function GovernanceCalendarMini({
                     !isToday(dayWSC.day) &&
                     !isSameMonth(dayWSC.day, firstDayCurrentMonth) &&
                     "text-gray-400",
-                  !isSameDay(dayWSC.day, selectedDate) && "hover:bg-gray-200",
+                  !isSameDay(dayWSC.day, selectedDate) && "hover:bg-gray-200 hover:from-gray-200",
                   isToday(dayWSC.day) && "font-semibold",
                   // colored background for stages
                   dayWSC.bgColor,
