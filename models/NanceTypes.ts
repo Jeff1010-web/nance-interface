@@ -8,6 +8,7 @@ export interface APIResponse<T> {
 
 export type SpaceInfo = {
   name: string;
+  displayName: string;
   currentCycle: number;
   currentEvent: {
     title: string;

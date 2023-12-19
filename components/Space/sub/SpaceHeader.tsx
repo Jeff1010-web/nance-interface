@@ -27,6 +27,7 @@ export default function SpaceHeader() {
 
   const {
     name: spaceName,
+    displayName,
     currentEvent,
     currentCycle,
     snapshotSpace,
@@ -45,7 +46,7 @@ export default function SpaceHeader() {
           />
 
           <div>
-            <h1 className="text-4xl font-bold text-gray-900">{spaceName}</h1>
+            <h1 className="text-4xl font-bold text-gray-900">{displayName}</h1>
             <p className="text-right text-sm font-medium text-gray-500">
               powered by Nance
             </p>
