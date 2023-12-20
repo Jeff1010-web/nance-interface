@@ -117,20 +117,22 @@ function Form() {
                   title="Describe the Space"
                   description="Please choose a name for your space and a prefix for your proposal IDs."
                 >
-                  <TextForm
-                    label="Nance space name"
-                    name="config.name"
-                    register={register}
-                  />
-                  <TextForm
-                    label="Proposal ID Prefix"
-                    name="config.proposalIdPrefix"
-                    register={register}
-                    maxLength={3}
-                    placeHolder="JBP"
-                    className="w-16"
-                    tooltip="Text prepended to proposal ID numbers, usually 3 letters representing your organization"
-                  />
+                  <div className="flex md:space-x-6 flex-col md:flex-row">
+                    <TextForm
+                      label="Nance space name"
+                      name="config.name"
+                      register={register}
+                    />
+                    <TextForm
+                      label="Proposal ID Prefix"
+                      name="config.proposalIdPrefix"
+                      register={register}
+                      maxLength={3}
+                      placeHolder="JBP"
+                      className="w-16"
+                      tooltip="Text prepended to proposal ID numbers, usually 3 letters representing your organization"
+                    />
+                  </div>
                   <BackNextButtons back={back} next={next} />
                 </DescriptionCardWrapper>
               ),
