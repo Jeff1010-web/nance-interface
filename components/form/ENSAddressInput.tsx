@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CheckIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import { Combobox } from "@headlessui/react";
 import { Tooltip } from "flowbite-react";
-import { useEnsAddress } from "wagmi";
+import { useEnsAddress, useNetwork } from "wagmi";
 import { classNames } from "../../utils/functions/tailwind";
 
 /**
@@ -21,9 +21,10 @@ export default function ENSAddressInput({
   disabled?: boolean;
 }) {
   const [query, setQuery] = useState("");
+  const { chain } = useNetwork();
   const { data: address, isLoading } = useEnsAddress({
     name: query,
-    chainId: 1, // always use mainnet for ENS for now
+    chainId: chain?.id,
     enabled: query.endsWith(".eth"),
   });
 
