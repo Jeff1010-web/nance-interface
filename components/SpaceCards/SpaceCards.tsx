@@ -60,7 +60,7 @@ export default function SpaceCards({
         role="list"
         className="grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8"
       >
-        {spaceInfos?.map((spaceInfo: SpaceInfo) => (
+        {spaceInfos?.sort((a, b) => b.nextProposalId - a.nextProposalId).map((spaceInfo: SpaceInfo) => (
           <li
             key={spaceInfo.name}
             className="overflow-hidden rounded-xl border border-gray-200"
@@ -91,6 +91,12 @@ export default function SpaceCards({
                       ? `${spaceInfo.currentEvent?.title} of `
                       : ""
                   }GC${spaceInfo.currentCycle}`}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-x-4 py-3">
+                <dt className="text-gray-500">Proposals</dt>
+                <dd className="text-gray-700">
+                  {spaceInfo.nextProposalId - 1}
                 </dd>
               </div>
               <div className="flex justify-between gap-x-4 py-3">

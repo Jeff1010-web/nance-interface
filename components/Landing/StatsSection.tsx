@@ -1,13 +1,63 @@
+import { useAllSpaceInfo } from '@/utils/hooks/NanceHooks';
 import Image from 'next/image';
+import Link from 'next/link';
 
-const stats = [
-  { id: 1, name: 'Page Views', value: '18,981' },
-  { id: 2, name: 'Total Votes', value: '1,858' },
-  { id: 3, name: 'Unique Voters', value: '121' },
-  { id: 4, name: 'Spaces', value: '9' },
-];
+interface SimpleSpaceEntry {
+  id: string;
+  name: string;
+  snapshotSpace: string;
+}
+
+const DEFAULT_TOP4SPACES = [
+  {
+    id: "juicebox",
+    name: "juicebox",
+    snapshotSpace: "jbdao.eth"
+  },
+  {
+    id: "moondao",
+    name: "moondao",
+    snapshotSpace: "tomoondao.eth"
+  },
+  {
+    id: "thirstythirsty",
+    name: "thirstythirsty",
+    snapshotSpace: "gov.thirstythirsty.eth"
+  },
+  {
+    id: "AfricaDeFiAllianceDAO",
+    name: "AfricaDeFiAllianceDAO",
+    snapshotSpace: "africadefialliancedao.eth"
+  },
+]
 
 export default function StatsSection() {
+  const { data, error, isLoading } = useAllSpaceInfo();
+
+  const totalProposals = data?.data?.map((space) => space.nextProposalId -1).reduce((a, b) => a + b, 0) || 483;
+  const totalSpaces = data?.data?.length || 9;
+  const top4Spaces: SimpleSpaceEntry[] = data?.data
+    // filter test spaces
+    ?.filter((s) => !["gnance", "waterbox", "nance"].includes(s.name))
+    // sort by proposal count
+    .sort((a, b) => b.nextProposalId - a.nextProposalId)
+    // top 4
+    .slice(0, 4)
+    .map((s) => {
+      return {
+        id: s.name,
+        name: s.displayName,
+        snapshotSpace: s.snapshotSpace
+      }
+    }) || DEFAULT_TOP4SPACES;
+
+  const stats = [
+    { id: 1, name: 'Total Votes', value: '1,858' },
+    { id: 2, name: 'Total Proposals', value: totalProposals },
+    { id: 3, name: 'Unique Voters', value: '121' },
+    { id: 4, name: 'Spaces', value: totalSpaces },
+  ];
+
   return (
     <div className="bg-white py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -22,34 +72,20 @@ export default function StatsSection() {
           </div>
 
           <div className="mx-auto mt-10 grid max-w-lg grid-cols-4 items-center gap-x-8 gap-y-10 sm:max-w-xl sm:grid-cols-6 sm:gap-x-10 lg:mx-0 lg:max-w-none lg:grid-cols-4">
-            <Image
-              className="col-span-2 max-h-12 w-full object-contain lg:col-span-1"
-              src="https://cdn.stamp.fyi/space/jbdao.eth"
-              alt="JuiceboxDAO"
-              width={158}
-              height={48}
-            />
-            <Image
-              className="col-span-2 max-h-12 w-full object-contain lg:col-span-1"
-              src="https://cdn.stamp.fyi/space/gov.thirstythirsty.eth"
-              alt="ThirstyThirstyDAO"
-              width={158}
-              height={48}
-            />
-            <Image
-              className="col-span-2 max-h-12 w-full object-contain lg:col-span-1"
-              src="https://cdn.stamp.fyi/space/0"
-              alt="BanapusDAO"
-              width={158}
-              height={48}
-            />
-            <Image
-              className="col-span-2 max-h-12 w-full object-contain sm:col-start-auto lg:col-span-1"
-              src="https://cdn.stamp.fyi/space/itsnotabearmarket.eth.eth"
-              alt="AfricaDeFiAllianceDAO"
-              width={158}
-              height={48}
-            />
+            {
+              top4Spaces.map((space) => (
+                <Link key={space.id} href={`/s/${space.id}`}>
+                  <Image
+                    className="col-span-2 max-h-12 w-full object-contain lg:col-span-1"
+                    src={`https://cdn.stamp.fyi/space/${space.snapshotSpace}`}
+                    alt={space.name}
+                    width={158}
+                    height={48}
+                  />
+                </Link>
+              ))
+            }
+
           </div>
 
           <dl className="mt-16 grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl text-center sm:grid-cols-2 lg:grid-cols-4">
