@@ -26,6 +26,7 @@ import Image from "next/image";
 import { NetworkContext } from "@/context/NetworkContext";
 import { getAddressLink } from "@/utils/functions/EtherscanURL";
 import { Footer, SiteNav } from "@/components/Site";
+import { getProposalNumber } from "@/utils/functions/ProposalIdNumber";
 
 const getColorOfChoice = (choice: string) => {
   if (choice == "For") {
@@ -415,7 +416,7 @@ export default function NanceUserPage({
                               {userProfileInfo?.proposals
                                 ?.sort(
                                   (a, b) =>
-                                    (b.proposalId ?? 0) - (a.proposalId ?? 0),
+                                    (getProposalNumber(b.proposalId) ?? 0) - (getProposalNumber(a.proposalId) ?? 0),
                                 )
                                 .map((p) => (
                                   <li key={p.hash}>

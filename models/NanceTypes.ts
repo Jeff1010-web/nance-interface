@@ -182,7 +182,7 @@ export interface Proposal {
   date?: string,
   translationURL?: string;
   status: string;
-  proposalId: number | null;
+  proposalId: string;
   author?: string;
   coauthors?: string[];
   discussionThreadURL: string;

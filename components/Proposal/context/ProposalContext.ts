@@ -19,7 +19,7 @@ export interface ProposalCommonProps {
   governanceCycle: number;
   uuid: string;
   actions: Action[];
-  proposalId: number;
+  proposalId: string;
 }
 
 export const ProposalContext = createContext<{
@@ -44,7 +44,7 @@ export const ProposalContext = createContext<{
     governanceCycle: 0,
     uuid: "",
     actions: [],
-    proposalId: 0,
+    proposalId: "",
   },
   proposalInfo: undefined,
   nextProposalId: 0,

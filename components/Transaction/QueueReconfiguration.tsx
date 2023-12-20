@@ -28,6 +28,7 @@ import {
 } from "next-query-params";
 import TransactionCreator from "@/components/Transaction/TransactionCreator";
 import DiffTableWithSection from "../form/DiffTableWithSection";
+import { getProposalNumber } from "@/utils/functions/ProposalIdNumber";
 
 export default function QueueReconfigurationModal({
   open,
@@ -90,7 +91,7 @@ export default function QueueReconfigurationModal({
     .flatMap((p) => {
       return p.actions?.map((action) => {
         return {
-          pid: p.proposalId || 0,
+          pid: Number(p.proposalId) || 0,
           action,
         };
       });

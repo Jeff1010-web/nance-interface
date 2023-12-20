@@ -90,7 +90,7 @@ export default function NanceProposalPage({
     space,
     snapshotSpace: snapshotSpace || "",
     status: proposal.status,
-    title: snapshotProposal?.title || proposal.title,
+    title: proposal.title,
     author: proposal.authorAddress || snapshotProposal?.author || "",
     coauthors: proposal.coauthors || [],
     body: snapshotProposal?.body || proposal.body || "",
@@ -107,7 +107,7 @@ export default function NanceProposalPage({
     governanceCycle: proposal.governanceCycle || 0,
     uuid: proposal.hash || "",
     actions: proposal.actions,
-    proposalId: proposal.proposalId || 0,
+    proposalId: proposal.proposalId || '',
   };
 
   return (

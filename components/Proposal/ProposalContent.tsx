@@ -11,6 +11,8 @@ import { format, toDate } from "date-fns";
 
 export default function ProposalContent({ body }: { body: string }) {
   const { commonProps } = useContext(ProposalContext);
+  const proposalId = commonProps.proposalId;
+  const proposalIdSpacer = proposalId ? ": " : "";
 
   return (
     <div className="">
@@ -24,7 +26,7 @@ export default function ProposalContent({ body }: { body: string }) {
           </Link>
         </div>
         <h1 id="applicant-information-title" className="text-3xl font-medium">
-          {commonProps.title}
+          {proposalId}{proposalIdSpacer}{commonProps.title}
         </h1>
 
         <p className="mt-2 flex text-sm text-gray-500">
