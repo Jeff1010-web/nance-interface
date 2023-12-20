@@ -62,7 +62,7 @@ export default function AddressForm({
 }: AddressFormProps) {
   const {
     control,
-    formState: { errors },
+    formState: { errors, isValidating },
     setValue,
     getValues,
   } = useFormContext();
@@ -112,11 +112,24 @@ export default function AddressForm({
           shouldUnregister
         />
       </div>
-      <ErrorMessage
-        errors={errors}
-        name={fieldName}
-        render={({ message }) => <p className="mt-1 text-red-500">{message}</p>}
-      />
+
+      {
+        isValidating && (
+          <p className="mt-1 text-sm text-gray-500 animate-pulse">
+            Checking if Safe address is valid on this network...
+          </p>
+        )
+      }
+
+      {
+        !isValidating && (
+          <ErrorMessage
+            errors={errors}
+            name={fieldName}
+            render={({ message }) => <p className="mt-1 text-red-500">{message}</p>}
+          />
+        )
+      }
     </div>
   );
 }
