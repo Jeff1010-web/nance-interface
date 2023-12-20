@@ -37,7 +37,7 @@ export default function SnapshotSearch({
         Select a snapshot.org space
       </div>
       {selectedSpace && (
-        <div className="mt-4 rounded-md border border-gray-300 bg-white p-2">
+        <div className="mt-4 rounded-md border border-gray-300 bg-white p-2 w-fit">
           <span className="flex items-center">
             <Image
               src={`https://cdn.stamp.fyi/space/${selectedSpace?.id}?s=160}`}
@@ -69,13 +69,13 @@ export default function SnapshotSearch({
         >
           <div className="relative mt-2">
             <Combobox.Input
-              className="w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-12 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              className="w-fit rounded-md border-0 bg-white py-1.5 pl-3 pr-12 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               onChange={(event) => setQuery(event.target.value)}
               autoComplete="off"
             />
 
             {spaces && spaces.length > 0 && (
-              <Combobox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+              <Combobox.Options className="absolute z-10 mt-1 max-h-56 w-fit overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                 {spaces.map((space) => (
                   <Combobox.Option
                     key={space.id}
@@ -165,9 +165,11 @@ export default function SnapshotSearch({
               return canUserEdit ? (
                 addNanceSnapshotButton
               ) : (
-                <Tooltip content="You must be a moderator or admin of this snapshot space to add nance as a member">
-                  {addNanceSnapshotButton}
-                </Tooltip>
+                <div className="w-fit">
+                  <Tooltip placement="top" content="You must be a moderator or admin of this snapshot space to add nance as a member">
+                    {addNanceSnapshotButton}
+                  </Tooltip>
+                </div>
               );
             })()}
           </div>
