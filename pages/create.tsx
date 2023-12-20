@@ -19,10 +19,10 @@ import { SiteNav } from "@/components/Site";
 import DiscordUser from "@/components/CreateSpace/sub/DiscordUser";
 import WalletConnectWrapper from "@/components/WalletConnectWrapper/WalletConnectWrapper";
 import MultipleStep from "@/components/MultipleStep/MultipleStep";
-import { isValidSafe } from "@/utils/hooks/SafeHooks";
+import { isValidSafe } from "@/utils/hooks/Safe/SafeHooks";
 import DescriptionCardWrapper from "@/components/DescriptionCardWrapper/DescriptionCardWrapper";
 import { NetworkContext } from "@/context/NetworkContext";
-import { safeServiceURL, SupportedSafeNetwork } from "@/constants/SafeGlobal";
+import { safeServiceURL, SupportedSafeNetwork } from "@/utils/hooks/Safe/SafeURL";
 
 export default function CreateSpacePage() {
   return (

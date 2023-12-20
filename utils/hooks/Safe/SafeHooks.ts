@@ -1,54 +1,32 @@
-import useSWR, { Fetcher } from "swr";
-import {
-  SafeBalanceUsdResponse,
-  SafeDelegatesResponse,
-  SafeInfoResponse,
-} from "../../models/SafeTypes";
-import { useCallback, useContext, useEffect, useState } from "react";
+import useSWR from "swr";
+import { ethers } from "ethers";
+import { SafeInfoResponse } from "@/models/SafeTypes";
+import { useEffect, useState } from "react";
 import { useAccount, useWalletClient } from "wagmi";
-import SafeApiKit, {
-  SafeMultisigTransactionListResponse,
-} from "@safe-global/api-kit";
-import { useEthersSigner } from "./ViemAdapter";
+import { useEthersSigner } from "@/utils/hooks/ViemAdapter";
 import Safe, {
   EthersAdapter,
-  SafeTransactionOptionalProps,
+  SafeTransactionOptionalProps
 } from "@safe-global/protocol-kit";
-import { ethers } from "ethers";
 import {
   MetaTransactionData,
   SafeTransaction,
-  SafeTransactionDataPartial,
+  SafeTransactionDataPartial
 } from "@safe-global/safe-core-sdk-types";
-import { NetworkContext } from "@/context/NetworkContext";
-import { SupportedSafeNetwork, safeServiceURL } from "@/constants/SafeGlobal";
-
-const V1 = "api/v1";
-
-const useSafeNetworkAPI = () => {
-  const network = useContext(NetworkContext) as SupportedSafeNetwork;
-  return `https://safe-transaction-${safeServiceURL[network]}.safe.global`;
-};
-
-const safeNetworkAPI = (name: SupportedSafeNetwork) => {
-  return `https://safe-transaction-${safeServiceURL[name]}.safe.global`;
-};
-
-function jsonFetcher(): Fetcher<SafeMultisigTransactionListResponse, string> {
-  return async (url) => {
-    const res = await fetch(url);
-    if (res.status == 400) {
-      throw new Error("Invalid data.");
-    } else if (res.status == 422) {
-      throw new Error("Invalid ethereum address.");
-    } else if (res.status == 404) {
-      throw new Error("Safe not found.");
-    }
-    const json = await res.json();
-
-    return json;
-  };
-}
+import {
+  safeNetworkAPI,
+  useSafeNetworkAPI,
+  V1,
+  SupportedSafeNetwork
+} from "@/utils/hooks/Safe/SafeURL";
+import { useSafeAPIKit } from "./SafekitWrapper";
+import {
+  jsonFetcher,
+  delegatesJsonFetcher,
+  safeInfoJsonFetcher,
+  validSafeFetcher,
+  fetchSafeWithAddress
+} from "./SafeFetchers";
 
 export function useMultisigTransactionOf(
   address: string,
@@ -107,93 +85,6 @@ export function useMultisigTransactions(
   );
 }
 
-// react hook wrapper for safe api kit
-// FIXME this will trigger infinite re-rendering
-export function useSafeAPIFunction<T>(
-  functionWrapper: (safeApiKit: SafeApiKit) => Promise<T>,
-  shouldFetch: boolean = true,
-) {
-  const [error, setError] = useState<string>();
-  const [loading, setLoading] = useState(false);
-  const [value, setValue] = useState<T>();
-
-  const { value: safeApiKit } = useSafeAPIKit();
-
-  const _functionWrapper = useCallback(
-    (safeApiKit: SafeApiKit) => functionWrapper(safeApiKit),
-    [functionWrapper],
-  );
-
-  const refetch = async () => {
-    if (!safeApiKit || !shouldFetch) {
-      setError("Not connected to wallet or safe not found.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const val = await _functionWrapper(safeApiKit);
-      setValue(val);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    refetch();
-  }, [safeApiKit, shouldFetch, functionWrapper]);
-
-  return {
-    value,
-    error,
-    loading,
-    refetch,
-  };
-}
-
-function balanceJsonFetcher(): Fetcher<SafeBalanceUsdResponse[], string> {
-  return async (url) => {
-    const res = await fetch(url);
-    if (res.status == 404) {
-      throw new Error("Safe not found.");
-    } else if (res.status == 422) {
-      throw new Error("Safe address checksum not valid.");
-    }
-    const json = await res.json();
-
-    return json;
-  };
-}
-
-export function useMultisigAssets(
-  address: string,
-  shouldFetch: boolean = true,
-) {
-  const api = useSafeNetworkAPI();
-  return useSWR(
-    shouldFetch
-      ? `${api}/safes/${address}/balances/usd/?trusted=true&exclude_spam=true`
-      : null,
-    balanceJsonFetcher(),
-  );
-}
-
-function safeInfoJsonFetcher(): Fetcher<SafeInfoResponse, string> {
-  return async (url) => {
-    const res = await fetch(url);
-    if (res.status == 404) {
-      throw new Error("Safe not found.");
-    } else if (res.status == 422) {
-      throw new Error("Safe address checksum not valid.");
-    }
-    const json = await res.json();
-
-    return json;
-  };
-}
-
 export function useSafeInfo(address: string, shouldFetch: boolean = true) {
   const api = useSafeNetworkAPI();
   return useSWR<SafeInfoResponse, Error>(
@@ -203,47 +94,12 @@ export function useSafeInfo(address: string, shouldFetch: boolean = true) {
   );
 }
 
-function delegatesJsonFetcher(): Fetcher<SafeDelegatesResponse, string> {
-  return async (url) => {
-    const res = await fetch(url);
-    if (res.status == 400) {
-      throw new Error("Data not valid.");
-    }
-    const json = await res.json();
-
-    return json;
-  };
-}
-
 export function useSafeDelegates(address: string, shouldFetch: boolean = true) {
   const api = useSafeNetworkAPI();
   return useSWR(
     shouldFetch ? `${api}/${V1}/delegates/?safe=${address}` : null,
     delegatesJsonFetcher(),
   );
-}
-
-export function useSafeAPIKit() {
-  const [value, setValue] = useState<SafeApiKit>();
-  const signer = useEthersSigner();
-
-  useEffect(() => {
-    if (!signer) {
-      return;
-    }
-    const txServiceUrl = safeNetworkAPI('Ethereum');
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signerOrProvider: signer!,
-    });
-    const safeApiKit = new SafeApiKit({
-      txServiceUrl,
-      ethAdapter,
-    });
-    setValue(safeApiKit);
-  }, [signer]);
-
-  return { value, loading: !value };
 }
 
 export function useSafe(safeAddress: string) {
@@ -365,19 +221,6 @@ export function useQueueTransaction(
     loading,
     trigger,
   };
-}
-
-async function fetchSafeWithAddress(url: string) {
-  const res = await fetch(url);
-  if (res.status !== 200) {
-    return false;
-  }
-  const json = await res.json();
-  return json.address !== undefined;
-}
-
-function validSafeFetcher(): Fetcher<any, string> {
-  return fetchSafeWithAddress;
 }
 
 export function useIsValidAddress(

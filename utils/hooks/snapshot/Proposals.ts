@@ -83,7 +83,10 @@ export function useProposalsWithCustomQuery(
       proposalIds: proposalsData?.proposals.map((proposal) => proposal.id),
       first: Math.min(proposalsData?.proposals.length || 0, 1000),
     },
-    skip: skip || address.length !== 42, // address not ready, don't run this query yet
+    skip:
+      skip ||
+      address.length !== 42 || // address not ready, don't run this query yet
+      !proposalsData?.proposals.length, // dont run if length is 0, doesnt make any sense
   });
   // console.debug("🔧 useProposalsWithCustomQuery.cacheHit", cacheHit);
 

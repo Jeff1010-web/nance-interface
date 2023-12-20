@@ -4,7 +4,7 @@ import { ArrowPathIcon } from "@heroicons/react/24/solid";
 import {
   useHistoryTransactions,
   useQueueTransaction,
-} from "@/utils/hooks/SafeHooks";
+} from "@/utils/hooks/Safe/SafeHooks";
 import ResultModal from "../modal/ResultModal";
 import { getSafeTxUrl } from "@/utils/functions/safe";
 import {
