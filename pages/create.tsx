@@ -177,8 +177,9 @@ function Form() {
                   title="Connect with Discord"
                   description="Nance can connect with your Discord server to send governance messages."
                 >
-                  <DiscordUser address={address} />
-                  <DiscordForm />
+                  <DiscordUser address={address}>
+                    <DiscordForm />
+                  </DiscordUser>
                   <BackNextButtons back={back} next={next} />
                 </DescriptionCardWrapper>
               ),

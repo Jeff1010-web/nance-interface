@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 import { LOCAL_STORAGE_KEY_DISCORD_STATUS } from "@/utils/functions/discordURL";
 import {
   useFetchDiscordUser,
@@ -8,11 +8,15 @@ import { avatarBaseUrl } from "@/constants/Discord";
 import { discordAuthWindow } from "@/utils/functions/discord";
 import Image from "next/image";
 
-export default function DiscordUser({ address }: { address: string }) {
+interface DiscordUserProps {
+  address: string;
+}
+
+export default function DiscordUser({ address, children }: PropsWithChildren<DiscordUserProps>) {
   // state
   const [shouldFetchDiscordUser, setShouldFetchDiscordUser] = useState(false);
 
-  const { data: discordUser, isLoading: discordLoading } = useFetchDiscordUser(
+  const { data: discordUser, isLoading: discordLoading, mutate } = useFetchDiscordUser(
     { address },
     shouldFetchDiscordUser,
   );
@@ -72,7 +76,8 @@ export default function DiscordUser({ address }: { address: string }) {
                   discordLogoutTrigger();
                   // set local storage to false, then refresh
                   localStorage.removeItem(LOCAL_STORAGE_KEY_DISCORD_STATUS);
-                  window.location.assign(window.location.pathname);
+                  mutate();
+                  setShouldFetchDiscordUser(false);
                 }}
               >
                 disconnect
@@ -86,6 +91,8 @@ export default function DiscordUser({ address }: { address: string }) {
               height={50}
             />
           </div>
+
+          {children}
         </>
       )}
     </>
