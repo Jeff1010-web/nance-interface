@@ -58,7 +58,6 @@ export default function ProjectLink({
 
   const logoUri = projects?.[0]?.logo_uri;
   const imgSrc = logoUri ? ipfsUrlOf(cidFromUrl(logoUri)) : JBDAO_LOGO;
-  console.debug(logoUri, imgSrc);
 
   const networkSuffix = isTestnet ? " (goerli)" : "";
   const name = (projects?.[0]?.name || "Untitled") + networkSuffix;

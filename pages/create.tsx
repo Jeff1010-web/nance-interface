@@ -223,7 +223,7 @@ function Form() {
                 >
                   <div className="w-1/2">
                     <ProjectForm
-                      label="Juicebox projectId"
+                      label="Juicebox project"
                       fieldName="config.juicebox.projectId"
                       showType={false}
                       required={false}

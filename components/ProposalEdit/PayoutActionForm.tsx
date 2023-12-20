@@ -56,6 +56,7 @@ export default function PayoutActionForm({
           <ProjectForm
             label="Project Receiver"
             fieldName={genFieldName("project")}
+            showType={false}
           />
         </div>
       )}

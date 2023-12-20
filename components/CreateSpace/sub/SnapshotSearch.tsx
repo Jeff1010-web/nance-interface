@@ -31,7 +31,7 @@ export default function SnapshotSearch({
   );
 
   return (
-    <div className="w-100">
+    <div>
       <div className="mt-2 block text-sm font-medium leading-6 text-gray-900">
         {" "}
         Select a snapshot.org space
@@ -50,6 +50,7 @@ export default function SnapshotSearch({
             <XCircleIcon
               onClick={() => {
                 setSelectedSpace(null);
+                setVal("");
                 reset();
               }}
               className="ml-3 h-5 w-5 cursor-pointer text-gray-400"
@@ -69,7 +70,7 @@ export default function SnapshotSearch({
         >
           <div className="relative mt-2">
             <Combobox.Input
-              className="w-fit rounded-md border-0 bg-white py-1.5 pl-3 pr-12 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              className="rounded-md border-0 bg-white py-1.5 pl-3 pr-12 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               onChange={(event) => setQuery(event.target.value)}
               autoComplete="off"
             />

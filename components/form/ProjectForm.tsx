@@ -27,7 +27,7 @@ export default function ProjectForm({
       <label className="mb-1 block text-sm font-medium text-gray-700">
         {label}
       </label>
-      <div className="mt-1 flex rounded-md shadow-sm">
+      <div className="mt-1 flex">
         {showType && (
           <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
             project
@@ -39,7 +39,7 @@ export default function ProjectForm({
           rules={{
             required: required && "Can't be empty",
             validate: {
-              positive: (v) => parseInt(v) > -1 || "Can't be negative number",
+              positive: (v) => !required || parseInt(v) > -1 || "Can't be negative number",
             },
           }}
           render={({ field: { onChange, onBlur, value, ref } }) => (

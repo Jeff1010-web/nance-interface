@@ -31,7 +31,7 @@ export default function BasicFormattedCard({
   children,
 }: PropsWithChildren<BasicFormattedCardProps>) {
   return (
-    <div className="mt-4 w-fit rounded-md border border-gray-300 bg-white p-2">
+    <div className="w-fit rounded-md border border-gray-300 bg-white p-2">
       <div className="flex items-center">
         <Image
           src={imgSrc}
