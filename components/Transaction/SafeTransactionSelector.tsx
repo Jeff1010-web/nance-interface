@@ -1,5 +1,5 @@
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
-import { useMultisigTransactions } from "@/utils/hooks/SafeHooks";
+import { useMultisigTransactions } from "@/utils/hooks/Safe/SafeHooks";
 import SearchableComboBox, {
   Option,
 } from "@/components/common/SearchableComboBox";

@@ -1,5 +1,5 @@
 import { getAddress } from "viem";
-import { useQueueTransaction, useSafeInfo } from "./SafeHooks";
+import { useQueueTransaction, useSafeInfo } from "./Safe/SafeHooks";
 import usePropose from "./governor/Propose";
 import { isAddress } from "ethers/lib/utils";
 

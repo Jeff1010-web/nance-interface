@@ -1,5 +1,5 @@
 import TenderlySimulationButton from "./TenderlySimulationButton";
-import { useCreateTransaction } from "@/utils/hooks/SafeHooks";
+import { useCreateTransaction } from "@/utils/hooks/Safe/SafeHooks";
 import { TenderlySimulateArgs } from "@/utils/hooks/TenderlyHooks";
 import { useEffect, useState } from "react";
 import { GenericTransactionData } from "../Transaction/TransactionCreator";
