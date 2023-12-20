@@ -29,6 +29,10 @@ interface AddressFormProps {
    * Whether to show the type as "address" in front of the input.
    */
   showType?: boolean;
+  /**
+   * Whether the field is required
+   */
+  required?: boolean;
 }
 
 /**
@@ -54,6 +58,7 @@ export default function AddressForm({
   disabled = false,
   validate = undefined,
   showType = true,
+  required = true
 }: AddressFormProps) {
   const {
     control,
@@ -86,7 +91,7 @@ export default function AddressForm({
           name={fieldName}
           control={control}
           rules={{
-            required: "Can't be empty",
+            required: required && "Can't be empty",
             pattern: {
               value: /^0x[a-fA-F0-9]{40}$/,
               message: "Not a valid address",

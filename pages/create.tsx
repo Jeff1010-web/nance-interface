@@ -190,21 +190,25 @@ function Form() {
               name: "Safe",
               contentRender: (back, next) => (
                 <DescriptionCardWrapper
-                  title="Connect with Safe"
+                  title="Connect with Safe (Optional)"
                   description="Nance can connect with your Safe to queue transactions after proposals pass."
                 >
-                  <AddressForm
-                    label="Safe address"
-                    fieldName="config.juicebox.gnosisSafeAddress"
-                    showType={false}
-                    validate={async (e) => {
-                      if (!Object.keys(safeServiceURL).includes(network as SupportedSafeNetwork)) return "Invalid network";
-                      const isSafe = await isValidSafe(e, network as SupportedSafeNetwork);
-                      if (!isSafe) {
-                        return "Invalid Safe address";
-                      }
-                    }}
-                  />
+                  <div className="w-1/2">
+                    <AddressForm
+                      label="Safe address"
+                      fieldName="config.juicebox.gnosisSafeAddress"
+                      showType={false}
+                      validate={async (str) => {
+                        if(str === "") return true;
+                        if (!Object.keys(safeServiceURL).includes(network as SupportedSafeNetwork)) return "Invalid network";
+                        const isSafe = await isValidSafe(str, network as SupportedSafeNetwork);
+                        if (!isSafe) {
+                          return "Invalid Safe address";
+                        }
+                      }}
+                      required={false}
+                    />
+                  </div>
                   <BackNextButtons back={back} next={next} />
                 </DescriptionCardWrapper>
               ),
