@@ -8,12 +8,14 @@ export default function ProjectForm({
   defaultValue,
   showType = true,
   disabled = false,
+  required = true,
 }: {
   label?: string;
   fieldName: any;
   defaultValue?: number;
   showType?: boolean;
   disabled?: boolean;
+  required?: boolean;
 }) {
   const {
     control,
@@ -35,7 +37,7 @@ export default function ProjectForm({
           name={fieldName}
           control={control}
           rules={{
-            required: "Can't be empty",
+            required: required && "Can't be empty",
             validate: {
               positive: (v) => parseInt(v) > -1 || "Can't be negative number",
             },

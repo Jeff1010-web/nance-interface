@@ -71,6 +71,7 @@ function Form() {
     handleSubmit,
     formState: { isValid },
     watch,
+    getValues
   } = methods;
   const onSubmit: SubmitHandler<CreateFormValues> = async (formData) => {
     console.log(formData);
@@ -209,7 +210,7 @@ function Form() {
                       required={false}
                     />
                   </div>
-                  <BackNextButtons back={back} next={next} />
+                  <BackNextButtons back={back} next={next} labelAsSkip={!(getValues("config.juicebox.gnosisSafeAddress")?.length > 0)} />
                 </DescriptionCardWrapper>
               ),
             },
@@ -217,15 +218,18 @@ function Form() {
               name: "Juicebox",
               contentRender: (back, next) => (
                 <DescriptionCardWrapper
-                  title="Connect with Juicebox"
+                  title="Connect with Juicebox (Optional)"
                   description="Nance can connect with your Juicebox project to queue reconfigurations after proposals pass."
                 >
-                  <ProjectForm
-                    label="Juicebox projectId"
-                    fieldName="config.juicebox.projectId"
-                    showType={false}
-                  />
-                  <BackNextButtons back={back} next={next} />
+                  <div className="w-1/2">
+                    <ProjectForm
+                      label="Juicebox projectId"
+                      fieldName="config.juicebox.projectId"
+                      showType={false}
+                      required={false}
+                    />
+                  </div>
+                  <BackNextButtons back={back} next={next} labelAsSkip={getValues("config.juicebox.projectId") === undefined} />
                 </DescriptionCardWrapper>
               ),
             },
@@ -255,13 +259,15 @@ function Form() {
   );
 }
 
-const BackNextButtons = ({ back, next }: { back?: () => void, next?: () => void}) => (
+const BackNextButtons = ({ back, next, labelAsSkip = false }:
+  { back?: () => void, next?: () => void, labelAsSkip?: boolean}) => (
+
   <div className="flex justify-end space-x-6 mt-4">
     {back && <button
       className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-gray-400 px-4 py-2 text-sm text-white shadow-sm hover:bg-gray-500"
       onClick={back}>Back</button>}
     {next && <button
       className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-500"
-      onClick={next}>Next</button>}
+      onClick={next}>{labelAsSkip ? "Skip" : "Next"}</button>}
   </div>
 );
