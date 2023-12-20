@@ -203,7 +203,7 @@ function Form() {
                         if (!Object.keys(safeServiceURL).includes(network as SupportedSafeNetwork)) return "Invalid network";
                         const isSafe = await isValidSafe(str, network as SupportedSafeNetwork);
                         if (!isSafe) {
-                          return "Invalid Safe address";
+                          return "Invalid Safe address, check if you are on the correct network";
                         }
                       }}
                       required={false}
