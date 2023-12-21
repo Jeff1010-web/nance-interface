@@ -21,10 +21,9 @@ export default function ENSAddressInput({
   disabled?: boolean;
 }) {
   const [query, setQuery] = useState("");
-  const { chain } = useNetwork();
   const { data: address, isLoading } = useEnsAddress({
     name: query,
-    chainId: chain?.id,
+    chainId: 1,
     enabled: query.endsWith(".eth"),
   });
 

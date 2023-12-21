@@ -58,7 +58,7 @@ export default function FormattedAddress({
   const [label, setLabel] = useState(shortenAddress(address) || "Anon");
   const { data: ensName } = useEnsName({ address: addr, enabled: hasAddr, chainId: 1 });
 
-  const network = useContext(NetworkContext);
+  const network = 'mainnet';
   const urlPrefix = overrideURLPrefix || getAddressLink("", network);
 
   useEffect(() => {
