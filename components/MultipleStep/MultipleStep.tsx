@@ -72,7 +72,6 @@ export default function MultipleStep({
   });
   driverSteps.pop();
 
-  console.debug("driverSteps", driverSteps);
   const driverObj = driver({
     nextBtnText: "Checked & Next",
     prevBtnText: "Back",

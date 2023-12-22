@@ -31,7 +31,6 @@ export default function TextForm({
     formState: { errors },
     register
   } = useFormContext();
-  console.debug("errors", errors)
 
   return (
     <div className="mb-2 mt-2 flex w-fit flex-col">
