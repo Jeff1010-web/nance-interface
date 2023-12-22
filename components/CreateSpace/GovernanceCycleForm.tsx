@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import TimePicker from "./sub/TimePicker";
 import GovernanceCalendarKey from "./sub/GovernanceCalendarKey";
@@ -8,12 +8,12 @@ import GovernanceCalendarMini, {
 import { classNames } from "@/utils/functions/tailwind";
 
 export default function GovernanceCycleForm() {
-  const { register, control, getValues, setValue } = useFormContext();
+  const { control, getValues, setValue } = useFormContext();
 
-  const [temperatureCheckLength, setTemperatureCheckLength] = useState(3);
-  const [voteLength, setVoteLength] = useState(4);
-  const [executionLength, setExecutionLength] = useState(4);
-  const [delayLength, setDelayLength] = useState(3);
+  const temperatureCheckLength = getValues("governanceCycleForm.temperatureCheckLength");
+  const voteLength = getValues("governanceCycleForm.voteLength");
+  const executionLength = getValues("governanceCycleForm.executionLength");
+  const delayLength = getValues("governanceCycleForm.delayLength");
 
   const totalCycleLength =
     temperatureCheckLength + voteLength + executionLength + delayLength;
@@ -75,7 +75,6 @@ export default function GovernanceCycleForm() {
           name="governanceCycleForm.temperatureCheckLength"
           defaultValue={3}
           tooltipContent="This is the length of time that a Discord Temperature Check is open for polling"
-          onChange={setTemperatureCheckLength}
           badgeColor={VOTE_PERIOD_COLOR["tempCheck"]}
         />
         <SmallNumberInput
@@ -83,7 +82,6 @@ export default function GovernanceCycleForm() {
           name="governanceCycleForm.voteLength"
           defaultValue={4}
           tooltipContent="This is the length of time that a Snapshot vote is open"
-          onChange={setVoteLength}
           badgeColor={VOTE_PERIOD_COLOR["voting"]}
         />
         <SmallNumberInput
@@ -91,7 +89,6 @@ export default function GovernanceCycleForm() {
           name="governanceCycleForm.executionLength"
           defaultValue={4}
           tooltipContent="This is the length of time for the execution of proposals that pass Snapshot"
-          onChange={setExecutionLength}
           badgeColor={VOTE_PERIOD_COLOR["execution"]}
         />
         <SmallNumberInput
@@ -99,7 +96,6 @@ export default function GovernanceCycleForm() {
           name="governanceCycleForm.delayLength"
           defaultValue={3}
           tooltipContent="This is the length of time between the end of execution and the start of the next Temperature Check"
-          onChange={setDelayLength}
           badgeColor={VOTE_PERIOD_COLOR["delay"]}
         />
         <div className="mt-2 inline-flex items-center rounded-md px-2 py-1">
@@ -117,7 +113,6 @@ const SmallNumberInput = ({
   tooltipContent,
   badgeColor = "bg-gray-100",
   badgeContent = "days",
-  onChange,
 }: {
   label: string;
   name: string;
@@ -125,7 +120,6 @@ const SmallNumberInput = ({
   tooltipContent?: string;
   badgeColor?: string;
   badgeContent?: string;
-  onChange?: any;
 }) => {
   const {
     register
@@ -145,14 +139,11 @@ const SmallNumberInput = ({
       <div className="mt-1 flex">
         <div className="flex rounded-md border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-indigo-500 sm:text-sm">
           <input
-            {...register(name, { shouldUnregister: true })}
+            {...register(name, { shouldUnregister: true, valueAsNumber: true })}
             className="block h-7 w-16 rounded-md rounded-r-none border-gray-300 bg-white text-xs shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
             type="number"
             min={0}
             defaultValue={defaultValue}
-            onChange={(e) => {
-              onChange(Number(e.target.value));
-            }}
           ></input>
           <span
             className={classNames(
