@@ -212,9 +212,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
     value: string;
     display: string;
   }) {
-    //{status === "loading" ?
-    //(isMutating ? "Submitting..." : "Connecting...") :
-    //(formErrors.length > 0 ? "Error in form" : selected.display)}
 
     if (formErrors.length > 0) {
       return "Error in form";
@@ -369,11 +366,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
         )}
 
         <div className="flex justify-end" id="submit-button-div">
-          <Link href={`/s/${space}`} legacyBehavior>
-            <a className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-              Cancel
-            </a>
-          </Link>
 
           {status === "unauthenticated" && (
             <button
