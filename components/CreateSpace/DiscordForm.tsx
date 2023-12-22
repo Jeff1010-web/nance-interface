@@ -9,7 +9,7 @@ export default function DiscordForm() {
   const { data: session } = useSession();
 
   return (
-    <div>
+    <div className="w-fit">
       <DiscordGuildForm
         address={session?.user?.name || ""}
         fieldName="config.discord.guildId"

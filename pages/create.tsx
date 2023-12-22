@@ -178,7 +178,7 @@ function Form() {
                   title="Connect with Safe (Optional)"
                   description="Nance can connect with your Safe to queue transactions after proposals pass."
                 >
-                  <div className="w-1/2">
+                  <div className="w-fit">
                     <AddressForm
                       label="Safe address"
                       fieldName="config.juicebox.gnosisSafeAddress"
@@ -205,7 +205,7 @@ function Form() {
                   title="Connect with Juicebox (Optional)"
                   description="Nance can connect with your Juicebox project to queue reconfigurations after proposals pass."
                 >
-                  <div className="w-1/2">
+                  <div className="w-fit">
                     <ProjectForm
                       label="Juicebox project"
                       fieldName="config.juicebox.projectId"
