@@ -2,6 +2,7 @@ import GenericListbox from "@/components/common/GenericListbox";
 import { DiscordRole } from "@/models/DiscordTypes";
 import { formatRoles } from "@/utils/functions/discord";
 import { useDiscordGuildRoles } from "@/utils/hooks/DiscordHooks";
+import { ErrorMessage } from "@hookform/error-message";
 import { Controller, useFormContext } from "react-hook-form";
 
 /**
@@ -18,7 +19,7 @@ export default function DiscordRoleForm({
   fieldName: string;
   disabled?: boolean;
 }) {
-  const { control } = useFormContext();
+  const { control, formState: { errors } } = useFormContext();
   const { data } = useDiscordGuildRoles(guildId);
 
   const roles = formatRoles(data);
@@ -31,22 +32,29 @@ export default function DiscordRoleForm({
   }
 
   return (
-    <Controller
-      name={fieldName}
-      control={control}
-      rules={{
-        required: "Can't be empty",
-      }}
-      render={({ field: { onChange, value } }) => (
-        <GenericListbox<DiscordRole>
-          value={roleOfId(value)}
-          onChange={(c) => onChange(c.id)}
-          label={label}
-          disabled={disabled}
-          items={roles}
-        />
-      )}
-      shouldUnregister
-    />
+    <>
+      <Controller
+        name={fieldName}
+        control={control}
+        rules={{
+          required: "Can't be empty",
+        }}
+        render={({ field: { onChange, value } }) => (
+          <GenericListbox<DiscordRole>
+            value={roleOfId(value)}
+            onChange={(c) => onChange(c.id)}
+            label={label}
+            disabled={disabled}
+            items={roles}
+          />
+        )}
+        shouldUnregister
+      />
+      <ErrorMessage
+        errors={errors}
+        name={fieldName}
+        render={({ message }) => <p className="text-red-500">{message}</p>}
+      />
+    </>
   );
 }

@@ -1,14 +1,15 @@
 import { Tooltip } from "flowbite-react";
 import { CreateFormKeys } from "../../models/NanceTypes";
+import { ErrorMessage } from "@hookform/error-message";
+import { useFormContext } from "react-hook-form";
 
 type TextInputProps = {
   label: string;
-  name: CreateFormKeys;
-  register: any;
-  placeholder: string;
-  required: boolean;
-  type: string;
-  maxLength: number;
+  name: string;
+  placeholder?: string;
+  required?: boolean;
+  type?: string;
+  maxLength?: number;
   className?: string;
   tooltip?: string;
   placeHolder?: string;
@@ -18,7 +19,6 @@ type TextInputProps = {
 export default function TextForm({
   label,
   name,
-  register,
   required = true,
   type = "text",
   maxLength,
@@ -26,7 +26,13 @@ export default function TextForm({
   tooltip,
   placeHolder,
   disabled,
-}: Partial<TextInputProps>) {
+}: TextInputProps) {
+  const {
+    formState: { errors },
+    register
+  } = useFormContext();
+  console.debug("errors", errors)
+
   return (
     <div className="mb-2 mt-2 flex w-fit flex-col">
       <label
@@ -46,14 +52,17 @@ export default function TextForm({
       </label>
       <input
         type={type}
-        id={name}
-        name={name}
         maxLength={maxLength}
         placeholder={placeHolder}
         autoComplete="off"
         disabled={disabled}
         className={`${className} mt-1 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100 sm:text-sm `}
-        {...register(name, { required, shouldUnregister: true })}
+        {...register(name, { required: required && "Can't be empty", shouldUnregister: true })}
+      />
+      <ErrorMessage
+        errors={errors}
+        name={name}
+        render={({ message }) => <p className="mt-1 text-red-500">{message}</p>}
       />
     </div>
   );

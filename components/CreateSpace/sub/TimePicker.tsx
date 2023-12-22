@@ -1,4 +1,3 @@
-import { Tooltip } from "flowbite-react";
 import { Controller, useFormContext } from "react-hook-form";
 import SmallListbox from "@/components/common/SmallListBox";
 
@@ -15,20 +14,16 @@ export default function TimePicker({mergeDayWithTime}:{mergeDayWithTime: (day: D
 
   return (
     <>
-      <div className="mb-2 mt-2 flex w-80">
+      <div className="my-2">
         <label
           htmlFor="time"
-          className="mt-2 block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-gray-700"
         >
           Select Start Time
         </label>
-        <div className="ml-1 mt-1">
-          <Tooltip content="The time you progress to the next stage of governance (in your own timezone)">
-            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-400 text-xs text-white">
-              ?
-            </span>
-          </Tooltip>
-        </div>
+        <p className="text-xs text-gray-400 break-words">
+          The time you progress to the next stage of governance (in your own timezone)
+        </p>
       </div>
       <div className="inline-flex">
         <Controller

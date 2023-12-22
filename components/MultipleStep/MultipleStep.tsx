@@ -2,6 +2,8 @@ import { classNames } from "@/utils/functions/tailwind";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { useRef, useState } from "react";
 import SmallListbox from "../common/SmallListBox";
+import { DriveStep, driver } from "driver.js";
+import "driver.js/dist/driver.css";
 
 interface Step {
   name: string;
@@ -9,6 +11,7 @@ interface Step {
   contentRender?: (
     back: (() => void) | undefined,
     next: (() => void) | undefined,
+    drive?: () => void,
   ) => JSX.Element;
 }
 
@@ -47,6 +50,36 @@ export default function MultipleStep({
       });
     }
   }
+
+  const driverSteps: DriveStep[] = steps.map((step, stepIdx) => {
+    return {
+      element: `#step-${stepIdx}`,
+      popover: {
+        title: `Step ${stepIdx + 1} - ${step.name}`,
+        description: "Click next to continue, or click elsewhere to skip.",
+        side: "bottom",
+        align: 'start',
+        onNextClick: () => {
+          setCurrentStepIdxWithScroll(stepIdx + 1);
+          driverObj.moveNext();
+        },
+        onPrevClick: () => {
+          setCurrentStepIdxWithScroll(stepIdx - 1);
+          driverObj.movePrevious();
+        },
+      }
+    };
+  });
+  driverSteps.pop();
+
+  console.debug("driverSteps", driverSteps);
+  const driverObj = driver({
+    nextBtnText: "Checked & Next",
+    prevBtnText: "Back",
+    doneBtnText: "Done",
+    showProgress: true,
+    steps: driverSteps
+  });
 
   return (
     <>
@@ -149,6 +182,7 @@ export default function MultipleStep({
       >
         {steps.map((step, stepIdx) => (
           <div
+            id={`step-${stepIdx}`}
             key={step.name}
             className={stepIdx === currentStepIdx ? "block" : "hidden"}
           >
@@ -160,6 +194,10 @@ export default function MultipleStep({
                 currentStepIdx + 1 <= steps.length - 1
                   ? () => setCurrentStepIdxWithScroll(currentStepIdx + 1)
                   : undefined,
+                () => {
+                  setCurrentStepIdxWithScroll(0);
+                  driverObj.drive();
+                }
               )
               : step.content}
           </div>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-import { Tooltip } from "flowbite-react";
 import TimePicker from "./sub/TimePicker";
 import GovernanceCalendarKey from "./sub/GovernanceCalendarKey";
 import GovernanceCalendarMini, {
@@ -76,7 +75,6 @@ export default function GovernanceCycleForm() {
           name="governanceCycleForm.temperatureCheckLength"
           defaultValue={3}
           tooltipContent="This is the length of time that a Discord Temperature Check is open for polling"
-          register={register}
           onChange={setTemperatureCheckLength}
           badgeColor={VOTE_PERIOD_COLOR["tempCheck"]}
         />
@@ -85,7 +83,6 @@ export default function GovernanceCycleForm() {
           name="governanceCycleForm.voteLength"
           defaultValue={4}
           tooltipContent="This is the length of time that a Snapshot vote is open"
-          register={register}
           onChange={setVoteLength}
           badgeColor={VOTE_PERIOD_COLOR["voting"]}
         />
@@ -94,7 +91,6 @@ export default function GovernanceCycleForm() {
           name="governanceCycleForm.executionLength"
           defaultValue={4}
           tooltipContent="This is the length of time for the execution of proposals that pass Snapshot"
-          register={register}
           onChange={setExecutionLength}
           badgeColor={VOTE_PERIOD_COLOR["execution"]}
         />
@@ -103,7 +99,6 @@ export default function GovernanceCycleForm() {
           name="governanceCycleForm.delayLength"
           defaultValue={3}
           tooltipContent="This is the length of time between the end of execution and the start of the next Temperature Check"
-          register={register}
           onChange={setDelayLength}
           badgeColor={VOTE_PERIOD_COLOR["delay"]}
         />
@@ -118,7 +113,6 @@ export default function GovernanceCycleForm() {
 const SmallNumberInput = ({
   label,
   name,
-  register,
   defaultValue,
   tooltipContent,
   badgeColor = "bg-gray-100",
@@ -127,28 +121,26 @@ const SmallNumberInput = ({
 }: {
   label: string;
   name: string;
-  register: any;
   defaultValue: number;
   tooltipContent?: string;
   badgeColor?: string;
   badgeContent?: string;
   onChange?: any;
 }) => {
+  const {
+    register
+  } = useFormContext();
+
   return (
     <div>
-      <div className="mb-2 mt-2 flex w-80">
-        <label className="mt-2 block text-sm font-medium text-gray-700">
+      <div className="my-2">
+        <label className="block text-sm font-medium text-gray-700"
+        >
           {label}
         </label>
-        {tooltipContent && (
-          <div className="ml-1 mt-1">
-            <Tooltip content={tooltipContent}>
-              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-400 text-xs text-white">
-                ?
-              </span>
-            </Tooltip>
-          </div>
-        )}
+        <p className="text-xs text-gray-400 break-words">
+          {tooltipContent}
+        </p>
       </div>
       <div className="mt-1 flex">
         <div className="flex rounded-md border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-indigo-500 sm:text-sm">

@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-no-undef */
 import { useContext } from "react";
-import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
+import { useForm, FormProvider, SubmitHandler, useFormContext } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Notification from "@/components/common/Notification";
@@ -67,10 +67,9 @@ function Form() {
   // form
   const methods = useForm<CreateFormValues>({ mode: "onChange" });
   const {
-    register,
     handleSubmit,
     formState: { isValid },
-    watch,
+    trigger: triggerFormValidation,
     getValues
   } = methods;
   const onSubmit: SubmitHandler<CreateFormValues> = async (formData) => {
@@ -118,22 +117,7 @@ function Form() {
                   title="Describe the Space"
                   description="Please choose a name for your space and a prefix for your proposal IDs."
                 >
-                  <div className="flex md:space-x-6 flex-col md:flex-row">
-                    <TextForm
-                      label="Nance space name"
-                      name="config.name"
-                      register={register}
-                    />
-                    <TextForm
-                      label="Proposal ID Prefix"
-                      name="config.proposalIdPrefix"
-                      register={register}
-                      maxLength={3}
-                      placeHolder="JBP"
-                      className="w-16"
-                      tooltip="Text prepended to proposal ID numbers, usually 3 letters representing your organization"
-                    />
-                  </div>
+                  <RulesForm />
                   <BackNextButtons back={back} next={next} />
                 </DescriptionCardWrapper>
               ),
@@ -200,7 +184,7 @@ function Form() {
                       fieldName="config.juicebox.gnosisSafeAddress"
                       showType={false}
                       validate={async (str) => {
-                        if(str === "") return true;
+                        if(!str) return true;
                         if (!Object.keys(safeServiceURL).includes(network as SupportedSafeNetwork)) return "Invalid network";
                         const isSafe = await isValidSafe(str, network as SupportedSafeNetwork);
                         if (!isSafe) {
@@ -235,20 +219,35 @@ function Form() {
             },
             {
               name: "Review and Submit",
-              contentRender: (back, next) => (
-                <div>
-                  <p>You may review all inputs here...</p>
-                  <pre>{JSON.stringify(watch(), null, 2)}</pre>
-                  <button
-                    type="submit"
-                    disabled={!isValid || isMutating}
-                    className="ml-300 mt-5 inline-flex w-20 justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white
-                    shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
-                  >
-                    Submit
-                  </button>
+              contentRender: (back, next, drive) => (
+                <DescriptionCardWrapper
+                  title="Review and submit"
+                  description="Review your inputs and submit to create your space."
+                >
+                  <div className="flex flex-col space-y-2 space-x-0 md:flex-row md:space-x-2 md:space-y-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerFormValidation();
+                        drive?.();
+                      }}
+                      className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-500"
+                    >
+                      Review my inputs
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={!isValid || isMutating}
+                      className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-indigo-600 disabled:bg-gray-400 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-500"
+                    >
+                      {isValid ? "Create my space" :
+                        (isMutating ? "Creating..." : "Errors in form")}
+                    </button>
+                  </div>
+
                   <BackNextButtons back={back} next={next} />
-                </div>
+                </DescriptionCardWrapper>
               ),
             },
           ]}
@@ -260,14 +259,41 @@ function Form() {
 }
 
 const BackNextButtons = ({ back, next, labelAsSkip = false }:
-  { back?: () => void, next?: () => void, labelAsSkip?: boolean}) => (
+  { back?: () => void, next?: () => void, labelAsSkip?: boolean}) => {
 
-  <div className="flex justify-end space-x-6 mt-4">
-    {back && <button
-      className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-gray-400 px-4 py-2 text-sm text-white shadow-sm hover:bg-gray-500"
-      onClick={back}>Back</button>}
-    {next && <button
-      className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-500"
-      onClick={next}>{labelAsSkip ? "Skip" : "Next"}</button>}
-  </div>
-);
+  return (
+    <div className="flex justify-end space-x-6 mt-4">
+      {back && <button
+        className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-gray-400 px-4 py-2 text-sm text-white shadow-sm hover:bg-gray-500"
+        onClick={back}>Back</button>}
+      {next && (
+        <button
+          className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-500"
+          onClick={() => next()}>
+          {labelAsSkip ? "Skip" : "Next"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function RulesForm({disabled = false}: {disabled?: boolean}) {
+  return (
+    <div className="flex md:space-x-6 flex-col md:flex-row">
+      <TextForm
+        label="Nance space name"
+        name="config.name"
+        disabled={disabled}
+      />
+      <TextForm
+        label="Proposal ID Prefix"
+        name="config.proposalIdPrefix"
+        disabled={disabled}
+        maxLength={3}
+        placeHolder="JBP"
+        className="w-16"
+        tooltip="Text prepended to proposal ID numbers, usually 3 letters representing your organization"
+      />
+    </div>
+  )
+}
