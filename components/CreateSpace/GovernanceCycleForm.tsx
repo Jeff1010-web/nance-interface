@@ -8,12 +8,12 @@ import GovernanceCalendarMini, {
 import { classNames } from "@/utils/functions/tailwind";
 
 export default function GovernanceCycleForm() {
-  const { control, getValues, setValue } = useFormContext();
+  const { control, getValues, setValue, watch } = useFormContext();
 
-  const temperatureCheckLength = getValues("governanceCycleForm.temperatureCheckLength");
-  const voteLength = getValues("governanceCycleForm.voteLength");
-  const executionLength = getValues("governanceCycleForm.executionLength");
-  const delayLength = getValues("governanceCycleForm.delayLength");
+  const temperatureCheckLength = watch("governanceCycleForm.temperatureCheckLength");
+  const voteLength = watch("governanceCycleForm.voteLength");
+  const executionLength = watch("governanceCycleForm.executionLength");
+  const delayLength = watch("governanceCycleForm.delayLength");
 
   const totalCycleLength =
     temperatureCheckLength + voteLength + executionLength + delayLength;
@@ -30,10 +30,10 @@ export default function GovernanceCycleForm() {
   }
 
   // update default startDate with current timePicker values
-  //   after initial render while getValues will be available
+  //   after initial render while setValue will be available
   useEffect(() => {
     setValue("governanceCycleForm.startDate", mergeDayWithTime(new Date()));
-  }, [getValues]);
+  }, [setValue]);
 
   return (
     <div className="flex flex-col space-x-8 md:flex-row">
@@ -142,7 +142,7 @@ const SmallNumberInput = ({
             {...register(name, { shouldUnregister: true, valueAsNumber: true })}
             className="block h-7 w-16 rounded-md rounded-r-none border-gray-300 bg-white text-xs shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
             type="number"
-            min={0}
+            min={1}
             defaultValue={defaultValue}
           ></input>
           <span
