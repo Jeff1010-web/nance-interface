@@ -20,7 +20,7 @@ export default function DiscordForm() {
 
       <NumberForm
         label="Temperature Check Yes vote threshold"
-        fieldName="config.discord.minYesVotes"
+        fieldName="config.discord.poll.minYesVotes"
         defaultValue={10}
         tooltipContent="The minimum number of yes votes required for a proposal to pass Temperature Check."
         badgeContent="👍's"
