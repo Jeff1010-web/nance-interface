@@ -61,4 +61,5 @@ export interface DiscordUserAuthResponse {
   refresh_token: string;
   scope: string;
   token_type: string;
+  state: string;
 };

@@ -7,11 +7,12 @@ export const discordScope = ["identify", "guilds"].join(" ");
 
 export const DISCORD_CLIENT_ID = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID;
 
-export const discordAuthUrl = () => {
+export const discordAuthUrl = (csrf: string, address: string) => {
   const url = "https://discord.com/api/oauth2/authorize" +
   `?client_id=${DISCORD_CLIENT_ID}&` +
   `redirect_uri=${encodeURIComponent(`${discordRedirectBaseUrl}`)}&` +
-  `response_type=code&scope=${encodeURIComponent(discordScope)}`;
+  `response_type=code&scope=${encodeURIComponent(discordScope)}&` +
+  `state=${encodeURIComponent(csrf)}`;
   return url;
 };
 

@@ -10,6 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       <body>
         <script>
           localStorage.setItem('${LOCAL_STORAGE_KEY_DISCORD_STATUS}', '${status}');
+          window.close();
         </script>
       </body>
     </html>
