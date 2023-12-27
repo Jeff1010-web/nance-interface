@@ -35,6 +35,7 @@ export default async function handler(req: any, res: any) {
     try {
       const discordUser = await response.json() as DiscordUserAuthResponse;
       console.log('Discord authentication response:', discordUser);
+      console.log('cookies', req.cookies);
       const session = await decode({
         token: req.cookies["__Secure-next-auth.session-token"] ?? req.cookies["next-auth.session-token"],
         secret: process.env.NEXTAUTH_SECRET!,
