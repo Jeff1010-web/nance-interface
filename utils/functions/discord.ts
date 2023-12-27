@@ -61,7 +61,7 @@ export function discordContactMessage(form: {
   return body;
 }
 
-export const discordAuthWindow = () => {
+export const discordAuthWindow = (address: string) => {
   return window.open(
     discordAuthUrl(),
     "_blank",

@@ -3,7 +3,8 @@
 // https://discordjs.guide/oauth2/#a-quick-example
 // https://github.com/discordjs/guide/blob/main/code-samples/oauth/simple-oauth-webserver/index.js
 import { redis } from "@/utils/functions/redis";
-import { decode, encode } from "next-auth/jwt";
+import { decode, encode, getToken } from "next-auth/jwt";
+import { getCsrfToken } from "next-auth/react";
 import { discordRedirectBaseUrl, discordScope, DISCORD_CLIENT_ID, DISCORD_PROXY_AUTH_SUCCESS_URL } from "@/utils/functions/discordURL";
 import { DISCORD_OAUTH_URL } from "@/constants/Discord";
 import { DiscordUserAuthResponse } from '@/models/DiscordTypes';
@@ -18,7 +19,8 @@ const params = {
 };
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== "GET") return res.redirect("/create");
+  // if (req.method !== "GET") return res.redirect("/create");
+  console.log();
   const { code } = req.query;
   params.code = code;
   params.redirect_uri = `${discordRedirectBaseUrl}`;
@@ -36,10 +38,7 @@ export default async function handler(req: any, res: any) {
       const discordUser = await response.json() as DiscordUserAuthResponse;
       console.log('Discord authentication response:', discordUser);
       console.log('cookies', req.cookies);
-      const session = await decode({
-        token: req.cookies["__Secure-next-auth.session-token"] ?? req.cookies["next-auth.session-token"],
-        secret: process.env.NEXTAUTH_SECRET!,
-      });
+      const session = await getToken({req});
       const key = session?.sub;
       console.log('Discord authentication session:', session);
       if (!key) return res.status(401).send('Unauthorized');
