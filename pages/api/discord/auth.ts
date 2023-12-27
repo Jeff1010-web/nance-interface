@@ -34,11 +34,13 @@ export default async function handler(req: any, res: any) {
 
     try {
       const discordUser = await response.json() as DiscordUserAuthResponse;
+      console.log('Discord authentication response:', discordUser);
       const session = await decode({
         token: req.cookies["__Secure-next-auth.session-token"] ?? req.cookies["next-auth.session-token"],
         secret: process.env.NEXTAUTH_SECRET!,
       });
       const key = session?.sub;
+      console.log('Discord authentication session:', session);
       if (!key) return res.status(401).send('Unauthorized');
       // TODO implement refresh token, set expiry to discordUser.expires_in for now and ditch the refresh token
       const encryptDiscordUserAuthResponse = await encode({
