@@ -11,3 +11,28 @@ export const proposalSetStatuses = {
   2: "Revoked",
   3: "Archived",
 };
+
+export const ProposalStatus = [
+  {
+    title: "Publish",
+    description: "Publish your proposal and let people join the discussion.",
+    value: "Discussion",
+    display: "Publish",
+  },
+  {
+    title: "Draft",
+    description: "Save your proposal as draft, you can publish it later.",
+    value: "Draft",
+    display: "Save as Draft",
+  },
+  {
+    title: "Private Draft",
+    description:
+      "Save your proposal as private, you can publish it later for discussion.",
+    value: "Private",
+    display: "Save as Private",
+  },
+];
+
+export const TEMPLATE =
+  "## Synopsis\n*State what the proposal does in one sentence.*\n\n## Motivation\n*What problem does this solve? Why now?*\n\n## Specification\n*How exactly will this be executed? Be specific and leave no ambiguity.*\n\n## Rationale\n*Why is this specification appropriate?*\n\n## Risks\n*What might go wrong?*\n\n## Timeline\n*When exactly should this proposal take effect? When exactly should this proposal end?*";

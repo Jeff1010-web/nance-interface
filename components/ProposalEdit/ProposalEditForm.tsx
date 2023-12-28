@@ -1,16 +1,12 @@
+/* eslint-disable max-lines */
 "use client";
-
-import { Listbox, Transition } from "@headlessui/react";
 import {
   CheckCircleIcon,
-  ArrowPathIcon,
-  ChevronDownIcon,
-  CheckIcon,
+  InformationCircleIcon
 } from "@heroicons/react/24/outline";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useContext, useState, useEffect, Fragment, useRef } from "react";
 import {
@@ -20,7 +16,6 @@ import {
   Controller,
 } from "react-hook-form";
 import { useProposalUpload } from "@/utils/hooks/NanceHooks";
-import { classNames } from "@/utils/functions/tailwind";
 import { CustomTransaction, ProposalUploadRequest } from "@/models/NanceTypes";
 import MiddleStepModal from "../modal/MiddleStepModal";
 import Actions from "./Actions";
@@ -30,6 +25,10 @@ import { formatDistance, fromUnixTime, getUnixTime } from "date-fns";
 import { Editor } from "@toast-ui/react-editor";
 import { getMarkdown, setMarkdown } from "@/components/Markdown/utils";
 import { ProposalMetadataContext } from "./context/ProposalMetadataContext";
+import { ProposalStatus, TEMPLATE } from "@/constants/Nance";
+import { ProposalSubmitButton } from "./ProposalSubmitButton";
+import DiscordUser from "../CreateSpace/sub/DiscordUser";
+import { classNames } from "@/utils/functions/tailwind";
 
 const ResultModal = dynamic(() => import("../modal/ResultModal"), {
   ssr: false,
@@ -43,31 +42,6 @@ const UIGuide = dynamic(() => import("@/components/common/UIGuide"), {
 });
 
 type ProposalFormValues = Omit<ProposalUploadRequest, "signature">;
-
-const ProposalStatus = [
-  {
-    title: "Publish",
-    description: "Publish your proposal and let people join the discussion.",
-    value: "Discussion",
-    display: "Publish",
-  },
-  {
-    title: "Draft",
-    description: "Save your proposal as draft, you can publish it later.",
-    value: "Draft",
-    display: "Save as Draft",
-  },
-  {
-    title: "Private Draft",
-    description:
-      "Save your proposal as private, you can publish it later for discussion.",
-    value: "Private",
-    display: "Save as Private",
-  },
-];
-
-const TEMPLATE =
-  "## Synopsis\n*State what the proposal does in one sentence.*\n\n## Motivation\n*What problem does this solve? Why now?*\n\n## Specification\n*How exactly will this be executed? Be specific and leave no ambiguity.*\n\n## Rationale\n*Why is this specification appropriate?*\n\n## Risks\n*What might go wrong?*\n\n## Timeline\n*When exactly should this proposal take effect? When exactly should this proposal end?*";
 
 interface ProposalCache {
   version: number;
@@ -89,6 +63,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
   const [selected, setSelected] = useState(ProposalStatus[0]);
   const [txnsMayFail, setTxnsMayFail] = useState(false);
   const [formDataPayload, setFormDataPayload] = useState<ProposalFormValues>();
+  const [authorDiscordId, setAuthorDiscordId] = useState<string | null>();
 
   // hooks
   const [proposalCache, setProposalCache] = useLocalStorage<ProposalCache>(
@@ -157,7 +132,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
 
     const payload = {
       ...formData.proposal,
-      authorDiscordId: metadata.authorDiscordId,
+      authorDiscordId: authorDiscordId,
       status:
         metadata.loadedProposal?.status === "Temperature Check" && !isNew
           ? "Temperature Check"
@@ -188,7 +163,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
   };
 
   // shortcut
-  const isSubmitting = isMutating;
   const error = uploadError;
 
   useEffect(() => {
@@ -206,24 +180,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
     }
     console.log("formState", watch());
   }, [formState]);
-
-  function getButtonLabel(selected: {
-    title: string;
-    description: string;
-    value: string;
-    display: string;
-  }) {
-
-    if (formErrors.length > 0) {
-      return "Error in form";
-    } else if (status === "loading") {
-      return "Connecting...";
-    } else if (isMutating) {
-      return "Submitting...";
-    } else {
-      return selected.display;
-    }
-  }
 
   return (
     <FormProvider {...methods}>
@@ -367,115 +323,32 @@ export default function ProposalEditForm({ space }: { space: string }) {
         )}
 
         <div className="flex justify-end" id="submit-button-div">
-
           {status === "unauthenticated" && (
             <button
               type="button"
               onClick={() => openConnectModal?.()}
               className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
             >
-              Connect Wallet
+            Connect Wallet
             </button>
           )}
 
           {status !== "unauthenticated" && (
-            <Listbox value={selected} onChange={setSelected} as="div">
-              {({ open }) => (
-                <>
-                  <Listbox.Label className="sr-only">
-                    Change published status
-                  </Listbox.Label>
-                  <div className="relative">
-                    <div className="inline-flex divide-x divide-blue-700 rounded-md shadow-sm">
-                      <button
-                        type="submit"
-                        disabled={
-                          isSubmitting || formErrors.length > 0
-                          //|| (!isNew && hasVoting)
-                        }
-                        className="ml-3 inline-flex justify-center rounded-none rounded-l-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400"
-                      >
-                        {(status === "loading" || isMutating) && (
-                          <ArrowPathIcon
-                            className="mr-1 h-5 w-5 animate-spin text-white"
-                            aria-hidden="true"
-                          />
-                        )}
-                        {getButtonLabel(selected)}
-                      </button>
-                      <Listbox.Button className="inline-flex items-center rounded-l-none rounded-r-md bg-blue-600 p-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-gray-50">
-                        <span className="sr-only">Change proposal status</span>
-                        <ChevronDownIcon
-                          className="h-5 w-5 text-white"
-                          aria-hidden="true"
-                        />
-                      </Listbox.Button>
-                    </div>
-
-                    <Transition
-                      show={open}
-                      as={Fragment}
-                      leave="transition ease-in duration-100"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0"
-                    >
-                      <Listbox.Options className="absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        {ProposalStatus.map((option) => (
-                          <Listbox.Option
-                            key={option.title}
-                            className={({ active }) =>
-                              classNames(
-                                active
-                                  ? "bg-blue-600 text-white"
-                                  : "text-gray-900",
-                                "cursor-default select-none p-4 text-sm",
-                              )
-                            }
-                            value={option}
-                          >
-                            {({ selected, active }) => (
-                              <div className="flex flex-col">
-                                <div className="flex justify-between">
-                                  <p
-                                    className={
-                                      selected ? "font-semibold" : "font-normal"
-                                    }
-                                  >
-                                    {option.title}
-                                  </p>
-                                  {selected ? (
-                                    <span
-                                      className={
-                                        active ? "text-white" : "text-blue-600"
-                                      }
-                                    >
-                                      <CheckIcon
-                                        className="h-5 w-5"
-                                        aria-hidden="true"
-                                      />
-                                    </span>
-                                  ) : null}
-                                </div>
-                                <p
-                                  className={classNames(
-                                    active ? "text-blue-200" : "text-gray-500",
-                                    "mt-2",
-                                  )}
-                                >
-                                  {option.description}
-                                </p>
-                              </div>
-                            )}
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </Transition>
-                  </div>
-                </>
-              )}
-            </Listbox>
+            <div className={classNames("flex w-full", isNew ? "justify-between" : "justify-end")}>
+              {isNew ? (
+                <div className="items-center ml-6">
+                  <p className="-mt-5 mb-1 text-sm text-gray-500">
+                    <InformationCircleIcon className="mr-1 inline h-5 w-5" />
+                      Optional: add your Discord ID to be notified of proposal status changes
+                  </p>
+                  <DiscordUser address={session?.user?.name || ""} setDiscordId={setAuthorDiscordId} />
+                </div>
+              ) : <></>}
+              <ProposalSubmitButton formErrors={formErrors} status={status} isMutating={isMutating} selected={selected} setSelected={setSelected} />
+            </div>
           )}
         </div>
+
       </form>
     </FormProvider>
   );

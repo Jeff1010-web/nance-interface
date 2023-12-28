@@ -1,5 +1,4 @@
 import { useQueryParams, StringParam } from "next-query-params";
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Proposal } from "@/models/NanceTypes";
@@ -8,8 +7,6 @@ import { getToken } from "next-auth/jwt";
 import { Footer, SiteNav } from "@/components/Site";
 import { ProposalMetadataContext } from "@/components/ProposalEdit/context/ProposalMetadataContext";
 import ProposalEditForm from "@/components/ProposalEdit/ProposalEditForm";
-import DiscordUser from "@/components/CreateSpace/sub/DiscordUser";
-import { useSession } from "next-auth/react";
 
 export async function getServerSideProps({ req, query, params }: any) {
   // check proposal parameter type
@@ -57,10 +54,6 @@ export default function NanceEditProposal({
   });
   const { proposalId } = query;
 
-  const { data: session, status } = useSession();
-
-  const [authorDiscordId, setAuthorDiscordId] = useState<string>("");
-
   return (
     <>
       <SiteNav
@@ -78,9 +71,6 @@ export default function NanceEditProposal({
               {proposalId && !fork ? "Edit" : "New"} Proposal for {space}
             </p>
             <div className="flex items-center">
-              {status === "authenticated" && (
-                <DiscordUser address={session?.user?.name || ""} setDiscordId={setAuthorDiscordId} />
-              )}
               <Link href={`/s/${space}`} legacyBehavior>
                 <a className="ml-4 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                   Cancel
@@ -89,7 +79,7 @@ export default function NanceEditProposal({
             </div>
           </div>
           <ProposalMetadataContext.Provider
-            value={{ loadedProposal, fork, space, authorDiscordId }}
+            value={{ loadedProposal, fork, space }}
           >
             <ProposalEditForm space={space} />
           </ProposalMetadataContext.Provider>

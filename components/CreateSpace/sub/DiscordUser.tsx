@@ -91,7 +91,7 @@ export default function DiscordUser({ address, setDiscordId, children }: PropsWi
 }
 
 const DiscordLogo = () => (
-  <div className="h-8 w-8 pt-1">
+  <div className="h-7 w-7 pt-1">
     <svg fill="#3949ab" viewBox="0 0 24 24">
       <path transform="scale(1.25,1.25)"
         fillRule="evenodd"
