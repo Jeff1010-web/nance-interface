@@ -79,7 +79,7 @@ export default function NanceEditProposal({
             </p>
             <div className="flex items-center">
               {status === "authenticated" && (
-                <DiscordUser address={session?.user?.name || ""} />
+                <DiscordUser address={session?.user?.name || ""} setDiscordId={setAuthorDiscordId} />
               )}
               <Link href={`/s/${space}`} legacyBehavior>
                 <a className="ml-4 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
@@ -89,7 +89,7 @@ export default function NanceEditProposal({
             </div>
           </div>
           <ProposalMetadataContext.Provider
-            value={{ loadedProposal, fork, space }}
+            value={{ loadedProposal, fork, space, authorDiscordId }}
           >
             <ProposalEditForm space={space} />
           </ProposalMetadataContext.Provider>

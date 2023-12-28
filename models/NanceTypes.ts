@@ -67,12 +67,6 @@ export interface FetchReconfigureRequest extends BaseRequest {
   network: string;
 }
 
-export interface SubmitTransactionRequest extends BaseRequest {
-  version: string;
-  datetime: string;
-  signature: Signature
-}
-
 export interface FetchReconfigureData {
   transaction: NanceBasicTransaction;
   nonce: string;
@@ -84,14 +78,8 @@ export interface NanceBasicTransaction {
   bytes: string;
 }
 
-export interface Signature {
-  address: string;
-  signature: string;
-  timestamp: number;
-}
-
 export interface ProposalUploadRequest {
-  proposal: Pick<Proposal, "hash" | "title" | "body" | "notification" | "actions" | "status">;
+  proposal: Pick<Proposal, "hash" | "title" | "body" | "actions" | "status" | "authorDiscordId">;
 }
 
 export interface ProposalDeleteRequest {

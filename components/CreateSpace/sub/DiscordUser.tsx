@@ -5,14 +5,15 @@ import {
   useLogoutDiscordUser,
 } from "@/utils/hooks/DiscordHooks";
 import { avatarBaseUrl } from "@/constants/Discord";
-import { discordAuthWindow } from "@/utils/functions/discord";
 import BasicFormattedCard from "@/components/common/BasicFormattedCard";
+import { DiscordConnectButton } from "@/components/Discord/DiscordConnectButton";
 
 interface DiscordUserProps {
   address: string;
+  setDiscordId?: (id: string) => void;
 }
 
-export default function DiscordUser({ address, children }: PropsWithChildren<DiscordUserProps>) {
+export default function DiscordUser({ address, setDiscordId, children }: PropsWithChildren<DiscordUserProps>) {
   // state
   const [shouldFetchDiscordUser, setShouldFetchDiscordUser] = useState(false);
 
@@ -27,6 +28,8 @@ export default function DiscordUser({ address, children }: PropsWithChildren<Dis
   );
 
   useEffect(() => {
+    if (discordUser?.id) setDiscordId?.(discordUser.id);
+
     // check if there is a recent LOCAL_STORAGE_KEY_DISCORD_STATUS we can use
     const discordStatus = localStorage.getItem(
       LOCAL_STORAGE_KEY_DISCORD_STATUS,
@@ -41,22 +44,12 @@ export default function DiscordUser({ address, children }: PropsWithChildren<Dis
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, []);
+  }, [discordUser?.id]);
 
   return (
     <>
       {!discordUser?.username && !discordLoading && (
-        <button
-          className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-black disabled:opacity-50"
-          onClick={async () => {
-            localStorage.removeItem(LOCAL_STORAGE_KEY_DISCORD_STATUS);
-            const init = await fetch("/api/discord/init");
-            const { csrf, address } = await init.json();
-            discordAuthWindow(csrf, address);
-          }}
-        >
-          Connect Discord
-        </button>
+        <DiscordConnectButton />
       )}
       <div className="flex justify-left">
         {discordLoading && (

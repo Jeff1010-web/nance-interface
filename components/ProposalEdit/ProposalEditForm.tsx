@@ -157,6 +157,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
 
     const payload = {
       ...formData.proposal,
+      authorDiscordId: metadata.authorDiscordId,
       status:
         metadata.loadedProposal?.status === "Temperature Check" && !isNew
           ? "Temperature Check"

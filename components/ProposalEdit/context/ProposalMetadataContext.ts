@@ -5,4 +5,5 @@ export const ProposalMetadataContext = createContext({
   loadedProposal: null as Proposal | null,
   fork: false as boolean,
   space: "" as string,
+  authorDiscordId: "" as string | undefined,
 });
