@@ -3,7 +3,6 @@
 
 export const getProposalNumber = (proposalId: string) => {
   const proposalIdNumberRe = /\d+/g;
-  console.log("proposalud", proposalId);
-  const proposalNumber = Number(proposalId.match(proposalIdNumberRe)?.[1]) || 0;
+  const proposalNumber = Number(proposalId.match(proposalIdNumberRe)?.[0]) || 0;
   return proposalNumber;
 };
