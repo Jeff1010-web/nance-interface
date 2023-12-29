@@ -184,6 +184,7 @@ export interface Proposal {
   createdTime?: Date;
   lastEditedTime?: string;
   actions: Action[];
+  minTokenPassingAmount?: number;
 }
 
 export type Action = {

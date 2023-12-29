@@ -108,6 +108,7 @@ export default function NanceProposalPage({
     uuid: proposal.hash || "",
     actions: proposal.actions,
     proposalId: proposal.proposalId || '',
+    minTokenPassingAmount: proposal.minTokenPassingAmount || 0,
   };
 
   return (

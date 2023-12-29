@@ -35,7 +35,7 @@ export default function ProposalVotes({
 }: {
   snapshotSpace: string;
 }) {
-  const { proposalInfo } = useContext(ProposalContext);
+  const { proposalInfo, commonProps } = useContext(ProposalContext);
   const [selectedVoter, setSelectedVoter] = useState<string>("");
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
@@ -65,6 +65,8 @@ export default function ProposalVotes({
   } else if (query.filterBy === "against") {
     votes = votes.filter((v) => v.choice === "Against");
   }
+
+  const threshold = commonProps?.minTokenPassingAmount ?? 0;
 
   return (
     <div
@@ -110,6 +112,7 @@ export default function ProposalVotes({
                 <ColorBar
                   greenScore={proposalInfo?.scores[0] || 0}
                   redScore={proposalInfo?.scores[1] || 0}
+                  threshold={threshold}
                   noTooltip
                 />
               </div>
@@ -128,6 +131,7 @@ export default function ProposalVotes({
                 <ColorBar
                   greenScore={proposalInfo?.scores_total || 0}
                   redScore={0}
+                  threshold={threshold}
                   noTooltip
                 />
               </div>
@@ -136,7 +140,7 @@ export default function ProposalVotes({
 
           <div className="flex justify-between">
             <p className="text-sm">
-              QUORUM {formatNumber(proposalInfo?.quorum || 0)}
+              QUORUM {formatNumber(threshold)}
             </p>
             <p className="text-sm">
               VOTER {formatNumber(proposalInfo?.votes || 0)}
