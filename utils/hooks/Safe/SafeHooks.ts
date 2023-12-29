@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { ethers } from "ethers";
-import { SafeInfoResponse } from "@/models/SafeTypes";
+import { SafeBalanceUsdResponse, SafeInfoResponse } from "@/models/SafeTypes";
 import { useEffect, useState } from "react";
 import { useAccount, useWalletClient } from "wagmi";
 import { useEthersSigner } from "@/utils/hooks/ViemAdapter";
@@ -25,7 +25,8 @@ import {
   delegatesJsonFetcher,
   safeInfoJsonFetcher,
   validSafeFetcher,
-  fetchSafeWithAddress
+  fetchSafeWithAddress,
+  basicFetcher
 } from "./SafeFetchers";
 
 export function useMultisigTransactionOf(
@@ -237,4 +238,14 @@ export function useIsValidAddress(
 export async function isValidSafe(address: string, network = 'Ethereum' as SupportedSafeNetwork) {
   const api = safeNetworkAPI(network);
   return fetchSafeWithAddress(`${api}/${V1}/safes/${address}`);
+}
+
+
+export function useSafeBalances(address: string, shouldFetch: boolean = true) {
+  const api = useSafeNetworkAPI();
+  return useSWR<SafeBalanceUsdResponse[], Error>(
+    shouldFetch ? `${api}/${V1}/safes/${address}/balances/usd` : null,
+    basicFetcher(),
+    { shouldRetryOnError: false },
+  );
 }

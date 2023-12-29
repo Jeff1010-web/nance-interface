@@ -5,6 +5,16 @@ import {
 import { SafeMultisigTransactionListResponse } from "@safe-global/api-kit";
 import { Fetcher } from "swr";
 
+export function basicFetcher(): Fetcher<any, string> {
+  return async (url) => {
+    const res = await fetch(url);
+    const json = await res.json();
+    console.log(json);
+
+    return json;
+  };
+}
+
 export function jsonFetcher(): Fetcher<SafeMultisigTransactionListResponse, string> {
   return async (url) => {
     const res = await fetch(url);
