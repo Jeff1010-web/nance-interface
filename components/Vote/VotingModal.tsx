@@ -2,12 +2,12 @@ import { useState, Fragment, useEffect } from "react";
 import useVotingPower from "@/utils/hooks/snapshot/VotingPower";
 import { Dialog, RadioGroup, Transition } from "@headlessui/react";
 import { SnapshotProposal } from "@/models/SnapshotTypes";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import { CheckIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
+import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import useVote from "@/utils/hooks/snapshot/Vote";
 import { useForm } from "react-hook-form";
 import { classNames } from "@/utils/functions/tailwind";
 import Notification from "@/components/common/Notification";
+import useVoteValidate from "@/utils/hooks/snapshot/Validate";
 
 const formatter = new Intl.NumberFormat("en-GB", {
   notation: "compact",
@@ -46,6 +46,8 @@ export default function VotingModal({
     spaceId,
     proposal?.id || "",
   );
+  const { value: voteValidationResult, loading: passValidationLoading } =
+    useVoteValidate(spaceId, parseInt(proposal?.snapshot) || "latest", address);
   const { trigger, value, loading, error, reset } = useVote(
     spaceId,
     proposal?.id,
@@ -86,7 +88,7 @@ export default function VotingModal({
       label = "Not supported";
     } else if (choice === undefined) {
       label = "You need to select a choice";
-    } else if (vp > 0) {
+    } else if (vp > 0 && voteValidationResult?.isValid) {
       label = "Submit vote";
       canVote = true;
     } else {
@@ -206,26 +208,34 @@ export default function VotingModal({
                           </div>
                         </div>
 
-                        {vp > 0 ? (
-                          <div className="mt-6 flex items-center">
-                            <CheckIcon
-                              className="h-5 w-5 flex-shrink-0 text-green-500"
-                              aria-hidden="true"
-                            />
-                            <p className="ml-2 font-medium text-gray-500">
-                              Your voting power: {formatNumber(vp)}
+                        {!vpLoading && (
+                          <div className="mt-3 flex items-center">
+                            {vp > 0 ? (
+                              <CheckIcon
+                                className="h-5 w-5 flex-shrink-0 text-green-500"
+                                aria-hidden="true"
+                              />
+                            ) : (
+                              <XMarkIcon
+                                className="h-5 w-5 flex-shrink-0 text-red-500"
+                                aria-hidden="true"
+                              />
+                            )}
+                            <p className="ml-1 font-medium text-gray-500">
+                              Voting power: {formatNumber(vp)}
                             </p>
                           </div>
-                        ) : (
-                          <div className="mt-6 flex items-center">
-                            <ExclamationTriangleIcon
-                              className="h-5 w-5 flex-shrink-0 text-yellow-500"
+                        )}
+
+                        {!voteValidationResult?.isValid && (
+                          <div className="mt-1 flex items-center">
+                            <XMarkIcon
+                              className="h-5 w-5 flex-shrink-0 text-red-500"
                               aria-hidden="true"
                             />
-                            <p className="ml-2 font-medium text-gray-500">
-                              {vpLoading
-                                ? "Loading..."
-                                : "You have no voting power"}
+                            <p className="ml-1 font-medium text-gray-500">
+                              Validation:{" "}
+                              {voteValidationResult?.voteValidation.name}
                             </p>
                           </div>
                         )}
@@ -408,8 +418,8 @@ function WeightedChoiceSelector({
             {isNaN(getValues((index + 1).toString())) || totalUnits == 0
               ? "0%"
               : `${Math.round(
-                (getValues((index + 1).toString()) / totalUnits) * 100,
-              )}%`}
+                  (getValues((index + 1).toString()) / totalUnits) * 100,
+                )}%`}
           </span>
         </div>
       ))}

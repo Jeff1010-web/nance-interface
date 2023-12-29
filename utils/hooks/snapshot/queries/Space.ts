@@ -4,10 +4,19 @@ query SpaceInfo($spaceId: String) {
     name
     about
     avatar
+    network
     proposalsCount
     followersCount
     voting {
       hideAbstain
+    }
+    validation {
+      name
+      params
+    }
+    voteValidation {
+      name
+      params
     }
   }
 }

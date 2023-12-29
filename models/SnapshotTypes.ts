@@ -1,21 +1,30 @@
 export interface SpaceMetric {
-  categories?: string[],
-  followers?: number
-  proposals?: number,
-  name: string,
-  network: string,
-  networks: string[]
+  categories?: string[];
+  followers?: number;
+  proposals?: number;
+  name: string;
+  network: string;
+  networks: string[];
 }
 
 export interface SpaceInfo {
-  name: string,
-  about: string,
-  avatar: string,
-  proposalsCount: number,
-  followersCount: number,
+  name: string;
+  about: string;
+  avatar: string;
+  network: string;
+  proposalsCount: number;
+  followersCount: number;
   voting: {
-    hideAbstain: boolean
-  }
+    hideAbstain: boolean;
+  };
+  validation: {
+    name: string;
+    params: any;
+  };
+  voteValidation: {
+    name: string;
+    params: any;
+  };
 }
 
 export interface SpaceSettings {
@@ -72,21 +81,21 @@ export interface SpaceSettings {
 }
 
 export interface SpaceSearch {
-  id: string,
-  name: string,
-  avatar: string,
-  admins: string[],
-  moderators: string[]
+  id: string;
+  name: string;
+  avatar: string;
+  admins: string[];
+  moderators: string[];
 }
 
 export interface AllSpacesResponse {
-  [spaceId: string]: SpaceMetric
+  [spaceId: string]: SpaceMetric;
 }
 
 export interface FollowedSpacesData {
-  id: string,
-  name: string,
-  activeProposals: number
+  id: string;
+  name: string;
+  activeProposals: number;
 }
 
 // Model for a single proposal
@@ -114,17 +123,17 @@ export interface SnapshotProposal {
 
 export interface ProposalOverviewQueryModel {
   proposals: {
-    id: string
-    state: string
-    quorum: number,
-    scores_total: number
-  }[],
+    id: string;
+    state: string;
+    quorum: number;
+    scores_total: number;
+  }[];
   votes: {
-    id: string
+    id: string;
     proposal: {
-        id: string
-    }
-  }[]
+      id: string;
+    };
+  }[];
 }
 
 export interface SnapshotProposalsOverview {
@@ -136,7 +145,7 @@ export interface SnapshotProposalsOverview {
     quorum: number;
     // voted?
     voted: boolean;
-  }
+  };
 }
 
 export interface SnapshotSpaceWithVotesCount {
