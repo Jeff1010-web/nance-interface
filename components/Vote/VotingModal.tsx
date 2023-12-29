@@ -150,8 +150,8 @@ export default function VotingModal({
               leaveFrom="opacity-100 translate-y-0 md:scale-100"
               leaveTo="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
             >
-              <Dialog.Panel className="flex w-full transform text-left text-base transition md:my-8 md:max-w-2xl md:px-4 lg:max-w-4xl">
-                <div className="relative flex w-full items-center overflow-hidden bg-white px-4 pb-8 pt-14 shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8">
+              <Dialog.Panel className="flex w-full transform text-left text-base transition md:my-8 md:max-w-xl md:px-4">
+                <div className="relative flex w-full items-center overflow-hidden rounded-lg bg-white px-4 pb-8 pt-14 shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8">
                   <button
                     type="button"
                     className="absolute right-4 top-4 text-gray-400 hover:text-gray-500 sm:right-6 sm:top-8 md:right-6 md:top-6 lg:right-8 lg:top-8"
@@ -249,7 +249,7 @@ export default function VotingModal({
                         </h3>
 
                         <form>
-                          <div className="sm:flex sm:justify-between">
+                          <div className="">
                             {/* Option selector */}
                             {(proposal.type == "single-choice" ||
                               proposal.type == "basic") && (
@@ -324,7 +324,7 @@ function BasicChoiceSelector({ value, setValue, choices }: SelectorProps) {
       <RadioGroup.Label className="block text-sm font-medium text-gray-700">
         Options
       </RadioGroup.Label>
-      <div className="mt-1 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-1 grid w-full grid-cols-1 gap-4">
         {choices.map((choice, index) => (
           <RadioGroup.Option
             as="div"
@@ -333,7 +333,7 @@ function BasicChoiceSelector({ value, setValue, choices }: SelectorProps) {
             className={({ active }) =>
               classNames(
                 active ? "ring-2 ring-indigo-500" : "",
-                "relative block cursor-pointer rounded-lg border border-gray-300 p-4 focus:outline-none",
+                "relative block cursor-pointer rounded-lg border border-gray-300 p-4 text-center focus:outline-none",
               )
             }
           >
