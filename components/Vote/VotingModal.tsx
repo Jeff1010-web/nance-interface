@@ -43,11 +43,7 @@ export default function VotingModal({
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   // external
   const { data: spaceInfo } = useSnapshotSpaceInfo(spaceId);
-  const { data: vp, loading: vpLoading } = useVotingPower(
-    address,
-    spaceId,
-    proposal?.id || "",
-  );
+  const { data: vp } = useVotingPower(address, spaceId, proposal?.id || "");
   const { value: voteValidationResult } = useVoteValidate(
     spaceId,
     parseInt(proposal?.snapshot) || "latest",
@@ -206,12 +202,7 @@ export default function VotingModal({
                             <h4 className="sr-only">Scores</h4>
                             <div className="flex items-center">
                               <div className="flex items-center">
-                                Scores: {formatNumber(totalScore)}&nbsp;
-                                {proposal.quorum > 0 &&
-                                  `(${(
-                                    (totalScore * 100) /
-                                    proposal.quorum
-                                  ).toFixed()}% of quorum)`}
+                                Scores: {formatNumber(totalScore)}
                               </div>
                               <p className="sr-only">
                                 {totalScore} out of {proposal.quorum} quorum
