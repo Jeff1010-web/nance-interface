@@ -2,12 +2,13 @@ import { useState, Fragment, useEffect } from "react";
 import useVotingPower from "@/utils/hooks/snapshot/VotingPower";
 import { Dialog, RadioGroup, Transition } from "@headlessui/react";
 import { SnapshotProposal } from "@/models/SnapshotTypes";
-import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import useVote from "@/utils/hooks/snapshot/Vote";
 import { useForm } from "react-hook-form";
 import { classNames } from "@/utils/functions/tailwind";
 import Notification from "@/components/common/Notification";
 import useVoteValidate from "@/utils/hooks/snapshot/Validate";
+import useSnapshotSpaceInfo from "@/utils/hooks/snapshot/SpaceInfo";
 
 const formatter = new Intl.NumberFormat("en-GB", {
   notation: "compact",
@@ -41,13 +42,18 @@ export default function VotingModal({
   const [reason, setReason] = useState("");
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   // external
+  const { data: spaceInfo } = useSnapshotSpaceInfo(spaceId);
   const { data: vp, loading: vpLoading } = useVotingPower(
     address,
     spaceId,
     proposal?.id || "",
   );
-  const { value: voteValidationResult, loading: passValidationLoading } =
-    useVoteValidate(spaceId, parseInt(proposal?.snapshot) || "latest", address);
+  const { value: voteValidationResult } = useVoteValidate(
+    spaceId,
+    parseInt(proposal?.snapshot) || "latest",
+    address,
+    spaceInfo,
+  );
   const { trigger, value, loading, error, reset } = useVote(
     spaceId,
     proposal?.id,
@@ -75,6 +81,7 @@ export default function VotingModal({
   const totalScore = hideAbstain
     ? proposal.scores_total - (proposal?.scores[2] ?? 0)
     : proposal.scores_total;
+  const symbol = spaceInfo?.symbol || "Tokens";
 
   const renderVoteButton = () => {
     let canVote = false;
@@ -88,6 +95,11 @@ export default function VotingModal({
       label = "Not supported";
     } else if (choice === undefined) {
       label = "You need to select a choice";
+    } else if (
+      !voteValidationResult?.isValid &&
+      voteValidationResult?.invalidMessage
+    ) {
+      label = voteValidationResult?.invalidMessage;
     } else if (vp > 0 && voteValidationResult?.isValid) {
       label = "Submit vote";
       canVote = true;
@@ -208,24 +220,11 @@ export default function VotingModal({
                           </div>
                         </div>
 
-                        {!vpLoading && (
-                          <div className="mt-3 flex items-center">
-                            {vp > 0 ? (
-                              <CheckIcon
-                                className="h-5 w-5 flex-shrink-0 text-green-500"
-                                aria-hidden="true"
-                              />
-                            ) : (
-                              <XMarkIcon
-                                className="h-5 w-5 flex-shrink-0 text-red-500"
-                                aria-hidden="true"
-                              />
-                            )}
-                            <p className="ml-1 font-medium text-gray-500">
-                              Voting power: {formatNumber(vp)}
-                            </p>
-                          </div>
-                        )}
+                        <div className="mt-3 flex items-center">
+                          <p className="ml-1 font-medium text-gray-500">
+                            Voting power: {formatNumber(vp)} {symbol}
+                          </p>
+                        </div>
 
                         {!voteValidationResult?.isValid && (
                           <div className="mt-1 flex items-center">

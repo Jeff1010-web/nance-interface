@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import useSnapshotSpaceInfo from "./SpaceInfo";
 import { SpaceInfo } from "@/models/SnapshotTypes";
+import { strategySymbolsOf } from "@/utils/functions/snapshotUtil";
 
 export type VoteValidationResult = Pick<SpaceInfo, "voteValidation"> & {
   isValid: boolean;
+  invalidMessage: string;
 };
 
 const emptyVoteValidationResult: VoteValidationResult = {
   isValid: true,
+  invalidMessage: "",
   voteValidation: {
     name: "any",
     params: {},
@@ -18,6 +20,7 @@ export default function useVoteValidate(
   space: string,
   snapshotBlock: number | "latest",
   address: string | undefined,
+  spaceInfo: SpaceInfo | undefined,
 ) {
   // state
   const [value, setValue] = useState<VoteValidationResult>(
@@ -26,11 +29,12 @@ export default function useVoteValidate(
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<any>(undefined);
 
-  const { data: spaceInfo } = useSnapshotSpaceInfo(space);
-
   useEffect(() => {
     const validationName = spaceInfo?.voteValidation?.name || "any";
     const validationParams = spaceInfo?.voteValidation?.params || {};
+    const symbol = strategySymbolsOf(
+      spaceInfo?.voteValidation?.params.strategies,
+    );
     const networkId = spaceInfo?.network || "1";
     const options = {};
 
@@ -42,6 +46,7 @@ export default function useVoteValidate(
     } else if (validationName === "any") {
       setValue({
         isValid: true,
+        invalidMessage: "",
         voteValidation: { name: validationName, params: validationParams },
       });
       setLoading(false);
@@ -71,12 +76,16 @@ export default function useVoteValidate(
           options,
         );
       })
-      .then((isValid: boolean) =>
+      .then((isValid: boolean) => {
         setValue({
           isValid,
+          invalidMessage:
+            validationName === "basic"
+              ? `You need at least ${spaceInfo?.voteValidation.params.minScore} ${symbol} to vote`
+              : "",
           voteValidation: { name: validationName, params: validationParams },
-        }),
-      )
+        });
+      })
       .catch((err) => {
         console.warn("🚨 useVote.trigger.error ->", err);
         setError(err);

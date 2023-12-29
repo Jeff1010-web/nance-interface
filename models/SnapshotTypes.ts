@@ -17,6 +17,7 @@ export interface SpaceInfo {
   voting: {
     hideAbstain: boolean;
   };
+  symbol: string;
   validation: {
     name: string;
     params: any;

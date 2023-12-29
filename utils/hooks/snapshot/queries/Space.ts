@@ -18,6 +18,7 @@ query SpaceInfo($spaceId: String) {
       name
       params
     }
+    symbol
   }
 }
 `;
