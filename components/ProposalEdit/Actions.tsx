@@ -107,7 +107,7 @@ export default function Actions({
                 })}
                 className="hidden"
               />
-              <TransferActionForm genFieldName={genFieldName(index)} />
+              <TransferActionForm genFieldName={genFieldName(index)} address={spaceInfo?.data.transactorAddress?.address || ""} />
             </div>
           );
         } else if (field.type === "Reserve") {

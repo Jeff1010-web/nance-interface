@@ -38,7 +38,7 @@ export default function DiscordConfigForm({ guildId }: { guildId: string }) {
   }
 
   return (
-    <div>
+    <div className="mt-2">
       <DiscordChannelForm
         guildId={guildId}
         label="Select a channel to post proposals"

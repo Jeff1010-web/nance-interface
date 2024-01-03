@@ -32,7 +32,7 @@ export default function DiscordRoleForm({
   }
 
   return (
-    <>
+    <div className="mt-2">
       <Controller
         name={fieldName}
         control={control}
@@ -55,6 +55,6 @@ export default function DiscordRoleForm({
         name={fieldName}
         render={({ message }) => <p className="text-red-500">{message}</p>}
       />
-    </>
+    </div>
   );
 }

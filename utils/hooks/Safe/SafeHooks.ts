@@ -244,7 +244,7 @@ export async function isValidSafe(address: string, network = 'Ethereum' as Suppo
 export function useSafeBalances(address: string, shouldFetch: boolean = true) {
   const api = useSafeNetworkAPI();
   return useSWR<SafeBalanceUsdResponse[], Error>(
-    shouldFetch ? `${api}/${V1}/safes/${address}/balances/usd` : null,
+    shouldFetch ? `${api}/${V1}/safes/${address}/balances/usd/?trusted=true&exclude_spam=true` : null,
     basicFetcher(),
     { shouldRetryOnError: false },
   );
