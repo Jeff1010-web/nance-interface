@@ -1,9 +1,8 @@
 import { shortenAddress } from "@/utils/functions/address";
 import { Address, useEnsName } from "wagmi";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { classNames } from "@/utils/functions/tailwind";
 import { getAddressLink } from "@/utils/functions/EtherscanURL";
-import { NetworkContext } from "@/context/NetworkContext";
 import CopyableTooltip from "../common/CopyableTooltip";
 import BasicFormattedCard from "../common/BasicFormattedCard";
 
@@ -25,6 +24,10 @@ interface Props {
    */
   overrideURLPrefix?: string;
   /**
+   * Network to use for block explorer link. Default is `mainnet`.
+   */
+  network?: string;
+  /**
    * Open the link in a new window. Default is `true`.
    */
   openInNewWindow?: boolean;
@@ -40,6 +43,7 @@ interface Props {
  * @param style Style of the address.
  * @param subText Subtext of the address.
  * @param overrideURLPrefix Override the URL prefix. Default is `https://[goerli.]etherscan.io/address/`.
+ * @param network Network to use for block explorer link. Default is `mainnet`.
  * @param openInNewWindow Open the link in a new window. Default is `true`.
  * @param minified Don't render the link and avatar.
  */
@@ -48,6 +52,7 @@ export default function FormattedAddress({
   subText,
   style,
   overrideURLPrefix,
+  network,
   openInNewWindow = true,
   minified = false,
 }: Props) {
@@ -58,8 +63,8 @@ export default function FormattedAddress({
   const [label, setLabel] = useState(shortenAddress(address) || "Anon");
   const { data: ensName } = useEnsName({ address: addr, enabled: hasAddr, chainId: 1 });
 
-  const network = 'mainnet';
-  const urlPrefix = overrideURLPrefix || getAddressLink("", network);
+  const _network = network || 'mainnet';
+  const urlPrefix = overrideURLPrefix || getAddressLink("", _network);
 
   useEffect(() => {
     if (ensName) {

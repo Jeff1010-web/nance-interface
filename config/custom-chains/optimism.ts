@@ -3,6 +3,7 @@ import { optimism } from "wagmi/chains";
 
 export const Optimism: Chain = {
   ...optimism,
+  iconUrl: "/images/chains/optimism.svg",
   rpcUrls: {
     public: {
       http: ["https://rpc.ankr.com/optimism"],

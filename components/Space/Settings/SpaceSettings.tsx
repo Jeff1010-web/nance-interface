@@ -12,6 +12,7 @@ import { SpaceConfig } from '@/models/NanceTypes';
 import General from './sub/General';
 import Tasks from './sub/Tasks';
 import Dialog from './sub/Dialog';
+import Execution from "./sub/Execution";
 
 export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfig }) {
   const navigation = [
@@ -20,7 +21,7 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
     { name: 'Schedule', icon: CalendarDaysIcon, component: <div>Component for Schedule</div> },
     { name: 'Dialog', icon: ChatBubbleOvalLeftIcon, component: <Dialog spaceConfig={spaceConfig}/> },
     { name: 'Vote', icon: BuildingLibraryIcon, component: <div>Component for Vote</div> },
-    { name: 'Execution', icon: KeyIcon, component: <div>Component for Execution</div> },
+    { name: 'Execution', icon: KeyIcon, component: <Execution spaceConfig={spaceConfig}/> },
   ];
 
   const [selectedSetting, setSelectedSetting] = useState<string>(navigation[0].name);

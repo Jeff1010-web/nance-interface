@@ -3,6 +3,7 @@ import { mainnet } from "wagmi/chains";
 
 export const Mainnet: Chain = {
   ...mainnet,
+  iconUrl: "/images/chains/ethereum.svg",
   rpcUrls: {
     public: {
       http: ["https://eth.llamarpc.com"],

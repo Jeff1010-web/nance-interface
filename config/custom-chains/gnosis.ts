@@ -3,7 +3,7 @@ import { gnosis } from "wagmi/chains";
 
 export const Gnosis: Chain = {
   ...gnosis,
-  iconUrl: "/images/gnosis.png",
+  iconUrl: "/images/chains/gnosis.png",
   rpcUrls: {
     public: {
       http: ["https://rpc.ankr.com/gnosis"],
