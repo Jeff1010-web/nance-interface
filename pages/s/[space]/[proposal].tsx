@@ -140,7 +140,7 @@ export default function NanceProposalPage({
               }}
             >
               <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
-                <div className="space-y-6 lg:col-span-2 lg:col-start-1">
+                <div className="space-y-6 lg:col-span-2">
                   {/* Content */}
                   <section aria-labelledby="proposal-title">
                     <ProposalContent body={commonProps.body} />
@@ -164,7 +164,7 @@ export default function NanceProposalPage({
 
                 <section
                   aria-labelledby="stats-title"
-                  className="lg:col-span-1 lg:col-start-3"
+                  className="lg:col-span-1"
                 >
                   <ProposalSidebar
                     space={space}

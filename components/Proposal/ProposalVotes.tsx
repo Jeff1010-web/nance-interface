@@ -72,10 +72,10 @@ export default function ProposalVotes({
     <div
       className="flex flex-col"
       style={{
-        maxHeight: "calc(100vh - 12rem)",
+        maxHeight: "calc(100vh - 30rem)",
       }}
     >
-      <div className="overflow-y-scroll pt-5">
+      <div className="overflow-y-scroll pt-2">
         <div className="">
           {isSimpleVoting && (
             <>

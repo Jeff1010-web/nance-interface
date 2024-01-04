@@ -1,5 +1,4 @@
 import remarkGfm from "remark-gfm";
-import remarkToc from "remark-toc";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeSlug from "rehype-slug";
@@ -12,7 +11,7 @@ export default function MarkdownWithTOC({ body }: { body: string }) {
   return (
     <article className="prose md:prose-lg lg:prose-xl prose-indigo prose-table:table-fixed mx-auto break-words text-gray-500">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkToc]}
+        remarkPlugins={[remarkGfm]}
         rehypePlugins={[
           rehypeRaw,
           rehypeSanitize,
@@ -35,7 +34,7 @@ export default function MarkdownWithTOC({ body }: { body: string }) {
           h6: ({ node, ...props }) => <h6 className="group" {...props} />,
         }}
       >
-        {"## Table of contents \n\n ## Contents \n\n" + body}
+        {body}
       </ReactMarkdown>
     </article>
   );
