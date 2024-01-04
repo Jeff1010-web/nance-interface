@@ -8,6 +8,7 @@ import useSetSpace from "@/utils/hooks/snapshot/SetSpace";
 import Image from "next/image";
 import { Session } from "next-auth";
 import { Tooltip } from "flowbite-react";
+import BasicFormattedCard from "@/components/common/BasicFormattedCard";
 
 const canEditSnapshotSpace = (space: SpaceSearch, address: string) => {
   return space.admins.includes(address) || space.moderators.includes(address);
@@ -37,27 +38,16 @@ export default function SnapshotSearch({
         Select a snapshot.org space
       </div>
       {selectedSpace && (
-        <div className="mt-4 rounded-md border border-gray-300 bg-white p-2 w-fit">
-          <span className="flex items-center">
-            <Image
-              src={`https://cdn.stamp.fyi/space/${selectedSpace?.id}?s=160}`}
-              alt={selectedSpace?.name || ""}
-              className="ml-1 h-10 w-10 flex-shrink-0 rounded-full"
-              width={100}
-              height={100}
-            />
-            <span className="ml-3 block truncate">{selectedSpace?.name}</span>
-            <XCircleIcon
-              onClick={() => {
-                setSelectedSpace(null);
-                setVal("");
-                reset();
-              }}
-              className="ml-3 h-5 w-5 cursor-pointer text-gray-400"
-              aria-hidden="true"
-            />
-          </span>
-        </div>
+        <BasicFormattedCard
+          imgSrc={`https://cdn.stamp.fyi/space/${selectedSpace?.id}?s=160}`}
+          imgAlt={selectedSpace?.name || ""}
+          action={() => {
+            setSelectedSpace(null);
+            setVal("");
+            reset();
+          }} >
+          {selectedSpace?.name}
+        </BasicFormattedCard>
       )}
       {!selectedSpace && (
         <Combobox

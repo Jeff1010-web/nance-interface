@@ -11,6 +11,7 @@ interface Step {
   contentRender?: (
     back: (() => void) | undefined,
     next: (() => void) | undefined,
+    setStep: (step: number) => void,
     drive?: () => void,
   ) => JSX.Element;
 }
@@ -58,7 +59,7 @@ export default function MultipleStep({
         title: `Step ${stepIdx + 1} - ${step.name}`,
         description: "Click next to continue, or click elsewhere to skip.",
         side: "bottom",
-        align: 'start',
+        align: "start",
         onNextClick: () => {
           setCurrentStepIdxWithScroll(stepIdx + 1);
           driverObj.moveNext();
@@ -67,7 +68,7 @@ export default function MultipleStep({
           setCurrentStepIdxWithScroll(stepIdx - 1);
           driverObj.movePrevious();
         },
-      }
+      },
     };
   });
   driverSteps.pop();
@@ -77,7 +78,7 @@ export default function MultipleStep({
     prevBtnText: "Back",
     doneBtnText: "Done",
     showProgress: true,
-    steps: driverSteps
+    steps: driverSteps,
   });
 
   return (
@@ -187,17 +188,18 @@ export default function MultipleStep({
           >
             {step.contentRender
               ? step.contentRender(
-                currentStepIdx - 1 >= 0
-                  ? () => setCurrentStepIdxWithScroll(currentStepIdx - 1)
-                  : undefined,
-                currentStepIdx + 1 <= steps.length - 1
-                  ? () => setCurrentStepIdxWithScroll(currentStepIdx + 1)
-                  : undefined,
-                () => {
-                  setCurrentStepIdxWithScroll(0);
-                  driverObj.drive();
-                }
-              )
+                  currentStepIdx - 1 >= 0
+                    ? () => setCurrentStepIdxWithScroll(currentStepIdx - 1)
+                    : undefined,
+                  currentStepIdx + 1 <= steps.length - 1
+                    ? () => setCurrentStepIdxWithScroll(currentStepIdx + 1)
+                    : undefined,
+                  (step: number) => setCurrentStepIdxWithScroll(step),
+                  () => {
+                    setCurrentStepIdxWithScroll(0);
+                    driverObj.drive();
+                  },
+                )
               : step.content}
           </div>
         ))}

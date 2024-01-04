@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-no-undef */
 import { useContext } from "react";
-import { useForm, FormProvider, SubmitHandler, useFormContext } from "react-hook-form";
+import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Notification from "@/components/common/Notification";
@@ -13,7 +13,6 @@ import {
   DiscordForm,
   GovernanceCycleForm,
   SnapshotForm,
-  TextForm,
 } from "@/components/CreateSpace";
 import { SiteNav } from "@/components/Site";
 import DiscordUser from "@/components/CreateSpace/sub/DiscordUser";
@@ -22,7 +21,13 @@ import MultipleStep from "@/components/MultipleStep/MultipleStep";
 import { isValidSafe } from "@/utils/hooks/Safe/SafeHooks";
 import DescriptionCardWrapper from "@/components/DescriptionCardWrapper/DescriptionCardWrapper";
 import { NetworkContext } from "@/context/NetworkContext";
-import { safeServiceURL, SupportedSafeNetwork } from "@/utils/hooks/Safe/SafeURL";
+import {
+  safeServiceURL,
+  SupportedSafeNetwork,
+} from "@/utils/hooks/Safe/SafeURL";
+import RulesForm from "@/components/CreateSpace/RulesForm";
+import BackNextButtons from "@/components/CreateSpace/BackNextButtons";
+import ReviewSpaceConfig from "@/components/CreateSpace/ReviewSpaceConfig";
 
 export default function CreateSpacePage() {
   return (
@@ -50,6 +55,9 @@ export default function CreateSpacePage() {
   );
 }
 
+export const SAFE_ADDRESS_FIELD = "config.juicebox.gnosisSafeAddress";
+export const JUICEBOX_PROJECT_FIELD = "config.juicebox.projectId";
+
 function Form() {
   const { data: session, status } = useSession();
   const address = session?.user?.name || "";
@@ -70,7 +78,7 @@ function Form() {
     handleSubmit,
     formState: { isValid },
     trigger: triggerFormValidation,
-    getValues
+    getValues,
   } = methods;
   const onSubmit: SubmitHandler<CreateFormValues> = async (formData) => {
     console.log(formData);
@@ -85,7 +93,6 @@ function Form() {
   const network = useContext(NetworkContext);
 
   return (
-
     <FormProvider {...methods}>
       <Notification
         title="Success"
@@ -181,12 +188,20 @@ function Form() {
                   <div className="w-fit">
                     <AddressForm
                       label="Safe address"
-                      fieldName="config.juicebox.gnosisSafeAddress"
+                      fieldName={SAFE_ADDRESS_FIELD}
                       showType={false}
                       validate={async (str) => {
-                        if(!str) return true;
-                        if (!Object.keys(safeServiceURL).includes(network as SupportedSafeNetwork)) return "Invalid network";
-                        const isSafe = await isValidSafe(str, network as SupportedSafeNetwork);
+                        if (!str) return true;
+                        if (
+                          !Object.keys(safeServiceURL).includes(
+                            network as SupportedSafeNetwork,
+                          )
+                        )
+                          return "Invalid network";
+                        const isSafe = await isValidSafe(
+                          str,
+                          network as SupportedSafeNetwork,
+                        );
                         if (!isSafe) {
                           return "Invalid Safe address, check if you are on the correct network";
                         }
@@ -194,7 +209,16 @@ function Form() {
                       required={false}
                     />
                   </div>
-                  <BackNextButtons back={back} next={next} labelAsSkip={!(getValues("config.juicebox.gnosisSafeAddress")?.length > 0)} />
+                  <BackNextButtons
+                    back={back}
+                    next={next}
+                    labelAsSkip={
+                      !(
+                        getValues("config.juicebox.gnosisSafeAddress")?.length >
+                        0
+                      )
+                    }
+                  />
                 </DescriptionCardWrapper>
               ),
             },
@@ -208,41 +232,37 @@ function Form() {
                   <div className="w-fit">
                     <ProjectForm
                       label="Juicebox project"
-                      fieldName="config.juicebox.projectId"
+                      fieldName={JUICEBOX_PROJECT_FIELD}
                       showType={false}
                       required={false}
                     />
                   </div>
-                  <BackNextButtons back={back} next={next} labelAsSkip={getValues("config.juicebox.projectId") === undefined} />
+                  <BackNextButtons
+                    back={back}
+                    next={next}
+                    labelAsSkip={
+                      getValues("config.juicebox.projectId") === undefined
+                    }
+                  />
                 </DescriptionCardWrapper>
               ),
             },
             {
               name: "Review and Submit",
-              contentRender: (back, next, drive) => (
+              contentRender: (back, next, setStep) => (
                 <DescriptionCardWrapper
                   title="Review and submit"
-                  description="Review your inputs and submit to create your space."
+                  description="Review your inputs and submit to create your space. You can jump to related fields by clicking that area."
                 >
-                  <div className="flex flex-col space-y-2 space-x-0 md:flex-row md:space-x-2 md:space-y-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        triggerFormValidation();
-                        drive?.();
-                      }}
-                      className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-500"
-                    >
-                      Review my inputs
-                    </button>
+                  <ReviewSpaceConfig setStep={setStep} />
 
+                  <div className="mt-4 flex flex-col space-x-0 space-y-2 md:flex-row md:space-x-2 md:space-y-0">
                     <button
                       type="submit"
-                      disabled={!isValid || isMutating}
-                      className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-indigo-600 disabled:bg-gray-400 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-500"
+                      disabled={isMutating}
+                      className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-500 disabled:bg-gray-400"
                     >
-                      {isValid ? "Create my space" :
-                        (isMutating ? "Creating..." : "Errors in form")}
+                      {isMutating ? "Creating..." : "Create my space"}
                     </button>
                   </div>
 
@@ -256,44 +276,4 @@ function Form() {
       </form>
     </FormProvider>
   );
-}
-
-const BackNextButtons = ({ back, next, labelAsSkip = false }:
-  { back?: () => void, next?: () => void, labelAsSkip?: boolean}) => {
-
-  return (
-    <div className="flex justify-end space-x-6 mt-4">
-      {back && <button
-        className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-gray-400 px-4 py-2 text-sm text-white shadow-sm hover:bg-gray-500"
-        onClick={back}>Back</button>}
-      {next && (
-        <button
-          className="inline-flex w-fit items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm text-white shadow-sm hover:bg-indigo-500"
-          onClick={() => next()}>
-          {labelAsSkip ? "Skip" : "Next"}
-        </button>
-      )}
-    </div>
-  );
-}
-
-function RulesForm({disabled = false}: {disabled?: boolean}) {
-  return (
-    <div className="flex md:space-x-6 flex-col md:flex-row">
-      <TextForm
-        label="Nance space name"
-        name="config.name"
-        disabled={disabled}
-      />
-      <TextForm
-        label="Proposal ID Prefix"
-        name="config.proposalIdPrefix"
-        disabled={disabled}
-        maxLength={3}
-        placeHolder="JBP"
-        className="w-16"
-        tooltip="Text prepended to proposal ID numbers, usually 3 letters representing your organization"
-      />
-    </div>
-  )
 }

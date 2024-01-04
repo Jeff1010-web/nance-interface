@@ -29,7 +29,7 @@ export default function GovernanceCalendarMini({
   totalCycleLength,
 }: {
   selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
+  setSelectedDate: ((date: Date) => void) | undefined;
   mergeDayWithTime: (day: Date) => Date;
   temperatureCheckLength: number;
   votingLength: number;
@@ -144,7 +144,8 @@ export default function GovernanceCalendarMini({
             >
               <button
                 type="button"
-                onClick={() => setSelectedDate(dayWSC.day)}
+                onClick={() => setSelectedDate?.(dayWSC.day)}
+                disabled={setSelectedDate === undefined}
                 className={classNames(
                   // highlight selected status
                   isSameDay(dayWSC.day, selectedDate) &&
@@ -160,7 +161,7 @@ export default function GovernanceCalendarMini({
                     !isToday(dayWSC.day) &&
                     !isSameMonth(dayWSC.day, firstDayCurrentMonth) &&
                     "text-gray-400",
-                  !isSameDay(dayWSC.day, selectedDate) && "hover:bg-gray-200 hover:from-gray-200",
+                  !isSameDay(dayWSC.day, selectedDate) && setSelectedDate && "hover:bg-gray-200 hover:from-gray-200",
                   isToday(dayWSC.day) && "font-semibold",
                   // colored background for stages
                   dayWSC.bgColor,
