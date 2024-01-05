@@ -38,11 +38,11 @@ export async function getServerSideProps({ req, params, res }: any) {
   ).then((res) => res.json());
   proposal = proposalResponse.data;
 
-  if (!canEditProposal(proposal.status))
-    res.setHeader(
-      "Cache-Control",
-      "public, s-maxage=86400, stale-while-revalidate=59",
-    );
+  // if (!canEditProposal(proposal.status))
+  //   res.setHeader(
+  //     "Cache-Control",
+  //     "public, s-maxage=86400, stale-while-revalidate=59",
+  //   );
 
   // Pass data to the page via props
   return {
