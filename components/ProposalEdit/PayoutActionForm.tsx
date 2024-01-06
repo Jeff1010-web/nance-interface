@@ -67,6 +67,7 @@ export default function PayoutActionForm({
             fieldName={genFieldName("address")}
             defaultValue={projectOwner}
             disabled
+            disabledTooltip="The token beneficiary must be the project owner"
           />
         )}
 

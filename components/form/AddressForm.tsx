@@ -33,6 +33,10 @@ interface AddressFormProps {
    * Whether the field is required
    */
   required?: boolean;
+  /**
+   * The tooltip to show when the input is disabled
+   */
+  disabledTooltip?: string;
 }
 
 /**
@@ -56,9 +60,10 @@ export default function AddressForm({
   fieldName,
   defaultValue = "",
   disabled = false,
+  disabledTooltip,
   validate = undefined,
   showType = true,
-  required = true
+  required = true,
 }: AddressFormProps) {
   const {
     control,
@@ -107,29 +112,28 @@ export default function AddressForm({
                 showType ? "rounded-none rounded-r-md" : "rounded-md",
               )}
               disabled={disabled}
+              disabledTooltip={disabledTooltip}
             />
           )}
           shouldUnregister
         />
       </div>
 
-      {
-        isValidating && (
-          <p className="mt-1 text-sm text-gray-500 animate-pulse">
-            Checking if Safe address is valid on this network...
-          </p>
-        )
-      }
+      {isValidating && (
+        <p className="mt-1 animate-pulse text-sm text-gray-500">
+          Checking if Safe address is valid on this network...
+        </p>
+      )}
 
-      {
-        !isValidating && (
-          <ErrorMessage
-            errors={errors}
-            name={fieldName}
-            render={({ message }) => <p className="mt-1 text-red-500">{message}</p>}
-          />
-        )
-      }
+      {!isValidating && (
+        <ErrorMessage
+          errors={errors}
+          name={fieldName}
+          render={({ message }) => (
+            <p className="mt-1 text-red-500">{message}</p>
+          )}
+        />
+      )}
     </div>
   );
 }

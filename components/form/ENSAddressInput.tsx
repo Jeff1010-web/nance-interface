@@ -13,12 +13,14 @@ export default function ENSAddressInput({
   setVal,
   inputStyle = "",
   disabled = false,
+  disabledTooltip,
 }: {
   val: string;
   setVal: (v: any) => void;
   inputStyle?: string;
   defaultValue?: string;
   disabled?: boolean;
+  disabledTooltip?: string;
 }) {
   const [query, setQuery] = useState("");
   const { data: address, isLoading } = useEnsAddress({
@@ -59,10 +61,8 @@ export default function ENSAddressInput({
       disabled={disabled}
     >
       <div className="relative">
-        {disabled ? (
-          <Tooltip content="Default token beneficiary must be set to Juicebox project owner">
-            {renderComboboxInput()}
-          </Tooltip>
+        {disabled && disabledTooltip ? (
+          <Tooltip content={disabledTooltip}>{renderComboboxInput()}</Tooltip>
         ) : (
           renderComboboxInput()
         )}

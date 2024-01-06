@@ -6,8 +6,18 @@ import useSnapshotSpaceInfo from "@/utils/hooks/snapshot/SpaceInfo";
 import { ConfigSnapshotSpaceField } from "./SnapshotForm";
 import { JUICEBOX_PROJECT_FIELD, SAFE_ADDRESS_FIELD } from "pages/create";
 import useJBMSearch from "@/utils/hooks/juicebox/ProjectSmartSearch";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { JBDAO_LOGO, cidFromUrl, ipfsUrlOf } from "@/constants/Juicebox";
+import DiscordForm from "./DiscordForm";
+import DiscordUser from "./sub/DiscordUser";
+import { useSession } from "next-auth/react";
+import AddressForm from "../form/AddressForm";
+import {
+  SupportedSafeNetwork,
+  safeServiceURL,
+} from "@/utils/hooks/Safe/SafeURL";
+import { NetworkContext } from "@/context/NetworkContext";
+import { isValidSafe } from "@/utils/hooks/Safe/SafeHooks";
 
 const LABEL_STYLE = "text-sm font-medium text-gray-700";
 
@@ -21,13 +31,19 @@ export default function ReviewSpaceConfig({
     getValues,
     formState: { errors },
   } = useFormContext();
+
   const spaceId = watch(ConfigSnapshotSpaceField);
   const projectId = watch(JUICEBOX_PROJECT_FIELD);
+
   const { data: snapshotSpaceInfo } = useSnapshotSpaceInfo(spaceId);
   const { projects, setQueryParams } = useJBMSearch({
     pv: "2",
     projectId: projectId,
   });
+  const network = useContext(NetworkContext);
+  const { data: session } = useSession();
+
+  const address = session?.user?.name || "";
   const selectedProject = projects?.[0];
 
   useEffect(() => {
@@ -70,14 +86,35 @@ export default function ReviewSpaceConfig({
 
       <div className="hover:cursor-pointer" onClick={() => setStep(3)}>
         <label className={LABEL_STYLE}>Discord config</label>
-        <p className="text-gray-400">{watch("config.discord") || "No input"}</p>
+        <DiscordUser address={address} disabled>
+          <DiscordForm disabled />
+        </DiscordUser>
       </div>
 
-      <div className="hover:cursor-pointer" onClick={() => setStep(4)}>
-        <label className={LABEL_STYLE}>Safe address (Optional)</label>
-        <p className="text-gray-400">
-          {watch(SAFE_ADDRESS_FIELD) || "No input"}
-        </p>
+      <div className="max-w-md hover:cursor-pointer" onClick={() => setStep(4)}>
+        <AddressForm
+          label="Safe address (Optional)"
+          fieldName={SAFE_ADDRESS_FIELD}
+          showType={false}
+          disabled
+          validate={async (str) => {
+            if (!str) return true;
+            if (
+              !Object.keys(safeServiceURL).includes(
+                network as SupportedSafeNetwork,
+              )
+            )
+              return "Invalid network";
+            const isSafe = await isValidSafe(
+              str,
+              network as SupportedSafeNetwork,
+            );
+            if (!isSafe) {
+              return "Invalid Safe address, check if you are on the correct network";
+            }
+          }}
+          required={false}
+        />
       </div>
 
       <div className="hover:cursor-pointer" onClick={() => setStep(5)}>

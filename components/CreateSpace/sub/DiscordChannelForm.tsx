@@ -19,15 +19,18 @@ export default function DiscordChannelForm({
   fieldName: string;
   disabled?: boolean;
 }) {
-  const { control, formState: { errors } } = useFormContext();
-  const { data } = useFetchDiscordChannels(guildId, !disabled);
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
+  const { data } = useFetchDiscordChannels(guildId);
 
   const channels = formatChannels(data);
 
   function channelOfId(id: string) {
     const channel =
       channels.find((c) => c.id === id) ||
-      ({ name: '-', id } as unknown as DiscordChannel);
+      ({ name: "-", id } as unknown as DiscordChannel);
     return channel;
   }
 

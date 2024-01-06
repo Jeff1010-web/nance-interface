@@ -185,7 +185,7 @@ function Form() {
                   title="Connect with Safe (Optional)"
                   description="Nance can connect with your Safe to queue transactions after proposals pass."
                 >
-                  <div className="w-fit">
+                  <div className="max-w-md">
                     <AddressForm
                       label="Safe address"
                       fieldName={SAFE_ADDRESS_FIELD}

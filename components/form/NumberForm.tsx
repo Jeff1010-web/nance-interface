@@ -8,15 +8,20 @@ export default function NumberForm({
   defaultValue,
   tooltipContent,
   badgeContent = "days",
+  disabled = false,
+  defaultStep = 1e-18,
 }: {
   label: string;
   fieldName: string;
   defaultValue: number;
   tooltipContent?: string;
   badgeContent?: string;
+  disabled?: boolean;
+  defaultStep?: number;
 }) {
   const {
     register,
+    watch,
     formState: { errors },
   } = useFormContext();
 
@@ -38,14 +43,31 @@ export default function NumberForm({
       </div>
       <div className="mt-1 flex">
         <div className="flex rounded-md border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-indigo-500 sm:text-sm">
-          <input
-            {...register(fieldName, { shouldUnregister: true })}
-            className="block h-10 w-16 rounded-md rounded-r-none border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-            type="number"
-            step={1e-18}
-            min={0}
-            defaultValue={defaultValue}
-          ></input>
+          {disabled && (
+            <input
+              value={watch(fieldName)}
+              className="block h-10 w-16 rounded-md rounded-r-none border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              type="number"
+              step={defaultStep}
+              min={0}
+              defaultValue={defaultValue}
+              disabled
+            ></input>
+          )}
+
+          {!disabled && (
+            <input
+              {...register(fieldName, {
+                shouldUnregister: true,
+              })}
+              className="block h-10 w-16 rounded-md rounded-r-none border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              type="number"
+              step={defaultStep}
+              min={0}
+              defaultValue={defaultValue}
+            ></input>
+          )}
+
           <span className="flex items-center rounded-l-none rounded-r-md border border-l-0 border-gray-300 bg-gray-100 px-3 text-sm text-gray-500">
             {badgeContent}
           </span>

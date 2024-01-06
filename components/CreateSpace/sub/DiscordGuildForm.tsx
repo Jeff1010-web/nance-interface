@@ -19,15 +19,18 @@ export default function DiscordGuildForm({
   fieldName: string;
   disabled?: boolean;
 }) {
-  const { control, formState: { errors } } = useFormContext();
-  const { data } = useFetchDiscordGuilds(address, !disabled);
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
+  const { data } = useFetchDiscordGuilds(address);
 
   const guilds = managedGuildsOf(data);
 
   function guildOfId(id: string) {
     const guild =
       guilds.find((g) => g.id === id) ||
-      ({ name: '-', id } as unknown as DiscordGuild);
+      ({ name: "-", id } as unknown as DiscordGuild);
     return guild;
   }
 
