@@ -64,7 +64,7 @@ export default function NanceEditProposal({
         withProposalButton={false}
       />
 
-      <div className="m-4 flex-inline items-center justify-center lg:m-6">
+      <div className="m-4 flex items-center justify-center lg:m-6">
         <div className="w-full max-w-7xl">
           <div className="flex items-center justify-between">
             <p className="text-2xl font-bold">
