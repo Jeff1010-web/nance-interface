@@ -4,20 +4,15 @@ import GovernanceCalendarMiniWrapped from "./sub/GovernanceCalendarMiniWrapped";
 import BasicFormattedCard from "../common/BasicFormattedCard";
 import useSnapshotSpaceInfo from "@/utils/hooks/snapshot/SpaceInfo";
 import { ConfigSnapshotSpaceField } from "./SnapshotForm";
-import { JUICEBOX_PROJECT_FIELD, SAFE_ADDRESS_FIELD } from "pages/create";
+import { JUICEBOX_PROJECT_FIELD } from "pages/create";
 import useJBMSearch from "@/utils/hooks/juicebox/ProjectSmartSearch";
 import { useContext, useEffect } from "react";
 import { JBDAO_LOGO, cidFromUrl, ipfsUrlOf } from "@/constants/Juicebox";
 import DiscordForm from "./DiscordForm";
 import DiscordUser from "./sub/DiscordUser";
 import { useSession } from "next-auth/react";
-import AddressForm from "../form/AddressForm";
-import {
-  SupportedSafeNetwork,
-  safeServiceURL,
-} from "@/utils/hooks/Safe/SafeURL";
 import { NetworkContext } from "@/context/NetworkContext";
-import { isValidSafe } from "@/utils/hooks/Safe/SafeHooks";
+import SafeAddressForm from "../form/SafeAddressForm";
 
 const LABEL_STYLE = "text-sm font-medium text-gray-700";
 
@@ -92,29 +87,7 @@ export default function ReviewSpaceConfig({
       </div>
 
       <div className="max-w-md hover:cursor-pointer" onClick={() => setStep(4)}>
-        <AddressForm
-          label="Safe address (Optional)"
-          fieldName={SAFE_ADDRESS_FIELD}
-          showType={false}
-          disabled
-          validate={async (str) => {
-            if (!str) return true;
-            if (
-              !Object.keys(safeServiceURL).includes(
-                network as SupportedSafeNetwork,
-              )
-            )
-              return "Invalid network";
-            const isSafe = await isValidSafe(
-              str,
-              network as SupportedSafeNetwork,
-            );
-            if (!isSafe) {
-              return "Invalid Safe address, check if you are on the correct network";
-            }
-          }}
-          required={false}
-        />
+        <SafeAddressForm disabled label="Safe address (Optional)"/>
       </div>
 
       <div className="hover:cursor-pointer" onClick={() => setStep(5)}>

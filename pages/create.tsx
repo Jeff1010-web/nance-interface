@@ -7,8 +7,6 @@ import Notification from "@/components/common/Notification";
 import { CreateFormValues } from "@/models/NanceTypes";
 import { useCreateSpace } from "@/utils/hooks/NanceHooks";
 import ProjectForm from "@/components/form/ProjectForm";
-import AddressForm from "@/components/form/AddressForm";
-
 import {
   DiscordForm,
   GovernanceCycleForm,
@@ -18,16 +16,12 @@ import { SiteNav } from "@/components/Site";
 import DiscordUser from "@/components/CreateSpace/sub/DiscordUser";
 import WalletConnectWrapper from "@/components/WalletConnectWrapper/WalletConnectWrapper";
 import MultipleStep from "@/components/MultipleStep/MultipleStep";
-import { isValidSafe } from "@/utils/hooks/Safe/SafeHooks";
 import DescriptionCardWrapper from "@/components/DescriptionCardWrapper/DescriptionCardWrapper";
 import { NetworkContext } from "@/context/NetworkContext";
-import {
-  safeServiceURL,
-  SupportedSafeNetwork,
-} from "@/utils/hooks/Safe/SafeURL";
 import RulesForm from "@/components/CreateSpace/RulesForm";
 import BackNextButtons from "@/components/CreateSpace/BackNextButtons";
 import ReviewSpaceConfig from "@/components/CreateSpace/ReviewSpaceConfig";
+import SafeAddressForm from "@/components/form/SafeAddressForm";
 
 export default function CreateSpacePage() {
   return (
@@ -55,7 +49,6 @@ export default function CreateSpacePage() {
   );
 }
 
-export const SAFE_ADDRESS_FIELD = "config.juicebox.gnosisSafeAddress";
 export const JUICEBOX_PROJECT_FIELD = "config.juicebox.projectId";
 
 function Form() {
@@ -186,28 +179,7 @@ function Form() {
                   description="Nance can connect with your Safe to queue transactions after proposals pass."
                 >
                   <div className="max-w-md">
-                    <AddressForm
-                      label="Safe address"
-                      fieldName={SAFE_ADDRESS_FIELD}
-                      showType={false}
-                      validate={async (str) => {
-                        if (!str) return true;
-                        if (
-                          !Object.keys(safeServiceURL).includes(
-                            network as SupportedSafeNetwork,
-                          )
-                        )
-                          return "Invalid network";
-                        const isSafe = await isValidSafe(
-                          str,
-                          network as SupportedSafeNetwork,
-                        );
-                        if (!isSafe) {
-                          return "Invalid Safe address, check if you are on the correct network";
-                        }
-                      }}
-                      required={false}
-                    />
+                    <SafeAddressForm />
                   </div>
                   <BackNextButtons
                     back={back}

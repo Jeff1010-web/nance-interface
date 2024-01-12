@@ -46,7 +46,7 @@ export default function NumberForm({
           {disabled && (
             <input
               value={watch(fieldName)}
-              className="block h-10 w-16 rounded-md rounded-r-none border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              className="block h-10 w-16 rounded-md rounded-r-none border-gray-300 disabled:bg-gray-100 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               type="number"
               step={defaultStep}
               min={0}
