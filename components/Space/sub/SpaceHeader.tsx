@@ -4,7 +4,22 @@ import { Tooltip } from "flowbite-react";
 import { format, formatDistanceToNowStrict, parseISO } from "date-fns";
 import { SpaceContext } from "@/context/SpaceContext";
 import { useContext } from "react";
-import SpaceAction from "./SpaceAction";
+
+export function calculateRemainingTime(endTime: string) {
+  let remainingTime = "-";
+  let formattedEndTime = "-";
+  try {
+    const endTimeDate = parseISO(endTime);
+    formattedEndTime = endTimeDate
+      ? format(endTimeDate, "EEE MMM dd yyyy HH:mm a")
+      : "-";
+    remainingTime = formatDistanceToNowStrict(endTimeDate);
+  } catch (error) {
+    //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
+  }
+
+  return { remainingTime, formattedEndTime };
+}
 
 export default function SpaceHeader() {
   const spaceInfo = useContext(SpaceContext);
@@ -13,17 +28,9 @@ export default function SpaceHeader() {
     return null;
   }
 
-  let remainingTime = "-";
-  let formattedEndTime = "-";
-  try {
-    const endTime = parseISO(spaceInfo?.currentEvent?.end ?? "");
-    formattedEndTime = endTime
-      ? format(endTime, "EEE MMM dd yyyy HH:mm a")
-      : "-";
-    remainingTime = formatDistanceToNowStrict(endTime);
-  } catch (error) {
-    //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
-  }
+  const { remainingTime, formattedEndTime } = calculateRemainingTime(
+    spaceInfo.currentEvent?.end ?? "",
+  );
 
   const {
     name: spaceName,
@@ -56,9 +63,7 @@ export default function SpaceHeader() {
         <div className="break-words rounded-md border-2 border-blue-600 bg-indigo-100 p-2 text-center md:w-2/12">
           <Tooltip content={formattedEndTime}>
             <span className="tooltip-trigger">
-              <p className="text-2xl font-semibold">
-                {remainingTime} remaining
-              </p>
+              <p className="text-2xl font-semibold">in {remainingTime}</p>
             </span>
           </Tooltip>
           <a

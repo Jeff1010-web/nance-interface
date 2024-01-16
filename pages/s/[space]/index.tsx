@@ -1,6 +1,7 @@
 import ContentNotFound from "@/components/ContentNotFound";
 import { Footer, SiteNav } from "@/components/Site";
 import Space from "@/components/Space";
+import { calculateRemainingTime } from "@/components/Space/sub/SpaceHeader";
 
 import { NANCE_API_URL } from "@/constants/Nance";
 import { SpaceContext } from "@/context/SpaceContext";
@@ -53,6 +54,10 @@ export default function SpacePage({ spaceInfo }: { spaceInfo: SpaceInfo }) {
       : `https://cdn.stamp.fyi/space/${snapshotSpace}?s=500`;
   const pageTitle = `${spaceInfo.name} Governance`;
 
+  const { remainingTime, formattedEndTime } = calculateRemainingTime(
+    spaceInfo.currentEvent?.end ?? "",
+  );
+
   return (
     <>
       <SiteNav
@@ -62,6 +67,15 @@ export default function SpacePage({ spaceInfo }: { spaceInfo: SpaceInfo }) {
         space={name}
         withWallet
         withProposalButton={false}
+        mobileHeaderCenter={
+          <div className="text-center">
+            <p className="font-medium">in {remainingTime}</p>
+            <p className="text-xs text-gray-500">
+              {spaceInfo.currentEvent?.title || "Unknown"} of GC
+              {spaceInfo.currentCycle}
+            </p>
+          </div>
+        }
       />
 
       <SpaceContext.Provider value={spaceInfo}>

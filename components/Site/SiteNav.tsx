@@ -15,6 +15,7 @@ interface SiteNavProps {
   proposalId?: string;
   withProposalButton?: boolean;
   withSiteSuffixInTitle?: boolean;
+  mobileHeaderCenter?: JSX.Element;
 }
 
 export default function SiteNav({
@@ -26,6 +27,7 @@ export default function SiteNav({
   proposalId,
   withProposalButton = true,
   withSiteSuffixInTitle = true,
+  mobileHeaderCenter = <></>,
 }: SiteNavProps) {
   const router = useRouter();
 
@@ -99,6 +101,10 @@ export default function SiteNav({
                         </a>
                       ))}
                     </div>
+                  </div>
+
+                  <div className="flex items-center xl:hidden">
+                    {mobileHeaderCenter}
                   </div>
 
                   <div className="hidden xl:ml-6 xl:flex xl:items-center xl:space-x-6">
