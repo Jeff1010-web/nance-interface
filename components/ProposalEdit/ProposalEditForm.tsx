@@ -2,7 +2,7 @@
 "use client";
 import {
   CheckCircleIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useSession } from "next-auth/react";
@@ -178,8 +178,8 @@ export default function ProposalEditForm({ space }: { space: string }) {
     } else {
       setFormErrors("");
     }
-    console.log("formState", watch());
-  }, [formState]);
+    console.log("formState.errors", watch());
+  }, [formState.errors]);
 
   return (
     <FormProvider {...methods}>
@@ -251,8 +251,8 @@ export default function ProposalEditForm({ space }: { space: string }) {
           loadedActions={
             (metadata.fork
               ? metadata.loadedProposal?.actions?.map(
-                ({ uuid, ...rest }) => rest,
-              )
+                  ({ uuid, ...rest }) => rest,
+                )
               : metadata.loadedProposal?.actions) || []
           }
         />
@@ -329,26 +329,42 @@ export default function ProposalEditForm({ space }: { space: string }) {
               onClick={() => openConnectModal?.()}
               className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
             >
-            Connect Wallet
+              Connect Wallet
             </button>
           )}
 
           {status !== "unauthenticated" && (
-            <div className={classNames("flex w-full", isNew ? "justify-between" : "justify-end")}>
+            <div
+              className={classNames(
+                "flex w-full",
+                isNew ? "justify-between" : "justify-end",
+              )}
+            >
               {isNew ? (
-                <div className="items-center ml-6">
+                <div className="ml-6 items-center">
                   <p className="-mt-5 mb-1 text-sm text-gray-500">
                     <InformationCircleIcon className="mr-1 inline h-5 w-5" />
-                      Optional: add your Discord ID to be notified of proposal status changes
+                    Optional: add your Discord ID to be notified of proposal
+                    status changes
                   </p>
-                  <DiscordUser address={session?.user?.name || ""} setDiscordId={setAuthorDiscordId} />
+                  <DiscordUser
+                    address={session?.user?.name || ""}
+                    setDiscordId={setAuthorDiscordId}
+                  />
                 </div>
-              ) : <></>}
-              <ProposalSubmitButton formErrors={formErrors} status={status} isMutating={isMutating} selected={selected} setSelected={setSelected} />
+              ) : (
+                <></>
+              )}
+              <ProposalSubmitButton
+                formErrors={formErrors}
+                status={status}
+                isMutating={isMutating}
+                selected={selected}
+                setSelected={setSelected}
+              />
             </div>
           )}
         </div>
-
       </form>
     </FormProvider>
   );

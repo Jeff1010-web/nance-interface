@@ -1,6 +1,6 @@
 import { ErrorMessage } from "@hookform/error-message";
-import { FunctionFragment, FormatTypes } from "ethers/lib/utils";
-import { useState, useEffect } from "react";
+import { FunctionFragment, FormatTypes, Interface } from "ethers/lib/utils";
+import { useState, useEffect, useCallback } from "react";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import {
   TenderlySimulationAPIResponse,
@@ -12,6 +12,10 @@ import AddressForm from "../form/AddressForm";
 import UIntForm from "../form/UIntForm";
 import StringForm from "../form/StringForm";
 import BooleanForm from "../form/BooleanForm";
+import SafeInjectIframeCard from "../SafeInjectIframeCard";
+import { useSafeInject } from "../SafeInjectIframeCard/context/SafeInjectedContext";
+import { BigNumber } from "ethers";
+import { CustomTransactionArg } from "@/models/NanceTypes";
 
 export default function CustomTransactionActionForm({
   genFieldName,
@@ -21,8 +25,10 @@ export default function CustomTransactionActionForm({
   projectOwner: string | undefined;
 }) {
   const [functionFragment, setFunctionFragment] = useState<FunctionFragment>();
+  const [functionData, setFunctionData] = useState<string>();
   const [shouldSimulate, setShouldSimulate] = useState<boolean>();
 
+  const { latestTransaction } = useSafeInject();
   const {
     watch,
     control,
@@ -31,13 +37,10 @@ export default function CustomTransactionActionForm({
     getFieldState,
     setValue,
   } = useFormContext();
-  const { replace } = useFieldArray<{
-    args: any[];
-    [key: string]: any;
-  }>({ name: genFieldName("args") });
+  const { replace, fields } = useFieldArray({ name: genFieldName("args") });
 
   const args = functionFragment?.inputs?.map((param, index) =>
-    getValues(genFieldName(`args.${index}`)),
+    getValues(genFieldName(`args.${index}.value`)),
   );
   const input = encodeTransactionInput(
     functionFragment?.format(FormatTypes.minimal) || "",
@@ -51,12 +54,17 @@ export default function CustomTransactionActionForm({
   };
 
   useEffect(() => {
-    // clear args of last selected function
-    if (functionFragment?.inputs && replace) {
-      console.debug(functionFragment);
-      replace(functionFragment.inputs.map((p) => ""));
+    if (latestTransaction) {
+      setValue(genFieldName("contract"), latestTransaction.to);
+      setValue(
+        genFieldName("value"),
+        BigNumber.from(latestTransaction.value).toString(),
+      );
+      setFunctionData(latestTransaction.data);
+      // decode function name and args from data
+      console.debug("latestTransaction", latestTransaction);
     }
-  }, [functionFragment, replace]);
+  }, [latestTransaction, setValue]);
 
   useEffect(() => {
     // if the function input changed, we need to re-run simulation
@@ -66,110 +74,156 @@ export default function CustomTransactionActionForm({
     getValues(genFieldName("functionName")),
   ]);
 
-  function onSimulated(
-    data: TenderlySimulationAPIResponse | undefined,
-    shouldSimulate: boolean,
-  ) {
-    const simulationId = data?.simulation?.id;
-    const simulationStatus = data?.simulation?.status;
+  const onSimulated = useCallback(
+    (
+      data: TenderlySimulationAPIResponse | undefined,
+      shouldSimulate: boolean,
+    ) => {
+      const simulationId = data?.simulation?.id;
+      const simulationStatus = data?.simulation?.status;
 
-    if (simulationId) {
-      setValue(genFieldName("tenderlyId"), simulationId);
-    }
+      if (simulationId) {
+        setValue(genFieldName("tenderlyId"), simulationId);
+      }
 
-    if (shouldSimulate) {
-      setValue(
-        genFieldName("tenderlyStatus"),
-        simulationStatus ? "true" : "false",
-      );
-    } else {
-      setValue(genFieldName("tenderlyStatus"), "false");
-    }
-  }
+      if (shouldSimulate) {
+        setValue(
+          genFieldName("tenderlyStatus"),
+          simulationStatus ? "true" : "false",
+        );
+      } else {
+        setValue(genFieldName("tenderlyStatus"), "false");
+      }
+    },
+    [setValue],
+  );
 
   return (
-    <div className="grid grid-cols-4 gap-6">
-      <TenderlySimulationButton
-        simulationArgs={simulateArgs}
-        shouldSimulate={!!projectOwner && !!input && !!shouldSimulate}
-        setShouldSimulate={setShouldSimulate}
-        onSimulated={onSimulated}
-      />
+    <div>
+      <div className="mt-6 grid grid-cols-4 gap-6">
+        <TenderlySimulationButton
+          simulationArgs={simulateArgs}
+          shouldSimulate={!!projectOwner && !!input && !!shouldSimulate}
+          setShouldSimulate={setShouldSimulate}
+          onSimulated={onSimulated}
+        />
 
-      <div className="col-span-4 sm:col-span-2">
-        <AddressForm label="Contract" fieldName={genFieldName("contract")} />
-      </div>
-
-      <div className="col-span-4 sm:col-span-1">
-        <UIntForm label="ETH Value" fieldName={genFieldName("value")} />
-      </div>
-
-      {watch(genFieldName("contract"))?.length === 42 && (
         <div className="col-span-4 sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Function
-          </label>
-          <Controller
-            name={genFieldName("functionName")}
-            control={control}
-            rules={{
-              required: "Can't be empty",
-            }}
-            render={({ field: { onChange, onBlur, value, ref } }) => (
-              <FunctionSelector
-                address={watch(genFieldName("contract"))}
-                val={value}
-                setVal={onChange}
-                setFunctionFragment={(f) => setFunctionFragment(f)}
-                inputStyle="h-10"
+          <AddressForm label="Contract" fieldName={genFieldName("contract")} />
+        </div>
+
+        <div className="col-span-4 sm:col-span-1">
+          <UIntForm label="ETH Value" fieldName={genFieldName("value")} />
+        </div>
+
+        {watch(genFieldName("contract"))?.length === 42 && (
+          <div className="col-span-4 sm:col-span-2">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Function
+            </label>
+            <Controller
+              name={genFieldName("functionName")}
+              control={control}
+              rules={{
+                required: "Can't be empty",
+              }}
+              render={({ field: { onChange, onBlur, value, ref } }) => (
+                <FunctionSelector
+                  address={watch(genFieldName("contract"))}
+                  val={value}
+                  setVal={onChange}
+                  setFunctionFragment={(f) => {
+                    setFunctionFragment(f);
+
+                    if (functionData) {
+                      // load args from latest transaction
+                      const iface = new Interface([f]);
+                      const decoded = iface.decodeFunctionData(
+                        f.name,
+                        functionData,
+                      );
+                      const args = decoded.map((v) => v);
+
+                      args.forEach((arg, index) => {
+                        setValue(genFieldName(`args.${index}`), arg);
+                      });
+                      replace(
+                        args.map((v, index) => ({
+                          value: v,
+                          type: f.inputs[index].type,
+                          name: f.inputs[index].name,
+                        })),
+                      );
+                      // clear this one-time data that we got from latest transaction
+                      setFunctionData(undefined);
+                    } else {
+                      // reset args
+                      replace(
+                        f.inputs?.map((param) => {
+                          return {
+                            value: "",
+                            type: param.type,
+                            name: param.name,
+                          };
+                        }) || [],
+                      );
+                    }
+                  }}
+                  inputStyle="h-10"
+                  functionData={functionData}
+                />
+              )}
+            />
+            <ErrorMessage
+              errors={errors}
+              name={genFieldName("functionName")}
+              render={({ message }) => (
+                <p className="mt-1 text-red-500">{message}</p>
+              )}
+            />
+          </div>
+        )}
+
+        {(fields as unknown as CustomTransactionArg[]).map((field, index) => (
+          <div key={field.id} className="col-span-4 sm:col-span-1">
+            {field.type === "address" && (
+              <AddressForm
+                label={`Param: ${field.name || "_"}`}
+                fieldName={genFieldName(`args.${index}.value`)}
               />
             )}
-          />
-          <ErrorMessage
-            errors={errors}
-            name={genFieldName("functionName")}
-            render={({ message }) => (
-              <p className="mt-1 text-red-500">{message}</p>
+
+            {field.type.includes("int") && (
+              <UIntForm
+                label={`Param: ${field.name || "_"}`}
+                fieldName={genFieldName(`args.${index}.value`)}
+                fieldType={field.type}
+              />
             )}
-          />
-        </div>
-      )}
 
-      {functionFragment?.inputs?.map((param, index) => (
-        <div key={index} className="col-span-4 sm:col-span-1">
-          {param.type === "address" && (
-            <AddressForm
-              label={`Param: ${param.name || "_"}`}
-              fieldName={genFieldName(`args.${index}`)}
-            />
-          )}
+            {field.type === "bool" && (
+              <BooleanForm
+                label={`Param: ${field.name || "_"}`}
+                fieldName={genFieldName(`args.${index}.value`)}
+              />
+            )}
 
-          {param.type.includes("int") && (
-            <UIntForm
-              label={`Param: ${param.name || "_"}`}
-              fieldName={genFieldName(`args.${index}`)}
-              fieldType={param.type}
-            />
-          )}
+            {field.type !== "address" &&
+              !field.type.includes("int") &&
+              field.type !== "bool" && (
+                <StringForm
+                  label={`Param: ${field.name || "_"}`}
+                  fieldName={genFieldName(`args.${index}.value`)}
+                  fieldType={field.type}
+                />
+              )}
+          </div>
+        ))}
+      </div>
 
-          {param.type === "bool" && (
-            <BooleanForm
-              label={`Param: ${param.name || "_"}`}
-              fieldName={genFieldName(`args.${index}`)}
-            />
-          )}
-
-          {param.type !== "address" &&
-            !param.type.includes("int") &&
-            param.type !== "bool" && (
-            <StringForm
-              label={`Param: ${param.name || "_"}`}
-              fieldName={genFieldName(`args.${index}`)}
-              fieldType={param.type}
-            />
-          )}
-        </div>
-      ))}
+      <div className="mt-6">
+        <SafeInjectIframeCard />
+      </div>
     </div>
   );
 }

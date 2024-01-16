@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import { Combobox } from "@headlessui/react";
 import { useEtherscanContractABI } from "@/utils/hooks/EtherscanHooks";
@@ -11,12 +11,14 @@ export default function FunctionSelector({
   setVal,
   setFunctionFragment,
   inputStyle = "",
+  functionData = "",
 }: {
   address: string;
   val: string;
   setVal: (v: any) => void;
   setFunctionFragment: (v: FunctionFragment) => void;
   inputStyle?: string;
+  functionData?: string;
 }) {
   const [query, setQuery] = useState("");
   const {
@@ -36,8 +38,24 @@ export default function FunctionSelector({
     query === ""
       ? Object.keys(fragmentMap)
       : Object.keys(fragmentMap).filter((functionName) => {
-        return functionName.toLowerCase().includes(query.toLowerCase());
-      });
+          return functionName.toLowerCase().includes(query.toLowerCase());
+        });
+
+  useEffect(() => {
+    if (functionData && abi) {
+      try {
+        const functionFragment = ethersInterface.getFunction(
+          functionData.slice(0, 10),
+        );
+        const newVal = functionFragment.format("full");
+        console.debug("wtaaaa");
+        setVal(newVal);
+        setFunctionFragment(functionFragment);
+      } catch (e) {
+        console.warn("FunctionSelector.getFunction error", e);
+      }
+    }
+  }, [functionData, abi]);
 
   return (
     <Combobox

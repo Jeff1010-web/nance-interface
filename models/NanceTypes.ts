@@ -20,10 +20,10 @@ export type SpaceInfo = {
   juiceboxProjectId: string;
   dolthubLink: string;
   transactorAddress?: {
-    type: 'safe' | 'governor';
+    type: "safe" | "governor";
     network: string;
     address: string;
-  }
+  };
   nextProposalId: number;
 };
 
@@ -33,13 +33,20 @@ export type ProposalInfo = {
   minTokenPassingAmount: number;
 };
 
-export type ProposalsPacket = { proposalInfo: ProposalInfo, proposals: Proposal[], hasMore: boolean };
+export type ProposalsPacket = {
+  proposalInfo: ProposalInfo;
+  proposals: Proposal[];
+  hasMore: boolean;
+};
 
-export type ProposalsPacketWithoutBody = { proposalInfo: ProposalInfo, proposals: Omit<Proposal, 'body'>[] };
+export type ProposalsPacketWithoutBody = {
+  proposalInfo: ProposalInfo;
+  proposals: Omit<Proposal, "body">[];
+};
 
 export type ProposalUploadPayload = {
   hash: string;
-}
+};
 
 export type APIErrorResponse = APIResponse<undefined>;
 
@@ -79,7 +86,10 @@ export interface NanceBasicTransaction {
 }
 
 export interface ProposalUploadRequest {
-  proposal: Pick<Proposal, "hash" | "title" | "body" | "actions" | "status" | "authorDiscordId">;
+  proposal: Pick<
+    Proposal,
+    "hash" | "title" | "body" | "actions" | "status" | "authorDiscordId"
+  >;
 }
 
 export interface ProposalDeleteRequest {
@@ -93,17 +103,17 @@ export type CreateFormValues = {
     proposalIdPrefix: string;
     juicebox: JuiceboxConfig;
     snapshot: SnapshotConfig;
-  }
-  governanceCycleForm: GovernanceCycleForm
+  };
+  governanceCycleForm: GovernanceCycleForm;
   dryRun: boolean;
-}
+};
 
 export type DiscordConfig = {
   guildId: string;
   roles: DiscordConfigRoles;
   channelIds: DiscordConfigChannels;
-  reminder: { channelIds: string[]; }
-}
+  reminder: { channelIds: string[] };
+};
 
 export type GovernanceCycleForm = {
   time: FormTime;
@@ -123,38 +133,45 @@ export type FormTime = {
 
 export type DiscordConfigChannels = {
   proposals: string;
-}
+};
 
 export type DiscordConfigRoles = {
   governance: string;
-}
+};
 
 export type JuiceboxConfig = {
   projectId: string;
   gnosisSafeAddress: string;
-}
+};
 
 export type SnapshotConfig = {
   space: string;
   minTokenPassingAmount: number;
   passingRatio: number;
-}
+};
 
-export type CreateFormKeys = 'config.name' | 'config.proposalIdPrefix' |
-  `config.discord.${keyof DiscordConfig}` |
-  `config.discord.channelIds.${keyof DiscordConfigChannels}` |
-  `config.discord.roleIds.${keyof DiscordConfigRoles}` |
-  `config.snapshot.${keyof SnapshotConfig}` |
-  `config.juicebox.${keyof JuiceboxConfig}` |
-  `governanceCycleForm.${keyof GovernanceCycleForm}`;
+export type CreateFormKeys =
+  | "config.name"
+  | "config.proposalIdPrefix"
+  | `config.discord.${keyof DiscordConfig}`
+  | `config.discord.channelIds.${keyof DiscordConfigChannels}`
+  | `config.discord.roleIds.${keyof DiscordConfigRoles}`
+  | `config.snapshot.${keyof SnapshotConfig}`
+  | `config.juicebox.${keyof JuiceboxConfig}`
+  | `governanceCycleForm.${keyof GovernanceCycleForm}`;
 
 export type ConfigSpacePayload = {
   space: string;
   spaceOwner: string;
-}
+};
 
 // from https://github.com/jigglyjams/nance-ts/blob/main/src/types.ts
-type ProposalType = 'Payout' | 'ReservedToken' | 'ParameterUpdate' | 'ProcessUpdate' | 'CustomTransaction';
+type ProposalType =
+  | "Payout"
+  | "ReservedToken"
+  | "ParameterUpdate"
+  | "ProcessUpdate"
+  | "CustomTransaction";
 
 export interface Proposal {
   hash: string;
@@ -163,11 +180,11 @@ export interface Proposal {
   translation?: {
     body?: string;
     language?: string;
-  },
+  };
   notification?: Notification;
   url: string;
   governanceCycle?: number;
-  date?: string,
+  date?: string;
   translationURL?: string;
   status: string;
   proposalId: string;
@@ -188,10 +205,10 @@ export interface Proposal {
 }
 
 export type Action = {
-  type: 'Payout' | 'Reserve' | 'Transfer' | 'Custom Transaction';
+  type: "Payout" | "Reserve" | "Transfer" | "Custom Transaction";
   payload: Payout | Reserve | Transfer | CustomTransaction;
   uuid?: string;
-}
+};
 
 export type SQLPayout = {
   uuidOfPayout: string;
@@ -203,7 +220,7 @@ export type SQLPayout = {
   amount: number;
   currency: string;
   payName?: string;
-  payAddress?: string,
+  payAddress?: string;
   payProject?: number;
   payStatus?: string;
   payAllocator?: string;
@@ -213,7 +230,7 @@ export type SQLPayout = {
 };
 
 export type Payout = {
-  type?: 'address' | 'project' | 'allocator';
+  type?: "address" | "project" | "allocator";
   address: string;
   project?: number;
   amountUSD: number;
@@ -239,17 +256,17 @@ type Notification = {
   @member allocator If an allocator is specified, funds will be sent to the allocator contract along with all properties of this split.
 */
 export interface JBSplitNanceStruct {
-  preferClaimed: boolean
-  preferAddToBalance: boolean
-  percent: number
-  projectId: number
-  beneficiary: string
-  lockedUntil: number
-  allocator: string
+  preferClaimed: boolean;
+  preferAddToBalance: boolean;
+  percent: number;
+  projectId: number;
+  beneficiary: string;
+  lockedUntil: number;
+  allocator: string;
 }
 
 export type Reserve = {
-  splits: JBSplitNanceStruct[]
+  splits: JBSplitNanceStruct[];
 };
 
 export type Transfer = {
@@ -257,7 +274,14 @@ export type Transfer = {
   to: string;
   amount: string;
   decimals: number;
-}
+};
+
+export type CustomTransactionArg = {
+  id: string;
+  value: string;
+  type: string;
+  name: string;
+};
 
 export type CustomTransaction = {
   contract: string;
@@ -266,16 +290,19 @@ export type CustomTransaction = {
   // can pass as ABI
   // can have unnamed parameters
   functionName: string;
-  args: any[];
+  args: CustomTransactionArg[];
   tenderlyId: string;
   tenderlyStatus: string;
-}
+};
 
 export function extractFunctionName(str: string) {
   return str.split("(")[0].split(" ").slice(-1)[0];
 }
 
-export function parseFunctionAbiWithNamedArgs(functionAbi: string, args: any[] | object) {
+export function parseFunctionAbiWithNamedArgs(
+  functionAbi: string,
+  args: any[] | object,
+) {
   if (!args) return [];
 
   let abi = functionAbi;
@@ -285,9 +312,13 @@ export function parseFunctionAbiWithNamedArgs(functionAbi: string, args: any[] |
   }
 
   const ethersInterface = new Interface([abi]);
-  const paramNames = ethersInterface.fragments[0].inputs.map(p => p.name || "_");
+  const paramNames = ethersInterface.fragments[0].inputs.map(
+    (p) => p.name || "_",
+  );
   let dict: any = [];
-  Object.values(args).forEach((val, index) => dict.push([paramNames[index] || '_', val]));
+  Object.values(args).forEach((val, index) =>
+    dict.push([paramNames[index] || "_", val]),
+  );
 
   return dict;
 }
@@ -310,14 +341,14 @@ export type GnosisTransaction = {
   bytes: string;
 };
 
-export type ProposalNoHash = Omit<Proposal, 'hash'>;
+export type ProposalNoHash = Omit<Proposal, "hash">;
 
 export type ProposalStore = Record<string, ProposalNoHash>;
 
 export interface NanceConfig {
   name: string;
   juicebox: {
-    network: 'mainnet' | 'goerli';
+    network: "mainnet" | "goerli";
     projectId: string;
     gnosisSafeAddress: string;
     governorAddress: string;
@@ -332,7 +363,7 @@ export interface NanceConfig {
       proposals: string;
       bookkeeping: string;
       transactions: string;
-    }
+    };
     poll: {
       minYesVotes: number;
       yesNoRatio: number;
@@ -346,7 +377,7 @@ export interface NanceConfig {
     };
   };
   proposalIdPrefix: string;
-  dolt: DoltConfig,
+  dolt: DoltConfig;
   snapshot: {
     space: string;
     choices: string[];
@@ -385,18 +416,18 @@ export interface PinataKey {
 }
 
 export interface GithubFileChange {
-  path: string,
-  contents: string
+  path: string;
+  contents: string;
 }
 
 export type SnapshotVoteOptions = {
-  type: string,
-  choices: string[]
+  type: string;
+  choices: string[];
 };
 
 export type SpaceConfig = {
-  space: string,
-  spaceOwners: string[],
+  space: string;
+  spaceOwners: string[];
   cid: string;
   config: NanceConfig;
   calendar: DateEvent[];

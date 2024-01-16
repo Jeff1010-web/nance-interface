@@ -12,6 +12,7 @@ import PayoutActionForm from "./PayoutActionForm";
 import ReserveActionForm from "./ReserveActionForm";
 import TransferActionForm from "./TransferActionForm";
 import { ProposalMetadataContext } from "./context/ProposalMetadataContext";
+import { SafeInjectProvider } from "../SafeInjectIframeCard/context/SafeInjectedContext";
 
 export default function Actions({
   loadedActions,
@@ -107,7 +108,10 @@ export default function Actions({
                 })}
                 className="hidden"
               />
-              <TransferActionForm genFieldName={genFieldName(index)} address={spaceInfo?.data.transactorAddress?.address || ""} />
+              <TransferActionForm
+                genFieldName={genFieldName(index)}
+                address={spaceInfo?.data.transactorAddress?.address || ""}
+              />
             </div>
           );
         } else if (field.type === "Reserve") {
@@ -147,6 +151,10 @@ export default function Actions({
                   onClick={() => remove(index)}
                 />
               </div>
+              <p className="text-xs text-gray-500">
+                You can input transaction data manually or get them from
+                interacting with embed dApp below.
+              </p>
               <input
                 type="text"
                 {...register(`proposal.actions.${index}.type`, {
@@ -155,10 +163,12 @@ export default function Actions({
                 })}
                 className="hidden"
               />
-              <CustomTransactionActionForm
-                genFieldName={genFieldName(index)}
-                projectOwner={projectOwner}
-              />
+              <SafeInjectProvider defaultAddress={projectOwner}>
+                <CustomTransactionActionForm
+                  genFieldName={genFieldName(index)}
+                  projectOwner={projectOwner}
+                />
+              </SafeInjectProvider>
             </div>
           );
         } else {

@@ -115,7 +115,7 @@ export default function AddressForm({
               disabledTooltip={disabledTooltip}
             />
           )}
-          shouldUnregister
+          shouldUnregister={true}
         />
       </div>
 

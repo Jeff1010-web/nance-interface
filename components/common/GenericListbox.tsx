@@ -13,11 +13,11 @@ interface GenericListboxProps<T> {
   /**
    * The selected value of the listbox
    */
-  value: T & Includes;
+  value: T;
   /**
    * The available items to display in the listbox
    */
-  items: (T & Includes)[];
+  items: T[];
   /**
    * The function to call when the value of the listbox changes
    */
@@ -35,7 +35,7 @@ interface GenericListboxProps<T> {
 /**
  * GenericListbox which supports icons
  */
-export default function GenericListbox<T>({
+export default function GenericListbox<T extends Includes>({
   value,
   items,
   onChange,
