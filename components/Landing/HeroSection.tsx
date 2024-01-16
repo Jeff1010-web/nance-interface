@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
+import { SimpleSpaceEntry } from ".";
 
-export default function HeroSection() {
+export default function HeroSection({ top4Spaces }: { top4Spaces: SimpleSpaceEntry[]}) {
   return (
     <div>
       <div className="relative isolate px-6 pt-14 lg:px-8">
@@ -17,36 +19,37 @@ export default function HeroSection() {
           />
         </div>
         <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-          {/* <div className="hidden sm:mb-8 sm:flex sm:justify-center">
-            <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
-              Announcing our next round of funding.{' '}
-              <a href="#" className="font-semibold text-indigo-600">
-                <span className="absolute inset-0" aria-hidden="true" />
-                Read more <span aria-hidden="true">&rarr;</span>
-              </a>
-            </div>
-          </div> */}
           <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              <span className="text-blue-600">Improve</span> and <span className="text-blue-600">integrate</span> your governance flow seamlessly
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              Propose, discuss, vote and execute with your DAO on scheduled governance cycles.
-            </p>
-            <div className="mt-6 flex items-center justify-center gap-x-6">
-              <Link
-                href="/s/juicebox"
-                className="rounded-md bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-              >
-                Get started
-              </Link>
-              <Link
-                href="/contact"
-                className="rounded-md bg-gray-800 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
-                  Reach out&nbsp;☎️
-              </Link>
+            <div className="flex justify-center">
+              <Image src="/images/wordart.png" alt="Nance" width={300} height={300} />
             </div>
-            <div className="mt-10 text-lg text-gray-600 italic"><a href="#feature-section">Learn more <span>&#10549;</span></a></div>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+              Governance <span className="text-blue-600">Automated</span>
+            </h2>
+            <div className="mt-6 flex flex-col items-center justify-center gap-x-6">
+              <Link
+                href="/create"
+                className="rounded-md bg-blue-600 sm:px-36 px-32 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              >
+                Create Space
+              </Link>
+              <div className="mx-auto mt-10 grid max-w-lg grid-cols-4 items-center gap-x-8 gap-y-10 sm:max-w-xl sm:grid-cols-6 sm:gap-x-10 lg:mx-0 lg:max-w-none lg:grid-cols-4">
+                {
+                  top4Spaces.map((space) => (
+                    <Link key={space.id} href={`/s/${space.id}`}>
+                      <Image
+                        className="col-span-2 w-full lg:col-span-1 rounded-lg"
+                        src={`https://cdn.stamp.fyi/space/${space.snapshotSpace}`}
+                        alt={space.name}
+                        width={48}
+                        height={48}
+                      />
+                    </Link>
+                  ))
+                }
+
+              </div>
+            </div>
           </div>
         </div>
         <div
