@@ -35,6 +35,11 @@ interface Props {
    * Don't render the link and avatar.
    */
   minified?: boolean;
+
+  /**
+   * The action to perform when the card is clicked.
+   */
+  action?: () => void;
 }
 
 /**
@@ -46,6 +51,7 @@ interface Props {
  * @param network Network to use for block explorer link. Default is `mainnet`.
  * @param openInNewWindow Open the link in a new window. Default is `true`.
  * @param minified Don't render the link and avatar.
+ * @param action The action to perform when the card is clicked.
  */
 export default function FormattedAddress({
   address,
@@ -55,6 +61,7 @@ export default function FormattedAddress({
   network,
   openInNewWindow = true,
   minified = false,
+  action,
 }: Props) {
   const addr = address as Address;
   const hasAddr = addr && addr.length == 42;
@@ -87,6 +94,7 @@ export default function FormattedAddress({
       <BasicFormattedCard
         imgSrc={`https://cdn.stamp.fyi/avatar/${address}?h=100&w=100`}
         imgAlt={`Avatar of ${label}`}
+        action={action}
       >
         <a
           target={anchorTarget}

@@ -23,7 +23,9 @@ export default function Execution({ spaceConfig, edit }: { spaceConfig: SpaceCon
       </div>
       <p className="mt-4 badge text-xs font-bold">SAFE ADDRESS</p>
       { edit ? (
-        <SafeAddressForm label={""}/>
+        <div className="max-w-md">
+          <SafeAddressForm label={""}/>
+        </div>
       ) : (
         <FormattedAddress address={spaceConfig.config.juicebox.gnosisSafeAddress} network={spaceConfig.config.juicebox.network} />
       )}

@@ -22,6 +22,7 @@ import RulesForm from "@/components/CreateSpace/RulesForm";
 import BackNextButtons from "@/components/CreateSpace/BackNextButtons";
 import ReviewSpaceConfig from "@/components/CreateSpace/ReviewSpaceConfig";
 import SafeAddressForm from "@/components/form/SafeAddressForm";
+import SpaceOwnersForm from "@/components/CreateSpace/SpaceOwnersForm";
 
 export default function CreateSpacePage() {
   return (
@@ -118,6 +119,7 @@ function Form() {
                   description="Please choose a name for your space and a prefix for your proposal IDs."
                 >
                   <RulesForm />
+                  <SpaceOwnersForm currentSpaceOwners={[address]}/>
                   <BackNextButtons back={back} next={next} />
                 </DescriptionCardWrapper>
               ),

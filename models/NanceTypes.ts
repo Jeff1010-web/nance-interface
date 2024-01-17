@@ -103,8 +103,9 @@ export type CreateFormValues = {
     proposalIdPrefix: string;
     juicebox: JuiceboxConfig;
     snapshot: SnapshotConfig;
-  };
+  }
   governanceCycleForm: GovernanceCycleForm;
+  spaceOwners: { address: string }[];
   dryRun: boolean;
 };
 
@@ -158,7 +159,8 @@ export type CreateFormKeys =
   | `config.discord.roleIds.${keyof DiscordConfigRoles}`
   | `config.snapshot.${keyof SnapshotConfig}`
   | `config.juicebox.${keyof JuiceboxConfig}`
-  | `governanceCycleForm.${keyof GovernanceCycleForm}`;
+  | `governanceCycleForm.${keyof GovernanceCycleForm}`
+  | "spaceOwners";
 
 export type ConfigSpacePayload = {
   space: string;
