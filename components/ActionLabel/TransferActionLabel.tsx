@@ -14,7 +14,7 @@ export default function TransferActionLabel({
       &nbsp;{getContractLabel(transfer.contract)}
       &nbsp;to
       <div className="mx-1 inline-block">
-        <FormattedAddress address={transfer.to} style="inline ml-1" minified />
+        <FormattedAddress address={transfer.to} style="inline ml-1" minified copyable />
       </div>
     </span>
   );

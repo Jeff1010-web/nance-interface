@@ -7,7 +7,7 @@ export default function General({ spaceConfig, edit }: { spaceConfig: SpaceConfi
       <p className="badge text-xs font-bold">NAME</p>
       <p>{spaceConfig.space}</p>
       <p className="mt-4 text-xs font-bold">SPACE OWNERS</p>
-      <SpaceOwnersForm currentSpaceOwners={spaceConfig.spaceOwners} edit={edit} />
+      <SpaceOwnersForm edit={edit} />
     </div>
   );
 }

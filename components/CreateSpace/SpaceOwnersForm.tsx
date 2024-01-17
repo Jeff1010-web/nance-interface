@@ -4,14 +4,8 @@ import FormattedAddress from "../AddressCard/FormattedAddress";
 import ENSAddressInput from "../form/ENSAddressInput";
 import { PlusCircleIcon } from "@heroicons/react/24/solid";
 
-const validateAddress = (address: string) => {
-  const re = /^0x[a-fA-F0-9]{40}$/;
-  return re.test(address);
-};
-
-export default function SpaceOwnersForm({ edit = true, currentSpaceOwners }: { edit?: boolean; currentSpaceOwners: string[] }) {
-  const { getValues } = useFormContext();
-  const { fields, append, remove, replace } = useFieldArray({
+export default function SpaceOwnersForm({ edit = true }: { edit?: boolean; }) {
+  const { fields, append, remove } = useFieldArray({
     name: "spaceOwners",
   });
 
@@ -19,19 +13,11 @@ export default function SpaceOwnersForm({ edit = true, currentSpaceOwners }: { e
 
   const [addOwner, setAddOwner] = useState<string>(""); 
 
-  useEffect(() => {
-    // Add currentSpaceOwners to form viewer if they exist
-    if ((currentSpaceOwners.length > 0
-      && currentSpaceOwners[0] !== ""
-      && spaceOwners.length === 0)
-      || (!edit && (spaceOwners.length !== currentSpaceOwners.length))
-    ) {
-      replace(currentSpaceOwners.map((address) => ({ address })));
-    }
-    console.log("spaceOwners", getValues("spaceOwners"));
-    console.log("currentSpaceOwners", currentSpaceOwners);
-    console.log(edit);
-  }, [currentSpaceOwners, spaceOwners, append, edit]);
+  const validateAddress = (address: string) => {
+    const re = /^0x[a-fA-F0-9]{40}$/;
+    if (spaceOwners.find((owner) => owner.address === address)) return false;
+    return re.test(address);
+  };
 
   return (
     <div className="flex flex-col">

@@ -119,7 +119,7 @@ function Form() {
                   description="Please choose a name for your space and a prefix for your proposal IDs."
                 >
                   <RulesForm />
-                  <SpaceOwnersForm currentSpaceOwners={[address]}/>
+                  <SpaceOwnersForm />
                   <BackNextButtons back={back} next={next} />
                 </DescriptionCardWrapper>
               ),

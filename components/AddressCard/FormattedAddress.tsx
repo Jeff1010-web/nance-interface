@@ -3,8 +3,8 @@ import { Address, useEnsName } from "wagmi";
 import { useEffect, useState } from "react";
 import { classNames } from "@/utils/functions/tailwind";
 import { getAddressLink } from "@/utils/functions/EtherscanURL";
-import CopyableTooltip from "../common/CopyableTooltip";
 import BasicFormattedCard from "../common/BasicFormattedCard";
+import CopyableIcon from "../common/CopyableIcon";
 
 interface Props {
   /**
@@ -37,6 +37,11 @@ interface Props {
   minified?: boolean;
 
   /**
+   * Whether the address is copyable. Default is `true`.
+   */
+  copyable?: boolean;
+
+  /**
    * The action to perform when the card is clicked.
    */
   action?: () => void;
@@ -51,6 +56,7 @@ interface Props {
  * @param network Network to use for block explorer link. Default is `mainnet`.
  * @param openInNewWindow Open the link in a new window. Default is `true`.
  * @param minified Don't render the link and avatar.
+ * @param copyable Whether the address is copyable. Default is `true`.
  * @param action The action to perform when the card is clicked.
  */
 export default function FormattedAddress({
@@ -61,6 +67,7 @@ export default function FormattedAddress({
   network,
   openInNewWindow = true,
   minified = false,
+  copyable = true,
   action,
 }: Props) {
   const addr = address as Address;
@@ -68,6 +75,7 @@ export default function FormattedAddress({
   const anchorTarget = openInNewWindow ? "_blank" : "_self";
 
   const [label, setLabel] = useState(shortenAddress(address) || "Anon");
+  const [hover, setHover] = useState(false);
   const { data: ensName } = useEnsName({ address: addr, enabled: hasAddr, chainId: 1 });
 
   const _network = network || 'mainnet';
@@ -83,18 +91,25 @@ export default function FormattedAddress({
 
   if (minified) {
     return (
-      <CopyableTooltip text={address || ""}>
+      <div className="flex flex-row items-center"
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+      >
         <span className={classNames(style)}>{label}</span>
-      </CopyableTooltip>
+        {copyable && <CopyableIcon text={address || ""} hide={!hover} />}
+      </div>
     );
   }
 
   return (
-    <CopyableTooltip text={address || ""}>
-      <BasicFormattedCard
-        imgSrc={`https://cdn.stamp.fyi/avatar/${address}?h=100&w=100`}
-        imgAlt={`Avatar of ${label}`}
-        action={action}
+    <BasicFormattedCard
+      imgSrc={`https://cdn.stamp.fyi/avatar/${address}?h=100&w=100`}
+      imgAlt={`Avatar of ${label}`}
+      action={action}
+    >
+      <div className="flex flex-row items-center"
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
       >
         <a
           target={anchorTarget}
@@ -103,9 +118,10 @@ export default function FormattedAddress({
           href={`${urlPrefix}${address ? encodeURIComponent(address) : ""}`}
         >
           <p>{label}</p>
-          <p className="text-xs text-gray-400">{subText}</p>
         </a>
-      </BasicFormattedCard>
-    </CopyableTooltip>
+        {copyable && <CopyableIcon text={address || ""} hide={!hover} />}
+      </div>
+      <p className="text-xs text-gray-400">{subText}</p>
+    </BasicFormattedCard>
   );
 }

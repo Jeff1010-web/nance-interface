@@ -68,8 +68,10 @@ export default function VoterProfile({
         <div className="hidden justify-center lg:flex">
           <Image
             alt="Avatar holder"
-            src=""
-            className="h-10 w-10 rounded-full bg-slate-200 p-1"
+            src="/images/unknown.png"
+            className="h-10 w-10 rounded-full p-1"
+            width={64}
+            height={64}
           />
         </div>
 

@@ -174,6 +174,7 @@ export default function ProposalVotes({
                             address={vote.voter}
                             style="text-gray-900"
                             minified
+                            copyable={false}
                           />
                         </div>
                         &nbsp;
@@ -214,6 +215,7 @@ export default function ProposalVotes({
                           address={vote.voter}
                           style="text-gray-900"
                           minified
+                          copyable={false}
                         />
                       </div>
 

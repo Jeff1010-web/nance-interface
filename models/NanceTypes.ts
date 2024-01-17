@@ -164,7 +164,7 @@ export type CreateFormKeys =
 
 export type ConfigSpacePayload = {
   space: string;
-  spaceOwner: string;
+  spaceOwners: string[];
 };
 
 // from https://github.com/jigglyjams/nance-ts/blob/main/src/types.ts

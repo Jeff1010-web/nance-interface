@@ -16,6 +16,7 @@ import Dialog from "./sub/Dialog";
 import Execution from "./sub/Execution";
 import { useCreateSpace } from "@/utils/hooks/NanceHooks";
 import { useSession } from "next-auth/react";
+import { Spinner } from "flowbite-react";
 
 export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfig }) {
   const navigation = [
@@ -29,28 +30,32 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
 
   const [selectedSetting, setSelectedSetting] = useState<string>(navigation[0].name);
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [spaceOwners, setSpaceOwners] = useState<string[]>(spaceConfig.spaceOwners);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { data: session } = useSession();
 
-  const { trigger } = useCreateSpace();
+  const { trigger, data } = useCreateSpace();
 
   // reset form to current config when edit is toggled
   useEffect(() => {
     methods.reset({
       config: spaceConfig.config,
+      spaceOwners: spaceOwners.map((address) => ({ address })),
     });
   }, [editMode]);
 
   const methods = useForm<CreateFormValues>({
     mode: "onChange",
-    defaultValues: { config: spaceConfig.config },
   });
 
   const { handleSubmit } = methods;
   const onSubmit: SubmitHandler<CreateFormValues> = async (formData) => {
-    console.log("submitting");
-    console.log(formData);
-    trigger(formData);
+    trigger(formData).then((res) => {
+      if (res?.data) setSpaceOwners(res.data.spaceOwners);
+      setEditMode(false);
+      setIsLoading(false);
+    });
   };
 
   return (
@@ -71,10 +76,12 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
               </div>
               { editMode && (<div className="ml-2 mt-1 text-sm underline cursor-pointer"
                 onClick={() => {
+                  setIsLoading(true);
                   handleSubmit(onSubmit)();
-                  setEditMode(false);
                 }}
-              >save</div>)}
+              >
+                { isLoading ? <Spinner/> : "save" }
+              </div>)}
             </>
           )}
         </div>
@@ -83,7 +90,10 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
           <FormProvider {...methods}>
             {navigation.map((item) => (
               <div key={item.name} className={selectedSetting === item.name ? '' : 'hidden' }>
-                <item.component spaceConfig={spaceConfig} edit={editMode} />
+                <item.component
+                  spaceConfig={{...spaceConfig, spaceOwners: spaceOwners}}
+                  edit={editMode}
+                />
               </div>
             ))}
           </FormProvider>
