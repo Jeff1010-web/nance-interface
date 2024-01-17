@@ -1,4 +1,4 @@
-import { useFieldArray } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { useEffect, useState } from "react";
 import FormattedAddress from "../AddressCard/FormattedAddress";
 import ENSAddressInput from "../form/ENSAddressInput";
@@ -10,7 +10,8 @@ const validateAddress = (address: string) => {
 };
 
 export default function SpaceOwnersForm({ edit = true, currentSpaceOwners }: { edit?: boolean; currentSpaceOwners: string[] }) {
-  const { fields, append, remove } = useFieldArray({
+  const { getValues } = useFormContext();
+  const { fields, append, remove, replace } = useFieldArray({
     name: "spaceOwners",
   });
 
@@ -20,15 +21,17 @@ export default function SpaceOwnersForm({ edit = true, currentSpaceOwners }: { e
 
   useEffect(() => {
     // Add currentSpaceOwners to form viewer if they exist
-    if (currentSpaceOwners.length > 0
+    if ((currentSpaceOwners.length > 0
       && currentSpaceOwners[0] !== ""
-      && spaceOwners.length === 0
+      && spaceOwners.length === 0)
+      || (!edit && (spaceOwners.length !== currentSpaceOwners.length))
     ) {
-      currentSpaceOwners.forEach((address) => {
-        append({ address });
-      });
+      replace(currentSpaceOwners.map((address) => ({ address })));
     }
-  }, [currentSpaceOwners, spaceOwners]);
+    console.log("spaceOwners", getValues("spaceOwners"));
+    console.log("currentSpaceOwners", currentSpaceOwners);
+    console.log(edit);
+  }, [currentSpaceOwners, spaceOwners, append, edit]);
 
   return (
     <div className="flex flex-col">
@@ -61,9 +64,7 @@ export default function SpaceOwnersForm({ edit = true, currentSpaceOwners }: { e
           <div key={field.id}>
             <FormattedAddress
               address={field.address}
-              subText={index === 0 ? "You must be an owner" : undefined }
               action={index === 0 || !edit ? undefined : () => {
-                console.log(index, field);
                 remove(index);
               }}
             />

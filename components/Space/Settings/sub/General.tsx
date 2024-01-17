@@ -1,4 +1,3 @@
-import FormattedAddress from "@/components/AddressCard/FormattedAddress";
 import SpaceOwnersForm from "@/components/CreateSpace/SpaceOwnersForm";
 import { SpaceConfig } from "@/models/NanceTypes";
 
