@@ -119,6 +119,13 @@ export default function AddressForm({
         />
       </div>
 
+      <a
+        className="mt-1 text-sm text-gray-500 hover:underline"
+        href={`https://blockscan.com/address/${getValues(fieldName)}`}
+      >
+        blockscan://{getValues(fieldName)}
+      </a>
+
       {isValidating && (
         <p className="mt-1 animate-pulse text-sm text-gray-500">
           Checking if Safe address is valid on this network...
