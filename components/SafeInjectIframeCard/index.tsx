@@ -16,6 +16,10 @@ const dAppList = [
     name: "Uniswap",
   },
   {
+    id: "https://stake.lido.fi",
+    name: "Lido Finance",
+  },
+  {
     id: "https://jokerace.xyz",
     name: "Jokerace",
   },
