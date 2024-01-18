@@ -28,7 +28,7 @@ export default function CustomTransactionActionForm({
   const [functionData, setFunctionData] = useState<string>();
   const [shouldSimulate, setShouldSimulate] = useState<boolean>();
 
-  const { latestTransaction } = useSafeInject();
+  const { latestTransaction, setAddress, address } = useSafeInject();
   const {
     watch,
     control,
@@ -73,6 +73,13 @@ export default function CustomTransactionActionForm({
     getFieldState(genFieldName("args")).isDirty,
     getValues(genFieldName("functionName")),
   ]);
+
+  // update address if project owner changed
+  useEffect(() => {
+    if (address !== projectOwner) {
+      setAddress(projectOwner);
+    }
+  }, [projectOwner, setAddress]);
 
   const onSimulated = useCallback(
     (
