@@ -23,7 +23,7 @@ import {
 } from "../types";
 import { useEthersProvider } from "@/utils/hooks/ViemAdapter";
 
-interface TransactionWithId extends Transaction {
+export interface TransactionWithId extends Transaction {
   id: number;
 }
 
@@ -33,6 +33,9 @@ type SafeInjectContextType = {
   //rpcUrl: string | undefined;
   iframeRef: React.RefObject<HTMLIFrameElement> | null;
   latestTransaction: TransactionWithId | undefined;
+  setLatestTransaction: React.Dispatch<
+    React.SetStateAction<TransactionWithId | undefined>
+  >;
   setAddress: React.Dispatch<React.SetStateAction<string | undefined>>;
   setAppUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
   //setRpcUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
@@ -42,12 +45,11 @@ type SafeInjectContextType = {
 export const SafeInjectContext = createContext<SafeInjectContextType>({
   address: undefined,
   appUrl: undefined,
-  //rpcUrl: undefined,
   iframeRef: null,
   latestTransaction: undefined,
+  setLatestTransaction: () => {},
   setAddress: () => {},
   setAppUrl: () => {},
-  //setRpcUrl: () => {},
   sendMessageToIFrame: () => {},
 });
 
@@ -162,12 +164,11 @@ export const SafeInjectProvider: React.FunctionComponent<FCProps> = ({
       value={{
         address,
         appUrl,
-        //rpcUrl,
         iframeRef,
         latestTransaction,
+        setLatestTransaction,
         setAddress,
         setAppUrl,
-        //setRpcUrl,
         sendMessageToIFrame,
       }}
     >

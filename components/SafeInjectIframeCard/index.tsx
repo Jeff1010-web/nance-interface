@@ -3,6 +3,8 @@ import { useSafeInject } from "./context/SafeInjectedContext";
 import { useDebounce } from "@/utils/hooks/UseDebounce";
 import { isAddress } from "viem";
 import GenericListbox from "../common/GenericListbox";
+import GenericButton from "../common/GenericButton";
+import useWalletConnect from "./hooks/WalletConnect";
 
 const dAppList = [
   {
@@ -20,8 +22,16 @@ const dAppList = [
 ];
 
 export default function SafeInjectIframeCard() {
-  const { appUrl, iframeRef, address, setAppUrl } = useSafeInject();
+  const { appUrl, iframeRef, address, setAppUrl, setLatestTransaction } =
+    useSafeInject();
   const [urlInput, setUrlInput] = useState<string>("");
+  const [walletConnectUri, setWalletConnectUri] = useState<string>("");
+
+  const { connect, disconnect, isConnected } = useWalletConnect({
+    uri: walletConnectUri,
+    address: address || "",
+    setLatestTransaction,
+  });
 
   useDebounce<string | undefined>(urlInput, 500, (k: string | undefined) => {
     if (k !== appUrl) {
@@ -32,7 +42,7 @@ export default function SafeInjectIframeCard() {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700">
-        {"Input app url you want to load"}
+        {"Load with other dApp"}
       </label>
       <p className="text-xs text-gray-500">
         {
@@ -72,12 +82,51 @@ export default function SafeInjectIframeCard() {
         </div>
       </div>
 
+      <p className="mt-3 text-xs text-gray-500">
+        {
+          "For dApps that doesn't support Safe, you can use WalletConnect to connect."
+        }
+      </p>
+
+      <div className="flex flex-col gap-2 md:flex-row">
+        <input
+          type="text"
+          className="block h-10 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm md:w-2/3"
+          value={walletConnectUri}
+          onChange={(e) => setWalletConnectUri(e.target.value)}
+          disabled={!isAddress(address || "")}
+          placeholder={
+            isAddress(address || "")
+              ? "Select WalletConnect method and copy URI here to connect"
+              : "No project owner address founded"
+          }
+        />
+
+        <div className="flex content-end md:w-1/3">
+          <GenericButton
+            className="w-full md:w-fit"
+            onClick={() => {
+              if (isConnected) {
+                disconnect();
+                setWalletConnectUri("");
+              } else {
+                connect();
+              }
+            }}
+          >
+            {isConnected ? "Disconnect" : "Connect with URI"}
+          </GenericButton>
+        </div>
+      </div>
+
       {appUrl && (
         <div className="mt-2 overflow-y-auto">
           <iframe
             ref={iframeRef}
             src={appUrl}
             className="h-[60vh] w-full p-2"
+            // to support copy to clipboard programmatically inside iframe
+            allow="clipboard-write"
           />
         </div>
       )}
