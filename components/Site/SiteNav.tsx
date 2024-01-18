@@ -103,7 +103,7 @@ export default function SiteNav({
                     </div>
                   </div>
 
-                  <div className="flex items-center xl:hidden">
+                  <div className="flex items-center md:hidden">
                     {mobileHeaderCenter}
                   </div>
 
