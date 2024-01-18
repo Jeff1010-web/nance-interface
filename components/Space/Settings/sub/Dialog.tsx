@@ -19,7 +19,7 @@ export default function Dialog({ spaceConfig, edit }: { spaceConfig: SpaceConfig
           )}
         </div>
       ) : (
-        <div className="flex flex-col">
+        <div className="w-1/4">
           <ConnectWalletButton />
         </div>
       )}

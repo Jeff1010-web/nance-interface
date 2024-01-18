@@ -18,7 +18,7 @@ export default function HeroSection({ top4Spaces }: { top4Spaces: SimpleSpaceEnt
             }}
           />
         </div>
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+        <div className="mx-auto max-w-2xl py-24 sm:py-48 lg:py-56">
           <div className="text-center">
             <div className="flex justify-center">
               <Image src="/images/wordart.png" alt="Nance" width={300} height={300} />
@@ -29,7 +29,7 @@ export default function HeroSection({ top4Spaces }: { top4Spaces: SimpleSpaceEnt
             <div className="mt-6 flex flex-col items-center justify-center gap-x-6">
               <Link
                 href="/create"
-                className="rounded-md bg-blue-600 sm:px-36 px-32 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                className="rounded-md bg-blue-600 sm:px-36 px-24 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
               >
                 Create Space
               </Link>

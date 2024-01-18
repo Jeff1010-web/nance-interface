@@ -22,9 +22,9 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
   const navigation = [
     { name: "General", icon: IdentificationIcon, component: General },
     { name: "Tasks", icon: HandRaisedIcon, component: Tasks },
-    { name: "Schedule", icon: CalendarDaysIcon, component: () => "" },
+    // { name: "Schedule", icon: CalendarDaysIcon, component: () => "" },
     { name: "Dialog", icon: ChatBubbleOvalLeftIcon, component: Dialog },
-    { name: "Vote", icon: BuildingLibraryIcon, component: () => <div>Component for Vote</div> },
+    // { name: "Vote", icon: BuildingLibraryIcon, component: () => <div>Component for Vote</div> },
     { name: "Execution", icon: KeyIcon, component: Execution },
   ];
 

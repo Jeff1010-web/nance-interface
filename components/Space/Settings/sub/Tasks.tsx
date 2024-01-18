@@ -71,7 +71,9 @@ export default function Tasks({ spaceConfig }: { spaceConfig: SpaceConfig }) {
           ))}
         </>
       ) : (
-        <ConnectWalletButton />
+        <div className="w-1/4">
+          <ConnectWalletButton />
+        </div>
       )}
       <ResultModal
         shouldOpen={open}
