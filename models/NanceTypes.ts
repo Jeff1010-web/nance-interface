@@ -1,3 +1,4 @@
+import { BigNumber } from "ethers";
 import { Interface } from "ethers/lib/utils";
 
 export interface APIResponse<T> {
@@ -103,7 +104,7 @@ export type CreateFormValues = {
     proposalIdPrefix: string;
     juicebox: JuiceboxConfig;
     snapshot: SnapshotConfig;
-  }
+  };
   governanceCycleForm: GovernanceCycleForm;
   spaceOwners: { address: string }[];
   dryRun: boolean;
@@ -303,7 +304,7 @@ export function extractFunctionName(str: string) {
 
 export function parseFunctionAbiWithNamedArgs(
   functionAbi: string,
-  args: any[] | object,
+  args: any[],
 ) {
   if (!args) return [];
 
@@ -318,9 +319,22 @@ export function parseFunctionAbiWithNamedArgs(
     (p) => p.name || "_",
   );
   let dict: any = [];
-  Object.values(args).forEach((val, index) =>
-    dict.push([paramNames[index] || "_", val]),
-  );
+  Object.values(args).forEach((val, index) => {
+    if (val.name && val.value && val.type) {
+      // it's new struct
+      const argStruct: CustomTransactionArg = val;
+      if (val.type === "uint256") {
+        dict.push([
+          argStruct.name || "_",
+          BigNumber.from(argStruct.value).toString(),
+        ]);
+      } else {
+        dict.push([argStruct.name || "_", argStruct.value]);
+      }
+    } else {
+      dict.push([paramNames[index] || "_", val]);
+    }
+  });
 
   return dict;
 }
