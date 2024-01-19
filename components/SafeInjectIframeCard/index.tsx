@@ -5,6 +5,7 @@ import { isAddress } from "viem";
 import GenericListbox from "../common/GenericListbox";
 import GenericButton from "../common/GenericButton";
 import useWalletConnect from "./hooks/WalletConnect";
+import { classNames } from "@/utils/functions/tailwind";
 
 const dAppList = [
   {
@@ -31,7 +32,7 @@ export default function SafeInjectIframeCard() {
   const [urlInput, setUrlInput] = useState<string>("");
   const [walletConnectUri, setWalletConnectUri] = useState<string>("");
 
-  const { connect, disconnect, isConnected } = useWalletConnect({
+  const { connect, disconnect, isConnected, loading } = useWalletConnect({
     uri: walletConnectUri,
     address: address || "",
     setLatestTransaction,
@@ -118,7 +119,13 @@ export default function SafeInjectIframeCard() {
               }
             }}
           >
-            {isConnected ? "Disconnect" : "Connect with URI"}
+            <p className={classNames(loading && "animate-pulse")}>
+              {loading
+                ? "Connecting..."
+                : isConnected
+                  ? "Disconnect"
+                  : "Connect with URI"}
+            </p>
           </GenericButton>
         </div>
       </div>

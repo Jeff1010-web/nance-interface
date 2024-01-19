@@ -105,12 +105,15 @@ export default function useWalletConnect({
           },
         });
         setWalletConnectSession(session);
+        setLoading(false);
       });
       // pair with uri
       try {
         await web3wallet.core.pairing.pair({ uri });
-      } catch (e) {
-        console.error(e);
+      } catch (e: any) {
+        console.warn("WalletConnect pair error", e, uri);
+        setLoading(false);
+        setError(e?.message);
       }
 
       web3wallet.on("session_request", async (event) => {
