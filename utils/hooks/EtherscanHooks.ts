@@ -4,6 +4,7 @@ import { usePublicClient } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { Interface } from "ethers/lib/utils";
 import { NetworkContext } from "../../context/NetworkContext";
+import { trim } from "viem";
 
 const API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_KEY;
 
@@ -30,6 +31,7 @@ export function useEtherscanAPIUrl() {
   }.etherscan.io/api`;
 }
 
+// supported proxy pattern: EIP-1967 Proxy Storage Slots, EIP-897 DelegateProxy and Gnosis Safe Proxy
 export function useEtherscanContractABI(
   address: string,
   shouldFetch: boolean = true,
@@ -58,35 +60,62 @@ export function useEtherscanContractABI(
       if (abi && client && implementationAddress === undefined) {
         const ethersInterface = new Interface(abi);
         if (Object.values(ethersInterface.functions).length === 0) {
-          // this maybe a proxy contract without any explicit function
-          // e.g. Gnosis Safe Proxy
-          console.debug("EtherscanHooks.proxy.safe", address, ethersInterface);
+          console.debug(
+            "EtherscanHooks.proxy.slotType",
+            address,
+            ethersInterface,
+          );
+
+          // EIP-1967 Proxy Storage Slots
+          // https://eips.ethereum.org/EIPS/eip-1967
+          // test address: 0xcaD88677CA87a7815728C72D74B4ff4982d54Fc1
           client
-            .readContract({
+            .getStorageAt({
               address: address as `0x${string}`,
-              abi: [
-                {
-                  name: "masterCopy",
-                  type: "function",
-                  stateMutability: "view",
-                  inputs: [],
-                  outputs: [{ type: "address" }],
-                },
-              ],
-              functionName: "masterCopy",
+              slot: "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
             })
-            .then((masterCopy) => {
-              if (!cancelled) {
-                setImplementationAddress(masterCopy);
+            .then((slot: any) => {
+              const trimmed = trim(slot);
+              console.debug("EtherscanHooks.proxy.slot", trimmed);
+              if (cancelled) {
+                return;
               }
-            })
-            .catch((e) => {
-              console.warn("EtherscanHooks.proxy.safe", e);
-              setImplementationAddress("");
+
+              if (trimmed === "0x00") {
+                // this maybe a proxy contract without any explicit function
+                // e.g. Gnosis Safe Proxy
+                console.debug("EtherscanHooks.proxy.safe");
+                client
+                  .readContract({
+                    address: address as `0x${string}`,
+                    abi: [
+                      {
+                        name: "masterCopy",
+                        type: "function",
+                        stateMutability: "view",
+                        inputs: [],
+                        outputs: [{ type: "address" }],
+                      },
+                    ],
+                    functionName: "masterCopy",
+                  })
+                  .then((masterCopy) => {
+                    if (!cancelled) {
+                      setImplementationAddress(masterCopy);
+                    }
+                  })
+                  .catch((e) => {
+                    console.warn("EtherscanHooks.proxy.safe", e);
+                    setImplementationAddress("");
+                  });
+              } else {
+                setImplementationAddress(trimmed as `0x${string}`);
+              }
             });
         } else if (ethersInterface.functions["implementation()"]) {
-          // this maybe a EIP-897 proxy contract
+          // EIP-897 DelegateProxy
           // https://eips.ethereum.org/EIPS/eip-897
+          // test address: 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84
           console.debug(
             "EtherscanHooks.proxy.eip897",
             address,
