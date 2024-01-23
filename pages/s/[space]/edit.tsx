@@ -7,6 +7,8 @@ import { getToken } from "next-auth/jwt";
 import { Footer, SiteNav } from "@/components/Site";
 import { ProposalMetadataContext } from "@/components/ProposalEdit/context/ProposalMetadataContext";
 import ProposalEditForm from "@/components/ProposalEdit/ProposalEditForm";
+import { useSpaceInfo } from "@/utils/hooks/NanceHooks";
+import { SpaceContext } from "@/context/SpaceContext";
 
 export async function getServerSideProps({ req, query, params }: any) {
   // check proposal parameter type
@@ -54,6 +56,9 @@ export default function NanceEditProposal({
   });
   const { proposalId } = query;
 
+  const { data: spaceInfoResponse } = useSpaceInfo({ space });
+  const spaceInfo = spaceInfoResponse?.data;
+
   return (
     <>
       <SiteNav
@@ -81,7 +86,9 @@ export default function NanceEditProposal({
           <ProposalMetadataContext.Provider
             value={{ loadedProposal, fork, space }}
           >
-            <ProposalEditForm space={space} />
+            <SpaceContext.Provider value={spaceInfo}>
+              <ProposalEditForm space={space} />
+            </SpaceContext.Provider>
           </ProposalMetadataContext.Provider>
         </div>
       </div>

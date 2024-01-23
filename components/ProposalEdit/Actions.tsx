@@ -3,7 +3,6 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 import { utils } from "ethers";
 import { useState, useContext, useEffect } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
-import { useSpaceInfo } from "@/utils/hooks/NanceHooks";
 import useProjectInfo from "@/utils/hooks/juicebox/ProjectInfo";
 import { Action } from "@/models/NanceTypes";
 import ActionPalettes, { ActionItem } from "./ActionPalettes";
@@ -13,6 +12,7 @@ import ReserveActionForm from "./ReserveActionForm";
 import TransferActionForm from "./TransferActionForm";
 import { ProposalMetadataContext } from "./context/ProposalMetadataContext";
 import { SafeInjectProvider } from "../SafeInjectIframeCard/context/SafeInjectedContext";
+import { SpaceContext } from "@/context/SpaceContext";
 
 export default function Actions({
   loadedActions,
@@ -29,8 +29,8 @@ export default function Actions({
   }>({ name: "proposal.actions" });
 
   const { space } = useContext(ProposalMetadataContext);
-  const { data: spaceInfo } = useSpaceInfo({ space });
-  const projectId = spaceInfo?.data?.juiceboxProjectId;
+  const spaceInfo = useContext(SpaceContext);
+  const projectId = spaceInfo?.juiceboxProjectId;
   const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(
     3,
     parseInt(projectId ?? ""),
@@ -83,7 +83,7 @@ export default function Actions({
               <PayoutActionForm
                 genFieldName={genFieldName(index)}
                 projectOwner={projectOwner}
-                currentCycle={spaceInfo?.data?.currentCycle ?? 1}
+                currentCycle={spaceInfo?.currentCycle ?? 1}
               />
             </div>
           );
@@ -110,7 +110,7 @@ export default function Actions({
               />
               <TransferActionForm
                 genFieldName={genFieldName(index)}
-                address={spaceInfo?.data.transactorAddress?.address || ""}
+                address={spaceInfo?.transactorAddress?.address || ""}
               />
             </div>
           );

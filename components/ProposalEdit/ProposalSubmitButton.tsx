@@ -8,29 +8,27 @@ import {
 import { ProposalStatus } from "@/constants/Nance";
 import { classNames } from "@/utils/functions/tailwind";
 
-type ProposalStatusType = typeof ProposalStatus[number];
+type ProposalStatusType = (typeof ProposalStatus)[number];
 
 export function ProposalSubmitButton({
   formErrors,
   status,
   isMutating,
   selected,
-  setSelected 
-} : {
-  formErrors: string,
-  status: string,
-  isMutating: boolean,
-  selected: ProposalStatusType,
-  setSelected: (id: ProposalStatusType) => void
+  setSelected,
+}: {
+  formErrors: string;
+  status: string;
+  isMutating: boolean;
+  selected: ProposalStatusType;
+  setSelected: (id: ProposalStatusType) => void;
 }) {
-  
   function getButtonLabel(selected: {
     title: string;
     description: string;
     value: string;
     display: string;
   }) {
-  
     if (formErrors.length > 0) {
       return "Error in form";
     } else if (status === "loading") {
@@ -47,7 +45,7 @@ export function ProposalSubmitButton({
       {({ open }) => (
         <>
           <Listbox.Label className="sr-only">
-          Change published status
+            Change published status
           </Listbox.Label>
           <div className="relative">
             <div className="inline-flex divide-x divide-blue-700 rounded-md shadow-sm">
@@ -55,9 +53,9 @@ export function ProposalSubmitButton({
                 type="submit"
                 disabled={
                   isMutating || formErrors.length > 0
-                //|| (!isNew && hasVoting)
+                  //|| (!isNew && hasVoting)
                 }
-                className="ml-3 inline-flex justify-center rounded-none rounded-l-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400"
+                className="inline-flex justify-center rounded-none rounded-l-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400"
               >
                 {(status === "loading" || isMutating) && (
                   <ArrowPathIcon
@@ -89,9 +87,7 @@ export function ProposalSubmitButton({
                     key={option.title}
                     className={({ active }) =>
                       classNames(
-                        active
-                          ? "bg-blue-600 text-white"
-                          : "text-gray-900",
+                        active ? "bg-blue-600 text-white" : "text-gray-900",
                         "cursor-default select-none p-4 text-sm",
                       )
                     }

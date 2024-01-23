@@ -7,6 +7,11 @@ export interface APIResponse<T> {
   data: T;
 }
 
+export type GuildxyzConfig = {
+  id: number;
+  roles: number[];
+};
+
 export type SpaceInfo = {
   name: string;
   displayName: string;
@@ -26,6 +31,7 @@ export type SpaceInfo = {
     address: string;
   };
   nextProposalId: number;
+  guildxyz?: GuildxyzConfig;
 };
 
 export type ProposalInfo = {

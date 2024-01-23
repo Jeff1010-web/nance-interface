@@ -8,7 +8,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useContext, useState, useEffect, Fragment, useRef } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import {
   useForm,
   SubmitHandler,
@@ -29,6 +29,9 @@ import { ProposalStatus, TEMPLATE } from "@/constants/Nance";
 import { ProposalSubmitButton } from "./ProposalSubmitButton";
 import DiscordUser from "../CreateSpace/sub/DiscordUser";
 import { classNames } from "@/utils/functions/tailwind";
+import { SpaceContext } from "@/context/SpaceContext";
+import { useAccount } from "wagmi";
+import { accessCheckWithGuild } from "@/utils/hooks/GuildxyzHooks";
 
 const ResultModal = dynamic(() => import("../modal/ResultModal"), {
   ssr: false,
@@ -57,15 +60,18 @@ export default function ProposalEditForm({ space }: { space: string }) {
   const router = useRouter();
   const metadata = useContext(ProposalMetadataContext);
   const editorRef = useRef<Editor>(null);
+  const spaceInfo = useContext(SpaceContext);
+  const guildxyz = spaceInfo?.guildxyz;
 
   // state
   const [formErrors, setFormErrors] = useState<string>("");
   const [selected, setSelected] = useState(ProposalStatus[0]);
-  const [txnsMayFail, setTxnsMayFail] = useState(false);
+  const [submitWillFailReason, setSubmitWillFailReason] = useState<string>("");
   const [formDataPayload, setFormDataPayload] = useState<ProposalFormValues>();
   const [authorDiscordId, setAuthorDiscordId] = useState<string | null>();
 
   // hooks
+  const { address } = useAccount();
   const [proposalCache, setProposalCache] = useLocalStorage<ProposalCache>(
     "ProposalCache",
     CACHE_VERSION,
@@ -102,24 +108,31 @@ export default function ProposalEditForm({ space }: { space: string }) {
     setValue,
     watch,
   } = methods;
+
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
+    // check if actions all passed simulation
     const _allSimulated =
       getValues("proposal.actions").filter(
         (a) =>
           a.type === "Custom Transaction" &&
           (a.payload as CustomTransaction).tenderlyStatus !== "true",
       ).length === 0;
-    console.debug(
-      "check simulations",
-      _allSimulated,
-      getValues("proposal.actions"),
-    );
-    setTxnsMayFail(!_allSimulated);
+    const simulationFailedInfo = _allSimulated
+      ? ""
+      : "You have some transactions may failed based on simulations.\n";
 
-    if (_allSimulated) {
+    // check if user has satisfied the requirements of potential guildxyz gate
+    const { hasPassGuildxyzCheck, guildxyzInfo } = await accessCheckWithGuild(
+      guildxyz?.id,
+      address,
+      guildxyz?.roles || [],
+    );
+
+    if (_allSimulated && hasPassGuildxyzCheck) {
       return await processAndUploadProposal(formData);
     } else {
       setFormDataPayload(formData);
+      setSubmitWillFailReason(simulationFailedInfo + guildxyzInfo);
     }
   };
   const processAndUploadProposal: SubmitHandler<ProposalFormValues> = async (
@@ -239,20 +252,23 @@ export default function ProposalEditForm({ space }: { space: string }) {
 
       <UIGuide name="EditPage" steps={driverSteps} />
       <MiddleStepModal
-        open={txnsMayFail}
-        setOpen={setTxnsMayFail}
-        title="SimulationCheck"
-        description="You have some transactions may failed based on simulations, do you wish to continue?"
-        payload={formDataPayload}
-        onContinue={(f) => processAndUploadProposal(f)}
+        open={submitWillFailReason.length > 0}
+        setOpen={(v) => {
+          if (!v) {
+            setSubmitWillFailReason("");
+          }
+        }}
+        title="Submit will fail, please check the following:"
+        description={submitWillFailReason}
+        onContinue={() => processAndUploadProposal(formDataPayload!)}
       />
       <form className="mt-6 space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <Actions
           loadedActions={
             (metadata.fork
               ? metadata.loadedProposal?.actions?.map(
-                ({ uuid, ...rest }) => rest,
-              )
+                  ({ uuid, ...rest }) => rest,
+                )
               : metadata.loadedProposal?.actions) || []
           }
         />
@@ -342,15 +358,14 @@ export default function ProposalEditForm({ space }: { space: string }) {
             >
               {isNew ? (
                 <div className="ml-6 items-center">
-                  <p className="-mt-5 mb-1 text-sm text-gray-500">
-                    <InformationCircleIcon className="mr-1 inline h-5 w-5" />
-                    Optional: add your Discord ID to be notified of proposal
-                    status changes
-                  </p>
                   <DiscordUser
                     address={session?.user?.name || ""}
                     setDiscordId={setAuthorDiscordId}
                   />
+                  <p className="mt-1 text-sm text-gray-500">
+                    <InformationCircleIcon className="mr-1 inline h-5 w-5" />
+                    Optional: receive notification of proposal status changes
+                  </p>
                 </div>
               ) : (
                 <></>
@@ -358,7 +373,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
               <ProposalSubmitButton
                 formErrors={formErrors}
                 status={status}
-                isMutating={isMutating}
+                isMutating={formState.isSubmitting || isMutating}
                 selected={selected}
                 setSelected={setSelected}
               />
