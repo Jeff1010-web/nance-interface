@@ -48,7 +48,6 @@ export default function FunctionSelector({
           functionData.slice(0, 10),
         );
         const newVal = functionFragment.format("full");
-        console.debug("wtaaaa");
         setVal(newVal);
         setFunctionFragment(functionFragment);
       } catch (e) {
@@ -80,7 +79,7 @@ export default function FunctionSelector({
           )}
           onChange={(event) => setQuery(event.target.value)}
           displayValue={(option: string) => option}
-          placeholder="Function Selector"
+          placeholder={isLoading ? "Loading..." : error || "Select a function"}
         />
         <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
           <ChevronDownIcon

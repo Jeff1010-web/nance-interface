@@ -34,7 +34,7 @@ export function useEtherscanContractABI(
   address: string,
   shouldFetch: boolean = true,
 ) {
-  const [implementationAddress, setImplementationAddress] = useState("");
+  const [implementationAddress, setImplementationAddress] = useState<string>();
   const client = usePublicClient();
   const apiUrl = useEtherscanAPIUrl();
   const {
@@ -55,48 +55,66 @@ export function useEtherscanContractABI(
     let cancelled = false;
 
     const func = async () => {
-      if (abi && client && implementationAddress === "") {
+      if (abi && client && implementationAddress === undefined) {
         const ethersInterface = new Interface(abi);
         if (Object.values(ethersInterface.functions).length === 0) {
           // this maybe a proxy contract without any explicit function
           // e.g. Gnosis Safe Proxy
-          console.debug("EtherscanHooks.proxy.custom", address);
-          const proxyAddress = (await client.readContract({
-            address: address as `0x${string}`,
-            abi: [
-              {
-                name: "masterCopy",
-                type: "function",
-                stateMutability: "view",
-                inputs: [],
-                outputs: [{ type: "address" }],
-              },
-            ],
-            functionName: "masterCopy",
-          })) as `0x${string}`;
-          if (!cancelled) {
-            setImplementationAddress(proxyAddress);
-          }
+          console.debug("EtherscanHooks.proxy.safe", address, ethersInterface);
+          client
+            .readContract({
+              address: address as `0x${string}`,
+              abi: [
+                {
+                  name: "masterCopy",
+                  type: "function",
+                  stateMutability: "view",
+                  inputs: [],
+                  outputs: [{ type: "address" }],
+                },
+              ],
+              functionName: "masterCopy",
+            })
+            .then((masterCopy) => {
+              if (!cancelled) {
+                setImplementationAddress(masterCopy);
+              }
+            })
+            .catch((e) => {
+              console.warn("EtherscanHooks.proxy.safe", e);
+              setImplementationAddress("");
+            });
         } else if (ethersInterface.functions["implementation()"]) {
           // this maybe a EIP-897 proxy contract
           // https://eips.ethereum.org/EIPS/eip-897
-          console.debug("EtherscanHooks.proxy.eip897", address);
-          const proxyAddress = (await client.readContract({
-            address: address as `0x${string}`,
-            abi: [
-              {
-                name: "implementation",
-                type: "function",
-                stateMutability: "view",
-                inputs: [],
-                outputs: [{ type: "address" }],
-              },
-            ],
-            functionName: "implementation",
-          })) as `0x${string}`;
-          if (!cancelled) {
-            setImplementationAddress(proxyAddress);
-          }
+          console.debug(
+            "EtherscanHooks.proxy.eip897",
+            address,
+            ethersInterface,
+          );
+          client
+            .readContract({
+              address: address as `0x${string}`,
+              abi: [
+                {
+                  name: "implementation",
+                  type: "function",
+                  stateMutability: "view",
+                  inputs: [],
+                  outputs: [{ type: "address" }],
+                },
+              ],
+              functionName: "implementation",
+            })
+            .then((implementation) => {
+              if (!cancelled) {
+                setImplementationAddress(implementation);
+              }
+            })
+            .catch((e) => {
+              console.warn("EtherscanHooks.proxy.eip897", e);
+              setImplementationAddress("");
+            });
         }
       }
     };
@@ -110,7 +128,9 @@ export function useEtherscanContractABI(
   return {
     data: abi,
     isLoading,
-    error,
+    error:
+      (error?.message as string) ||
+      (implementationAddress === "" ? "unsupported proxy pattern" : undefined),
     isProxy: address !== implementationAddress,
   };
 }
