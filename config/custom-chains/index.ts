@@ -9,3 +9,7 @@ export const customChains = [
   Gnosis,
   Goerli,
 ];
+
+export const getChainByNetworkName = (networkName: string) => {
+  return customChains.find((c) => c.name.toLowerCase() === networkName) || customChains[0];
+};

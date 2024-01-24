@@ -8,12 +8,15 @@ export const SAFE_ADDRESS_FIELD = "config.juicebox.gnosisSafeAddress";
 
 export default function SafeAddressForm({
   label = "Safe Address",
-  disabled 
+  disabled,
+  networkName,
 }: { 
-  label?: string,
-  disabled?: boolean 
+  label?: string;
+  disabled?: boolean;
+  networkName?: SupportedSafeNetwork;
 }) {
-  const network = useContext(NetworkContext) as SupportedSafeNetwork;
+  const _network = useContext(NetworkContext) as SupportedSafeNetwork;
+  const network = networkName || _network;
   return (
     <AddressForm
       label={label}

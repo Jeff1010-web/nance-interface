@@ -1,12 +1,13 @@
 import FormattedAddress from "@/components/AddressCard/FormattedAddress";
 import { SpaceConfig } from "@/models/NanceTypes";
-import { customChains } from "config/custom-chains";
+import { getChainByNetworkName } from "config/custom-chains";
 import Image from "next/image";
 import SafeAddressForm from "@/components/form/SafeAddressForm";
+import { SupportedSafeNetwork } from "@/utils/hooks/Safe/SafeURL";
 
 export default function Execution({ spaceConfig, edit }: { spaceConfig: SpaceConfig; edit?: boolean }) {
-  const findNetwork = customChains.find((chain) => chain.name.toLowerCase() === spaceConfig.config.juicebox.network) || customChains[0];
-  const networkName = findNetwork.name;
+  const findNetwork = getChainByNetworkName(spaceConfig.config.juicebox.network);
+  const networkName = findNetwork.name as SupportedSafeNetwork;
   const networkIcon = findNetwork.iconUrl;
   return (
     <div className="flex flex-col">
@@ -24,7 +25,7 @@ export default function Execution({ spaceConfig, edit }: { spaceConfig: SpaceCon
       <p className="mt-4 badge text-xs font-bold">SAFE ADDRESS</p>
       { edit ? (
         <div className="max-w-md">
-          <SafeAddressForm label={""}/>
+          <SafeAddressForm label={""} networkName={networkName} />
         </div>
       ) : (
         <FormattedAddress address={spaceConfig.config.juicebox.gnosisSafeAddress} network={spaceConfig.config.juicebox.network} />

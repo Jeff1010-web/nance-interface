@@ -74,14 +74,15 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
               >
                 {editMode ? "cancel" : "edit"}
               </div>
-              { editMode && (<div className="ml-2 mt-1 text-sm underline cursor-pointer"
-                onClick={() => {
-                  setIsLoading(true);
-                  handleSubmit(onSubmit)();
-                }}
-              >
-                { isLoading ? <Spinner/> : "save" }
-              </div>)}
+              { editMode && isLoading ? <Spinner className="ml-2" /> :
+                editMode && (<div className="ml-2 mt-1 text-sm underline font-bold cursor-pointer"
+                  onClick={() => {
+                    setIsLoading(true);
+                    handleSubmit(onSubmit)();
+                  }}
+                >
+                save
+                </div>)}
             </>
           )}
         </div>

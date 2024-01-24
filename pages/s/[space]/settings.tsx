@@ -13,7 +13,9 @@ export default function Settings() {
   return (
     <>
       <SiteNav pageTitle="Space Settings" description="Space Settings" space={space} withProposalButton={false} withWallet />
-      { spaceConfig && <SpaceSettings spaceConfig={spaceConfig} /> }
+      { spaceConfig &&
+        <SpaceSettings spaceConfig={spaceConfig} />
+      }
       <Footer />
     </>
   );

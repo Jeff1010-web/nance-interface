@@ -1,6 +1,5 @@
 import { useContext } from "react";
 import { NetworkContext } from "@/context/NetworkContext";
-
 import { mainnet, goerli, optimism, gnosis } from "wagmi/chains";
 
 export const safeServiceURL = {
