@@ -7,19 +7,21 @@ export default function SmallListbox({
   selected,
   setSelected,
   addClass,
+  disabled,
 }: {
   options: string[] | number[];
   selected: string | number;
   setSelected: React.Dispatch<React.SetStateAction<any>>;
   addClass?: string;
+  disabled?: boolean;
 }) {
   return (
-    <Listbox value={selected} onChange={setSelected}>
+    <Listbox value={selected} onChange={setSelected} disabled={disabled}>
       {({ open }) => (
         <>
           <div className="relative">
             <Listbox.Button
-              className={`${addClass} relative flex w-12 cursor-default items-center justify-center rounded-md bg-white py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6`}
+              className={`${addClass} relative flex w-12 cursor-default items-center justify-center rounded-md bg-white py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6 disabled:bg-gray-100 disabled:cursor-not-allowed`}
             >
               <span className="flex">{selected}</span>
               <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center"></span>

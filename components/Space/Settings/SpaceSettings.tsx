@@ -14,15 +14,17 @@ import General from "./sub/General";
 import Tasks from "./sub/Tasks";
 import Dialog from "./sub/Dialog";
 import Execution from "./sub/Execution";
+import Schedule from "./sub/Schedule";
 import { useCreateSpace } from "@/utils/hooks/NanceHooks";
 import { useSession } from "next-auth/react";
 import { Spinner } from "flowbite-react";
+import { getCurrentEvent, getCurrentGovernanceCycleDay } from "@/utils/functions/nance";
 
 export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfig }) {
   const navigation = [
     { name: "General", icon: IdentificationIcon, component: General },
     { name: "Tasks", icon: HandRaisedIcon, component: Tasks },
-    // { name: "Schedule", icon: CalendarDaysIcon, component: () => "" },
+    { name: "Schedule", icon: CalendarDaysIcon, component: Schedule },
     { name: "Dialog", icon: ChatBubbleOvalLeftIcon, component: Dialog },
     // { name: "Vote", icon: BuildingLibraryIcon, component: () => <div>Component for Vote</div> },
     { name: "Execution", icon: KeyIcon, component: Execution },
@@ -39,11 +41,22 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
 
   // reset form to current config when edit is toggled
   useEffect(() => {
+    const currentEvent = getCurrentEvent(spaceConfig.calendar, spaceConfig.cycleStageLengths, new Date());
+    const currentGovernanceCycleDay = getCurrentGovernanceCycleDay(currentEvent, spaceConfig.cycleStageLengths, new Date());
+    const startOfCycle = new Date(new Date().setDate(new Date().getDate() - currentGovernanceCycleDay - 1));
     methods.reset({
       config: spaceConfig.config,
       spaceOwners: spaceOwners.map((address) => ({ address })),
+      governanceCycleForm: {
+        // subtract currentGovernanceCycleDay from today
+        startDate: startOfCycle,
+        temperatureCheckLength: spaceConfig.cycleStageLengths[0],
+        voteLength: spaceConfig.cycleStageLengths[1],
+        executionLength: spaceConfig.cycleStageLengths[2],
+        delayLength: spaceConfig.cycleStageLengths[3]
+      }
     });
-  }, [editMode]);
+  }, [editMode, spaceConfig]);
 
   const methods = useForm<CreateFormValues>({
     mode: "onChange",

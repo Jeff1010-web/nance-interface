@@ -27,6 +27,7 @@ export default function GovernanceCalendarMini({
   executionLength,
   delayLength,
   totalCycleLength,
+  disabled = false,
 }: {
   selectedDate: Date;
   setSelectedDate: ((date: Date) => void) | undefined;
@@ -36,6 +37,7 @@ export default function GovernanceCalendarMini({
   executionLength: number;
   delayLength: number;
   totalCycleLength: number;
+  disabled?: boolean;
 }) {
   const today = startOfToday();
   const [currentMonth, setCurrentMonth] = useState(format(today, "MMM-yyyy"));

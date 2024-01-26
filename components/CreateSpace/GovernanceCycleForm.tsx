@@ -1,13 +1,16 @@
 import { useEffect } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import TimePicker from "./sub/TimePicker";
-import GovernanceCalendarKey from "./sub/GovernanceCalendarKey";
 import GovernanceCalendarMini, {
   VOTE_PERIOD_COLOR,
 } from "./sub/GovernanceCalendarMini";
 import { classNames } from "@/utils/functions/tailwind";
 
-export default function GovernanceCycleForm() {
+export default function GovernanceCycleForm({
+  disabled = false,
+}: {
+  disabled?: boolean;
+}) {
   const { control, getValues, setValue, watch } = useFormContext();
 
   const temperatureCheckLength = watch("governanceCycleForm.temperatureCheckLength");
@@ -31,9 +34,9 @@ export default function GovernanceCycleForm() {
 
   // update default startDate with current timePicker values
   //   after initial render while setValue will be available
-  useEffect(() => {
-    setValue("governanceCycleForm.startDate", mergeDayWithTime(new Date()));
-  }, [setValue]);
+  // useEffect(() => {
+  //   setValue("governanceCycleForm.startDate", mergeDayWithTime(new Date()));
+  // }, [setValue]);
 
   return (
     <div className="flex flex-col space-x-8 md:flex-row">
@@ -42,7 +45,6 @@ export default function GovernanceCycleForm() {
           <label className="mt-2 block text-sm font-medium text-gray-700">
             Select Start Date
           </label>
-          <GovernanceCalendarKey />
         </div>
 
         <Controller
@@ -55,7 +57,7 @@ export default function GovernanceCycleForm() {
           render={({ field: { onChange, value } }) => (
             <GovernanceCalendarMini
               selectedDate={value}
-              setSelectedDate={onChange}
+              setSelectedDate={disabled ? undefined : onChange}
               mergeDayWithTime={mergeDayWithTime}
               temperatureCheckLength={temperatureCheckLength}
               votingLength={voteLength}
@@ -69,13 +71,14 @@ export default function GovernanceCycleForm() {
       </div>
 
       <div>
-        <TimePicker mergeDayWithTime={mergeDayWithTime} />
+        <TimePicker mergeDayWithTime={mergeDayWithTime} disabled={disabled} />
         <SmallNumberInput
           label="Temperature Check Length"
           name="governanceCycleForm.temperatureCheckLength"
           defaultValue={3}
           tooltipContent="This is the length of time that a Discord Temperature Check is open for polling"
           badgeColor={VOTE_PERIOD_COLOR["tempCheck"]}
+          disabled={disabled}
         />
         <SmallNumberInput
           label="Vote Length"
@@ -83,6 +86,7 @@ export default function GovernanceCycleForm() {
           defaultValue={4}
           tooltipContent="This is the length of time that a Snapshot vote is open"
           badgeColor={VOTE_PERIOD_COLOR["voting"]}
+          disabled={disabled}
         />
         <SmallNumberInput
           label="Execution Length"
@@ -90,6 +94,7 @@ export default function GovernanceCycleForm() {
           defaultValue={4}
           tooltipContent="This is the length of time for the execution of proposals that pass Snapshot"
           badgeColor={VOTE_PERIOD_COLOR["execution"]}
+          disabled={disabled}
         />
         <SmallNumberInput
           label="Delay Length"
@@ -97,6 +102,7 @@ export default function GovernanceCycleForm() {
           defaultValue={3}
           tooltipContent="This is the length of time between the end of execution and the start of the next Temperature Check"
           badgeColor={VOTE_PERIOD_COLOR["delay"]}
+          disabled={disabled}
         />
         <div className="mt-2 inline-flex items-center rounded-md px-2 py-1">
           Total Days: {totalCycleLength}
@@ -113,6 +119,7 @@ const SmallNumberInput = ({
   tooltipContent,
   badgeColor = "bg-gray-100",
   badgeContent = "days",
+  disabled = false,
 }: {
   label: string;
   name: string;
@@ -120,6 +127,7 @@ const SmallNumberInput = ({
   tooltipContent?: string;
   badgeColor?: string;
   badgeContent?: string;
+  disabled?: boolean;
 }) => {
   const {
     register
@@ -140,10 +148,11 @@ const SmallNumberInput = ({
         <div className="flex rounded-md border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-indigo-500 sm:text-sm">
           <input
             {...register(name, { shouldUnregister: true, valueAsNumber: true })}
-            className="block h-7 w-16 rounded-md rounded-r-none border-gray-300 bg-white text-xs shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+            className="block h-7 w-16 rounded-md rounded-r-none border-gray-300 bg-white text-xs shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 disabled:bg-gray-100"
             type="number"
             min={1}
             defaultValue={defaultValue}
+            disabled={disabled}
           ></input>
           <span
             className={classNames(

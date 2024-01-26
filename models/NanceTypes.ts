@@ -125,11 +125,11 @@ export type DiscordConfig = {
 
 export type GovernanceCycleForm = {
   time: FormTime;
-  startDate: string;
-  temperatureCheckLength: string;
-  voteLength: string;
-  delayLength: string;
-  executionLength: string;
+  startDate: Date;
+  temperatureCheckLength: number;
+  voteLength: number;
+  delayLength: number;
+  executionLength: number;
 };
 
 export type FormTime = {
@@ -419,7 +419,6 @@ export interface DateEvent {
   title: string;
   start: Date;
   end: Date;
-  inProgress: boolean;
 }
 
 export interface PollResults {

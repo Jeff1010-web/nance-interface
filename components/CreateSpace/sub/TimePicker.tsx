@@ -5,7 +5,13 @@ const hours = Array.from(Array(12).keys()).map((i) => i + 1);
 const minutes = ["00", "30"];
 const ampm = ["AM", "PM"];
 
-export default function TimePicker({mergeDayWithTime}:{mergeDayWithTime: (day: Date) => Date}) {
+export default function TimePicker({
+  mergeDayWithTime,
+  disabled = false,
+}: {
+  mergeDayWithTime: (day: Date) => Date
+  disabled?: boolean;
+}) {
   const { control, setValue, getValues } = useFormContext();
 
   function updateSelectedDate() {
@@ -29,7 +35,7 @@ export default function TimePicker({mergeDayWithTime}:{mergeDayWithTime: (day: D
         <Controller
           name="governanceCycleForm.time.hour"
           control={control}
-          defaultValue={8}
+          defaultValue={7}
           render={({ field }) => (
             <SmallListbox
               options={hours}
@@ -38,6 +44,7 @@ export default function TimePicker({mergeDayWithTime}:{mergeDayWithTime: (day: D
                 field.onChange(v);
                 updateSelectedDate();
               }}
+              disabled={disabled}
             />
           )}
         />
@@ -56,6 +63,7 @@ export default function TimePicker({mergeDayWithTime}:{mergeDayWithTime: (day: D
                 field.onChange(v);
                 updateSelectedDate();
               }}
+              disabled={disabled}
               addClass="ml-2"
             />
           )}
@@ -72,6 +80,7 @@ export default function TimePicker({mergeDayWithTime}:{mergeDayWithTime: (day: D
                 field.onChange(v);
                 updateSelectedDate();
               }}
+              disabled={disabled}
               addClass="ml-2"
             />
           )}
