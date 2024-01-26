@@ -1,5 +1,6 @@
-import { uploadImage2IPFS } from "./uploadImage2IPFS";
+import { uploadBlob2IPFS } from "./uploadImage2IPFS";
 import { setMarkdown, getMarkdown } from "./editorModifier";
 import { drop2AttachMarkdown } from "./drop2AttachMarkdown";
+import { insertLink } from "./editorModifier";
 
-export { uploadImage2IPFS, setMarkdown, getMarkdown, drop2AttachMarkdown };
+export { uploadBlob2IPFS, setMarkdown, getMarkdown, drop2AttachMarkdown, insertLink };

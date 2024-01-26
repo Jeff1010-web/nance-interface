@@ -2,7 +2,7 @@ import { RefObject } from "react";
 import { Editor } from "@toast-ui/react-editor";
 import "@nance/nance-editor/lib/editor.css";
 import Loading from "./sub/LoadingBar";
-import { drop2AttachMarkdown, uploadImage2IPFS } from "./utils";
+import { drop2AttachMarkdown, uploadBlob2IPFS } from "./utils";
 
 export default function MarkdownEditor({
   parentRef,
@@ -41,7 +41,7 @@ export default function MarkdownEditor({
         hooks={{
           addImageBlobHook(blob, cb) {
             const loading = simulateLoading(blob.size);
-            uploadImage2IPFS(blob).then((url) => {
+            uploadBlob2IPFS(blob).then((url) => {
               cb(url);
               clearInterval(loading);
               setImageUploading(0);

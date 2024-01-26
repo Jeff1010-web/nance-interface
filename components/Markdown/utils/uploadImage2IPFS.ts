@@ -5,7 +5,7 @@ const AUTH_HEADER = `Basic ${Buffer.from(
 ).toString("base64")}`;
 
 // https://github.com/jbx-protocol/juice-interface/blob/main/src/lib/infura/ipfs.ts
-export async function uploadImage2IPFS(blob: Blob) {
+export async function uploadBlob2IPFS(blob: Blob) {
   const formData = new FormData();
   formData.append("file", blob);
 
