@@ -43,7 +43,7 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
   useEffect(() => {
     const currentEvent = getCurrentEvent(spaceConfig.calendar, spaceConfig.cycleStageLengths, new Date());
     const currentGovernanceCycleDay = getCurrentGovernanceCycleDay(currentEvent, spaceConfig.cycleStageLengths, new Date());
-    const startOfCycle = new Date(new Date().setDate(new Date().getDate() - currentGovernanceCycleDay - 1));
+    const startOfCycle = new Date(new Date().setDate(new Date().getDate() - currentGovernanceCycleDay));
     methods.reset({
       config: spaceConfig.config,
       spaceOwners: spaceOwners.map((address) => ({ address })),
