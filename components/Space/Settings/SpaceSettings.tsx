@@ -18,9 +18,16 @@ import Schedule from "./sub/Schedule";
 import { useCreateSpace } from "@/utils/hooks/NanceHooks";
 import { useSession } from "next-auth/react";
 import { Spinner } from "flowbite-react";
-import { getCurrentEvent, getCurrentGovernanceCycleDay } from "@/utils/functions/nance";
+import {
+  getCurrentEvent,
+  getCurrentGovernanceCycleDay,
+} from "@/utils/functions/nance";
 
-export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfig }) {
+export default function SpaceSettings({
+  spaceConfig,
+}: {
+  spaceConfig: SpaceConfig;
+}) {
   const navigation = [
     { name: "General", icon: IdentificationIcon, component: General },
     { name: "Tasks", icon: HandRaisedIcon, component: Tasks },
@@ -30,9 +37,13 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
     { name: "Execution", icon: KeyIcon, component: Execution },
   ];
 
-  const [selectedSetting, setSelectedSetting] = useState<string>(navigation[0].name);
+  const [selectedSetting, setSelectedSetting] = useState<string>(
+    navigation[0].name,
+  );
   const [editMode, setEditMode] = useState<boolean>(false);
-  const [spaceOwners, setSpaceOwners] = useState<string[]>(spaceConfig.spaceOwners);
+  const [spaceOwners, setSpaceOwners] = useState<string[]>(
+    spaceConfig.spaceOwners,
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { data: session } = useSession();
@@ -41,9 +52,24 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
 
   // reset form to current config when edit is toggled
   useEffect(() => {
-    const currentEvent = getCurrentEvent(spaceConfig.calendar, spaceConfig.cycleStageLengths, new Date());
-    const currentGovernanceCycleDay = getCurrentGovernanceCycleDay(currentEvent, spaceConfig.cycleStageLengths, new Date());
-    const startOfCycle = new Date(new Date().setDate(new Date().getDate() - currentGovernanceCycleDay));
+    const currentEvent = getCurrentEvent(
+      spaceConfig.calendar,
+      spaceConfig.cycleStageLengths,
+      new Date(),
+    );
+    const currentGovernanceCycleDay = getCurrentGovernanceCycleDay(
+      currentEvent,
+      spaceConfig.cycleStageLengths,
+      new Date(),
+    );
+    // keep this in mind: our date variable is actually split into two parts, the date and the time (TimePicker)
+    // so remember to set the date and time separately
+    // here we use start of currentEvent to set time properly
+    const startOfCycle = new Date(
+      currentEvent.start.setDate(
+        new Date().getDate() - currentGovernanceCycleDay,
+      ),
+    );
     methods.reset({
       config: spaceConfig.config,
       spaceOwners: spaceOwners.map((address) => ({ address })),
@@ -53,8 +79,17 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
         temperatureCheckLength: spaceConfig.cycleStageLengths[0],
         voteLength: spaceConfig.cycleStageLengths[1],
         executionLength: spaceConfig.cycleStageLengths[2],
-        delayLength: spaceConfig.cycleStageLengths[3]
-      }
+        delayLength: spaceConfig.cycleStageLengths[3],
+        // here's form values for TimePicker
+        time: {
+          ampm: startOfCycle.getHours() > 12 ? "PM" : "AM",
+          hour:
+            startOfCycle.getHours() > 12
+              ? startOfCycle.getHours() % 12
+              : startOfCycle.getHours(),
+          minute: startOfCycle.getMinutes().toString(),
+        },
+      },
     });
   }, [editMode, spaceConfig]);
 
@@ -72,30 +107,41 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
   };
 
   return (
-    <div className="m-4 flex justify-left lg:m-10 lg:px-20">
+    <div className="justify-left m-4 flex lg:m-10 lg:px-20">
       <div className="flex-col">
-        <SettingsNav navigation={navigation} selectedSetting={selectedSetting} setSelectedSetting={setSelectedSetting}/>
+        <SettingsNav
+          navigation={navigation}
+          selectedSetting={selectedSetting}
+          setSelectedSetting={setSelectedSetting}
+        />
       </div>
-      <div className="flex flex-col p-4 ml-4 min-w-full">
+      <div className="ml-4 flex min-w-full flex-col p-4">
         <div className="flex flex-row align-text-bottom">
           <h1 className="text-xl font-bold">{selectedSetting}</h1>
           {/* Edit and Save settings buttons, only show if spaceOwner connected */}
           {spaceConfig.spaceOwners.includes(session?.user?.name || "") && (
             <>
-              <div className="ml-2 mt-1 text-sm underline cursor-pointer"
+              <div
+                className="ml-2 mt-1 cursor-pointer text-sm underline"
                 onClick={() => setEditMode(!editMode)}
               >
                 {editMode ? "cancel" : "edit"}
               </div>
-              { editMode && isLoading ? <Spinner className="ml-2" /> :
-                editMode && (<div className="ml-2 mt-1 text-sm underline font-bold cursor-pointer"
-                  onClick={() => {
-                    setIsLoading(true);
-                    handleSubmit(onSubmit)();
-                  }}
-                >
-                save
-                </div>)}
+              {editMode && isLoading ? (
+                <Spinner className="ml-2" />
+              ) : (
+                editMode && (
+                  <div
+                    className="ml-2 mt-1 cursor-pointer text-sm font-bold underline"
+                    onClick={() => {
+                      setIsLoading(true);
+                      handleSubmit(onSubmit)();
+                    }}
+                  >
+                    save
+                  </div>
+                )
+              )}
             </>
           )}
         </div>
@@ -103,9 +149,12 @@ export default function SpaceSettings({ spaceConfig }: { spaceConfig: SpaceConfi
         <div className="m-4 min-w-full justify-items-start">
           <FormProvider {...methods}>
             {navigation.map((item) => (
-              <div key={item.name} className={selectedSetting === item.name ? '' : 'hidden' }>
+              <div
+                key={item.name}
+                className={selectedSetting === item.name ? "" : "hidden"}
+              >
                 <item.component
-                  spaceConfig={{...spaceConfig, spaceOwners: spaceOwners}}
+                  spaceConfig={{ ...spaceConfig, spaceOwners: spaceOwners }}
                   edit={editMode}
                 />
               </div>

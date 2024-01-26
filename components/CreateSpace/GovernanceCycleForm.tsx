@@ -13,7 +13,9 @@ export default function GovernanceCycleForm({
 }) {
   const { control, getValues, setValue, watch } = useFormContext();
 
-  const temperatureCheckLength = watch("governanceCycleForm.temperatureCheckLength");
+  const temperatureCheckLength = watch(
+    "governanceCycleForm.temperatureCheckLength",
+  );
   const voteLength = watch("governanceCycleForm.voteLength");
   const executionLength = watch("governanceCycleForm.executionLength");
   const delayLength = watch("governanceCycleForm.delayLength");
@@ -34,9 +36,9 @@ export default function GovernanceCycleForm({
 
   // update default startDate with current timePicker values
   //   after initial render while setValue will be available
-  // useEffect(() => {
-  //   setValue("governanceCycleForm.startDate", mergeDayWithTime(new Date()));
-  // }, [setValue]);
+  useEffect(() => {
+    setValue("governanceCycleForm.startDate", mergeDayWithTime(new Date()));
+  }, [setValue]);
 
   return (
     <div className="flex flex-col space-x-8 md:flex-row">
@@ -129,20 +131,15 @@ const SmallNumberInput = ({
   badgeContent?: string;
   disabled?: boolean;
 }) => {
-  const {
-    register
-  } = useFormContext();
+  const { register } = useFormContext();
 
   return (
     <div>
       <div className="my-2">
-        <label className="block text-sm font-medium text-gray-700"
-        >
+        <label className="block text-sm font-medium text-gray-700">
           {label}
         </label>
-        <p className="text-xs text-gray-400 break-words">
-          {tooltipContent}
-        </p>
+        <p className="break-words text-xs text-gray-400">{tooltipContent}</p>
       </div>
       <div className="mt-1 flex">
         <div className="flex rounded-md border-gray-300 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-indigo-500 sm:text-sm">
