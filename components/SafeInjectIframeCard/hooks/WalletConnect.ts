@@ -98,6 +98,7 @@ export default function useWalletConnect({
           // TODO: this is chain using by dApp connected
         }
 
+        console.debug("approve before", namespace);
         const session = await web3wallet.approveSession({
           id: proposal.id,
           namespaces: {
