@@ -1,26 +1,68 @@
 import { createGuildClient } from "@guildxyz/sdk";
-import { useAccount } from "wagmi";
 import useSWRImmutable from "swr/immutable";
 
 // The only parameter is the name of your project
 const GuildxyzClient = createGuildClient("Nance interface");
 
-export function useGuild(guildId: number, shouldFetch = true) {
-  const { address } = useAccount();
+export type Guild = {
+  id: number;
+  name: string;
+  urlName: string;
+  createdAt: Date;
+  updatedAt: Date;
+  description: string;
+  imageUrl: string;
+  memberCount: number;
+};
 
+export function useGuildSearch(
+  search: string,
+  limit: number = 10,
+  offset: number = 0,
+  shouldFetch: boolean = true,
+) {
   return useSWRImmutable(
-    shouldFetch ? "/guildxyz/useguild" : null,
-    async (uri) => {
-      const guild = await GuildxyzClient.guild.get(guildId);
-      const rolesOfGuild = await GuildxyzClient.guild.role.getAll(guildId);
-      const memberships = await GuildxyzClient.user.getMemberships(
-        address as string,
-      );
-      return {
-        guild,
-        rolesOfGuild,
-        memberships,
-      };
+    shouldFetch ? ["/guildxyz/useGuildSearch", search, limit, offset] : null,
+    async ([uri, _search, _limit, _offset]) => {
+      const guilds = await GuildxyzClient.guild.search({
+        search: _search,
+        limit: _limit,
+        offset: _offset,
+      });
+      return guilds as Guild[];
+    },
+  );
+}
+
+export function useGuild(guildId: number, shouldFetch: boolean = true) {
+  return useSWRImmutable(
+    shouldFetch ? ["/guildxyz/useGuild", guildId] : null,
+    async ([uri, _guildId]) => {
+      const guild = await GuildxyzClient.guild.get(_guildId);
+      return guild as Guild;
+    },
+  );
+}
+
+export type Role = {
+  id: number;
+  name: string;
+  description: string;
+  imageUrl: string;
+  memberCount: number;
+  visibility: "PUBLIC" | "PRIVATE" | "HIDDEN";
+  position: number;
+  anyOfNum: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export function useGuildRoles(guildId: number, shouldFetch: boolean = true) {
+  return useSWRImmutable(
+    shouldFetch ? ["/guildxyz/useGuildRoles", guildId] : null,
+    async ([uri, _guildId]) => {
+      const roles = await GuildxyzClient.guild.role.getAll(_guildId);
+      return roles as Role[];
     },
   );
 }
