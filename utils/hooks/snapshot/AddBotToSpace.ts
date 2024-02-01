@@ -8,17 +8,20 @@ import { SNAPSHOT_HUB } from "@/constants/Snapshot";
 
 function clearNull(input: any) {
   let output = {} as Record<string, any>;
-  Object.keys(input as Record<string, string>).forEach(key => {
+  Object.keys(input as Record<string, string>).forEach((key) => {
     if (input[key]) output[key] = input[key];
     // clear out empty sub-objects that are NOT arrays
-    if (input[key] && typeof input[key] === "object" && !Array.isArray(input[key])) output[key] = clearNull(input[key]);
+    if (
+      input[key] &&
+      typeof input[key] === "object" &&
+      !Array.isArray(input[key])
+    )
+      output[key] = clearNull(input[key]);
   });
   return output;
 }
 
-export default function useSetSpace(
-  space: string,
-){
+export default function useAddBotToSnapshot(space: string) {
   // state
   const [value, setValue] = useState<unknown>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -27,37 +30,39 @@ export default function useSetSpace(
   const signer = useEthersSigner();
   const { address } = useAccount();
 
-  const { data: currentSettings, loading: settingsLoading } = useSnapshotSpaceSettings(space);
+  const { data: currentSettings, loading: settingsLoading } =
+    useSnapshotSpaceSettings(space);
 
   const trigger = useCallback(async () => {
     try {
-      const client = await import("@snapshot-labs/snapshot.js").then((snapshot) => new snapshot.default.Client712(SNAPSHOT_HUB));
+      const client = await import("@snapshot-labs/snapshot.js").then(
+        (snapshot) => new snapshot.default.Client712(SNAPSHOT_HUB),
+      );
       if (!currentSettings) {
         setError("No settings found for this space");
         return;
       }
       const settings = clearNull(currentSettings);
       console.log("🚀 settings", settings);
-      // only add nance if it"s not already there or else snapshot throws an error
+      // only add nance if it's not already there or else snapshot throws an error
       if (!settings.members.includes(NANCE_PUBLIC_ADDRESS)) {
         settings.members.push(NANCE_PUBLIC_ADDRESS);
       }
       setError(undefined);
       setLoading(true);
       const receipt = await client.space(
-                signer as Signer as Wallet, 
-                address as string, 
-                {space, settings: JSON.stringify(settings)}
+        signer as Signer as Wallet,
+        address as string,
+        { space, settings: JSON.stringify(settings) },
       );
       setValue(receipt);
-    } catch(err: any) {
+    } catch (err: any) {
       console.warn("🚨 SetSpace.trigger.error ->", err);
       setError(err);
       setValue(undefined);
     } finally {
       setLoading(false);
     }
-        
   }, [signer, address, space, currentSettings]);
 
   const reset = () => {

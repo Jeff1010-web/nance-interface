@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { CheckIcon, XCircleIcon } from "@heroicons/react/20/solid";
+import { CheckIcon } from "@heroicons/react/20/solid";
 import { Combobox } from "@headlessui/react";
 import { classNames } from "@/utils/functions/tailwind";
 import useSnapshotSearch from "@/utils/hooks/snapshot/SpaceSearch";
 import { SpaceSearch } from "@/models/SnapshotTypes";
-import useSetSpace from "@/utils/hooks/snapshot/SetSpace";
+import useAddBotToSnapshot from "@/utils/hooks/snapshot/AddBotToSpace";
 import Image from "next/image";
 import { Session } from "next-auth";
 import { Tooltip } from "flowbite-react";
@@ -27,7 +27,7 @@ export default function SnapshotSearch({
   const [selectedSpace, setSelectedSpace] = useState<SpaceSearch | null>(null);
 
   const { data: spaces } = useSnapshotSearch(query);
-  const { trigger, value, loading, reset } = useSetSpace(
+  const { trigger, value, loading, reset } = useAddBotToSnapshot(
     selectedSpace ? selectedSpace.id : "",
   );
 
@@ -45,7 +45,8 @@ export default function SnapshotSearch({
             setSelectedSpace(null);
             setVal("");
             reset();
-          }} >
+          }}
+        >
           {selectedSpace?.name}
         </BasicFormattedCard>
       )}
@@ -157,7 +158,10 @@ export default function SnapshotSearch({
                 addNanceSnapshotButton
               ) : (
                 <div className="w-fit">
-                  <Tooltip placement="top" content="You must be a moderator or admin of this snapshot space to add nance as a member">
+                  <Tooltip
+                    placement="top"
+                    content="You must be a moderator or admin of this snapshot space to add nance as a member"
+                  >
                     {addNanceSnapshotButton}
                   </Tooltip>
                 </div>
