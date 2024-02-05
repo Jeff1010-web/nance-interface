@@ -13,6 +13,9 @@ import DiscordUser from "./sub/DiscordUser";
 import { useSession } from "next-auth/react";
 import { NetworkContext } from "@/context/NetworkContext";
 import SafeAddressForm from "../form/SafeAddressForm";
+import { ConfigGuildxyzGuildField } from "./GuildxyzForm";
+import { useGuild } from "@/utils/hooks/GuildxyzHooks";
+import { ConfigGuildxyzRolesField } from "./sub/GuildxyzConfigForm";
 
 const LABEL_STYLE = "text-sm font-medium text-gray-700";
 
@@ -29,8 +32,11 @@ export default function ReviewSpaceConfig({
 
   const spaceId = watch(ConfigSnapshotSpaceField);
   const projectId = watch(JUICEBOX_PROJECT_FIELD);
+  const guildId = watch(ConfigGuildxyzGuildField);
+  const guildRoles = watch(ConfigGuildxyzRolesField);
 
   const { data: snapshotSpaceInfo } = useSnapshotSpaceInfo(spaceId);
+  const { data: guildInfo } = useGuild(guildId, guildId !== undefined);
   const { projects, setQueryParams } = useJBMSearch({
     pv: "2",
     projectId: projectId,
@@ -80,17 +86,33 @@ export default function ReviewSpaceConfig({
       </div>
 
       <div className="hover:cursor-pointer" onClick={() => setStep(3)}>
+        <label className={LABEL_STYLE}>Guildxyz config</label>
+        {guildInfo && (
+          <div>
+            <BasicFormattedCard
+              imgSrc={guildInfo.imageUrl}
+              imgAlt={guildInfo.name || ""}
+            >
+              {guildInfo?.name}
+            </BasicFormattedCard>
+            <p>Roles: {guildRoles.join(", ")}</p>
+          </div>
+        )}
+        {!guildInfo && <p className="text-red-500">{"Can't be empty"}</p>}
+      </div>
+
+      <div className="hover:cursor-pointer" onClick={() => setStep(4)}>
         <label className={LABEL_STYLE}>Discord config</label>
         <DiscordUser address={address} disabled>
           <DiscordForm disabled />
         </DiscordUser>
       </div>
 
-      <div className="max-w-md hover:cursor-pointer" onClick={() => setStep(4)}>
-        <SafeAddressForm disabled label="Safe address (Optional)"/>
+      <div className="max-w-md hover:cursor-pointer" onClick={() => setStep(5)}>
+        <SafeAddressForm disabled label="Safe address (Optional)" />
       </div>
 
-      <div className="hover:cursor-pointer" onClick={() => setStep(5)}>
+      <div className="hover:cursor-pointer" onClick={() => setStep(6)}>
         <label className={LABEL_STYLE}>Juicebox project (Optional)</label>
         {selectedProject && (
           <BasicFormattedCard

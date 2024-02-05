@@ -23,6 +23,8 @@ import BackNextButtons from "@/components/CreateSpace/BackNextButtons";
 import ReviewSpaceConfig from "@/components/CreateSpace/ReviewSpaceConfig";
 import SafeAddressForm from "@/components/form/SafeAddressForm";
 import SpaceOwnersForm from "@/components/CreateSpace/SpaceOwnersForm";
+import GuildxyzForm from "@/components/CreateSpace/GuildxyzForm";
+import GuildxyzConfigForm from "@/components/CreateSpace/sub/GuildxyzConfigForm";
 
 export default function CreateSpacePage() {
   return (
@@ -73,6 +75,7 @@ function Form() {
     formState: { isValid },
     trigger: triggerFormValidation,
     getValues,
+    watch,
   } = methods;
   const onSubmit: SubmitHandler<CreateFormValues> = async (formData) => {
     console.log(formData);
@@ -155,6 +158,21 @@ function Form() {
                   description="Snapshot is a free, open-source platform for community governance. Nance can connect with your Snapshot space to create proposals, and then users can directly vote here."
                 >
                   <SnapshotForm session={session!} />
+                  <BackNextButtons back={back} next={next} />
+                </DescriptionCardWrapper>
+              ),
+            },
+            {
+              name: "Guildxyz",
+              contentRender: (back, next) => (
+                <DescriptionCardWrapper
+                  title="Connect with Guildxyz"
+                  description="Guildxyz automated membership management for the platforms. Nance can connect with your Guildxyz to implement a token gate ."
+                >
+                  <GuildxyzForm />
+                  <GuildxyzConfigForm
+                    guildId={watch("config.guildxyz.id" as any)}
+                  />
                   <BackNextButtons back={back} next={next} />
                 </DescriptionCardWrapper>
               ),

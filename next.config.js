@@ -21,6 +21,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "cdn.discordapp.com",
       },
+      {
+        protocol: "https",
+        hostname: "guild-xyz.mypinata.cloud",
+      },
     ],
   },
   async redirects() {
