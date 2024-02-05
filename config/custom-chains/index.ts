@@ -13,3 +13,7 @@ export const customChains = [
 export const getChainByNetworkName = (networkName: string) => {
   return customChains.find((c) => c.name.toLowerCase() === networkName) || customChains[0];
 };
+
+export const getChainById = (chainId?: number) => {
+  return customChains.find((c) => c.id === chainId) || customChains[0];
+};

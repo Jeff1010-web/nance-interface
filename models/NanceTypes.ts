@@ -283,6 +283,7 @@ export type Transfer = {
   to: string;
   amount: string;
   decimals: number;
+  chainId?: number;
 };
 
 export type CustomTransactionArg = {
@@ -294,6 +295,7 @@ export type CustomTransactionArg = {
 
 export type CustomTransaction = {
   contract: string;
+  chainId?: number;
   value: string;
   // function approve(address guy, uint256 wad) returns (bool)
   // can pass as ABI
