@@ -118,11 +118,11 @@ export async function accessCheckWithGuild(
       (id) => rolesOfGuild.find((r) => r.id === id)?.name || "Unknown",
     );
     hasPassGuildxyzCheck =
-      joinedGuild !== undefined && noAccessRoleIds.length === 0;
+      joinedGuild !== undefined && noAccessRoleIds.length < roles.length;
     const reason =
       joinedGuild === undefined
         ? `You are not a member of this guild: ${guild?.name || guildId}.`
-        : noAccessRoles.length > 0
+        : noAccessRoles.length < roles.length
           ? `You do not have the required role(s):  ${noAccessRoles.join(",")}.`
           : "";
     const suggestion = `You can go to https://guild.xyz/${guild?.urlName || guildId} to join the guild and get the related roles.`;
