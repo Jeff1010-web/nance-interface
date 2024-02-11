@@ -63,7 +63,7 @@ export default function SiteNav({
         <meta property="og:type" content="website" />
         <meta property="og:title" content={meta.title} />
         <meta property="og:description" content={meta.description} />
-        <meta property="og:image" content={meta.image} />
+        <meta property="og:image" content={`https://nance.app/api/og?title=${pageTitle}`} />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:domain" content="jbdao.org" />
@@ -71,6 +71,13 @@ export default function SiteNav({
         <meta name="twitter:title" content={meta.title} />
         <meta name="twitter:description" content={meta.description} />
         <meta name="twitter:image" content={meta.image} />
+
+        {/* Frame */}
+        <meta property="fc:frame" content="vNext" />
+        <meta property="fc:frame:input:text" content="hi" />
+        <meta property="fc:frame:image" content={`https://nance.app/api/og?title=${pageTitle}`} />
+        <meta property="fc:frame:image:aspect_ratio" content="1:1" />
+        <meta property="fc:frame:post_url" content="/" />
       </Head>
       <header className="min-h-full w-full">
         <Disclosure as="nav" className="border-b border-gray-200 bg-white">
