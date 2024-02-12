@@ -25,7 +25,9 @@ export async function getServerSideProps(
     req: NextApiRequest;
     params: { space: string; proposal: string };
   }) {
-  const origin = req.headers.origin || "http://localhost:3001";
+  const origin = process.env.NODE_ENV !== "development" ?
+    "https://nance.app" :
+    "http://localhost:3001";
   let proposal: Proposal;
 
   // check proposal parameter type

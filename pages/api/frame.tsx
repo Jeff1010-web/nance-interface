@@ -8,10 +8,9 @@ export const config = {
  
 export default async function handler(request: NextRequest) {
   try {
-    const protocol = request.headers.get('x-forwarded-proto') || 'http';
-    const domain = request.headers.get("host") || "http://localhost:3001";
-    const origin = `${protocol}://${domain}`;
-
+    const origin = process.env.NODE_ENV !== "development" ?
+      "https://nance.app" :
+      "http://localhost:3001";
     const body = await request.json() as FrameSignaturePacket;
     const { buttonIndex } = body.untrustedData;
     
