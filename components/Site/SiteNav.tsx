@@ -5,7 +5,6 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
-import { getNanceFrame } from "@/utils/functions/frames";
 
 interface SiteNavProps {
   pageTitle: string;

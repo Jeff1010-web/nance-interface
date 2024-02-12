@@ -1,6 +1,5 @@
 /* eslint-disable react/no-unknown-property */
 import { FrameSignaturePacket } from "@/models/FarcasterTypes";
-import { getNanceFrame } from "@/utils/functions/frames";
 import { NextRequest } from "next/server";
 
 export const config = {
