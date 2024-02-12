@@ -25,9 +25,6 @@ export async function getServerSideProps(
     req: NextApiRequest;
     params: { space: string; proposal: string };
   }) {
-  const origin = process.env.NODE_ENV !== "development" ?
-    "https://nance.app" :
-    "http://localhost:3001";
   let proposal: Proposal;
 
   // check proposal parameter type
@@ -57,7 +54,6 @@ export async function getServerSideProps(
     props: {
       space: spaceParam,
       proposal: proposal || null,
-      origin
     },
   };
 }
@@ -65,11 +61,9 @@ export async function getServerSideProps(
 export default function NanceProposalPage({
   space,
   proposal,
-  origin,
 }: {
   space: string;
   proposal: Proposal | undefined;
-  origin: string;
 }) {
   // state
   const [loading, setLoading] = useState<boolean>(true);
@@ -125,7 +119,6 @@ export default function NanceProposalPage({
   return (
     <>
       <SiteNav
-        origin={origin}
         pageTitle={`${proposal.title} | ${space}`}
         description={
           getParagraphOfMarkdown(commonProps.body) || "No content"

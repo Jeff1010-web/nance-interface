@@ -26,7 +26,7 @@ export default async function handler(request: NextRequest) {
           <div tw="flex pl-7 pr-7 text-center">
             <p tw="text-2xl">{paragraph}</p>
           </div>
-          <div tw="flex absolute bottom-0 right-0 p-5 bg-gray-900 text-white rounded-3xl">
+          <div tw="flex absolute bottom-0 left-0 p-5 bg-gray-900 text-white rounded-3xl">
             <p tw="text-xl">Powered by Nance</p>
           </div>
         </div>
