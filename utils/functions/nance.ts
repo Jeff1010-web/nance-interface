@@ -1,5 +1,5 @@
 import { EVENTS, NANCE_API_URL } from "@/constants/Nance";
-import { APIResponse, SpaceInfo, ProposalsPacket, DateEvent } from '@/models/NanceTypes';
+import { APIResponse, SpaceInfo, ProposalsPacket, DateEvent, Proposal } from '@/models/NanceTypes';
 import { ONE_DAY_MILLISECONDS } from "@/constants/Nance";
 
 export function getLastSlash(url: string | undefined): string {
@@ -124,4 +124,10 @@ export const dateAtTime = (date: Date, time: string) => {
   date.setUTCSeconds(Number(seconds));
   date.setUTCMilliseconds(0);
   return date;
+};
+
+export const getProposal = async (space: string, proposalId: string): Promise<Proposal> => {
+  const json = await fetch(`${NANCE_API_URL}/${space}/proposal/${proposalId}`).then(res => res.json());
+  const proposal = json.data;
+  return proposal;
 };

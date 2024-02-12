@@ -4,7 +4,6 @@ import rehypeSanitize from "rehype-sanitize";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import ReactMarkdown from "react-markdown";
-import React from "react";
 import { h } from "hastscript";
 
 export default function MarkdownWithTOC({ body }: { body: string }) {

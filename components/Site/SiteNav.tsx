@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 interface SiteNavProps {
+  origin?: string;
   pageTitle: string;
   description?: string;
   image?: string;
@@ -19,6 +20,7 @@ interface SiteNavProps {
 }
 
 export default function SiteNav({
+  origin,
   pageTitle,
   description,
   image,
@@ -50,7 +52,6 @@ export default function SiteNav({
   if (canForkProposal) {
     editProposalUrl = editProposalUrl + `?&proposalId=${proposalId}&fork=true`;
   }
-
   return (
     <>
       <Head>
@@ -63,7 +64,7 @@ export default function SiteNav({
         <meta property="og:type" content="website" />
         <meta property="og:title" content={meta.title} />
         <meta property="og:description" content={meta.description} />
-        <meta property="og:image" content={`https://nance.app/api/og?title=${pageTitle}`} />
+        <meta property="og:image" content={`${origin}/api/imageProposal?title=${pageTitle}`} />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:domain" content="jbdao.org" />
@@ -74,10 +75,13 @@ export default function SiteNav({
 
         {/* Frame */}
         <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:input:text" content="hi" />
-        <meta property="fc:frame:image" content={`https://nance.app/api/og?title=${pageTitle}`} />
+        <meta property="fc:frame:button:1" content="read on Nance" />
+        <meta property="fc:frame:button:1:action" content="link" />
+        <meta property="fc:frame:button:1:target" content={`${origin}/s/${space}/${proposalId}`} />
+        <meta property="fc:frame:button:2" content="say more" />
+        <meta property="fc:frame:image" content={`${origin}/api/imageProposal?space=${space}&proposalId=${proposalId}`} />
         <meta property="fc:frame:image:aspect_ratio" content="1:1" />
-        <meta property="fc:frame:post_url" content="/" />
+        <meta property="fc:frame:post_url" content={`${origin}/api/frame?space=${space}&proposalId=${proposalId}`} />
       </Head>
       <header className="min-h-full w-full">
         <Disclosure as="nav" className="border-b border-gray-200 bg-white">

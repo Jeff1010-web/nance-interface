@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { NextApiRequest } from "next";
 import { useProposalsByID } from "@/utils/hooks/snapshot/Proposals";
-import { canEditProposal, getLastSlash } from "@/utils/functions/nance";
+import { getLastSlash } from "@/utils/functions/nance";
 import { Proposal } from "@/models/NanceTypes";
 import Custom404 from "../../404";
 import { ScrollToBottom } from "@/components/PageButton";
@@ -10,7 +11,7 @@ import ProposalSidebar from "@/components/Proposal/ProposalSidebar";
 import ProposalContent from "@/components/Proposal/ProposalContent";
 import ProposalOptions from "@/components/Proposal/ProposalOptions";
 import ProposalLoading from "@/components/Proposal/ProposalLoading";
-import { getFirstParagraphOfMarkdown } from "@/utils/functions/markdown";
+import { getParagraphOfMarkdown } from "@/utils/functions/markdown";
 import { useSpaceInfo } from "@/utils/hooks/NanceHooks";
 import { ZERO_ADDRESS } from "@/constants/Contract";
 import { Footer, SiteNav } from "@/components/Site";
@@ -19,7 +20,12 @@ import {
   ProposalContext,
 } from "@/components/Proposal/context/ProposalContext";
 
-export async function getServerSideProps({ req, params, res }: any) {
+export async function getServerSideProps(
+  { req, params }: {
+    req: NextApiRequest;
+    params: { space: string; proposal: string };
+  }) {
+  const origin = req.headers.origin || "http://localhost:3001";
   let proposal: Proposal;
 
   // check proposal parameter type
@@ -49,6 +55,7 @@ export async function getServerSideProps({ req, params, res }: any) {
     props: {
       space: spaceParam,
       proposal: proposal || null,
+      origin
     },
   };
 }
@@ -56,9 +63,11 @@ export async function getServerSideProps({ req, params, res }: any) {
 export default function NanceProposalPage({
   space,
   proposal,
+  origin,
 }: {
   space: string;
   proposal: Proposal | undefined;
+  origin: string;
 }) {
   // state
   const [loading, setLoading] = useState<boolean>(true);
@@ -114,9 +123,10 @@ export default function NanceProposalPage({
   return (
     <>
       <SiteNav
+        origin={origin}
         pageTitle={`${proposal.title} | ${space}`}
         description={
-          getFirstParagraphOfMarkdown(commonProps.body) || "No content"
+          getParagraphOfMarkdown(commonProps.body) || "No content"
         }
         image={`https://cdn.stamp.fyi/avatar/${
           commonProps.author || ZERO_ADDRESS

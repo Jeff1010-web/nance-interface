@@ -1,7 +1,7 @@
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 
-export function getFirstParagraphOfMarkdown(raw: string) {
+export function getParagraphOfMarkdown(raw: string, paragraphIndex: number = 0) {
   const parsed = unified().use(remarkParse).parse(raw);
   const texts: string[] = parsed.children
     .filter(c => c.type === "paragraph")
@@ -10,6 +10,6 @@ export function getFirstParagraphOfMarkdown(raw: string) {
     .filter(c => c.type === "text" && c.value.trim().length > 5)
     .map(c => c.value);
 
-  const ret = texts[0] || raw;
-  return ret.slice(0, 200);
+  const ret = texts[paragraphIndex] || "THE END";
+  return ret;
 }
