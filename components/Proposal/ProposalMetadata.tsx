@@ -14,7 +14,7 @@ export default function ProposalMetadata() {
       <h2 className="mb-3 text-gray-500">Metadata</h2>
 
       <div className="gaps-4">
-        {commonProps.actions.length > 0 && (
+        {commonProps.actions && commonProps.actions.length > 0 && (
           <>
             <p className="col-span-2 font-medium">Actions</p>
 

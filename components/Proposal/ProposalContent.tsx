@@ -12,6 +12,7 @@ import { format, toDate } from "date-fns";
 export default function ProposalContent({ body }: { body: string }) {
   const { commonProps } = useContext(ProposalContext);
   const proposalId = commonProps.proposalId;
+  const sourceSnapshot = commonProps.uuid === "snapshot"; // hack
   const proposalIdSpacer = proposalId ? ": " : "";
 
   return (
@@ -71,7 +72,7 @@ export default function ProposalContent({ body }: { body: string }) {
       </div>
 
       <div className="mt-4 px-4 py-5 sm:px-6">
-        <ProposalNavigator />
+        { !sourceSnapshot && <ProposalNavigator /> }
       </div>
     </div>
   );

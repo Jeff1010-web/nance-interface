@@ -79,7 +79,7 @@ export default function NanceProposalPage({
   const snapshotSpace = spaceInfo?.data?.snapshotSpace;
 
   useEffect(() => {
-    if (spaceInfo && proposalsData) {
+    if (proposalsData) {
       setLoading(false);
     }
   }, [spaceInfo, proposalsData]);
@@ -111,7 +111,7 @@ export default function NanceProposalPage({
     discussion: proposal.discussionThreadURL || "",
     governanceCycle: proposal.governanceCycle || 0,
     uuid: proposal.hash || "",
-    actions: proposal.actions,
+    actions: proposal?.actions,
     proposalId: proposal.proposalId || '',
     minTokenPassingAmount: proposal.minTokenPassingAmount || 0,
   };
