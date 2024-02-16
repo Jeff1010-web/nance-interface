@@ -76,12 +76,12 @@ export default function SiteNav({
 
         {/* Frame */}
         <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:button:1" content="full 📜" />
-        <meta property="fc:frame:button:1:action" content="link" />
-        <meta property="fc:frame:button:1:target" content={`${origin}/s/${space}/${proposalId}`} />
-        <meta property="fc:frame:button:2" content="⬅️" />
-        <meta property="fc:frame:button:3" content="➡️" />
-        <meta property="fc:frame:button:4" content="↩️" />
+        <meta property="fc:frame:button:1" content="⬅️" />
+        <meta property="fc:frame:button:2" content="➡️" />
+        <meta property="fc:frame:button:3" content="↩️" />
+        <meta property="fc:frame:button:4" content="full 📜" />
+        <meta property="fc:frame:button:4:action" content="link" />
+        <meta property="fc:frame:button:4:target" content={`${origin}/s/${space}/${proposalId}`} />
         <meta property="fc:frame:image" content={`${origin}/api/imageProposal?space=${space}&proposalId=${proposalId}`} />
         <meta property="fc:frame:image:aspect_ratio" content="1:1" />
         <meta property="fc:frame:post_url" content={`${origin}/api/frame?space=${space}&proposalId=${proposalId}`} />

@@ -18,6 +18,8 @@ export function numToPrettyString(num: number | undefined) {
     return `${(num / 1E9).toFixed(1)}B`;
   } if (num >= 1E6) {
     return `${(num / 1E6).toFixed(1)}M`;
+  } if (num > 1E3) {
+    return `${(num / 1E3).toFixed(1)}k`;
   }
-  return num.toLocaleString();
+  return num.toFixed(1);
 }

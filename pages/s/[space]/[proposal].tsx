@@ -118,7 +118,7 @@ export default function NanceProposalPage({
           commonProps.author || ZERO_ADDRESS
         }?w=1200&h=630`}
         space={space}
-        proposalId={proposal?.hash}
+        proposalId={proposal?.voteURL}
         withWallet
         withSiteSuffixInTitle={false}
       />
