@@ -8,7 +8,7 @@ import { dateRangesOfCycles } from "@/utils/functions/GovernanceCycle";
 export default function PayoutActionLabel({ payout }: { payout: Payout }) {
   const { commonProps } = useContext(ProposalContext);
 
-  const cycle = commonProps.governanceCycle;
+  const cycle = commonProps.governanceCycle || 0;
   const length = payout.count;
   const dateRanges = dateRangesOfCycles(cycle, length);
 
