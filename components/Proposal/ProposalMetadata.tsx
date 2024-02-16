@@ -48,9 +48,9 @@ export default function ProposalMetadata() {
             </>
           )}
 
-          {commonProps!.snapshotSpace && commonProps!.snapshotHash && (
+          {commonProps.snapshotSpace && commonProps.snapshotHash && (
             <>
-              <span className="font-medium">Snapshot</span>
+              <span className="font-medium">View on Snapshot:</span>
               <a
                 className="col-span-2"
                 target="_blank"

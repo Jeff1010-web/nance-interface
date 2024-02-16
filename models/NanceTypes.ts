@@ -211,6 +211,8 @@ export interface Proposal {
   lastEditedTime?: string;
   actions: Action[];
   minTokenPassingAmount?: number;
+  snapshotSpace?: string;
+  nextProposalId?: number;
 }
 
 export type Action = {

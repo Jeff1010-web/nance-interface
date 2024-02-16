@@ -16,7 +16,7 @@ export interface ProposalCommonProps {
   snapshotHash: string;
   ipfs: string;
   discussion: string;
-  governanceCycle: number;
+  governanceCycle?: number;
   uuid: string;
   actions: Action[];
   proposalId: string;

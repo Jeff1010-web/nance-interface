@@ -12,7 +12,6 @@ import ProposalContent from "@/components/Proposal/ProposalContent";
 import ProposalOptions from "@/components/Proposal/ProposalOptions";
 import ProposalLoading from "@/components/Proposal/ProposalLoading";
 import { getParagraphOfMarkdown } from "@/utils/functions/markdown";
-import { useSpaceInfo } from "@/utils/hooks/NanceHooks";
 import { ZERO_ADDRESS } from "@/constants/Contract";
 import { Footer, SiteNav } from "@/components/Site";
 import {
@@ -43,12 +42,6 @@ export async function getServerSideProps(
   ).then((res) => res.json());
   proposal = proposalResponse.data;
 
-  // if (!canEditProposal(proposal.status))
-  //   res.setHeader(
-  //     "Cache-Control",
-  //     "public, s-maxage=86400, stale-while-revalidate=59",
-  //   );
-
   // Pass data to the page via props
   return {
     props: {
@@ -70,19 +63,17 @@ export default function NanceProposalPage({
 
   const proposalHash = getLastSlash(proposal?.voteURL);
 
-  const { data: spaceInfo } = useSpaceInfo({ space });
   const {
     data: { proposalsData },
   } = useProposalsByID([proposalHash], "", proposalHash === undefined);
 
   const snapshotProposal = proposalsData?.[0];
-  const snapshotSpace = spaceInfo?.data?.snapshotSpace;
 
   useEffect(() => {
     if (proposalsData) {
       setLoading(false);
     }
-  }, [spaceInfo, proposalsData]);
+  }, [proposalsData]);
 
   // this page need proposal to work
   if (!proposal) {
@@ -93,7 +84,7 @@ export default function NanceProposalPage({
 
   const commonProps: ProposalCommonProps = {
     space,
-    snapshotSpace: snapshotSpace || "",
+    snapshotSpace: proposal?.snapshotSpace || "",
     status: proposal.status,
     title: proposal.title,
     author: proposal.authorAddress || snapshotProposal?.author || "",
@@ -109,7 +100,7 @@ export default function NanceProposalPage({
     snapshotHash: proposal.voteURL || "",
     ipfs: snapshotProposal?.ipfs || proposal.ipfsURL || "",
     discussion: proposal.discussionThreadURL || "",
-    governanceCycle: proposal.governanceCycle || 0,
+    governanceCycle: proposal.governanceCycle,
     uuid: proposal.hash || "",
     actions: proposal?.actions,
     proposalId: proposal.proposalId || '',
@@ -141,7 +132,7 @@ export default function NanceProposalPage({
               value={{
                 commonProps,
                 proposalInfo: snapshotProposal || undefined,
-                nextProposalId: spaceInfo?.data?.nextProposalId || 0,
+                nextProposalId: proposal.nextProposalId || 0,
               }}
             >
               <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
