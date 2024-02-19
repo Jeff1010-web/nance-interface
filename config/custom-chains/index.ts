@@ -11,7 +11,7 @@ export const customChains = [
 ];
 
 export const getChainByNetworkName = (networkName: string) => {
-  return customChains.find((c) => c.name.toLowerCase() === networkName) || customChains[0];
+  return customChains.find((c) => c.name.toLowerCase() === networkName.toLowerCase()) || customChains[0];
 };
 
 export const getChainById = (chainId?: number) => {

@@ -6,6 +6,7 @@ export interface TenderlySimulateArgs {
     to: string;
     input: string;
     value: number;
+    networkId?: number;
 }
 
 export interface TenderlySimulationAPIResponse {
@@ -28,10 +29,10 @@ export interface TenderlySimulationAPIResponse {
 
 async function fetchWithArgs([url, args]: [string, TenderlySimulateArgs]) {
   const simulationConfig = {
-    save: false,
-    save_if_fails: false,
+    save: true,
+    save_if_fails: true,
     simulation_type: 'quick',
-    network_id: '1',
+    network_id: String(args.networkId) || '1',
     from: args.from,
     to: args.to,
     input: args.input,

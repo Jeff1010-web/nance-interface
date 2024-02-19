@@ -4,8 +4,8 @@ import GovernorTransactionCreator from "./GovernorTransactionCreator";
 import { NetworkContext } from "@/context/NetworkContext";
 import { SpaceContext } from "@/context/SpaceContext";
 import { useAccount, useSwitchNetwork } from "wagmi";
-import { mainnet, goerli } from "wagmi/chains";
 import SafeTransactionCreator from "./SafeTransactionCreator";
+import { getChainByNetworkName } from "config/custom-chains";
 
 export interface GenericTransactionData {
   to: string;
@@ -28,12 +28,11 @@ export default function TransactionCreator({
   const _network = useContext(NetworkContext);
   const network =
     _network.toLowerCase() === "ethereum" ? "mainnet" : _network.toLowerCase();
-  const supportedNetwork = spaceInfo?.transactorAddress?.network.toLowerCase();
+  const supportedNetwork = spaceInfo?.transactorAddress?.network.toLowerCase() as string;
   const networkIsSupported = supportedNetwork
     ? network === supportedNetwork
     : true;
-  const supportedChainId =
-    supportedNetwork === "mainnet" ? mainnet.id : goerli.id;
+  const supportedChainId = getChainByNetworkName(supportedNetwork)?.id;
 
   if (isConnected && !networkIsSupported) {
     return (

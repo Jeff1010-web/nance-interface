@@ -1,8 +1,10 @@
 import TenderlySimulationButton from "./TenderlySimulationButton";
 import { useCreateTransaction } from "@/utils/hooks/Safe/SafeHooks";
 import { TenderlySimulateArgs } from "@/utils/hooks/TenderlyHooks";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GenericTransactionData } from "../Transaction/TransactionCreator";
+import { NetworkContext } from "@/context/NetworkContext";
+import { getChainByNetworkName } from "config/custom-chains";
 
 export default function SafeTenderlySimulationButton({
   address,
@@ -18,11 +20,14 @@ export default function SafeTenderlySimulationButton({
     transactions,
   );
 
+  const network = useContext(NetworkContext).toLowerCase() as string;
+  const networkId = getChainByNetworkName(network)?.id;
   const simulationArgs: TenderlySimulateArgs = {
     from: address,
     to: safeTransaction?.data.to || "",
     value: parseInt(safeTransaction?.data.value || "0"),
     input: safeTransaction?.data.data || "",
+    networkId
   };
 
   useEffect(() => {
