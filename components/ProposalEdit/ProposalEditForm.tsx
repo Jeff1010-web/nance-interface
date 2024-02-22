@@ -128,7 +128,10 @@ export default function ProposalEditForm({ space }: { space: string }) {
       guildxyz?.roles || [],
     );
 
-    if (_allSimulated && hasPassGuildxyzCheck) {
+    if (
+      _allSimulated &&
+      (selected.value !== "Discussion" || hasPassGuildxyzCheck)
+    ) {
       return await processAndUploadProposal(formData);
     } else {
       setFormDataPayload(formData);
@@ -191,7 +194,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
     } else {
       setFormErrors("");
     }
-    console.log("formState.errors", watch());
   }, [formState.errors]);
 
   return (
