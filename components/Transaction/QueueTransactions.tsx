@@ -2,6 +2,7 @@ import { Fragment, useRef } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
   CustomTransaction,
+  SpaceInfo,
   Transfer,
   extractFunctionName,
 } from "@/models/NanceTypes";
@@ -22,17 +23,20 @@ import OrderCheckboxTable, {
 import TransferActionLabel from "../ActionLabel/TransferActionLabel";
 import CustomTransactionActionLabel from "../ActionLabel/CustomTransactionActionLabel";
 import TransactionCreator from "./TransactionCreator";
+import { safeBatchTransactionBuilder } from "@/utils/functions/safe";
+import { downloadJSON } from "@/utils/functions/fileDownload";
+import { getChainByNetworkName } from "config/custom-chains";
 
 export default function QueueTransactionsModal({
   open,
   setOpen,
   transactorAddress,
-  space,
+  spaceInfo,
 }: {
   open: boolean;
   setOpen: (o: boolean) => void;
   transactorAddress?: string;
-  space: string;
+  spaceInfo: SpaceInfo;
 }) {
   const cancelButtonRef = useRef(null);
   const router = useRouter();
@@ -44,7 +48,7 @@ export default function QueueTransactionsModal({
     sortDesc: withDefault(BooleanParam, true),
   });
   const { cycle, keyword, limit } = query;
-
+  const space = spaceInfo?.name || "";
   const { data: proposalDataArray, isLoading: proposalsLoading } =
     useProposalsInfinite({ space, cycle, keyword, limit }, router.isReady);
 
@@ -184,6 +188,23 @@ export default function QueueTransactionsModal({
                     ref={cancelButtonRef}
                   >
                     Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    onClick={() => {
+                      const chainId = getChainByNetworkName(spaceInfo.transactorAddress?.network)?.id;
+                      const json = safeBatchTransactionBuilder(
+                        space,
+                        chainId || 1,
+                        cycle || "",
+                        transactorAddress || "",
+                        transferActions?.map((x) => x.action) || []
+                      );
+                      downloadJSON(`${space}_GC${cycle}_safe_batch`, json);
+                    }}
+                  >
+                    Export
                   </button>
                 </div>
               </Dialog.Panel>

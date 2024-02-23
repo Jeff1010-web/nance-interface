@@ -1,4 +1,4 @@
-import { SafeMultisigTransactionResponse } from "@safe-global/safe-core-sdk-types"
+import { SafeMultisigTransactionResponse } from "@safe-global/safe-core-sdk-types";
 
 export interface SafeMultisigConfirmation {
   owner: string
@@ -97,3 +97,18 @@ export type RevisedSafeMultisigTransactionResponse = Omit<SafeMultisigTransactio
       value: string | string[]
     }[]
   } };
+  
+export interface SafeTransactionBuilderTxn {
+  to: string;
+  value: string;
+  data: string | null;
+  contractMethod: {
+    inputs: {
+      name: string;
+      type: string;
+    }[];
+    name: string;
+    payable: boolean;
+  };
+  contractInputsValues: Record<SafeTransactionBuilderTxn['contractMethod']['inputs'][number]['name'], string>;
+}

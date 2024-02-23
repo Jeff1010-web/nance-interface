@@ -157,7 +157,7 @@ export default function SpaceAction() {
           open={showQueueTransactionsModal}
           setOpen={setShowQueueTransactionsModal}
           transactorAddress={spaceInfo.transactorAddress!.address}
-          space={spaceName}
+          spaceInfo={spaceInfo}
         />
       )}
     </>

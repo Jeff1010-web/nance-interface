@@ -10,7 +10,8 @@ export const customChains = [
   Goerli,
 ];
 
-export const getChainByNetworkName = (networkName: string) => {
+export const getChainByNetworkName = (networkName?: string) => {
+  if (!networkName) return customChains[0];
   return customChains.find((c) => c.name.toLowerCase() === networkName.toLowerCase()) || customChains[0];
 };
 
