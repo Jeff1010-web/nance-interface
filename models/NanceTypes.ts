@@ -213,6 +213,8 @@ export interface Proposal {
   minTokenPassingAmount?: number;
   snapshotSpace?: string;
   nextProposalId?: number;
+  proposalSummary?: string;
+  threadSummary?: string;
 }
 
 export type Action = {

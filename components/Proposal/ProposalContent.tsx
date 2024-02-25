@@ -8,6 +8,7 @@ import MarkdownWithTOC from "@/components/Markdown/MarkdownWithTOC";
 import { ProposalContext } from "./context/ProposalContext";
 import ProposalBadgeLabel from "../Space/sub/card/ProposalBadgeLabel";
 import { format, toDate } from "date-fns";
+import ProposalSummaries from "./ProposalSummaries";
 
 export default function ProposalContent({ body }: { body: string }) {
   const { commonProps } = useContext(ProposalContext);
@@ -65,6 +66,7 @@ export default function ProposalContent({ body }: { body: string }) {
         </p>
 
         <ProposalMetadata />
+        <ProposalSummaries />
       </div>
 
       <div className="px-4 sm:px-6">

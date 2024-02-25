@@ -133,6 +133,8 @@ export default function NanceProposalPage({
                 commonProps,
                 proposalInfo: snapshotProposal || undefined,
                 nextProposalId: proposal.nextProposalId || 0,
+                proposalSummary: proposal.proposalSummary,
+                threadSummary: proposal.threadSummary,
               }}
             >
               <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
