@@ -26,6 +26,7 @@ const data: SpaceInfo[] = [
     dolthubLink:
       "https://www.dolthub.com/repositories/jigglyjams/AfricaDeFiAllianceDAO/compare/main/https://www.dolthub.com/repositories/jigglyjams/AfricaDeFiAllianceDAO/compare/main/m71kfapllag73p3dugpo0bf6ujkmuvhq",
     nextProposalId: 2,
+    cycleStartDate: "2023-11-07T00:00:00.000Z",
   },
   {
     name: "Slice",
@@ -50,6 +51,7 @@ const data: SpaceInfo[] = [
       network: "mainnet",
       address: "0x73965F5165bA91d5cdC950a9d35c8c6b7Fd1DbC7",
     },
+    cycleStartDate: "2023-11-07T00:00:00.000Z",
   },
   {
     name: "bananapus",
@@ -71,6 +73,7 @@ const data: SpaceInfo[] = [
       network: "mainnet",
       address: "0x5243fE4fCa4fcc530c7Ebeb7Da9deefC969Da819",
     },
+    cycleStartDate: "2023-11-07T00:00:00.000Z",
   },
   {
     name: "gnance",
@@ -97,6 +100,7 @@ const data: SpaceInfo[] = [
       network: "goerli",
       address: "0xbEAf4476eC398A9B613FCEFdAD6E79B4C9e61B1B",
     },
+    cycleStartDate: "2023-11-07T00:00:00.000Z",
   },
   {
     name: "juicebox",
@@ -122,6 +126,7 @@ const data: SpaceInfo[] = [
       network: "mainnet",
       address: "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e",
     },
+    cycleStartDate: "2023-11-07T00:00:00.000Z",
   },
   {
     name: "moondao",
@@ -138,6 +143,7 @@ const data: SpaceInfo[] = [
     nextProposalId: 2,
     dolthubLink:
       "https://www.dolthub.com/repositories/jigglyjams/moondao/compare/main/https://www.dolthub.com/repositories/jigglyjams/moondao/compare/main/m34cg4e01ntuqilcd9j5upg51pd8cj42",
+    cycleStartDate: "2023-11-07T00:00:00.000Z",
   },
   {
     name: "nance",
@@ -163,6 +169,7 @@ const data: SpaceInfo[] = [
       network: "mainnet",
       address: "0xEdf62C8A931e164E20f221f4c95397Fba4b6568A",
     },
+    cycleStartDate: "2023-11-07T00:00:00.000Z",
   },
   {
     name: "thirstythirsty",
@@ -184,6 +191,7 @@ const data: SpaceInfo[] = [
       network: "mainnet",
       address: "0xAFDB95C827870ba5E57eca6dbB8D5FDdab47EE99",
     },
+    cycleStartDate: "2023-11-07T00:00:00.000Z",
   },
   {
     name: "waterbox",
@@ -209,6 +217,7 @@ const data: SpaceInfo[] = [
       network: "mainnet",
       address: "0xAF28bcB48C40dBC86f52D459A6562F658fc94B1e",
     },
+    cycleStartDate: "2023-11-07T00:00:00.000Z",
   },
 ];
 
