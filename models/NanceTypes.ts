@@ -16,6 +16,7 @@ export type SpaceInfo = {
   name: string;
   displayName: string;
   currentCycle: number;
+  cycleStartDate: string;
   currentEvent: {
     title: string;
     start: string;

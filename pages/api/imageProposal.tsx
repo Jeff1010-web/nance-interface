@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unknown-property */
 import { numToPrettyString } from "@/utils/functions/NumberFormatter";
 import { getParagraphOfMarkdown } from "@/utils/functions/markdown";

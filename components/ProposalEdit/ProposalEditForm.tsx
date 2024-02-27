@@ -106,7 +106,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
     formState,
     getValues,
     setValue,
-    watch,
   } = methods;
 
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
@@ -267,10 +266,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
       <form className="mt-6 space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <Actions
           loadedActions={
-            (metadata.fork
-              ? metadata.loadedProposal?.actions?.map(
-                  ({ uuid, ...rest }) => rest,
-                )
+            (metadata.fork ? metadata.loadedProposal?.actions?.map(({ uuid, ...rest }) => rest)
               : metadata.loadedProposal?.actions) || []
           }
         />

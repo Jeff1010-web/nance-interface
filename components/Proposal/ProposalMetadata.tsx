@@ -5,10 +5,13 @@ import { useContext } from "react";
 import Link from "next/link";
 import ActionLabel from "@/components/ActionLabel/ActionLabel";
 import { ProposalContext } from "./context/ProposalContext";
+import { useSpaceInfo } from "@/utils/hooks/NanceHooks";
+import { SpaceContext } from "@/context/SpaceContext";
 
 export default function ProposalMetadata() {
   const { commonProps } = useContext(ProposalContext);
-
+  const shouldFetchSpaceInfo = commonProps.actions.length > 0;
+  const { data } = useSpaceInfo({ space: commonProps.space}, shouldFetchSpaceInfo);
   return (
     <div className="my-4 rounded-md border bg-gray-100 px-4 py-5 sm:px-6">
       <h2 className="mb-3 text-gray-500">Metadata</h2>
@@ -19,13 +22,15 @@ export default function ProposalMetadata() {
             <p className="col-span-2 font-medium">Actions</p>
 
             <div className="col-span-2 mt-2 flex w-full flex-col space-y-2">
-              {commonProps.actions.map((action, index) => (
-                <ActionLabel
-                  action={action}
-                  space={commonProps.space}
-                  key={index}
-                />
-              ))}
+              <SpaceContext.Provider value={data?.data}>
+                {commonProps.actions.map((action, index) => (
+                  <ActionLabel
+                    action={action}
+                    space={commonProps.space}
+                    key={index}
+                  />
+                ))}
+              </SpaceContext.Provider>
             </div>
           </>
         )}

@@ -83,7 +83,6 @@ export default function Actions({
               <PayoutActionForm
                 genFieldName={genFieldName(index)}
                 projectOwner={projectOwner}
-                currentCycle={spaceInfo?.currentCycle ?? 1}
               />
             </div>
           );

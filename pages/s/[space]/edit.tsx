@@ -1,6 +1,5 @@
 import { useQueryParams, StringParam } from "next-query-params";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { Proposal } from "@/models/NanceTypes";
 import { NANCE_API_URL } from "@/constants/Nance";
 import { getToken } from "next-auth/jwt";
@@ -49,9 +48,8 @@ export default function NanceEditProposal({
   loadedProposal: Proposal;
   fork: boolean;
 }) {
-  const router = useRouter();
 
-  const [query, setQuery] = useQueryParams({
+  const [query] = useQueryParams({
     proposalId: StringParam,
   });
   const { proposalId } = query;

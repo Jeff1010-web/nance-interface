@@ -4,17 +4,20 @@ import UIntForm from "../form/UIntForm";
 import ProjectForm from "../form/ProjectForm";
 import SelectForm from "../form/SelectForm";
 import { dateRangesOfCycles } from "@/utils/functions/GovernanceCycle";
+import { useContext } from "react";
+import { SpaceContext } from "@/context/SpaceContext";
+import { addDays } from "date-fns";
 
 export default function PayoutActionForm({
   genFieldName,
   projectOwner,
-  currentCycle,
 }: {
   genFieldName: (field: string) => any;
   projectOwner: string;
-  currentCycle: number;
 }) {
   const { watch, getValues } = useFormContext();
+  const spaceInfo = useContext(SpaceContext);
+  const nextCycleStartDate = addDays(new Date(spaceInfo?.cycleStartDate || ""), 14).toISOString();
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-1">
@@ -37,10 +40,12 @@ export default function PayoutActionForm({
           decimal={1}
         />
         <span className="text-xs text-gray-400">
-          {dateRangesOfCycles(
-            currentCycle + 2,
-            getValues(genFieldName("count")),
-          )}
+          {dateRangesOfCycles({
+            cycle: spaceInfo?.currentCycle,
+            length: watch(genFieldName("count")),
+            currentCycle: spaceInfo?.currentCycle,
+            cycleStartDate: nextCycleStartDate,
+          })}
         </span>
       </div>
       <div className="col-span-4 sm:col-span-2">
