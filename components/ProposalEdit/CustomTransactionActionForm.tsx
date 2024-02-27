@@ -1,6 +1,6 @@
 import { ErrorMessage } from "@hookform/error-message";
 import { FunctionFragment, FormatTypes, Interface } from "ethers/lib/utils";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import {
   TenderlySimulationAPIResponse,
@@ -16,6 +16,8 @@ import SafeInjectIframeCard from "../SafeInjectIframeCard";
 import { useSafeInject } from "../SafeInjectIframeCard/context/SafeInjectedContext";
 import { BigNumber } from "ethers";
 import { CustomTransactionArg } from "@/models/NanceTypes";
+import { NetworkContext } from "@/context/NetworkContext";
+import { getChainByNetworkName } from "config/custom-chains";
 
 export default function CustomTransactionActionForm({
   genFieldName,
@@ -46,11 +48,15 @@ export default function CustomTransactionActionForm({
     functionFragment?.format(FormatTypes.minimal) || "",
     args || [],
   );
+  const networkName = useContext(NetworkContext);
+  const networkId = getChainByNetworkName(networkName).id;
+
   const simulateArgs = {
     from: projectOwner || "",
     to: getValues(genFieldName("contract")) as string,
     value: parseInt(getValues(genFieldName("value"))),
     input,
+    networkId
   };
 
   useEffect(() => {
@@ -218,12 +224,12 @@ export default function CustomTransactionActionForm({
             {field.type !== "address" &&
               !field.type.includes("int") &&
               field.type !== "bool" && (
-                <StringForm
-                  label={`Param: ${field.name || "_"}`}
-                  fieldName={genFieldName(`args.${index}.value`)}
-                  fieldType={field.type}
-                />
-              )}
+              <StringForm
+                label={`Param: ${field.name || "_"}`}
+                fieldName={genFieldName(`args.${index}.value`)}
+                fieldType={field.type}
+              />
+            )}
           </div>
         ))}
       </div>
