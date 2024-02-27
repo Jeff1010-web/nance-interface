@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { classNames } from "@/utils/functions/tailwind";
 import { SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
 import GenericTenderlySimulationButton from "../TenderlySimulation/GenericTenderlySimulationButton";
@@ -19,7 +19,11 @@ export default function OrderCheckboxTable({
   const checkbox = useRef<HTMLInputElement>(null);
   const [checked, setChecked] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState<TransactionEntry[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<TransactionEntry[]>(entries);
+
+  useEffect(() => {
+    setSelectedEntry(entries);
+  }, [entries]);
 
   useLayoutEffect(() => {
     const isIndeterminate =

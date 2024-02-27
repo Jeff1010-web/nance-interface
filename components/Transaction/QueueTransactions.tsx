@@ -26,6 +26,7 @@ import TransactionCreator from "./TransactionCreator";
 import { safeBatchTransactionBuilder } from "@/utils/functions/safe";
 import { downloadJSON } from "@/utils/functions/fileDownload";
 import { getChainByNetworkName } from "config/custom-chains";
+import TransactionCycleNavigator from "./TransactionCycleNavigator";
 
 export default function QueueTransactionsModal({
   open,
@@ -40,9 +41,9 @@ export default function QueueTransactionsModal({
 }) {
   const cancelButtonRef = useRef(null);
   const router = useRouter();
-  const [query, setQuery] = useQueryParams({
+  const [query] = useQueryParams({ // set cycle query in ./TransactionCycleNavigator
     keyword: StringParam,
-    limit: withDefault(NumberParam, 5),
+    limit: withDefault(NumberParam, 10),
     cycle: StringParam,
     sortBy: withDefault(StringParam, ""),
     sortDesc: withDefault(BooleanParam, true),
@@ -167,8 +168,9 @@ export default function QueueTransactionsModal({
                       as="h3"
                       className="text-lg font-semibold leading-6 text-gray-900"
                     >
-                      Queue Transactions
+                      Queue Transactions for GC#{cycle}
                     </Dialog.Title>
+                    <TransactionCycleNavigator />
 
                     <OrderCheckboxTable address={transactorAddress || ""} entries={entries} />
                   </div>
