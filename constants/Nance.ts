@@ -45,3 +45,21 @@ export const TEMPLATE =
   "## Synopsis\n*State what the proposal does in one sentence.*\n\n## Motivation\n*What problem does this solve? Why now?*\n\n## Specification\n*How exactly will this be executed? Be specific and leave no ambiguity.*\n\n## Rationale\n*Why is this specification appropriate?*\n\n## Risks\n*What might go wrong?*\n\n## Timeline\n*When exactly should this proposal take effect? When exactly should this proposal end?*";
 
 export const ONE_DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
+
+export const STATUS = {
+  DRAFT: 'Draft',
+  DISCUSSION: 'Discussion',
+  TEMPERATURE_CHECK: EVENTS.TEMPERATURE_CHECK,
+  VOTING: 'Voting',
+  APPROVED: 'Approved',
+  CANCELLED: 'Cancelled',
+  ARCHIVED: 'Archived',
+  PRIVATE: 'Private',
+  ACTION: {
+    ACTIVE: 'active',
+    COMPLETE: 'complete',
+    CANCELLED: 'cancelled',
+    VOTING: 'voting',
+    PAUSED: 'paused',
+  }
+};

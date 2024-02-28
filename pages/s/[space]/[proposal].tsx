@@ -18,6 +18,7 @@ import {
   ProposalCommonProps,
   ProposalContext,
 } from "@/components/Proposal/context/ProposalContext";
+import { STATUS } from "@/constants/Nance";
 
 export async function getServerSideProps(
   { req, params }: {
@@ -82,10 +83,23 @@ export default function NanceProposalPage({
     );
   }
 
+  const status = () => {
+    if (proposal.hash === "snapshot" && snapshotProposal) {
+      const pass = snapshotProposal.scores[0] > snapshotProposal.scores[1];
+      if (snapshotProposal?.state === "closed" && pass) {
+        return STATUS.APPROVED;
+      } else if (snapshotProposal?.state === "closed" && !pass) {
+        return STATUS.CANCELLED;
+      } else {
+        return STATUS.VOTING;
+      }
+    }
+    return proposal.status;
+  };
   const commonProps: ProposalCommonProps = {
     space,
     snapshotSpace: proposal?.snapshotSpace || "",
-    status: proposal.status,
+    status: status(),
     title: proposal.title,
     author: proposal.authorAddress || snapshotProposal?.author || "",
     coauthors: proposal.coauthors || [],

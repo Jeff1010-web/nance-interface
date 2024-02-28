@@ -10,7 +10,7 @@ import { SpaceContext } from "@/context/SpaceContext";
 
 export default function ProposalMetadata() {
   const { commonProps } = useContext(ProposalContext);
-  const shouldFetchSpaceInfo = commonProps.actions.length > 0;
+  const shouldFetchSpaceInfo = commonProps?.actions?.length > 0;
   const { data } = useSpaceInfo({ space: commonProps.space}, shouldFetchSpaceInfo);
   return (
     <div className="my-4 rounded-md border bg-gray-100 px-4 py-5 sm:px-6">
