@@ -9,7 +9,6 @@ export function basicFetcher(): Fetcher<any, string> {
   return async (url) => {
     const res = await fetch(url);
     const json = await res.json();
-    console.log(json);
 
     return json;
   };

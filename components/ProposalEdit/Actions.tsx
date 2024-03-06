@@ -13,6 +13,9 @@ import TransferActionForm from "./TransferActionForm";
 import { ProposalMetadataContext } from "./context/ProposalMetadataContext";
 import { SafeInjectProvider } from "../SafeInjectIframeCard/context/SafeInjectedContext";
 import { SpaceContext } from "@/context/SpaceContext";
+import { NetworkContext } from "@/context/NetworkContext";
+import { useSwitchNetwork } from "wagmi";
+import { getChainByNetworkName } from "config/custom-chains";
 
 export default function Actions({
   loadedActions,
@@ -22,7 +25,7 @@ export default function Actions({
   const [open, setOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<ActionItem>();
 
-  const { register, getValues } = useFormContext();
+  const { register, watch } = useFormContext();
   const { fields, append, remove, replace } = useFieldArray<{
     actions: Action[];
     [key: string]: any;
@@ -30,6 +33,10 @@ export default function Actions({
 
   const { space } = useContext(ProposalMetadataContext);
   const spaceInfo = useContext(SpaceContext);
+  let network = useContext(NetworkContext).toLowerCase();
+  if (network === "ethereum") network = "mainnet";
+  const spaceChainName = spaceInfo?.transactorAddress?.network;
+  const { switchNetwork } = useSwitchNetwork();
   const projectId = spaceInfo?.juiceboxProjectId;
   const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(
     3,
@@ -107,10 +114,38 @@ export default function Actions({
                 })}
                 className="hidden"
               />
-              <TransferActionForm
-                genFieldName={genFieldName(index)}
-                address={spaceInfo?.transactorAddress?.address || ""}
-              />
+              { spaceChainName !== network ? (
+                <div className="flex flex-col items-start">
+                  <p>{`Must be on ${spaceChainName} to propose a Transfer`}</p>
+                  <button
+                    type="button"
+                    disabled={!switchNetwork}
+                    onClick={() => {
+                      switchNetwork?.(getChainByNetworkName(spaceChainName)?.id);
+                    }}
+                    className="relative inline-flex items-center gap-x-1.5 rounded-md bg-red-500 px-3 py-3 text-sm font-semibold text-white hover:bg-red-400 focus:z-10 disabled:opacity-50"
+                  >
+                    {switchNetwork
+                      ? "Switch network"
+                      : `Not on ${network}`}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    {...register(`proposal.actions.${index}.chainId`, {
+                      shouldUnregister: true,
+                      value: getChainByNetworkName(spaceChainName)?.id,
+                    })}
+                    className="hidden"
+                  />
+                  <TransferActionForm
+                    genFieldName={genFieldName(index)}
+                    address={spaceInfo?.transactorAddress?.address || ""}
+                  />
+                </>
+              )}
             </div>
           );
         } else if (field.type === "Reserve") {

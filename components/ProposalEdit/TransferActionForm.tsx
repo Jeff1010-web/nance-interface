@@ -4,17 +4,18 @@ import { useSafeBalances } from "@/utils/hooks/Safe/SafeHooks";
 import GenericListbox from "../common/GenericListbox";
 import { Controller, useFormContext } from "react-hook-form";
 import { SafeBalanceUsdResponse } from "@/models/SafeTypes";
+import { useEffect } from "react";
 
 type ListBoxItems = {
-  id: string;
-  name: string;
+  id?: string;
+  name?: string;
 };
 
 const safeBalanceToItems = (b: SafeBalanceUsdResponse[]): ListBoxItems[] => {
-  return b.map((b) => {
+  return b.filter((b) => !!b.tokenAddress && !!b.token).map((b) => {
     return {
-      id: b.tokenAddress || "",
-      name: b.token?.symbol || "",
+      id: b.tokenAddress as string,
+      name: b.token?.symbol as string,
     };
   });
 };
@@ -29,9 +30,10 @@ export default function TransferActionForm({
     control,
     formState: { errors },
   } = useFormContext();
-  console.log(address);
+
   const { data, isLoading, error } = useSafeBalances(address, !!address);
-  const items = data ? safeBalanceToItems(data) : [{ id: "-", name: "-" }];
+  const items = data ? safeBalanceToItems(data) : [{ id: undefined, name: undefined }];
+
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-2">
@@ -44,19 +46,22 @@ export default function TransferActionForm({
 
       <div className="col-span-4 sm:col-span-1">
         {!isLoading && (
-          <Controller
-            name={genFieldName("contract")}
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <GenericListbox<ListBoxItems>
-                value={items.find((i) => i.id === value) || { id: "-", name: "-" }}
-                onChange={(c) => onChange(c.id)}
-                label="Token"
-                items={items}
-              />
-            )}
-            shouldUnregister
-          />
+          <>
+            <Controller
+              name={genFieldName("contract")}
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <GenericListbox<ListBoxItems>
+                  value={items.find((i) => i.id === value) || items[0] || { id: undefined, name: "no tokens found in Safe" }}
+                  onChange={(c) => onChange(c.id)}
+                  label="Token"
+                  items={items}
+                  disabled={items.length === 0}
+                />
+              )}
+              shouldUnregister
+            />
+          </>
         )}
       </div>
     </div>

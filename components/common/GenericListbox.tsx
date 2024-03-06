@@ -5,8 +5,8 @@ import Image from "next/image";
 import { classNames } from "@/utils/functions/tailwind";
 
 interface Includes {
-  name: string;
-  id: string;
+  name?: string;
+  id?: string;
   icon?: string;
 }
 interface GenericListboxProps<T> {
