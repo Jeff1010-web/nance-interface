@@ -69,6 +69,7 @@ function sortProposals(
   snapshotProposalDict: { [id: string]: SnapshotProposal },
   votedData: { [id: string]: SnapshotVotedData } | undefined,
 ) {
+  if (keyword) return;
   if (!sortBy || !SortOptionsArr.includes(sortBy)) {
     // fall back to default sorting
     // if no keyword
