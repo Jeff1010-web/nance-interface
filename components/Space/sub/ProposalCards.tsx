@@ -69,13 +69,14 @@ function sortProposals(
   snapshotProposalDict: { [id: string]: SnapshotProposal },
   votedData: { [id: string]: SnapshotVotedData } | undefined,
 ) {
-  if (keyword) return;
   if (!sortBy || !SortOptionsArr.includes(sortBy)) {
     // fall back to default sorting
     // if no keyword
     proposals
-      .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status))
-      .sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0));
+      .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status));
+    if (!keyword) {
+      return;
+    }
   }
 
   switch (sortBy) {
