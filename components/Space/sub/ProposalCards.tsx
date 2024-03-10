@@ -75,7 +75,7 @@ function sortProposals(
     proposals
       .sort((a, b) => getValueOfStatus(b.status) - getValueOfStatus(a.status));
     if (!keyword) {
-      return;
+      proposals.sort((a, b) => (b.governanceCycle ?? 0) - (a.governanceCycle ?? 0));
     }
   }
 
