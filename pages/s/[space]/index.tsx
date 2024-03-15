@@ -54,7 +54,7 @@ export default function SpacePage({ spaceInfo }: { spaceInfo: SpaceInfo }) {
       : `https://cdn.stamp.fyi/space/${snapshotSpace}?s=500`;
   const pageTitle = `${spaceInfo.name} Governance`;
 
-  const { remainingTime, formattedEndTime } = calculateRemainingTime(
+  const { formattedEndTime } = calculateRemainingTime(
     spaceInfo.currentEvent?.end ?? "",
   );
 
@@ -69,11 +69,11 @@ export default function SpacePage({ spaceInfo }: { spaceInfo: SpaceInfo }) {
         withProposalButton={false}
         mobileHeaderCenter={
           <div className="text-center">
-            <p className="font-medium">in {remainingTime}</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm text-gray-500">
               {spaceInfo.currentEvent?.title || "Unknown"} of GC
               {spaceInfo.currentCycle}
             </p>
+            <p className="text-sm">Ends {formattedEndTime}</p>
           </div>
         }
       />
