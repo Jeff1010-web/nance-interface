@@ -1,4 +1,4 @@
-const API = "https://ipfs.infura.io:5001/api/v0";
+const API = "https://nance.infura-ipfs.io:5001/api/v0";
 const gateway = "nance.infura-ipfs.io/ipfs";
 const AUTH_HEADER = `Basic ${Buffer.from(
   `${process.env.NEXT_PUBLIC_INFURA_IPFS_ID}:${process.env.NEXT_PUBLIC_INFURA_IPFS_SECRET}`,

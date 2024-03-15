@@ -1,9 +1,8 @@
+import { useContext, useState, useEffect } from "react";
 import Image from "next/image";
-
 import { Tooltip } from "flowbite-react";
-import { format, formatDistanceToNowStrict, parseISO } from "date-fns";
+import { parseISO, format, differenceInSeconds } from "date-fns";
 import { SpaceContext } from "@/context/SpaceContext";
-import { useContext } from "react";
 
 export function calculateRemainingTime(endTime: string) {
   let remainingTime = "-";
@@ -11,29 +10,42 @@ export function calculateRemainingTime(endTime: string) {
   try {
     const endTimeDate = parseISO(endTime);
     formattedEndTime = endTimeDate
-      ? format(endTimeDate, "EEE MMM dd yyyy HH:mm a")
+      ? format(endTimeDate, "EEE MMM dd yyyy h:mm a")
       : "-";
-    remainingTime = formatDistanceToNowStrict(endTimeDate);
+    const difference = differenceInSeconds(endTimeDate, new Date());
+    const days = Math.floor(difference / (3600 * 24));
+    const hours = String(Math.floor((difference % (3600 * 24)) / 3600)).padStart(2, "0");
+    const minutes = String(Math.floor((difference % 3600) / 60)).padStart(2, "0");
+    const seconds = String(difference % 60).padStart(2, "0");
+    remainingTime = `${days} ${hours} ${minutes} ${seconds}`;
   } catch (error) {
-    //console.warn("🔴 Nance.formatDistanceToNowStrict ->", error);
+    console.error("Error calculating remaining time:", error);
   }
-
   return { remainingTime, formattedEndTime };
 }
 
 export default function SpaceHeader() {
   const spaceInfo = useContext(SpaceContext);
+  const [remainingTime, setRemainingTime] = useState("-");
+  const [formattedEndTime, setFormattedEndTime] = useState("-");
 
-  if (!spaceInfo) {
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (spaceInfo && spaceInfo.currentEvent) {
+        const { remainingTime, formattedEndTime } = calculateRemainingTime(spaceInfo.currentEvent.end || "");
+        setRemainingTime(remainingTime);
+        setFormattedEndTime(formattedEndTime);
+      }
+    }, 1000); // Update every second
+
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
+  }, [spaceInfo]);
+
+  if (!spaceInfo || !spaceInfo.currentEvent) {
     return null;
   }
 
-  const { remainingTime, formattedEndTime } = calculateRemainingTime(
-    spaceInfo.currentEvent?.end ?? "",
-  );
-
   const {
-    name: spaceName,
     displayName,
     currentEvent,
     currentCycle,
@@ -47,11 +59,10 @@ export default function SpaceHeader() {
           <Image
             className="h-16 w-16 rounded-full"
             src={`https://cdn.stamp.fyi/space/${snapshotSpace}?s=160`}
-            alt={`${spaceName} Logo`}
+            alt={`${displayName} Logo`}
             height={64}
             width={64}
           />
-
           <div>
             <h1 className="text-4xl font-bold text-gray-900">{displayName}</h1>
             <p className="text-right text-sm font-medium text-gray-500">
@@ -59,21 +70,32 @@ export default function SpaceHeader() {
             </p>
           </div>
         </div>
-
-        <div className="break-words rounded-md border-2 border-blue-600 bg-indigo-100 p-2 text-center md:w-2/12">
-          <Tooltip content={formattedEndTime}>
-            <span className="tooltip-trigger">
-              <p className="text-2xl font-semibold">in {remainingTime}</p>
-            </span>
-          </Tooltip>
-          <a
-            className="text-sm text-gray-900"
-            href="https://info.juicebox.money/dao/process/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {currentEvent?.title || "Unknown"} of GC{currentCycle}
-          </a>
+        <div className="rounded-md border-2 border-blue-600 bg-indigo-100 py-2 px-3 w-min-fit">
+          <div className="flex flex-col">
+            <div className="flex flex-row items-center">
+              <div className="text-xs text-gray-500">Governance Cycle</div>
+              <div className="ml-2 font-semibold">{currentCycle}</div>
+            </div>
+            <div className="flex flex-row items-center">
+              <div className="text-xs text-gray-500">Current Event</div>
+              <div className="ml-8 font-semibold text-sm">{currentEvent.title}</div>
+            </div>
+            <div className="flex justify-start items-center">
+              <div className="text-xs text-gray-500">Time Remaining</div>
+              <Tooltip content={formattedEndTime}>
+                <div className="ml-5">
+                  {remainingTime.split(" ").map((time, index) => (
+                    <span key={index} className="font-mono">
+                      {time}
+                      <span className="text-xs font-normal text-gray-500">
+                        {index === 0 ? "d " : index === 1 ? "h " : index === 2 ? "m " : "s"}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </Tooltip>
+            </div>
+          </div>
         </div>
       </div>
     </div>
