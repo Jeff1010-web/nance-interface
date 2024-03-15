@@ -1,8 +1,9 @@
 import ColorBar, { JB_THRESHOLD } from "@/components/common/ColorBar";
 import { SnapshotProposal } from "@/models/SnapshotTypes";
 import { Proposal } from "@/models/NanceTypes";
-import { ClockIcon } from "@heroicons/react/24/solid";
+import { ClockIcon, BoltIcon } from "@heroicons/react/24/solid";
 import VotingTimeIndicator from "./VotingTimeIndicator";
+import { STATUS } from "@/constants/Nance";
 
 export default function VotesBar({
   snapshotProposal,
@@ -20,6 +21,12 @@ export default function VotesBar({
     return (
       <div className="flex flex-col space-y-1">
         <VotingTimeIndicator start={start} end={end} />
+        {scores_total < threshold && proposal.status === STATUS.VOTING && (
+          <div className="flex flex-row justify-center items-center text-[11px] text-orange-500">
+            <BoltIcon className="h-4 w-4" />
+            under quorum!
+          </div>
+        )}
 
         {["approval", "ranked-choice", "quadratic", "weighted"].includes(
           type,

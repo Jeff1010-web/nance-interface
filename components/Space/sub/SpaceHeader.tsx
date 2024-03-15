@@ -5,13 +5,11 @@ import { parseISO, format, differenceInSeconds } from "date-fns";
 import { SpaceContext } from "@/context/SpaceContext";
 
 export function calculateRemainingTime(endTime: string) {
-  let remainingTime = "-";
-  let formattedEndTime = "-";
+  let remainingTime = "- - - -";
+  let formattedEndTime = "- - - -";
   try {
     const endTimeDate = parseISO(endTime);
-    formattedEndTime = endTimeDate
-      ? format(endTimeDate, "EEE MMM dd yyyy h:mm a")
-      : "-";
+    formattedEndTime = format(endTimeDate, "EEE MMM dd yyyy h:mm a");
     const difference = differenceInSeconds(endTimeDate, new Date());
     const days = Math.floor(difference / (3600 * 24));
     const hours = String(Math.floor((difference % (3600 * 24)) / 3600)).padStart(2, "0");
@@ -26,8 +24,8 @@ export function calculateRemainingTime(endTime: string) {
 
 export default function SpaceHeader() {
   const spaceInfo = useContext(SpaceContext);
-  const [remainingTime, setRemainingTime] = useState("-");
-  const [formattedEndTime, setFormattedEndTime] = useState("-");
+  const [remainingTime, setRemainingTime] = useState("- -- -- --");
+  const [formattedEndTime, setFormattedEndTime] = useState("- -- -- --");
 
   useEffect(() => {
     const intervalId = setInterval(() => {

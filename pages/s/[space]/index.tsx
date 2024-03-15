@@ -12,39 +12,16 @@ const JBDAO_OPENGRAPH_IMAGE = "/images/opengraph/homepage.png";
 
 export default function SpacePage() {
   const params = useParams<{ space: string }>();
-  const { data, isLoading } = useSpaceInfo({ space: params?.space as string });
+  const space = params?.space;
+  const { data, isLoading } = useSpaceInfo({ space }, !!space );
   const spaceInfo = data?.data;
 
-  if (!spaceInfo && !isLoading) {
-    return (
-      <>
-        <SiteNav
-          pageTitle="Not Found"
-          description="Space not found"
-          image={SPACE_NOT_FOUND_IMAGE}
-          withProposalButton={false}
-        />
-        <ContentNotFound
-          title="Space Not Found"
-          reason="The space you are looking for does not exist."
-          recommendationText="Do you want to create a new space?"
-          recommendationActionHref="/create"
-          recommendationActionText="Create Space"
-          fallbackActionHref="/s"
-          fallbackActionText="See All Spaces"
-        />
-        <Footer />
-      </>
-    );
-  }
-
-  if (!spaceInfo && isLoading) {
+  if (isLoading || !space) {
     return (
       <>
         <SiteNav
           pageTitle="Loading"
           description="Loading space"
-          image={SPACE_NOT_FOUND_IMAGE}
           withProposalButton={false}
         />
       </>
