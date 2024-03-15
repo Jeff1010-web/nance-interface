@@ -3,27 +3,54 @@ import { Footer, SiteNav } from "@/components/Site";
 import Space from "@/components/Space";
 import { calculateRemainingTime } from "@/components/Space/sub/SpaceHeader";
 
-import { NANCE_API_URL } from "@/constants/Nance";
 import { SpaceContext } from "@/context/SpaceContext";
-import { SpaceInfo } from "@/models/NanceTypes";
-
-export async function getServerSideProps(context: any) {
-  const spaceParam: string = context.params.space;
-  const { data } = await fetch(`${NANCE_API_URL}/${spaceParam}`).then((res) =>
-    res.json(),
-  );
-  // Pass data to the page via props
-  return {
-    props: {
-      spaceInfo: data || null,
-    },
-  };
-}
+import { useSpaceInfo } from "@/utils/hooks/NanceHooks";
+import { useParams } from "next/navigation";
 
 const SPACE_NOT_FOUND_IMAGE = "/images/character/Empty_Orange_2.png";
 const JBDAO_OPENGRAPH_IMAGE = "/images/opengraph/homepage.png";
 
-export default function SpacePage({ spaceInfo }: { spaceInfo: SpaceInfo }) {
+export default function SpacePage() {
+  const params = useParams<{ space: string }>();
+  const { data, isLoading } = useSpaceInfo({ space: params?.space as string });
+  const spaceInfo = data?.data;
+
+  if (!spaceInfo && !isLoading) {
+    return (
+      <>
+        <SiteNav
+          pageTitle="Not Found"
+          description="Space not found"
+          image={SPACE_NOT_FOUND_IMAGE}
+          withProposalButton={false}
+        />
+        <ContentNotFound
+          title="Space Not Found"
+          reason="The space you are looking for does not exist."
+          recommendationText="Do you want to create a new space?"
+          recommendationActionHref="/create"
+          recommendationActionText="Create Space"
+          fallbackActionHref="/s"
+          fallbackActionText="See All Spaces"
+        />
+        <Footer />
+      </>
+    );
+  }
+
+  if (!spaceInfo && isLoading) {
+    return (
+      <>
+        <SiteNav
+          pageTitle="Loading"
+          description="Loading space"
+          image={SPACE_NOT_FOUND_IMAGE}
+          withProposalButton={false}
+        />
+      </>
+    );
+  }
+
   if (!spaceInfo) {
     return (
       <>
