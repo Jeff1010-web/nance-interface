@@ -4,7 +4,6 @@ import { useSafeBalances } from "@/utils/hooks/Safe/SafeHooks";
 import GenericListbox from "../common/GenericListbox";
 import { Controller, useFormContext } from "react-hook-form";
 import { SafeBalanceUsdResponse } from "@/models/SafeTypes";
-import { useEffect } from "react";
 
 type ListBoxItems = {
   id?: string;
@@ -50,6 +49,7 @@ export default function TransferActionForm({
             <Controller
               name={genFieldName("contract")}
               control={control}
+              defaultValue={items[0]?.id}
               render={({ field: { onChange, value } }) => (
                 <GenericListbox<ListBoxItems>
                   value={items.find((i) => i.id === value) || items[0] || { id: undefined, name: "no tokens found in Safe" }}

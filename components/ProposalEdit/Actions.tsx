@@ -134,7 +134,7 @@ export default function Actions({
                 <>
                   <input
                     type="text"
-                    {...register(`proposal.actions.${index}.chainId`, {
+                    {...register(`proposal.actions.${index}.payload.chainId`, {
                       shouldUnregister: true,
                       value: getChainByNetworkName(spaceChainName)?.id,
                     })}
