@@ -128,6 +128,13 @@ function sortProposals(
       return 0;
     });
     break;
+  case "date":
+    proposals.sort((a, b) => {
+      const bD = b.date || "";
+      const aD = a.date || "";
+      return bD.localeCompare(aD);
+    });
+    break;
   default:
     proposals.sort();
     break;
