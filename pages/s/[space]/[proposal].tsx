@@ -103,7 +103,7 @@ export default function NanceProposalPage({
     title: proposal.title,
     author: proposal.authorAddress || snapshotProposal?.author || "",
     coauthors: proposal.coauthors || [],
-    body: snapshotProposal?.body || proposal.body || "",
+    body: proposal.body || "",
     created:
       snapshotProposal?.start ||
       (proposal.date
