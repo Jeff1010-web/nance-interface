@@ -69,6 +69,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
   const [submitWillFailReason, setSubmitWillFailReason] = useState<string>("");
   const [formDataPayload, setFormDataPayload] = useState<ProposalFormValues>();
   const [authorDiscordId, setAuthorDiscordId] = useState<string | null>();
+  const [submitted, setSubmitted] = useState(false);
 
   // hooks
   const { address } = useAccount();
@@ -163,6 +164,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req)
       .then(async (res) => {
+        setSubmitted(true);
         // clear local cache
         setProposalCache({
           version: CACHE_VERSION,
@@ -171,6 +173,9 @@ export default function ProposalEditForm({ space }: { space: string }) {
           timestamp: 0,
         });
         console.debug("📗 Nance.editProposal.onSignSuccess ->", res);
+        if (res?.data && res.data.hash) {
+          router.push(`/s/${space}/${res.data.hash}`);
+        }
       })
       .catch((err) => {
         console.warn("📗 Nance.editProposal.onSignError ->", err);
@@ -197,19 +202,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
 
   return (
     <FormProvider {...methods}>
-      {!error && (
-        <ResultModal
-          title="Success"
-          description={`Proposal "${getValues("proposal.title")}" ${
-            isNew ? "created" : "updated"
-          } by ${session?.user?.name || "unknown"}`}
-          buttonText="Go to proposal page"
-          onClick={() => router.push(`/s/${space}/${data?.data.hash}`)}
-          isSuccessful={true}
-          shouldOpen={data !== undefined}
-          close={reset}
-        />
-      )}
       {error && (
         <ResultModal
           title="Error"
@@ -371,7 +363,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
               <ProposalSubmitButton
                 formErrors={formErrors}
                 status={status}
-                isMutating={formState.isSubmitting || isMutating}
+                isMutating={formState.isSubmitting || isMutating || submitted}
                 selected={selected}
                 setSelected={setSelected}
               />
