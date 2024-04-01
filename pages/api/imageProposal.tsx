@@ -26,7 +26,7 @@ export default async function handler(request: NextRequest) {
     if (!proposalId) return new Response("No proposal id provided", { status: 400 });
     const proposal = await getProposal(space, proposalId);
     const title = proposal.title;
-    const spaceH1 = proposal.snapshotSpace;
+    const spaceH1 = "NANCE";
     const totalScore = proposal.voteResults?.scores.reduce((a, b) => a + b, 0);
     const paragraph = getParagraphOfMarkdown(proposal.body || "", chunk || 0);
     return new ImageResponse(

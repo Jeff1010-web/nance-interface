@@ -16,7 +16,7 @@ import {
   Controller,
 } from "react-hook-form";
 import { useProposalUpload } from "@/utils/hooks/NanceHooks";
-import { CustomTransaction, ProposalUploadRequest } from "@/models/NanceTypes";
+import { CustomTransaction, ProposalUploadRequest } from "@nance/nance-sdk";
 import MiddleStepModal from "../modal/MiddleStepModal";
 import Actions from "./Actions";
 import { driverSteps } from "./GuideSteps";
@@ -89,7 +89,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
     reset,
   } = useProposalUpload(
     space,
-    (!metadata.fork && metadata.loadedProposal?.hash) || undefined,
+    (!metadata.fork && metadata.loadedProposal?.uuid) || undefined,
     router.isReady,
   );
 
@@ -112,7 +112,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
   const onSubmit: SubmitHandler<ProposalFormValues> = async (formData) => {
     // check if actions all passed simulation
     const _allSimulated =
-      getValues("proposal.actions").filter(
+      getValues("proposal.actions")?.filter(
         (a) =>
           a.type === "Custom Transaction" &&
           (a.payload as CustomTransaction).tenderlyStatus !== "true",
@@ -143,7 +143,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
   ) => {
     let hash;
     if (!metadata.fork && metadata?.loadedProposal) {
-      hash = metadata.loadedProposal.hash;
+      hash = metadata.loadedProposal.uuid;
     }
 
     const payload = {
@@ -160,6 +160,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
 
     const req: ProposalUploadRequest = {
       proposal: payload as any,
+      space,
     };
     console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req)
@@ -173,8 +174,8 @@ export default function ProposalEditForm({ space }: { space: string }) {
           timestamp: 0,
         });
         console.debug("📗 Nance.editProposal.onSignSuccess ->", res);
-        if (res?.data && res.data.hash) {
-          router.push(`/s/${space}/${res.data.hash}`);
+        if (res?.data && res.data.uuid) {
+          router.push(`/s/${space}/${res.data.uuid}`);
         }
       })
       .catch((err) => {

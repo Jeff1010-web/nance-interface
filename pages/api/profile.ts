@@ -4,12 +4,12 @@ import { fetchAllVotesOfAddress } from "@/utils/hooks/snapshot/Vote";
 import { AllVotes } from "@/models/SnapshotTypes";
 import { fetchVotingPower } from "../../utils/hooks/snapshot/VotingPower";
 import { fetchCreatedProposals } from "../../utils/hooks/NanceHooks";
-import { Proposal } from "../../models/NanceTypes";
+import { Proposal } from "@nance/nance-sdk";
 
 export type ProfileResponse = {
   vp: number
   delegators: string[]
-  proposals: Pick<Proposal, "title" | "hash" | "proposalId">[],
+  proposals: Pick<Proposal, "title" | "uuid" | "proposalId">[],
   votes: AllVotes
 }
 
@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       vp: vp?.vp ?? 0,
       delegators: delegators?.map(o => o.delegator) ?? [],
       proposals: proposals?.data?.proposals.map(p => {
-        return { title: p.title, hash: p.hash, proposalId: p.proposalId };
+        return { title: p.title, uuid: p.uuid, proposalId: p.proposalId };
       }) ?? [],
       votes
     };

@@ -1,5 +1,5 @@
 import { getContractLabel } from "@/constants/Contract";
-import { Action, CustomTransaction, Transfer } from "@/models/NanceTypes";
+import { Action, CustomTransaction, Transfer } from "@nance/nance-sdk";
 import { SafeTransactionBuilderTxn } from "@/models/SafeTypes";
 import { parseUnits } from "viem";
 

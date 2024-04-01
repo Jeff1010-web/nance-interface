@@ -1,6 +1,6 @@
 import ColorBar, { JB_THRESHOLD } from "@/components/common/ColorBar";
 import { SnapshotProposal } from "@/models/SnapshotTypes";
-import { Proposal } from "@/models/NanceTypes";
+import { Proposal } from "@nance/nance-sdk";
 import { ClockIcon, BoltIcon } from "@heroicons/react/24/solid";
 import VotingTimeIndicator from "./VotingTimeIndicator";
 import { STATUS } from "@/constants/Nance";

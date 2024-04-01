@@ -4,7 +4,7 @@ import {
   Payout,
   CustomTransaction,
   Reserve,
-} from "@/models/NanceTypes";
+} from "@nance/nance-sdk";
 import CustomTransactionActionLabel from "./CustomTransactionActionLabel";
 import PayoutActionLabel from "./PayoutActionLabel";
 import { ReserveActionLabel } from "./ReserveActionLabel";

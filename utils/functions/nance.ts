@@ -1,6 +1,8 @@
 import { EVENTS, NANCE_API_URL } from "@/constants/Nance";
-import { APIResponse, SpaceInfo, ProposalsPacket, DateEvent, Proposal } from '@/models/NanceTypes';
+import { DateEvent, Proposal, CustomTransactionArg } from '@nance/nance-sdk';
 import { ONE_DAY_MILLISECONDS } from "@/constants/Nance";
+import { Interface } from "ethers/lib/utils";
+import { BigNumber } from "ethers";
 
 export function getLastSlash(url: string | undefined): string {
   if(!url) return "";
@@ -32,27 +34,6 @@ export function canEditProposal(status: string | undefined) {
   ].includes(status));
 };
 
-export async function getNanceStaticPaths() {
-  const spaces: APIResponse<SpaceInfo[]> = await fetch(`${NANCE_API_URL}/ish/all`).then(res => res.json());
-  const paths = await Promise.all(spaces.data.flatMap(async (space) => {
-    const allCycles = Array.from({ length: space.currentCycle }, (_, index) => index + 1).join(',');
-    const proposalsResponse: APIResponse<ProposalsPacket> = await fetch(`${NANCE_API_URL}/${space.name}/proposals?cycle=${allCycles}`).then(res => res.json());
-    if (proposalsResponse.success) {
-      return proposalsResponse.data.proposals.map((proposal) => {
-        return {
-          params: {
-            space: space.name,
-            proposal: proposal.hash
-          }
-        };
-      });
-    };
-    console.error(`bad response for ${space.name}`);
-    return [];
-  }));
-  return paths.flat();
-}
-
 const cycleStageLengthsToInterval = (cycleStageLengths: number[]) => {
   const totalCycleDays = cycleStageLengths.reduce((a, b) => {
     return a + b;
@@ -72,21 +53,21 @@ export const getNextEvents = (events: DateEvent[], cycleStageLengths: number[], 
     nextEvents.push(
       {
         title: event.title,
-        start,
-        end,
+        start: start.toISOString(),
+        end: end.toISOString(),
       },
       {
         title: event.title,
-        start: new Date(start.getTime() + interval),
-        end: new Date(end.getTime() + interval),
+        start: new Date(start.getTime() + interval).toISOString(),
+        end: new Date(end.getTime() + interval).toISOString(),
       }
     );
   });
   // sort by start date and remove events that have ended
   const nextEventsCleaned = nextEvents.sort((a, b) => {
-    return a.start.getTime() - b.start.getTime();
+    return new Date(a.start).getTime() - new Date(b.start).getTime();
   }).filter((event) => {
-    return event.end.getTime() > inputDate.getTime();
+    return new Date(event.end).getTime() > inputDate.getTime();
   });
   return nextEventsCleaned;
 };
@@ -94,7 +75,7 @@ export const getNextEvents = (events: DateEvent[], cycleStageLengths: number[], 
 export const getCurrentEvent = (events: DateEvent[], cycleStageLengths: number[], inputDate: Date) : DateEvent => {
   const nextEvents = getNextEvents(events, cycleStageLengths, inputDate);
   const currentEvent = nextEvents.find((event) => {
-    return inputDate >= event.start && inputDate < event.end;
+    return inputDate >= new Date(event.start) && inputDate < new Date(event.end);
   });
   return currentEvent as DateEvent;
 };
@@ -112,7 +93,7 @@ export const getCurrentGovernanceCycleDay = (currentEvent: DateEvent, cycleStage
   if (!currentEvent) return 0;
   const cycleStartDays = getCycleStartDays(cycleStageLengths);
   const eventIndex = Object.values(EVENTS).indexOf(currentEvent.title);
-  const dayDelta = Math.floor((input.getTime() - currentEvent.start.getTime()) / ONE_DAY_MILLISECONDS);
+  const dayDelta = Math.floor((input.getTime() - new Date(currentEvent.start).getTime()) / ONE_DAY_MILLISECONDS);
   const currentGovernanceCycleDay = cycleStartDays[eventIndex] + dayDelta;
   return currentGovernanceCycleDay;
 };
@@ -131,3 +112,44 @@ export const getProposal = async (space: string, proposalId: string): Promise<Pr
   const proposal = json.data;
   return proposal;
 };
+
+export function extractFunctionName(str: string) {
+  return str.split("(")[0].split(" ").slice(-1)[0];
+}
+
+export function parseFunctionAbiWithNamedArgs(
+  functionAbi: string,
+  args: any[],
+) {
+  if (!args) return [];
+
+  let abi = functionAbi;
+  // compatiable with old minimal format functionName
+  if (!functionAbi.startsWith("function")) {
+    abi = `function ${functionAbi}`;
+  }
+
+  const ethersInterface = new Interface([abi]);
+  const paramNames = ethersInterface.fragments[0].inputs.map(
+    (p) => p.name || "_",
+  );
+  let dict: any = [];
+  Object.values(args).forEach((val, index) => {
+    if (val.name && val.value && val.type) {
+      // it's new struct
+      const argStruct: CustomTransactionArg = val;
+      if (val.type === "uint256") {
+        dict.push([
+          argStruct.name || "_",
+          BigNumber.from(argStruct.value).toString(),
+        ]);
+      } else {
+        dict.push([argStruct.name || "_", argStruct.value]);
+      }
+    } else {
+      dict.push([paramNames[index] || "_", val]);
+    }
+  });
+
+  return dict;
+}

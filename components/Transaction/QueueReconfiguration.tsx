@@ -1,7 +1,7 @@
 import { Fragment, useRef } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { BigNumber, utils } from "ethers";
-import { Reserve } from "@/models/NanceTypes";
+import { Reserve } from "@nance/nance-sdk";
 import {
   useCurrentPayouts,
   useProposalsInfinite,
@@ -85,7 +85,7 @@ export default function QueueReconfigurationModal({
     // only gather approved actions
     ?.filter(
       (p) =>
-        p.actions.length > 0 &&
+        p.actions && p.actions.length > 0 &&
         (p.status === "Voting" || p.status === "Approved"),
     )
     .flatMap((p) => {
@@ -106,7 +106,7 @@ export default function QueueReconfigurationModal({
     actionWithPIDArray?.filter((v) => v.action.type === "Payout") || [],
   );
   const actionReserve = actionWithPIDArray?.find(
-    (v) => v.action.type === "Reserve",
+    (v) => v?.action.type === "Reserve",
   );
   const reservesDiff = compareReserves(
     currentConfig.ticketMods ?? [],

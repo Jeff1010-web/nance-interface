@@ -3,9 +3,8 @@ import { BigNumber } from "ethers";
 import { NANCE_API_URL } from "@/constants/Nance";
 import {
   CustomTransaction,
-  extractFunctionName,
-  parseFunctionAbiWithNamedArgs,
-} from "@/models/NanceTypes";
+} from "@nance/nance-sdk";
+import { extractFunctionName, parseFunctionAbiWithNamedArgs } from "@/utils/functions/nance";
 import ResolvedContract from "../AddressCard/ResolvedContract";
 
 export default function CustomTransactionActionLabel({

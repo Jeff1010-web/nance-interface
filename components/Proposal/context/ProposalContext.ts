@@ -1,4 +1,4 @@
-import { Action } from "@/models/NanceTypes";
+import { Action } from "@nance/nance-sdk";
 import { SnapshotProposal } from "@/models/SnapshotTypes";
 import { createContext } from "react";
 

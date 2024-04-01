@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NANCE_PROXY_API_URL } from '@/constants/Nance';
-import { SpaceConfig } from '@/models/NanceTypes';
+import { SpaceConfig } from '@nance/nance-sdk';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import ResultModal from "@/components/modal/ResultModal";
 import { useSession } from 'next-auth/react';

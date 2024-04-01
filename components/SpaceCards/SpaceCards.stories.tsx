@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import SpaceCards from "./SpaceCards";
-import { SpaceInfo } from "@/models/NanceTypes";
+import { SpaceInfo } from "@nance/nance-sdk";
 
 const meta: Meta<typeof SpaceCards> = {
   title: "Nance Components/SpaceCards",
@@ -58,7 +58,7 @@ const data: SpaceInfo[] = [
     displayName: "bananapus",
     currentCycle: 5,
     currentEvent: {
-      title: "NULL",
+      title: "Unknown",
       start: "2023-09-30T16:16:47.000Z",
       end: "2023-11-11T16:16:47.000Z",
     },
@@ -80,7 +80,7 @@ const data: SpaceInfo[] = [
     displayName: "gnance",
     currentCycle: 3,
     currentEvent: {
-      title: "NULL",
+      title: "Unknown",
       start: "2023-10-18T02:04:00.000Z",
       end: "2023-10-18T02:04:00.000Z",
     },

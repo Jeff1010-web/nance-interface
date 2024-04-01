@@ -19,7 +19,7 @@ import {
   ConfigSpacePayload,
   CreateFormValues,
   SpaceConfig,
-} from "../../models/NanceTypes";
+} from "@nance/nance-sdk";
 import { useSession } from "next-auth/react";
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
@@ -159,7 +159,7 @@ export function useProposal(
 ) {
   return useSWR<APIResponse<Proposal>, string>(
     shouldFetch
-      ? `${NANCE_PROXY_API_URL}/${args.space}/proposal/${args.hash}`
+      ? `${NANCE_PROXY_API_URL}/${args.space}/proposal/${args.uuid}`
       : null,
     jsonFetcher(),
   );

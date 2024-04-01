@@ -14,7 +14,7 @@ import {
   DiscordRole,
   DiscordChannel,
 } from "@/models/DiscordTypes";
-import { DiscordConfig } from "@/models/NanceTypes";
+import { DiscordConfig } from "@nance/nance-sdk";
 
 export function openInDiscord(url: string) {
   try {

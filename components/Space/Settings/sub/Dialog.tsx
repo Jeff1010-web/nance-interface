@@ -1,4 +1,4 @@
-import { SpaceConfig } from "@/models/NanceTypes";
+import { SpaceConfig } from "@nance/nance-sdk";
 import { useSession } from "next-auth/react";
 import ConnectWalletButton from "@/components/common/ConnectWalletButton";
 import DiscordUser from "@/components/CreateSpace/sub/DiscordUser";

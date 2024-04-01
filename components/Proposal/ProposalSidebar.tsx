@@ -15,8 +15,9 @@ import { SnapshotProposal } from "@/models/SnapshotTypes";
 import {
   Proposal,
   ProposalDeleteRequest,
+  ProposalUpdateRequest,
   ProposalUploadRequest,
-} from "@/models/NanceTypes";
+} from "@nance/nance-sdk";
 import { useProposalUpload, useProposalDelete } from "@/utils/hooks/NanceHooks";
 import { openInDiscord } from "@/utils/functions/discord";
 import { useRouter } from "next/router";
@@ -55,7 +56,7 @@ export default function ProposalSidebar({
     filterBy: withDefault(createEnumParam(["for", "against"]), ""),
   });
   const editPageQuery = {
-    proposalId: proposal?.hash,
+    proposalId: proposal?.uuid,
   };
 
   const [nanceAPILoading, setNanceAPILoading] = useState(false);
@@ -71,12 +72,12 @@ export default function ProposalSidebar({
     error: uploadError,
     trigger,
     reset,
-  } = useProposalUpload(space, proposal?.hash, router.isReady);
+  } = useProposalUpload(space, proposal?.uuid, router.isReady);
   const {
     trigger: deleteTrigger,
     reset: deleteReset,
     error: deleteError,
-  } = useProposalDelete(space, proposal?.hash, router.isReady);
+  } = useProposalDelete(space, proposal?.uuid, router.isReady);
   const error = uploadError || deleteError;
 
   const archiveProposal = async () => {
@@ -89,12 +90,13 @@ export default function ProposalSidebar({
 
     // send to API endpoint
     reset();
-    const req: ProposalUploadRequest = {
-      proposal: payload,
+    const req: ProposalUpdateRequest = {
+      proposal: payload as Proposal,
+      space
     };
     console.debug("📗 Nance.archiveProposal.submit ->", req);
     trigger(req)
-      .then((res) => router.push(`/s/${space}/${res?.data.hash}`))
+      .then((res) => router.push(`/s/${space}/${res?.data.uuid}`))
       .catch((err) => {
         console.warn("📗 Nance.archiveProposal.onUploadError ->", err);
       })
@@ -105,11 +107,11 @@ export default function ProposalSidebar({
 
   const deleteProposal = async () => {
     setNanceAPILoading(true);
-    const hash = proposal?.hash;
+    const uuid = proposal?.uuid;
     deleteReset();
-    if (hash) {
+    if (uuid) {
       const req: ProposalDeleteRequest = {
-        hash,
+        uuid,
       };
       console.debug("📗 Nance.deleteProposal.onDelete ->", req);
       deleteTrigger(req)
@@ -133,12 +135,13 @@ export default function ProposalSidebar({
 
     // send to API endpoint
     reset();
-    const req: ProposalUploadRequest = {
+    const req: ProposalUpdateRequest = {
       proposal: payload,
+      space,
     };
     console.debug("📗 Nance.archiveProposal.submit ->", req);
     trigger(req)
-      .then((res) => router.push(`/s/${space}/${res?.data.hash}`))
+      .then((res) => router.push(`/s/${space}/${res?.data.uuid}`))
       .catch((err) => {
         console.warn("📗 Nance.archiveProposal.onUploadError ->", err);
       })

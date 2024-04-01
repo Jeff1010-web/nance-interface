@@ -2920,6 +2920,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nance/nance-sdk@npm:^1.0.9":
+  version: 1.0.9
+  resolution: "@nance/nance-sdk@npm:1.0.9"
+  dependencies:
+    tslib: ^2.6.2
+  checksum: d56941e37e7853dd28087ee01eb53e2ae040ddc724aab2d207d0fa41da8688751a3f39aa07bf756f81260646f96f1498e425246aa2e809303bfaedcf89e468d4
+  languageName: node
+  linkType: hard
+
 "@ndelangen/get-tarball@npm:^3.0.7":
   version: 3.0.9
   resolution: "@ndelangen/get-tarball@npm:3.0.9"
@@ -16366,6 +16375,7 @@ __metadata:
     "@hookform/error-message": ^2.0.1
     "@jbx-protocol/juice-contracts-v3": 5.0.0
     "@nance/nance-editor": ^1.0.0
+    "@nance/nance-sdk": ^1.0.9
     "@popperjs/core": ^2.11.8
     "@rainbow-me/rainbowkit": ^1.3.3
     "@rainbow-me/rainbowkit-siwe-next-auth": ^0.3.1
@@ -21054,7 +21064,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.5.0":
+"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.5.0, tslib@npm:^2.6.2":
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad

@@ -1,5 +1,5 @@
 import { numToPrettyString } from "@/utils/functions/NumberFormatter";
-import { Transfer } from "@/models/NanceTypes";
+import { Transfer } from "@nance/nance-sdk";
 import FormattedAddress from "@/components/AddressCard/FormattedAddress";
 import { useToken } from "wagmi";
 import { getChainById } from "config/custom-chains";

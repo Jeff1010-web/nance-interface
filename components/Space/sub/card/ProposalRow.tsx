@@ -1,7 +1,7 @@
 import FormattedAddress from "@/components/AddressCard/FormattedAddress";
 import { classNames } from "@/utils/functions/tailwind";
 import ProposalBadgeLabel from "./ProposalBadgeLabel";
-import { Proposal } from "@/models/NanceTypes";
+import { Proposal } from "@nance/nance-sdk";
 import { SpaceContext } from "@/context/SpaceContext";
 import { useContext } from "react";
 import Link from "next/link";
@@ -17,14 +17,14 @@ export default function ProposalRow({
 }: {
   proposal: Pick<
     Proposal,
-    | "hash"
+    | "uuid"
     | "proposalId"
     | "governanceCycle"
     | "status"
     | "authorAddress"
     | "title"
     | "voteResults"
-    | "date"
+    | "createdTime"
   >;
   isFirst?: boolean;
   isDraft?: boolean;
@@ -34,15 +34,15 @@ export default function ProposalRow({
 }) {
   const spaceInfo = useContext(SpaceContext);
 
-  const { proposalId, hash, governanceCycle, status, authorAddress, title } =
+  const { proposalId, uuid, governanceCycle, status, authorAddress, title } =
     proposal;
 
   const votes = proposal.voteResults?.votes || "-";
-  const proposalUrl = `/s/${spaceInfo?.name}/${proposalId || hash}`;
+  const proposalUrl = `/s/${spaceInfo?.name}/${proposalId || uuid}`;
   const proposalTitle = isDraft
     ? "Draft - by "
     : `GC-${governanceCycle}, ${proposalIdPrefix}${proposalId || "tbd"} - by `;
-  const proposalDate = proposal.date ? format(new Date(proposal?.date), "MM/dd/yy") : "";
+  const proposalDate = proposal.createdTime ? format(new Date(proposal?.createdTime), "MM/dd/yy") : "";
 
   return (
     <tr className="hover:bg-slate-100">

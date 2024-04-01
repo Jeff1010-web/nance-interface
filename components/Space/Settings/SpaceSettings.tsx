@@ -1,14 +1,13 @@
 import {
   IdentificationIcon,
   ChatBubbleOvalLeftIcon,
-  BuildingLibraryIcon,
   KeyIcon,
   CalendarDaysIcon,
   HandRaisedIcon,
 } from "@heroicons/react/20/solid";
 import { useEffect, useState } from "react";
 import SettingsNav from "./SettingsNav";
-import { CreateFormValues, SpaceConfig } from "@/models/NanceTypes";
+import { CreateFormValues, SpaceConfig } from "@nance/nance-sdk";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import General from "./sub/General";
 import Tasks from "./sub/Tasks";
@@ -53,33 +52,33 @@ export default function SpaceSettings({
   // reset form to current config when edit is toggled
   useEffect(() => {
     const currentEvent = getCurrentEvent(
-      spaceConfig.calendar,
-      spaceConfig.cycleStageLengths,
+      spaceConfig.calendar!,
+      spaceConfig.cycleStageLengths as number[],
       new Date(),
     );
     const currentGovernanceCycleDay = getCurrentGovernanceCycleDay(
       currentEvent,
-      spaceConfig.cycleStageLengths,
+      spaceConfig.cycleStageLengths as number[],
       new Date(),
     );
     // keep this in mind: our date variable is actually split into two parts, the date and the time (TimePicker)
     // so remember to set the date and time separately
     // here we use start of currentEvent to set time properly
     const startOfCycle = new Date(
-      currentEvent.start.setDate(
+      new Date(currentEvent.start).setDate(
         new Date().getDate() - currentGovernanceCycleDay,
       ),
     );
     methods.reset({
       config: spaceConfig.config,
-      spaceOwners: spaceOwners.map((address) => ({ address })),
+      // spaceOwners: spaceOwners.map((address) => ({ address })),
       governanceCycleForm: {
         // subtract currentGovernanceCycleDay from today
         startDate: startOfCycle,
-        temperatureCheckLength: spaceConfig.cycleStageLengths[0],
-        voteLength: spaceConfig.cycleStageLengths[1],
-        executionLength: spaceConfig.cycleStageLengths[2],
-        delayLength: spaceConfig.cycleStageLengths[3],
+        temperatureCheckLength: spaceConfig.cycleStageLengths?.[0],
+        voteLength: spaceConfig.cycleStageLengths?.[1],
+        executionLength: spaceConfig.cycleStageLengths?.[2],
+        delayLength: spaceConfig.cycleStageLengths?.[3],
         // here's form values for TimePicker
         time: {
           ampm: startOfCycle.getHours() > 12 ? "PM" : "AM",
@@ -100,7 +99,7 @@ export default function SpaceSettings({
   const { handleSubmit } = methods;
   const onSubmit: SubmitHandler<CreateFormValues> = async (formData) => {
     trigger(formData).then((res) => {
-      if (res?.data) setSpaceOwners(res.data.spaceOwners);
+      // if (res?.data) setSpaceOwners(res.data.spaceOwners);
       setEditMode(false);
       setIsLoading(false);
     });

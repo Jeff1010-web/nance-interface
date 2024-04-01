@@ -1,4 +1,4 @@
-import { Proposal } from "@/models/NanceTypes";
+import { Proposal } from "@nance/nance-sdk";
 import { createContext } from "react";
 
 export const ProposalMetadataContext = createContext({

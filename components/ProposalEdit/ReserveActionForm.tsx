@@ -7,7 +7,7 @@ import { useSpaceInfo } from "@/utils/hooks/NanceHooks";
 import { useCurrentFundingCycle } from "@/utils/hooks/juicebox/CurrentFundingCycle";
 import { useCurrentSplits } from "@/utils/hooks/juicebox/CurrentSplits";
 import { JBConstants } from "@/models/JuiceboxTypes";
-import { JBSplitNanceStruct } from "@/models/NanceTypes";
+import { JBSplitStruct } from "@nance/nance-sdk";
 import AddressForm from "../form/AddressForm";
 import BooleanForm from "../form/BooleanForm";
 import UIntForm from "../form/UIntForm";
@@ -28,7 +28,7 @@ export default function ReserveActionForm({
     formState: { errors },
   } = useFormContext();
   const { fields, append, remove, prepend } = useFieldArray<{
-    splits: JBSplitNanceStruct[];
+    splits: JBSplitStruct[];
     [key: string]: any;
   }>({ name: genFieldName("splits") });
 
@@ -50,13 +50,13 @@ export default function ReserveActionForm({
       const arr = ticketMods ? [...ticketMods] : [];
       arr.sort((a, b) => b.percent.sub(a.percent).toNumber());
       arr.forEach((ticket) => {
-        const split: JBSplitNanceStruct = {
+        const split: JBSplitStruct = {
           preferClaimed: ticket.preferClaimed,
           preferAddToBalance: ticket.preferAddToBalance,
-          percent: ticket.percent.toNumber(),
-          projectId: ticket.projectId.toNumber(),
+          percent: ticket.percent.toString(),
+          projectId: ticket.projectId.toString(),
           beneficiary: ticket.beneficiary,
-          lockedUntil: ticket.lockedUntil.toNumber(),
+          lockedUntil: ticket.lockedUntil.toString(),
           allocator: ticket.allocator || "",
         };
         append(split);
@@ -93,7 +93,7 @@ export default function ReserveActionForm({
       )}
 
       {(fields as any)?.map(
-        (field: JBSplitNanceStruct & { id: string }, index: number) => (
+        (field: JBSplitStruct & { id: string }, index: number) => (
           <Disclosure
             key={field.id}
             as="div"
@@ -151,7 +151,7 @@ export default function ReserveActionForm({
                   fieldName={genFieldName(`splits.${index}.percent`)}
                   fieldType="per billion"
                   decimal={9}
-                  defaultValue={field.percent}
+                  defaultValue={Number(field.percent)}
                 />
               </div>
 
@@ -159,7 +159,7 @@ export default function ReserveActionForm({
                 <ProjectForm
                   label="Project ID"
                   fieldName={genFieldName(`splits.${index}.projectId`)}
-                  defaultValue={field.projectId}
+                  defaultValue={Number(field.projectId)}
                 />
               </div>
               <div className="col-span-4 sm:col-span-2">
@@ -176,7 +176,7 @@ export default function ReserveActionForm({
                   label="lockedUntil"
                   fieldName={genFieldName(`splits.${index}.lockedUntil`)}
                   fieldType="timestamp"
-                  defaultValue={field.lockedUntil}
+                  defaultValue={Number(field.lockedUntil)}
                 />
               </div>
               <div className="col-span-4 sm:col-span-1">

@@ -1,5 +1,5 @@
 import { GovernanceCycleForm } from "@/components/CreateSpace";
-import { SpaceConfig } from "@/models/NanceTypes";
+import { SpaceConfig } from "@nance/nance-sdk";
 
 export default function Schedule({
   spaceConfig,

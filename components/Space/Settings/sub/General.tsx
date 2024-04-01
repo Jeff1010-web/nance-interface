@@ -1,5 +1,5 @@
 import SpaceOwnersForm from "@/components/CreateSpace/SpaceOwnersForm";
-import { SpaceConfig } from "@/models/NanceTypes";
+import { SpaceConfig } from "@nance/nance-sdk";
 
 export default function General({ spaceConfig, edit }: { spaceConfig: SpaceConfig; edit: boolean }) {
   return (

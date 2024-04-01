@@ -4,8 +4,8 @@ import {
   CustomTransaction,
   SpaceInfo,
   Transfer,
-  extractFunctionName,
-} from "@/models/NanceTypes";
+} from "@nance/nance-sdk";
+import { extractFunctionName } from "@/utils/functions/nance";
 import { getContractLabel } from "@/constants/Contract";
 import { Interface, parseUnits } from "ethers/lib/utils";
 import {

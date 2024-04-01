@@ -19,8 +19,8 @@ import {
   SQLPayout,
   Action,
   Payout,
-  JBSplitNanceStruct,
-} from "../../models/NanceTypes";
+  JBSplitStruct,
+} from "@nance/nance-sdk";
 import { getAddress } from "viem";
 import { SectionTableData } from "../../components/form/DiffTableWithSection";
 import { diff2TableEntry } from "@/components/JuiceboxCard/JBSplitEntry";
@@ -84,7 +84,7 @@ export const keyOfPayout2Split = (mod: Payout) =>
   `${getAddress(mod.address || ZERO_ADDRESS)}-${
     mod.project ?? 0
   }-${ZERO_ADDRESS}`;
-export const keyOfNanceSplit2Split = (mod: JBSplitNanceStruct) =>
+export const keyOfNanceSplit2Split = (mod: JBSplitStruct) =>
   `${getAddress(mod.beneficiary || ZERO_ADDRESS)}-${mod.projectId}-${
     mod.allocator
   }`;
@@ -164,10 +164,10 @@ export function compareRules(
   newWeight = weightSpecified
     ? newWeight
     : mulDiv(
-        weight,
-        discountRateDenominator.sub(discountRate),
-        discountRateDenominator,
-      );
+      weight,
+      discountRateDenominator.sub(discountRate),
+      discountRateDenominator,
+    );
 
   // Payer gets what left after reserved tokens are issued.
   const payerWeight = weight.sub(
@@ -539,7 +539,7 @@ export function mergePayouts(
   currentCycle: number | undefined,
   onchainPayouts: JBSplit[],
   registeredPayouts: SQLPayout[],
-  actionPayouts: { pid: number; action: Action }[],
+  actionPayouts: { pid: number; action: Action }[] = [],
 ) {
   const diff: SplitDiff = {
     expire: {},
@@ -645,7 +645,7 @@ export function mergePayouts(
       preferAddToBalance: false,
       percent: BIG_ZERO,
       lockedUntil: BIG_ZERO,
-      beneficiary: payout.address,
+      beneficiary: payout.address || "",
       projectId: BigNumber.from(payout.project || 0),
       allocator: ZERO_ADDRESS,
     };
@@ -757,7 +757,7 @@ function ensureSplitsSumTo100Percent(
   }
 }
 
-export function splitStruct2JBSplit(v: JBSplitNanceStruct) {
+export function splitStruct2JBSplit(v: JBSplitStruct) {
   const split: JBSplit = {
     preferClaimed: v.preferClaimed,
     preferAddToBalance: v.preferAddToBalance,
@@ -866,7 +866,7 @@ export function payout2JBSplit(payout: Payout) {
     preferAddToBalance: false,
     percent: BigNumber.from(payout.amountUSD),
     lockedUntil: BIG_ZERO,
-    beneficiary: payout.address,
+    beneficiary: payout.address || "",
     projectId: BigNumber.from(payout.project || 0),
     allocator: ZERO_ADDRESS,
   };

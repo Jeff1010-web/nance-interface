@@ -4,7 +4,7 @@ import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Notification from "@/components/common/Notification";
-import { CreateFormValues } from "@/models/NanceTypes";
+import { CreateFormValues } from "@nance/nance-sdk";
 import { useCreateSpace } from "@/utils/hooks/NanceHooks";
 import ProjectForm from "@/components/form/ProjectForm";
 import {

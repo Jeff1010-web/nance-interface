@@ -2,7 +2,7 @@
 import { useAccount } from "wagmi";
 import { useProposalsByID } from "@/utils/hooks/snapshot/Proposals";
 import { SnapshotProposal, SnapshotVotedData } from "@/models/SnapshotTypes";
-import { Proposal, ProposalsPacket } from "@/models/NanceTypes";
+import { Proposal, ProposalsPacket } from "@nance/nance-sdk";
 import ProposalRowSkeleton from "./card/ProposalRowSkeleton";
 import RecommendAction from "./card/RecommendAction";
 import SortableTableHeader from "./card/SortableTableHeader";
@@ -45,7 +45,7 @@ function mergeSnapshotVotes(
   snapshotProposalDict: { [id: string]: SnapshotProposal },
 ) {
   return proposals?.map((p) => {
-    const snapshotProposal = snapshotProposalDict[p.voteURL];
+    const snapshotProposal = snapshotProposalDict[p.voteURL!];
     if (snapshotProposal) {
       return {
         ...p,
@@ -101,8 +101,8 @@ function sortProposals(
     break;
   case "voted":
     const votedWeightOf = (p: Proposal) => {
-      const voted = votedData?.[p.voteURL] !== undefined;
-      const hasSnapshotVoting = snapshotProposalDict[p.voteURL];
+      const voted = votedData?.[p.voteURL!] !== undefined;
+      const hasSnapshotVoting = snapshotProposalDict[p.voteURL!];
 
       if (hasSnapshotVoting) {
         if (voted) return 2;
@@ -130,8 +130,8 @@ function sortProposals(
     break;
   case "date":
     proposals.sort((a, b) => {
-      const bD = b.date || "";
-      const aD = a.date || "";
+      const bD = b.createdTime || "";
+      const aD = a.createdTime || "";
       return bD.localeCompare(aD);
     });
     break;
@@ -217,7 +217,7 @@ export default function ProposalCards({
   const snapshotProposalIds: string[] =
     proposalsPacket?.proposals
       ?.filter((p) => p.voteURL)
-      .map((p) => p.voteURL) || [];
+      .map((p) => p.voteURL!) || [];
   const {
     data,
     loading: snapshotLoading,
@@ -327,7 +327,7 @@ export default function ProposalCards({
               {!isLoading &&
                 sortedProposals.map((proposal, proposalIdx) => (
                   <ProposalRow
-                    key={proposal.hash}
+                    key={proposal.uuid}
                     proposal={proposal}
                     isFirst={proposalIdx === 0}
                     proposalIdPrefix={
@@ -336,7 +336,7 @@ export default function ProposalCards({
                     votesBar={
                       <VotesBar
                         snapshotProposal={
-                          snapshotProposalDict[proposal.voteURL]
+                          snapshotProposalDict[proposal.voteURL!]
                         }
                         proposal={proposal}
                         threshold={
@@ -348,12 +348,12 @@ export default function ProposalCards({
                     voteActionOrStatus={
                       <VoteActionOrLabel
                         snapshotProposal={
-                          snapshotProposalDict[proposal.voteURL]
+                          snapshotProposalDict[proposal.voteURL!]
                         }
                         snapshotSpace={
                           proposalsPacket?.proposalInfo?.snapshotSpace || ""
                         }
-                        votedData={votedData?.[proposal.voteURL]}
+                        votedData={votedData?.[proposal.voteURL!]}
                         refetch={refetch}
                       />
                     }

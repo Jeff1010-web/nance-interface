@@ -1,6 +1,6 @@
 import { useQueryParams, StringParam } from "next-query-params";
 import Link from "next/link";
-import { Proposal } from "@/models/NanceTypes";
+import { Proposal } from "@nance/nance-sdk";
 import { NANCE_API_URL } from "@/constants/Nance";
 import { getToken } from "next-auth/jwt";
 import { Footer, SiteNav } from "@/components/Site";

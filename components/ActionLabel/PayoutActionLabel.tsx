@@ -1,5 +1,5 @@
 import { payout2JBSplit } from "@/utils/functions/juicebox";
-import { Payout } from "@/models/NanceTypes";
+import { Payout } from "@nance/nance-sdk";
 import JBSplitEntry from "@/components/JuiceboxCard/JBSplitEntry";
 import { useContext } from "react";
 import { ProposalContext } from "../Proposal/context/ProposalContext";

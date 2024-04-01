@@ -1,4 +1,4 @@
-import { SpaceInfo } from "@/models/NanceTypes";
+import { SpaceInfo } from "@nance/nance-sdk";
 
 export default function StatsSection({ data }: { data?: SpaceInfo[] }) {
 

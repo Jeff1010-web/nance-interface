@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NextApiRequest } from "next";
 import { useProposalsByID } from "@/utils/hooks/snapshot/Proposals";
 import { getLastSlash } from "@/utils/functions/nance";
-import { Proposal } from "@/models/NanceTypes";
+import { Proposal } from "@nance/nance-sdk";
 import Custom404 from "../../404";
 import { ScrollToBottom } from "@/components/PageButton";
 import { NANCE_API_URL } from "@/constants/Nance";
@@ -84,7 +84,7 @@ export default function NanceProposalPage({
   }
 
   const status = () => {
-    if (proposal.hash === "snapshot" && snapshotProposal) {
+    if (proposal.uuid === "snapshot" && snapshotProposal) {
       const pass = snapshotProposal.scores[0] > snapshotProposal.scores[1];
       if (snapshotProposal?.state === "closed" && pass) {
         return STATUS.APPROVED;
@@ -98,7 +98,7 @@ export default function NanceProposalPage({
   };
   const commonProps: ProposalCommonProps = {
     space,
-    snapshotSpace: proposal?.snapshotSpace || "",
+    snapshotSpace: "",
     status: status(),
     title: proposal.title,
     author: proposal.authorAddress || snapshotProposal?.author || "",
@@ -106,8 +106,8 @@ export default function NanceProposalPage({
     body: proposal.body || "",
     created:
       snapshotProposal?.start ||
-      (proposal.date
-        ? Math.floor(new Date(proposal.date).getTime() / 1000)
+      (proposal.createdTime
+        ? Math.floor(new Date(proposal.createdTime).getTime() / 1000)
         : 0),
     end: snapshotProposal?.end || 0,
     snapshot: snapshotProposal?.snapshot || "",
@@ -115,10 +115,10 @@ export default function NanceProposalPage({
     ipfs: snapshotProposal?.ipfs || proposal.ipfsURL || "",
     discussion: proposal.discussionThreadURL || "",
     governanceCycle: proposal.governanceCycle,
-    uuid: proposal.hash || "",
-    actions: proposal?.actions,
-    proposalId: proposal.proposalId || '',
-    minTokenPassingAmount: proposal.minTokenPassingAmount || 0,
+    uuid: proposal.uuid || "",
+    actions: proposal?.actions || [],
+    proposalId: String(proposal.proposalId),
+    minTokenPassingAmount: 0,
   };
 
   return (
@@ -146,7 +146,7 @@ export default function NanceProposalPage({
               value={{
                 commonProps,
                 proposalInfo: snapshotProposal || undefined,
-                nextProposalId: proposal.nextProposalId || 0,
+                nextProposalId: 0,
                 proposalSummary: proposal.proposalSummary,
                 threadSummary: proposal.threadSummary,
               }}

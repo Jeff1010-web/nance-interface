@@ -416,14 +416,14 @@ export default function NanceUserPage({
                               {userProfileInfo?.proposals
                                 ?.sort(
                                   (a, b) =>
-                                    (getProposalNumber(b.proposalId) ?? 0) - (getProposalNumber(a.proposalId) ?? 0),
+                                    (getProposalNumber(b.proposalId?.toString() || "0")) - (getProposalNumber(a.proposalId?.toString() || "0")),
                                 )
                                 .map((p) => (
-                                  <li key={p.hash}>
+                                  <li key={p.uuid}>
                                     <a
                                       href={getProposalLink(
                                         query.space || "",
-                                        p.hash,
+                                        p.uuid,
                                       )}
                                       className="flex justify-between space-x-2"
                                     >

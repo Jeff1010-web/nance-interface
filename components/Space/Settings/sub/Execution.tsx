@@ -1,5 +1,5 @@
 import FormattedAddress from "@/components/AddressCard/FormattedAddress";
-import { SpaceConfig } from "@/models/NanceTypes";
+import { SpaceConfig } from "@nance/nance-sdk";
 import { getChainByNetworkName } from "config/custom-chains";
 import Image from "next/image";
 import SafeAddressForm from "@/components/form/SafeAddressForm";

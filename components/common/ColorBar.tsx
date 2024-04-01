@@ -116,12 +116,25 @@ export default function ColorBar({
 
   return (
     <Tooltip
-      content={`${hasPass ? "✅" : "❌"} For ${formatNumber(
-        greenScore,
-      )}, Against ${formatNumber(redScore)}, Threshold ${formatNumber(
-        threshold,
-      )}`}
+      content={
+        <div className="flex flex-col">
+          <div>
+            {`${hasPass ? "✅" : "❌"}
+            For ${formatNumber(greenScore)}
+            (${(greenScore / (greenScore + redScore) * 100).toFixed()}%)`}
+          </div>
+          <div>
+            {`Against ${formatNumber(redScore)}
+            (${(redScore / (greenScore + redScore) * 100).toFixed()}%)`}
+          </div>
+          <div>
+            {`Total ${formatNumber(totalScore)}
+            (${(totalScore / threshold) * 100}%)`}
+          </div>
+        </div>
+      }
       trigger="hover"
+      aria-multiline="true"
     >
       {renderBar()}
     </Tooltip>

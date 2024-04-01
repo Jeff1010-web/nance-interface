@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { SpaceInfo } from "@/models/NanceTypes";
+import { SpaceInfo } from "@nance/nance-sdk";
 import ProjectLink from "../ProjectLink";
 import ContentNotFound from "../ContentNotFound";
 

@@ -4,7 +4,7 @@ import { utils } from "ethers";
 import { useState, useContext, useEffect } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import useProjectInfo from "@/utils/hooks/juicebox/ProjectInfo";
-import { Action } from "@/models/NanceTypes";
+import { Action } from "@nance/nance-sdk";
 import ActionPalettes, { ActionItem } from "./ActionPalettes";
 import CustomTransactionActionForm from "./CustomTransactionActionForm";
 import PayoutActionForm from "./PayoutActionForm";

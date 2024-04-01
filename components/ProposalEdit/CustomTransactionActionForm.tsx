@@ -15,7 +15,7 @@ import BooleanForm from "../form/BooleanForm";
 import SafeInjectIframeCard from "../SafeInjectIframeCard";
 import { useSafeInject } from "../SafeInjectIframeCard/context/SafeInjectedContext";
 import { BigNumber } from "ethers";
-import { CustomTransactionArg } from "@/models/NanceTypes";
+import { CustomTransactionArg } from "@nance/nance-sdk";
 import { NetworkContext } from "@/context/NetworkContext";
 import { getChainByNetworkName } from "config/custom-chains";
 
