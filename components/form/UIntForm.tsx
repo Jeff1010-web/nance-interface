@@ -41,19 +41,8 @@ export default function UIntForm({
             shouldUnregister: true,
             required: "Can't be empty",
           })}
-          className="block h-10 w-full flex-1 rounded-none border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="block h-10 w-full flex-1 rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
-        <GenericButton
-          onClick={() =>
-            setValue(
-              fieldName,
-              getValues<string>(fieldName).concat("0".repeat(decimal)),
-            )
-          }
-          className="m-0 inline-flex items-center rounded-none rounded-r-md border border-l-0 border-gray-300"
-        >
-          {decimal}
-        </GenericButton>
       </div>
       <ErrorMessage
         errors={errors}
