@@ -17,7 +17,7 @@ export default function PayoutActionForm({
 }) {
   const { watch, getValues } = useFormContext();
   const spaceInfo = useContext(SpaceContext);
-  const nextCycleStartDate = addDays(new Date(spaceInfo?.cycleStartDate || ""), 14).toISOString();
+
   return (
     <div className="grid grid-cols-4 gap-6">
       <div className="col-span-4 sm:col-span-1">
@@ -44,7 +44,7 @@ export default function PayoutActionForm({
             cycle: spaceInfo?.currentCycle,
             length: watch(genFieldName("count")),
             currentCycle: spaceInfo?.currentCycle,
-            cycleStartDate: nextCycleStartDate,
+            cycleStartDate: spaceInfo?.cycleStartDate,
           })}
         </span>
       </div>
