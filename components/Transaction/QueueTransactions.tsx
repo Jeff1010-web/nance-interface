@@ -109,6 +109,9 @@ export default function QueueTransactionsModal({
     customTransactionActions?.map((v) => {
       const customTransaction = v.action.payload as CustomTransaction;
       const contractInterface = new Interface([customTransaction.functionName]);
+      const args = customTransaction.args.map((arg) => {
+        return arg.value;
+      });
       return {
         title: (
           <CustomTransactionActionLabel
@@ -123,7 +126,7 @@ export default function QueueTransactionsModal({
           value: customTransaction.value,
           data: contractInterface.encodeFunctionData(
             extractFunctionName(customTransaction.functionName),
-            customTransaction.args,
+            args,
           ),
         },
       };

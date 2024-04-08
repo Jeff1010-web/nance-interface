@@ -8,10 +8,8 @@ import {
   SpaceInfoRequest,
   ProposalRequest,
   ProposalUploadRequest,
-  FetchReconfigureRequest,
   SpaceInfo,
   Proposal,
-  FetchReconfigureData,
   ProposalUploadPayload,
   ProposalDeleteRequest,
   ProposalsPacket,
@@ -37,7 +35,7 @@ function jsonFetcher(): Fetcher<APIResponse<any>, string> {
 
 export function useAllSpaceInfo(shouldFetch: boolean = true) {
   return useSWR<APIResponse<SpaceInfo[]>>(
-    shouldFetch ? `${NANCE_PROXY_API_URL}/ish/all` : null,
+    shouldFetch ? `${NANCE_API_URL}/ish/all` : null,
     jsonFetcher(),
   );
 }
@@ -54,7 +52,7 @@ export function useSpaceInfo(
   shouldFetch: boolean = true,
 ) {
   return useSWR<APIResponse<SpaceInfo>, string>(
-    shouldFetch ? `${NANCE_PROXY_API_URL}/${args.space}` : null,
+    shouldFetch ? `${NANCE_API_URL}/${args.space}` : null,
     jsonFetcher(),
   );
 }
@@ -71,7 +69,7 @@ export function useCurrentPayouts(
 
   return useSWR<APIResponse<SQLPayout[]>, string>(
     shouldFetch
-      ? `${NANCE_PROXY_API_URL}/${space}/payouts?` + urlParams.toString()
+      ? `${NANCE_API_URL}/${space}/payouts?` + urlParams.toString()
       : null,
     jsonFetcher(),
   );
@@ -85,7 +83,7 @@ export function usePrivateProposals(
 
   return useSWR<APIResponse<Proposal[]>, string>(
     shouldFetch && sessionData?.user?.name
-      ? `${NANCE_PROXY_API_URL}/${space}/privateProposals?user=${sessionData?.user?.name}`
+      ? `${NANCE_API_URL}/${space}/privateProposals?user=${sessionData?.user?.name}`
       : null,
     jsonFetcher(),
   );
@@ -111,7 +109,7 @@ export function useProposals(
 
   return useSWR<APIResponse<ProposalsPacket>, string>(
     shouldFetch
-      ? `${NANCE_PROXY_API_URL}/${args.space}/proposals?` + urlParams.toString()
+      ? `${NANCE_API_URL}/${args.space}/proposals?` + urlParams.toString()
       : null,
     jsonFetcher(),
   );
@@ -143,7 +141,7 @@ export function useProposalsInfinite(
       return null; // reached the end
     urlParams.set("page", (pageIndex + 1).toString());
     return (
-      `${NANCE_PROXY_API_URL}/${args.space}/proposals?` + urlParams.toString()
+      `${NANCE_API_URL}/${args.space}/proposals?` + urlParams.toString()
     ); // SWR key
   };
 
@@ -159,19 +157,7 @@ export function useProposal(
 ) {
   return useSWR<APIResponse<Proposal>, string>(
     shouldFetch
-      ? `${NANCE_PROXY_API_URL}/${args.space}/proposal/${args.uuid}`
-      : null,
-    jsonFetcher(),
-  );
-}
-
-export function useReconfigureRequest(
-  args: FetchReconfigureRequest,
-  shouldFetch: boolean = true,
-) {
-  return useSWR<APIResponse<FetchReconfigureData>, string>(
-    shouldFetch
-      ? `${NANCE_PROXY_API_URL}/${args.space}/reconfigure?version=${args.version}&address=${args.address}&datetime=${args.datetime}&network=${args.network}`
+      ? `${NANCE_API_URL}/${args.space}/proposal/${args.uuid}`
       : null,
     jsonFetcher(),
   );
@@ -316,7 +302,7 @@ export async function fetchCreatedProposals(
     } as APIResponse<ProposalsPacket>;
   }
 
-  const url = `${NANCE_PROXY_API_URL}/${space}/proposals/?author=${author}`;
+  const url = `${NANCE_API_URL}/${space}/proposals/?author=${author}`;
   const res = await fetch(prefix + url);
   const json: APIResponse<ProposalsPacket> = await res.json();
   if (json.success === false) {

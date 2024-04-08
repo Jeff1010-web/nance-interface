@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
-import { NextApiRequest } from "next";
 import { useProposalsByID } from "@/utils/hooks/snapshot/Proposals";
 import { getLastSlash } from "@/utils/functions/nance";
-import { Proposal } from "@nance/nance-sdk";
 import Custom404 from "../../404";
 import { ScrollToBottom } from "@/components/PageButton";
-import { NANCE_API_URL } from "@/constants/Nance";
-import { getToken } from "next-auth/jwt";
 import ProposalSidebar from "@/components/Proposal/ProposalSidebar";
 import ProposalContent from "@/components/Proposal/ProposalContent";
 import ProposalOptions from "@/components/Proposal/ProposalOptions";
@@ -19,49 +15,19 @@ import {
   ProposalContext,
 } from "@/components/Proposal/context/ProposalContext";
 import { STATUS } from "@/constants/Nance";
+import { useProposal } from "@/utils/hooks/NanceHooks";
+import { useParams } from "next/navigation";
 
-export async function getServerSideProps(
-  { req, params }: {
-    req: NextApiRequest;
-    params: { space: string; proposal: string };
-  }) {
-  let proposal: Proposal;
 
-  // check proposal parameter type
-  const proposalParam: string = params.proposal;
-  const spaceParam: string = params.space;
-
-  // Attach the JWT token to the request headers
-  const token = await getToken({ req, raw: true });
-  const headers = {
-    Authorization: `Bearer ${token}`,
-  };
-
-  const proposalResponse = await fetch(
-    `${NANCE_API_URL}/${spaceParam}/proposal/${proposalParam}`,
-    { headers },
-  ).then((res) => res.json());
-  proposal = proposalResponse.data;
-
-  // Pass data to the page via props
-  return {
-    props: {
-      space: spaceParam,
-      proposal: proposal || null,
-    },
-  };
-}
-
-export default function NanceProposalPage({
-  space,
-  proposal,
-}: {
-  space: string;
-  proposal: Proposal | undefined;
-}) {
+export default function NanceProposalPage() {
   // state
   const [loading, setLoading] = useState<boolean>(true);
 
+  const params = useParams<{ space: string, proposal: string }>();
+  const args = { space: params?.space, uuid: params?.proposal };
+  const space = args.space;
+  const { data, isLoading: proposalLoading } = useProposal(args, !!params);
+  const proposal = data?.data;
   const proposalHash = getLastSlash(proposal?.voteURL);
 
   const {
@@ -76,7 +42,10 @@ export default function NanceProposalPage({
     }
   }, [proposalsData]);
 
-  // this page need proposal to work
+  if (loading || proposalLoading) {
+    return <ProposalLoading />;
+  }
+
   if (!proposal) {
     return (
       <Custom404 errMsg="Proposal not found on Nance platform, you can reach out in Discord or explore on the home page." />
@@ -136,61 +105,57 @@ export default function NanceProposalPage({
         withWallet
         withSiteSuffixInTitle={false}
       />
+      <div className="min-h-full">
+        <main className="py-2">
+          <ProposalContext.Provider
+            value={{
+              commonProps,
+              proposalInfo: snapshotProposal || undefined,
+              nextProposalId: 0,
+              proposalSummary: proposal.proposalSummary,
+              threadSummary: proposal.threadSummary,
+            }}
+          >
+            <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
+              <div className="space-y-6 lg:col-span-2">
+                {/* Content */}
+                <section aria-labelledby="proposal-title">
+                  <ProposalContent body={commonProps.body} />
+                </section>
 
-      {loading ? (
-        <ProposalLoading />
-      ) : (
-        <div className="min-h-full">
-          <main className="py-2">
-            <ProposalContext.Provider
-              value={{
-                commonProps,
-                proposalInfo: snapshotProposal || undefined,
-                nextProposalId: 0,
-                proposalSummary: proposal.proposalSummary,
-                threadSummary: proposal.threadSummary,
-              }}
-            >
-              <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
-                <div className="space-y-6 lg:col-span-2">
-                  {/* Content */}
-                  <section aria-labelledby="proposal-title">
-                    <ProposalContent body={commonProps.body} />
-                  </section>
-
-                  {/* Display Options if not basic (For Against) */}
-                  <section aria-labelledby="options-title">
-                    {snapshotProposal &&
+                {/* Display Options if not basic (For Against) */}
+                <section aria-labelledby="options-title">
+                  {snapshotProposal &&
                       [
                         "approval",
                         "ranked-choice",
                         "quadratic",
                         "weighted",
                       ].includes(snapshotProposal.type) && (
-                      <div className="mt-6 flow-root">
-                        <ProposalOptions proposal={snapshotProposal} />
-                      </div>
-                    )}
-                  </section>
-                </div>
-
-                <section
-                  aria-labelledby="stats-title"
-                  className="lg:col-span-1"
-                >
-                  <ProposalSidebar
-                    space={space}
-                    proposal={proposal}
-                    snapshotProposal={snapshotProposal}
-                  />
+                    <div className="mt-6 flow-root">
+                      <ProposalOptions proposal={snapshotProposal} />
+                    </div>
+                  )}
                 </section>
               </div>
 
-              <ScrollToBottom />
-            </ProposalContext.Provider>
-          </main>
-        </div>
-      )}
+              <section
+                aria-labelledby="stats-title"
+                className="lg:col-span-1"
+              >
+                <ProposalSidebar
+                  space={space}
+                  proposal={proposal}
+                  snapshotProposal={snapshotProposal}
+                />
+              </section>
+            </div>
+
+            <ScrollToBottom />
+          </ProposalContext.Provider>
+        </main>
+      </div>
+
       <Footer />
     </>
   );

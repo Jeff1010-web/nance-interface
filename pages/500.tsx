@@ -1,14 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { SiteNav } from "@/components/Site";
-import { BrowserClient, Feedback, getCurrentHub } from "@sentry/react";
 
 const ERROR_TEMPLATE =
   "Sorry, we can't present that page now due to some errors. You'll find lots to explore on the home page.";
 
 export default function Custom500({ errMsg }: { errMsg?: string }) {
-  const client = getCurrentHub().getClient<BrowserClient>();
-  const feedback = client?.getIntegration(Feedback);
   const imageSrc = "https://http.cat/500";
 
   return (
@@ -35,11 +32,6 @@ export default function Custom500({ errMsg }: { errMsg?: string }) {
               <Link href="/" legacyBehavior>
                 <a>Back to home</a>
               </Link>
-            </div>
-            <div className="focus:ring-primary-300 dark:focus:ring-primary-900 my-4 inline-block rounded-lg bg-amber-200 px-5 py-2.5 text-center text-sm font-medium text-black hover:bg-amber-300 focus:outline-none focus:ring-4">
-              <button type="button" onClick={() => feedback?.openDialog()}>
-                Report a bug
-              </button>
             </div>
           </div>
         </div>
