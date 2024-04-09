@@ -18,7 +18,6 @@ import { STATUS } from "@/constants/Nance";
 import { useProposal } from "@/utils/hooks/NanceHooks";
 import { useParams } from "next/navigation";
 
-
 export default function NanceProposalPage() {
   // state
   const [loading, setLoading] = useState<boolean>(true);
@@ -28,6 +27,7 @@ export default function NanceProposalPage() {
   const space = args.space;
   const { data, isLoading: proposalLoading } = useProposal(args, !!params);
   const proposal = data?.data;
+  const snapshotSpace = proposal?.snapshotSpace! || ""; // hack needs fixing
   const proposalHash = getLastSlash(proposal?.voteURL);
 
   const {
@@ -67,7 +67,7 @@ export default function NanceProposalPage() {
   };
   const commonProps: ProposalCommonProps = {
     space,
-    snapshotSpace: "",
+    snapshotSpace: snapshotSpace,
     status: status(),
     title: proposal.title,
     author: proposal.authorAddress || snapshotProposal?.author || "",
