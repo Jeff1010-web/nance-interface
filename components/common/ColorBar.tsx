@@ -129,7 +129,7 @@ export default function ColorBar({
           </div>
           <div>
             {`Total ${formatNumber(totalScore)}
-            (${(totalScore / threshold) * 100}%)`}
+            (${((totalScore / threshold) * 100).toFixed()}% of quorum)`}
           </div>
         </div>
       }
