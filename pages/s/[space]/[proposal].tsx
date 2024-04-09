@@ -28,7 +28,7 @@ export default function NanceProposalPage() {
   const space = args.space;
   const { data, isLoading: proposalLoading } = useProposal(args, !!params);
   const proposal = data?.data as Proposal & { snapshotSpace?: string };
-  const snapshotSpace = proposal.snapshotSpace || ""; // hack needs fixing
+  const snapshotSpace = proposal?.snapshotSpace || ""; // hack needs fixing
   const proposalHash = getLastSlash(proposal?.voteURL);
 
   const {
