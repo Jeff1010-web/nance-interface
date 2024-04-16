@@ -134,10 +134,16 @@ export const SafeInjectProvider: React.FunctionComponent<FCProps> = ({
     communicator?.on(Methods.sendTransactions, (msg) => {
       // @ts-expect-error explore ways to fix this
       const transactions = (msg.data.params.txs as Transaction[]).map(
-        ({ to, ...rest }) => ({
-          to: utils.getAddress(to), // checksummed
-          ...rest,
-        }),
+        ({ to, ...rest }) => {
+          if (to) {
+            return {
+              to: utils.getAddress(to), // checksummed
+              ...rest,
+            };
+          } else {
+            return { ...rest };
+          }
+        },
       );
       setLatestTransaction({
         id: parseInt(msg.data.id.toString()),

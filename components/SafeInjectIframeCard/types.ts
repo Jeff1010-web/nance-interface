@@ -531,7 +531,7 @@ export declare type SignTypedMessageParams = {
   typedData: EIP712TypedData;
 };
 export interface Transaction {
-  to: string;
+  to?: string;
   value: string;
   data: string;
 }

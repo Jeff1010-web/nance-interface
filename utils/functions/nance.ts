@@ -1,13 +1,13 @@
 import { EVENTS, NANCE_API_URL } from "@/constants/Nance";
-import { DateEvent, Proposal, CustomTransactionArg } from '@nance/nance-sdk';
+import { DateEvent, Proposal, CustomTransactionArg } from "@nance/nance-sdk";
 import { ONE_DAY_MILLISECONDS } from "@/constants/Nance";
 import { Interface } from "ethers/lib/utils";
 import { BigNumber } from "ethers";
 
 export function getLastSlash(url: string | undefined): string {
-  if(!url) return "";
+  if (!url) return "";
 
-  const split = url.split('/');
+  const split = url.split("/");
   return split[split.length - 1].trim();
 }
 
@@ -16,7 +16,7 @@ export function urlOfUpload(space: string) {
 }
 
 export function urlOfQuery(space: string, cycle: number | undefined) {
-  return `${NANCE_API_URL}/${space}/query/${(cycle ? `?cycle=${cycle}` : '')}`;
+  return `${NANCE_API_URL}/${space}/query/${cycle ? `?cycle=${cycle}` : ""}`;
 }
 
 export function urlOfContent(space: string, hash: string) {
@@ -24,15 +24,15 @@ export function urlOfContent(space: string, hash: string) {
 }
 
 export function canEditProposal(status: string | undefined) {
-  return ([
-    'Discussion',
-    'Draft',
-    'Temperature Check',
-    'Private',
-    'Archived',
+  return [
+    "Discussion",
+    "Draft",
+    "Temperature Check",
+    "Private",
+    "Archived",
     undefined,
-  ].includes(status));
-};
+  ].includes(status);
+}
 
 const cycleStageLengthsToInterval = (cycleStageLengths: number[]) => {
   const totalCycleDays = cycleStageLengths.reduce((a, b) => {
@@ -41,9 +41,15 @@ const cycleStageLengthsToInterval = (cycleStageLengths: number[]) => {
   return totalCycleDays * ONE_DAY_MILLISECONDS;
 };
 
-export const getNextEvents = (events: DateEvent[], cycleStageLengths: number[], inputDate: Date): DateEvent[] => {
+export const getNextEvents = (
+  events: DateEvent[],
+  cycleStageLengths: number[],
+  inputDate: Date,
+): DateEvent[] => {
   const interval = cycleStageLengthsToInterval(cycleStageLengths);
-  const repeats = Math.floor((inputDate.getTime() - new Date(events[0].start).getTime()) / interval);
+  const repeats = Math.floor(
+    (inputDate.getTime() - new Date(events[0].start).getTime()) / interval,
+  );
   const nextEvents: DateEvent[] = [];
   events.forEach((event) => {
     const originalStart = new Date(event.start);
@@ -60,22 +66,30 @@ export const getNextEvents = (events: DateEvent[], cycleStageLengths: number[], 
         title: event.title,
         start: new Date(start.getTime() + interval).toISOString(),
         end: new Date(end.getTime() + interval).toISOString(),
-      }
+      },
     );
   });
   // sort by start date and remove events that have ended
-  const nextEventsCleaned = nextEvents.sort((a, b) => {
-    return new Date(a.start).getTime() - new Date(b.start).getTime();
-  }).filter((event) => {
-    return new Date(event.end).getTime() > inputDate.getTime();
-  });
+  const nextEventsCleaned = nextEvents
+    .sort((a, b) => {
+      return new Date(a.start).getTime() - new Date(b.start).getTime();
+    })
+    .filter((event) => {
+      return new Date(event.end).getTime() > inputDate.getTime();
+    });
   return nextEventsCleaned;
 };
 
-export const getCurrentEvent = (events: DateEvent[], cycleStageLengths: number[], inputDate: Date) : DateEvent => {
+export const getCurrentEvent = (
+  events: DateEvent[],
+  cycleStageLengths: number[],
+  inputDate: Date,
+): DateEvent => {
   const nextEvents = getNextEvents(events, cycleStageLengths, inputDate);
   const currentEvent = nextEvents.find((event) => {
-    return inputDate >= new Date(event.start) && inputDate < new Date(event.end);
+    return (
+      inputDate >= new Date(event.start) && inputDate < new Date(event.end)
+    );
   });
   return currentEvent as DateEvent;
 };
@@ -89,17 +103,24 @@ export const getCycleStartDays = (cycleStageLengths: number[]) => {
   });
 };
 
-export const getCurrentGovernanceCycleDay = (currentEvent: DateEvent, cycleStageLengths: number[], input: Date) => {
+export const getCurrentGovernanceCycleDay = (
+  currentEvent: DateEvent,
+  cycleStageLengths: number[],
+  input: Date,
+) => {
   if (!currentEvent) return 0;
   const cycleStartDays = getCycleStartDays(cycleStageLengths);
   const eventIndex = Object.values(EVENTS).indexOf(currentEvent.title);
-  const dayDelta = Math.floor((input.getTime() - new Date(currentEvent.start).getTime()) / ONE_DAY_MILLISECONDS);
+  const dayDelta = Math.floor(
+    (input.getTime() - new Date(currentEvent.start).getTime()) /
+      ONE_DAY_MILLISECONDS,
+  );
   const currentGovernanceCycleDay = cycleStartDays[eventIndex] + dayDelta;
   return currentGovernanceCycleDay;
 };
 
 export const dateAtTime = (date: Date, time: string) => {
-  const [hour, minute, seconds] = time.split(':');
+  const [hour, minute, seconds] = time.split(":");
   date.setUTCHours(Number(hour));
   date.setUTCMinutes(Number(minute));
   date.setUTCSeconds(Number(seconds));
@@ -107,13 +128,19 @@ export const dateAtTime = (date: Date, time: string) => {
   return date;
 };
 
-export const getProposal = async (space: string, proposalId: string): Promise<Proposal> => {
-  const json = await fetch(`${NANCE_API_URL}/${space}/proposal/${proposalId}`).then(res => res.json());
+export const getProposal = async (
+  space: string,
+  proposalId: string,
+): Promise<Proposal> => {
+  const json = await fetch(
+    `${NANCE_API_URL}/${space}/proposal/${proposalId}`,
+  ).then((res) => res.json());
   const proposal = json.data;
   return proposal;
 };
 
-export function extractFunctionName(str: string) {
+export function extractFunctionName(str: string | null | undefined) {
+  if (!str) return "";
   return str.split("(")[0].split(" ").slice(-1)[0];
 }
 

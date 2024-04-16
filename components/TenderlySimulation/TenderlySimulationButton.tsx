@@ -29,7 +29,7 @@ export default function TenderlySimulationButton({
 }) {
   const { data, isLoading, error } = useTendelySimulate(
     simulationArgs,
-    !!simulationArgs.to && shouldSimulate,
+    shouldSimulate,
   );
 
   useEffect(() => {

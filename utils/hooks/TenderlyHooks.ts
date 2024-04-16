@@ -1,38 +1,38 @@
-import { Interface } from 'ethers/lib/utils';
-import useSWR from 'swr';
+import { Interface } from "ethers/lib/utils";
+import useSWR from "swr";
 
 export interface TenderlySimulateArgs {
-    from: string;
-    to: string;
-    input: string;
-    value: number;
-    networkId?: number;
+  from: string;
+  to?: string;
+  input: string;
+  value: number;
+  networkId?: number;
 }
 
 export interface TenderlySimulationAPIResponse {
-    transaction: {
-        status: boolean;
-    }
-    simulation: {
-        error_message: string;
-        id: string;
-        project_id: string;
-        owner_id: string;
-        network_id: string;
-        block_number: number;
-        transaction_index: number;
-        status: boolean;
-        shared: boolean;
-        created_at: string;
-    }
+  transaction: {
+    status: boolean;
+  };
+  simulation: {
+    error_message: string;
+    id: string;
+    project_id: string;
+    owner_id: string;
+    network_id: string;
+    block_number: number;
+    transaction_index: number;
+    status: boolean;
+    shared: boolean;
+    created_at: string;
+  };
 }
 
 async function fetchWithArgs([url, args]: [string, TenderlySimulateArgs]) {
   const simulationConfig = {
     save: true,
     save_if_fails: true,
-    simulation_type: 'quick',
-    network_id: String(args.networkId) || '1',
+    simulation_type: "quick",
+    network_id: String(args.networkId) || "1",
     from: args.from,
     to: args.to,
     input: args.input,
@@ -42,7 +42,7 @@ async function fetchWithArgs([url, args]: [string, TenderlySimulateArgs]) {
   };
 
   const resp = await fetch(url, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(simulationConfig),
   });
   const json: any = await resp.json();
@@ -53,16 +53,21 @@ async function fetchWithArgs([url, args]: [string, TenderlySimulateArgs]) {
   return json as TenderlySimulationAPIResponse;
 }
 
-export function useTendelySimulate(args: TenderlySimulateArgs, shouldFetch: boolean = false) {
+export function useTendelySimulate(
+  args: TenderlySimulateArgs,
+  shouldFetch: boolean = false,
+) {
   const { data, isLoading, error } = useSWR<TenderlySimulationAPIResponse>(
     shouldFetch ? ["/api/tenderly", args] : null,
-    fetchWithArgs
+    fetchWithArgs,
   );
 
   return {
-    data, isLoading, error
+    data,
+    isLoading,
+    error,
   };
-};
+}
 
 export function encodeTransactionInput(functionName: string, args: any[]) {
   if (!functionName || !args) {
@@ -71,7 +76,7 @@ export function encodeTransactionInput(functionName: string, args: any[]) {
 
   try {
     const iface = new Interface([functionName]);
-    return iface.encodeFunctionData(functionName.split('function ')[1], args);
+    return iface.encodeFunctionData(functionName.split("function ")[1], args);
   } catch (e) {
     console.warn("❎ encodeCustomTransaction", e, functionName, args);
     return "";

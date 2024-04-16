@@ -67,6 +67,7 @@ class AppCommunicator {
   handleIncomingMessage = async (msg: SDKMessageEvent): Promise<void> => {
     const validMessage = this.isValidMessage(msg);
     const hasHandler = this.canHandleMessage(msg);
+    //console.debug("incoming message", msg);
 
     if (validMessage && hasHandler) {
       // console.debug("iframe.receive", { msg: msg.data });

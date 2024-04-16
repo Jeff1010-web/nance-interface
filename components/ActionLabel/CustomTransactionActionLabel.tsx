@@ -1,11 +1,13 @@
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { BigNumber } from "ethers";
 import { NANCE_API_URL } from "@/constants/Nance";
+import { CustomTransaction } from "@nance/nance-sdk";
 import {
-  CustomTransaction,
-} from "@nance/nance-sdk";
-import { extractFunctionName, parseFunctionAbiWithNamedArgs } from "@/utils/functions/nance";
+  extractFunctionName,
+  parseFunctionAbiWithNamedArgs,
+} from "@/utils/functions/nance";
 import ResolvedContract from "../AddressCard/ResolvedContract";
+import { DEPLOY_CONTRACT_FAKE_ADDRESS } from "@/constants/Contract";
 
 export default function CustomTransactionActionLabel({
   customTransaction,
@@ -16,6 +18,26 @@ export default function CustomTransactionActionLabel({
   space: string;
   uuid: string | undefined;
 }) {
+  if (customTransaction.contract === DEPLOY_CONTRACT_FAKE_ADDRESS) {
+    return (
+      <span className="line-clamp-6">
+        deployContract
+        <span>{`(${customTransaction.args[0].value})`}</span>
+        {BigNumber.from(customTransaction.value).gt(0) && (
+          <span>
+            <span>{"{"}</span>
+            <span className="text-gray-500">value</span>
+            <span>{`: ${customTransaction.value}`}</span>
+            <span>{"}"}</span>
+          </span>
+        )}
+        <a href={`${NANCE_API_URL}/${space}/simulate/${uuid}`} className="ml-2">
+          <ArrowTopRightOnSquareIcon className="inline h-4 w-4" />
+        </a>
+      </span>
+    );
+  }
+
   return (
     <span className="line-clamp-6">
       <ResolvedContract
