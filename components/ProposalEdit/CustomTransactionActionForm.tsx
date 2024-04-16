@@ -49,7 +49,7 @@ export default function CustomTransactionActionForm({
   const to = getValues(genFieldName("contract")) as string;
   const input =
     to === DEPLOY_CONTRACT_FAKE_ADDRESS
-      ? fields[0]?.value || ""
+      ? (fields[0] as unknown as CustomTransactionArg)?.value || ""
       : encodeTransactionInput(
           functionFragment?.format(FormatTypes.minimal) || "",
           args || [],
