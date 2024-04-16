@@ -16,6 +16,7 @@ import { SpaceContext } from "@/context/SpaceContext";
 import { NetworkContext } from "@/context/NetworkContext";
 import { useSwitchNetwork } from "wagmi";
 import { getChainByNetworkName } from "config/custom-chains";
+import { getChainIdFromName } from "../SafeInjectIframeCard/helpers/utils";
 
 export default function Actions({
   loadedActions,
@@ -37,13 +38,8 @@ export default function Actions({
   if (network === "ethereum") network = "mainnet";
   const spaceChainName = spaceInfo?.transactorAddress?.network;
   const { switchNetwork } = useSwitchNetwork();
-  const projectId = spaceInfo?.juiceboxProjectId;
-  const { data: projectInfo, loading: infoIsLoading } = useProjectInfo(
-    3,
-    parseInt(projectId ?? ""),
-  );
-  const projectOwner = projectInfo?.owner
-    ? utils.getAddress(projectInfo.owner)
+  const projectOwner = spaceInfo?.transactorAddress?.address
+    ? utils.getAddress(spaceInfo?.transactorAddress?.address)
     : "";
 
   const newAction = (a: ActionItem) => {
@@ -114,20 +110,20 @@ export default function Actions({
                 })}
                 className="hidden"
               />
-              { spaceChainName !== network ? (
+              {spaceChainName !== network ? (
                 <div className="flex flex-col items-start">
                   <p>{`Must be on ${spaceChainName} to propose a Transfer`}</p>
                   <button
                     type="button"
                     disabled={!switchNetwork}
                     onClick={() => {
-                      switchNetwork?.(getChainByNetworkName(spaceChainName)?.id);
+                      switchNetwork?.(
+                        getChainByNetworkName(spaceChainName)?.id,
+                      );
                     }}
                     className="relative inline-flex items-center gap-x-1.5 rounded-md bg-red-500 px-3 py-3 text-sm font-semibold text-white hover:bg-red-400 focus:z-10 disabled:opacity-50"
                   >
-                    {switchNetwork
-                      ? "Switch network"
-                      : `Not on ${network}`}
+                    {switchNetwork ? "Switch network" : `Not on ${network}`}
                   </button>
                 </div>
               ) : (
@@ -197,7 +193,10 @@ export default function Actions({
                 })}
                 className="hidden"
               />
-              <SafeInjectProvider defaultAddress={projectOwner}>
+              <SafeInjectProvider
+                defaultAddress={projectOwner}
+                chainId={getChainIdFromName(spaceChainName)}
+              >
                 <CustomTransactionActionForm
                   genFieldName={genFieldName(index)}
                   projectOwner={projectOwner}

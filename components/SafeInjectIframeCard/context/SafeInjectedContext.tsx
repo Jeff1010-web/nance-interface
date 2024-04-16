@@ -56,11 +56,13 @@ export const SafeInjectContext = createContext<SafeInjectContextType>({
 export interface FCProps {
   children: React.ReactNode;
   defaultAddress?: string;
+  chainId?: number;
 }
 
 export const SafeInjectProvider: React.FunctionComponent<FCProps> = ({
   children,
   defaultAddress,
+  chainId = 1,
 }) => {
   const [address, setAddress] = useState<string | undefined>(defaultAddress);
   const [appUrl, setAppUrl] = useState<string>();
@@ -105,7 +107,7 @@ export const SafeInjectProvider: React.FunctionComponent<FCProps> = ({
     communicator?.on(Methods.getSafeInfo, async () => {
       const ret = {
         safeAddress: address,
-        chainId: (await provider.getNetwork()).chainId,
+        chainId,
         owners: [],
         threshold: 1,
         isReadOnly: false,

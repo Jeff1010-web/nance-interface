@@ -1,3 +1,5 @@
+import { gnosis, mainnet } from "viem/chains";
+
 export const getSDKVersion = () => {
   return "7.6.0"; // IMPORTANT: needs to be >= 1.0.0
 };
@@ -18,3 +20,12 @@ export const generateRequestId = (): string => {
 
   return new Date().getTime().toString(36);
 };
+
+export function getChainIdFromName(chainName: string | undefined) {
+  const chainMap: { [key: string]: number } = {
+    mainnet: mainnet.id,
+    gnosis: gnosis.id,
+  };
+
+  return chainMap[chainName || "mainnet"] || 1;
+}
