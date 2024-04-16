@@ -29,7 +29,7 @@ export const driverSteps: DriveStep[] = [
     element: "#submit-button-div",
     popover: {
       title: "Submit the proposal",
-      description: "After you connected wallet, you can either submit the proposal or save it as private draft.",
+      description: "After you connected wallet, you can either submit the proposal or save it as draft.",
       side: "top", align: 'start'
     },
   },

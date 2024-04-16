@@ -16,7 +16,6 @@ import {
 import { useProposalsInfinite } from "@/utils/hooks/NanceHooks";
 import { useRouter } from "next/router";
 import LoadMoreButton from "./card/LoadMoreButton";
-import PrivateProposalRows from "./card/PrivateProposalRows";
 import getVotedIcon from "./card/VoteIcon";
 import NewVoteButton from "@/components/Vote/NewVoteButton";
 import VotesBar from "./card/VotesBar";
@@ -315,8 +314,6 @@ export default function ProposalCards({
               </tr>
             </thead>
             <tbody>
-              <PrivateProposalRows />
-
               {isLoading && (
                 <>
                   <ProposalRowSkeleton isFirst />

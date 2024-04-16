@@ -32,13 +32,6 @@ export const ProposalStatus = [
     value: "Draft",
     display: "Save as Draft",
   },
-  {
-    title: "Private Draft",
-    description:
-      "Save your proposal as private, you can publish it later for discussion.",
-    value: "Private",
-    display: "Save as Private",
-  },
 ];
 
 export const TEMPLATE =
@@ -54,7 +47,6 @@ export const STATUS = {
   APPROVED: 'Approved',
   CANCELLED: 'Cancelled',
   ARCHIVED: 'Archived',
-  PRIVATE: 'Private',
   ACTION: {
     ACTIVE: 'active',
     COMPLETE: 'complete',

@@ -75,20 +75,6 @@ export function useCurrentPayouts(
   );
 }
 
-export function usePrivateProposals(
-  space: string,
-  shouldFetch: boolean = true,
-) {
-  const { data: sessionData } = useSession();
-
-  return useSWR<APIResponse<Proposal[]>, string>(
-    shouldFetch && sessionData?.user?.name
-      ? `${NANCE_API_URL}/${space}/privateProposals?user=${sessionData?.user?.name}`
-      : null,
-    jsonFetcher(),
-  );
-}
-
 export function useProposals(
   args: ProposalsRequest,
   shouldFetch: boolean = true,
@@ -296,7 +282,6 @@ export async function fetchCreatedProposals(
           nextProposalId: 0,
         },
         proposals: [],
-        privateProposals: [],
         hasMore: false,
       },
     } as APIResponse<ProposalsPacket>;
