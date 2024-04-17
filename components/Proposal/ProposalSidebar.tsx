@@ -396,19 +396,6 @@ export default function ProposalSidebar({
               </a>
             </>
           )}
-
-          {proposal?.status === "Revoked" && (
-            <>
-              <p>This proposal has been revoked by author.</p>
-
-              <a
-                href={openInDiscord(proposal.discussionThreadURL) || "#"}
-                className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-black disabled:opacity-50"
-              >
-                Check discussion on Discord
-              </a>
-            </>
-          )}
         </div>
       )}
 

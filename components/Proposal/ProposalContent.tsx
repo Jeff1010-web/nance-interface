@@ -11,10 +11,10 @@ import { format, toDate } from "date-fns";
 import ProposalSummaries from "./ProposalSummaries";
 
 export default function ProposalContent({ body }: { body: string }) {
-  const { commonProps } = useContext(ProposalContext);
+  const { commonProps, proposalIdPrefix } = useContext(ProposalContext);
   const proposalId = commonProps.proposalId;
   const sourceSnapshot = commonProps.uuid === "snapshot"; // hack
-  const proposalIdSpacer = proposalId ? ": " : "";
+  const preTitleDisplay = proposalIdPrefix ? `${proposalIdPrefix}${proposalId}: ` : "";
   console.log(commonProps);
   return (
     <div className="">
@@ -28,7 +28,7 @@ export default function ProposalContent({ body }: { body: string }) {
           </Link>
         </div>
         <h1 id="applicant-information-title" className="text-3xl font-medium">
-          {proposalId}{proposalIdSpacer}{commonProps.title}
+          {preTitleDisplay}{commonProps.title}
         </h1>
 
         <p className="mt-2 flex text-sm text-gray-500">

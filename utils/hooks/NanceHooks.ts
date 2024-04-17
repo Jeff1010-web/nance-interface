@@ -17,8 +17,8 @@ import {
   ConfigSpacePayload,
   CreateFormValues,
   SpaceConfig,
+  ProposalQueryResponse,
 } from "@nance/nance-sdk";
-import { useSession } from "next-auth/react";
 
 function jsonFetcher(): Fetcher<APIResponse<any>, string> {
   return async (url) => {
@@ -141,7 +141,7 @@ export function useProposal(
   args: ProposalRequest,
   shouldFetch: boolean = true,
 ) {
-  return useSWR<APIResponse<Proposal>, string>(
+  return useSWR<ProposalQueryResponse>(
     shouldFetch
       ? `${NANCE_API_URL}/${args.space}/proposal/${args.uuid}`
       : null,

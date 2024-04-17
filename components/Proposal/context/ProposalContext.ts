@@ -27,6 +27,7 @@ export const ProposalContext = createContext<{
   commonProps: ProposalCommonProps;
   proposalInfo: SnapshotProposal | undefined;
   nextProposalId: number;
+  proposalIdPrefix?: string;
   proposalSummary?: string;
   threadSummary?: string;
 }>({
@@ -52,6 +53,7 @@ export const ProposalContext = createContext<{
   },
   proposalInfo: undefined,
   nextProposalId: 0,
+  proposalIdPrefix: undefined,
   proposalSummary: undefined,
   threadSummary: undefined,
 });

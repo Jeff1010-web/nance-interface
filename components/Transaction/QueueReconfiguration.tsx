@@ -28,7 +28,6 @@ import {
 } from "next-query-params";
 import TransactionCreator from "@/components/Transaction/TransactionCreator";
 import DiffTableWithSection from "../form/DiffTableWithSection";
-import { getProposalNumber } from "@/utils/functions/ProposalIdNumber";
 
 export default function QueueReconfigurationModal({
   open,
