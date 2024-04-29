@@ -96,7 +96,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
   const { data: session, status } = useSession();
   const { openConnectModal } = useConnectModal();
 
-  const isNew = metadata.fork || metadata.loadedProposal === null;
+  const isNew = metadata.fork || metadata.loadedProposal === undefined;
 
   // form
   const methods = useForm<ProposalFormValues>();

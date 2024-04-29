@@ -20,8 +20,8 @@ export default function SpacePage() {
     return (
       <>
         <SiteNav
-          pageTitle="Loading"
-          description="Loading space"
+          pageTitle="Nance"
+          description="Governance Automated"
           withProposalButton={false}
         />
       </>
