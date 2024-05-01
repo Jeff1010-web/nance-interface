@@ -39,7 +39,7 @@ export default function ProjectForm({
           rules={{
             required: required && "Can't be empty",
             validate: {
-              positive: (v) => !required || parseInt(v) > -1 || "Can't be negative number",
+              positive: (v) => !required || parseInt(v) > 0 || "Can't be negative number",
             },
           }}
           render={({ field: { onChange, onBlur, value, ref } }) => (

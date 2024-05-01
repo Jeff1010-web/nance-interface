@@ -41,6 +41,22 @@ export default function ProjectSearch({
     }
   }, [disabled, setVal]);
 
+  useEffect(() => {
+    // sync selectedProject if val is present and query is empty
+    const valPresent = val && val > 0;
+    if (valPresent && selectedProject === null && query.length === 0) {
+      fetch(`https://juicebox.money/api/projects?pv=2&projectId=${val}`)
+        .then(r => r.json())
+        .then(a => {
+          if (a[0] !== undefined) {
+            setSelectedProject(a[0]);
+          } else {
+            setVal(undefined);
+          }
+        })
+    }
+  }, [val, selectedProject, query]);
+
   useDebounce<string | undefined>(
     query,
     300,
@@ -57,7 +73,7 @@ export default function ProjectSearch({
           imgAlt={selectedProject.name || ""}
           action={() => {
             setSelectedProject(null);
-            setVal(undefined);
+            setVal(0);
           }}>
           <span className="ml-3 block truncate">{selectedProject.name}</span>
         </BasicFormattedCard>
