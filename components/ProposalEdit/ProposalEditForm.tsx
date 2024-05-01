@@ -99,7 +99,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
   const isNew = metadata.fork || metadata.loadedProposal === undefined;
 
   // form
-  const methods = useForm<ProposalFormValues>();
+  const methods = useForm<ProposalFormValues>({mode: "onBlur"});
   const {
     register,
     handleSubmit,
