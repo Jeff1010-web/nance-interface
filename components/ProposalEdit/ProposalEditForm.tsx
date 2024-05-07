@@ -8,7 +8,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useContext, useState, useEffect, useRef } from "react";
+import { useContext, useState, useEffect } from "react";
 import {
   useForm,
   SubmitHandler,
@@ -22,10 +22,8 @@ import Actions from "./Actions";
 import { driverSteps } from "./GuideSteps";
 import useLocalStorage from "@/utils/hooks/LocalStorage";
 import { formatDistance, fromUnixTime, getUnixTime } from "date-fns";
-import { Editor } from "@toast-ui/react-editor";
-import { getMarkdown, setMarkdown } from "@/components/Markdown/utils";
 import { ProposalMetadataContext } from "./context/ProposalMetadataContext";
-import { ProposalStatus, TEMPLATE } from "@/constants/Nance";
+import { NANCE_DEFAULT_IPFS_GATEWAY, ProposalStatus, TEMPLATE } from "@/constants/Nance";
 import { ProposalSubmitButton } from "./ProposalSubmitButton";
 import DiscordUser from "../CreateSpace/sub/DiscordUser";
 import { classNames } from "@/utils/functions/tailwind";
@@ -33,13 +31,34 @@ import { SpaceContext } from "@/context/SpaceContext";
 import { useAccount } from "wagmi";
 import { accessCheckWithGuild } from "@/utils/hooks/GuildxyzHooks";
 
+import "@nance/nance-editor/lib/css/editor.css";
+import "@nance/nance-editor/lib/css/dark.css";
+import { GetMarkdown, SetMarkdown } from "@nance/nance-editor";
+
+// Have to use dynamic import to avoid SSR issues (maybe theres a better way??)
+let getMarkdown: GetMarkdown;
+let setMarkdown: SetMarkdown;
+
+const NanceEditor = dynamic(
+  async () => {
+    getMarkdown = (await import("@nance/nance-editor")).getMarkdown;
+    setMarkdown = (await import("@nance/nance-editor")).setMarkdown;
+    return import("@nance/nance-editor").then(mod => mod.NanceEditor);
+  }, {
+    ssr: false,
+  });
+
+const fileUploadIPFS = {
+  gateway: NANCE_DEFAULT_IPFS_GATEWAY,
+  auth: `Basic ${Buffer.from(
+    `${process.env.NEXT_PUBLIC_INFURA_IPFS_ID}:${process.env.NEXT_PUBLIC_INFURA_IPFS_SECRET}`,
+  ).toString("base64")}`
+};
+
 const ResultModal = dynamic(() => import("../modal/ResultModal"), {
   ssr: false,
 });
-const MarkdownEditor = dynamic(
-  () => import("@/components/Markdown/MarkdownEditor"),
-  { ssr: false },
-);
+
 const UIGuide = dynamic(() => import("@/components/common/UIGuide"), {
   ssr: false,
 });
@@ -59,7 +78,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
   // query and context
   const router = useRouter();
   const metadata = useContext(ProposalMetadataContext);
-  const editorRef = useRef<Editor>(null);
   const spaceInfo = useContext(SpaceContext);
   const guildxyz = spaceInfo?.guildxyz;
 
@@ -228,7 +246,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
         buttonText="Restore"
         onClick={() => {
           setValue("proposal.title", proposalCache.title);
-          setMarkdown(editorRef, proposalCache.body);
+          setMarkdown(proposalCache.body);
           setCacheModalIsOpen(false);
         }}
         cancelButtonText="Delete"
@@ -273,12 +291,12 @@ export default function ProposalEditForm({ space }: { space: string }) {
                     type="text"
                     {...register("proposal.title", {
                       value: metadata.loadedProposal?.title || "Proposal Title",
-                      onChange: (e) => {
+                      onChange: async (e) => {
                         if (!cacheModalIsOpen) {
                           setProposalCache({
                             version: CACHE_VERSION,
                             title: e.target.value,
-                            body: getMarkdown(editorRef) || "",
+                            body: getMarkdown() || "",
                             timestamp: getUnixTime(new Date()),
                           });
                         }
@@ -296,20 +314,20 @@ export default function ProposalEditForm({ space }: { space: string }) {
                     control={control}
                     defaultValue={metadata.loadedProposal?.body || TEMPLATE}
                     render={({ field: { onChange } }) => (
-                      <MarkdownEditor
-                        parentRef={editorRef}
+                      <NanceEditor
+                        initialValue={metadata.loadedProposal?.body || TEMPLATE}
                         onEditorChange={(value) => {
                           if (!cacheModalIsOpen) {
                             setProposalCache({
                               version: CACHE_VERSION,
                               title: getValues("proposal.title"),
-                              body: value || "",
+                              body: value,
                               timestamp: getUnixTime(new Date()),
                             });
                           }
                           onChange(value);
                         }}
-                        initialValue={metadata.loadedProposal?.body || TEMPLATE}
+                        fileUploadIPFS={fileUploadIPFS}
                       />
                     )}
                   />

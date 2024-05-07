@@ -16,13 +16,20 @@ import {
 } from "@/models/DiscordTypes";
 import { DiscordConfig } from "@nance/nance-sdk";
 
+const discordLink = "https://discord.com/channels/";
+const discordProtocol = "discord://discord.com/channels/";
+
 export function openInDiscord(url: string) {
   try {
-    // use URL object to replace https:// with discord://
-    const discordUrl = new URL(url);
-    discordUrl.protocol = "discord:";
-    return discordUrl.toString();
-  } catch (error) {
+    if (url.includes("discord")) {
+      const splitUrl = url.split(discordLink)[1].split("/");
+      // remove 2nd element in array (channelId) so link goes directly to thread
+      splitUrl.splice(1, 1);
+      const newUrl = splitUrl.join("/");
+      return `${discordProtocol}${newUrl}`;
+    }
+  } catch (e) {
+    console.error("Error opening Discord URL", e);
     return url;
   }
 }

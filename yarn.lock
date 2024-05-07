@@ -2913,10 +2913,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nance/nance-editor@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@nance/nance-editor@npm:1.0.0"
-  checksum: 99d767d4f3427f6f33f8a0d87d92c92a9a4a6531c24373c2df1d64d2e5bdc80b6a69d3a60426a25220d27a53ff0d9edd233f30ce3f1039c76e89c402d434117a
+"@nance/nance-editor@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "@nance/nance-editor@npm:1.7.0"
+  dependencies:
+    "@toast-ui/react-editor": ^3.2.3
+  peerDependencies:
+    react: ">=17.0.0"
+  checksum: e92e9ae99453ad997f82a1e439b2e0e67aa5bcf92dd7b077d48d8ac2133c6bbbeacccd927142e202ea259e9267c69f1d0d387ae47632e643c957740931de6f39
   languageName: node
   linkType: hard
 
@@ -10339,9 +10343,9 @@ __metadata:
   linkType: hard
 
 "dompurify@npm:^2.3.3":
-  version: 2.4.7
-  resolution: "dompurify@npm:2.4.7"
-  checksum: 13c047e772a1998348191554dda403950d45ef2ec75fa0b9915cc179ccea0a39ef780d283109bd72cf83a2a085af6c77664281d4d0106a737bc5f39906364efe
+  version: 2.5.2
+  resolution: "dompurify@npm:2.5.2"
+  checksum: c624125631924ecc680b3c86aaa84ee73c8315304fbe7db62025b4dd5efc461979edbce8022b85434e6d95e69c6217460ef3c991067387f5bf3fa9170d5f486a
   languageName: node
   linkType: hard
 
@@ -16069,7 +16073,7 @@ __metadata:
     "@heroicons/react": ^2.0.18
     "@hookform/error-message": ^2.0.1
     "@jbx-protocol/juice-contracts-v3": 5.0.0
-    "@nance/nance-editor": ^1.0.0
+    "@nance/nance-editor": ^1.7.0
     "@nance/nance-sdk": ^2.0.1
     "@popperjs/core": ^2.11.8
     "@rainbow-me/rainbowkit": ^1.3.3
@@ -16090,7 +16094,6 @@ __metadata:
     "@tailwindcss/aspect-ratio": ^0.4.0
     "@tailwindcss/forms": ^0.5.2
     "@tailwindcss/typography": ^0.5.4
-    "@toast-ui/react-editor": ^3.2.3
     "@types/react": ^18.0.15
     "@vercel/analytics": ^0.1.6
     "@vercel/og": ^0.6.2
@@ -17763,24 +17766,24 @@ __metadata:
   linkType: hard
 
 "prosemirror-history@npm:^1.1.3":
-  version: 1.3.2
-  resolution: "prosemirror-history@npm:1.3.2"
+  version: 1.4.0
+  resolution: "prosemirror-history@npm:1.4.0"
   dependencies:
     prosemirror-state: ^1.2.2
     prosemirror-transform: ^1.0.0
     prosemirror-view: ^1.31.0
     rope-sequence: ^1.3.0
-  checksum: b85fe6378a2fe99d514ca44ed926c0c88f1447313a9806fdf7e246e5e39e90180ab3be97c327a48e9975915b16186f6e7d4fc520bd8b8ddb024da8bfcd3a6d4b
+  checksum: f60f605fc6aee86a8cb90f703c2c607bc30535a92010b8254e78c81695ee5b8dbb00fb50c70845163d2fb11aa397db4de9541e38eb2d3bfb2ec663d237bb5efb
   languageName: node
   linkType: hard
 
 "prosemirror-inputrules@npm:^1.1.3":
-  version: 1.2.1
-  resolution: "prosemirror-inputrules@npm:1.2.1"
+  version: 1.4.0
+  resolution: "prosemirror-inputrules@npm:1.4.0"
   dependencies:
     prosemirror-state: ^1.0.0
     prosemirror-transform: ^1.0.0
-  checksum: fc414d8376a09ad2a403be682b60c883d69c9fa249dddef3956707f0cd50500c8bd427fb5696c6836f546dbc8241120ffe5d806142bb2d77bbac31c7a9dbf704
+  checksum: b893eff382b585aa934e41a7bcbb02cd9ce5199bc6e939ef3f1629aeaf181320f2b52a0d088cb6432aa10c4536c3b5ea67a15e66ef24714a3b3f9e89d0f29ef4
   languageName: node
   linkType: hard
 
@@ -17794,12 +17797,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prosemirror-model@npm:^1.0.0, prosemirror-model@npm:^1.14.1, prosemirror-model@npm:^1.16.0":
-  version: 1.19.3
-  resolution: "prosemirror-model@npm:1.19.3"
+"prosemirror-model@npm:^1.0.0, prosemirror-model@npm:^1.14.1, prosemirror-model@npm:^1.20.0, prosemirror-model@npm:^1.21.0":
+  version: 1.21.0
+  resolution: "prosemirror-model@npm:1.21.0"
   dependencies:
     orderedmap: ^2.0.0
-  checksum: a0c32127dfde5d5df7b990d85475533ed7c721fa424d5eb521f7b7ba6b2d65064da752013377f830b7d2961f3ca2507f5ed5a9117c3464c7551c1baff677dd5f
+  checksum: d640b75f2e290bb8e2f892ea6013b33a158dff7eadfef7ed564446b503ca6e35ad1e5d02c78a1862f9976c8f3e49585ada9579a0863014a2a3ac94065dbe486b
   languageName: node
   linkType: hard
 
@@ -17815,22 +17818,22 @@ __metadata:
   linkType: hard
 
 "prosemirror-transform@npm:^1.0.0, prosemirror-transform@npm:^1.1.0":
-  version: 1.8.0
-  resolution: "prosemirror-transform@npm:1.8.0"
+  version: 1.9.0
+  resolution: "prosemirror-transform@npm:1.9.0"
   dependencies:
-    prosemirror-model: ^1.0.0
-  checksum: 6d16ca4f954ad7b040a4adbb5ddfa8c8ad14b0514f15e1ecfd5e32f08eb3f8696492975b9e599b4776e991ab76df114166dcf6ec7b966a67b02b2069a28415f1
+    prosemirror-model: ^1.21.0
+  checksum: c2d63c1fb0358f7dd0e04fd04da2c53d72811359e9aed1ede9ea9b06f968016378c8ffb9410d6c2b86c85d59c157dc24e6e77a1e03018bf39689ab8379a811ac
   languageName: node
   linkType: hard
 
 "prosemirror-view@npm:^1.18.7, prosemirror-view@npm:^1.27.0, prosemirror-view@npm:^1.31.0":
-  version: 1.32.2
-  resolution: "prosemirror-view@npm:1.32.2"
+  version: 1.33.6
+  resolution: "prosemirror-view@npm:1.33.6"
   dependencies:
-    prosemirror-model: ^1.16.0
+    prosemirror-model: ^1.20.0
     prosemirror-state: ^1.0.0
     prosemirror-transform: ^1.1.0
-  checksum: 84886c709f9007c8930e34365df5401d2083eabfc35e6d08572c4efa87073213b91e583294e5973c04d2045f04a483cb81712747b730d243c664f13e7bd0170c
+  checksum: 0635538ba33523f8ca560bf6202e005e8c4c88d1a594efa52e63f75e0e329f76a99b4f16559c85593c2930bc34d970cf895e7a7ecb128ef2a6d1381e4cbfb4d8
   languageName: node
   linkType: hard
 

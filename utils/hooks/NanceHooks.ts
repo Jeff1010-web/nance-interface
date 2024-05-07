@@ -9,7 +9,6 @@ import {
   ProposalRequest,
   ProposalUploadRequest,
   SpaceInfo,
-  Proposal,
   ProposalUploadPayload,
   ProposalDeleteRequest,
   ProposalsPacket,
@@ -26,7 +25,7 @@ function jsonFetcher(): Fetcher<APIResponse<any>, string> {
     const json = await res.json();
     if (json?.success === "false" || json?.error) {
       throw new Error(
-        `An error occurred while fetching the data: ${json?.error}`,
+        `An error occurred while fetching the data: ${JSON.stringify(json?.error)}`,
       );
     }
     return json;
@@ -163,7 +162,7 @@ async function uploader(
   const json: APIResponse<ProposalUploadPayload> = await res.json();
   if (json.success === false) {
     throw new Error(
-      `An error occurred while uploading the data: ${json?.error}`,
+      `An error occurred while uploading the data: ${JSON.stringify(json?.error)}`,
     );
   }
 
@@ -184,7 +183,7 @@ async function creator(
   const json: APIResponse<ConfigSpacePayload> = await res.json();
   if (json.success === false) {
     throw new Error(
-      `An error occurred while uploading the data: ${json?.error}`,
+      `An error occurred while uploading the data: ${JSON.stringify(json?.error)}`,
     );
   }
 
@@ -229,7 +228,7 @@ async function editor(
   const json: APIResponse<ProposalUploadPayload> = await res.json();
   if (json.success === false) {
     throw new Error(
-      `An error occurred while uploading the data: ${json?.error}`,
+      `An error occurred while uploading the data: ${JSON.stringify(json?.error)}`,
     );
   }
 
@@ -249,7 +248,7 @@ async function deleter(
   const json: APIResponse<ProposalUploadPayload> = await res.json();
   if (json.success === false) {
     throw new Error(
-      `An error occurred while deleting this proposal: ${json?.error}`,
+      `An error occurred while deleting this proposal: ${JSON.stringify(json?.error)}`,
     );
   }
 
