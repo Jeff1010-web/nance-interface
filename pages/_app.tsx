@@ -19,6 +19,9 @@ import { RainbowKitSiweNextAuthProvider } from "@rainbow-me/rainbowkit-siwe-next
 import { NetworkContext } from "../context/NetworkContext";
 import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from "../constants/Snapshot";
 import { SWRConfig } from "swr";
+import console from "@/utils/functions/console.debug";
+
+console.debug("Hello from _app.tsx! 🚀");
 
 const graphqlClient = new GraphQLClient({
   url: `${SNAPSHOT_HUB}/graphql`,
