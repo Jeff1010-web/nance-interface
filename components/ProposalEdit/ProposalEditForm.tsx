@@ -30,7 +30,6 @@ import { classNames } from "@/utils/functions/tailwind";
 import { SpaceContext } from "@/context/SpaceContext";
 import { useAccount } from "wagmi";
 import { accessCheckWithGuild } from "@/utils/hooks/GuildxyzHooks";
-
 import "@nance/nance-editor/lib/css/editor.css";
 import "@nance/nance-editor/lib/css/dark.css";
 import { GetMarkdown, SetMarkdown } from "@nance/nance-editor";
