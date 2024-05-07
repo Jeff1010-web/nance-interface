@@ -77,8 +77,6 @@ export const ProposalSidebarSkeleton = () => {
           <div className="animate-pulse space-y-4">
             {/* Skeleton for proposal statistics */}
             <div className="flex justify-between">
-              <p style={{ color: 'green' }} className="text-sm" />
-              <p style={{ color: 'red' }} className="text-sm" />
             </div>
             <div className="p-3 text-sm text-gray-500" />
             <div className="flex justify-between">
@@ -96,7 +94,6 @@ export const ProposalSidebarSkeleton = () => {
                     <div className="text-sm flex justify-between">
                       <div>
                         <div className="inline" />
-                        <span style={{ color: '' }} />
                       </div>
                       <div />
                     </div>

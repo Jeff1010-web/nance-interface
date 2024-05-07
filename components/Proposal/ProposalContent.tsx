@@ -31,7 +31,7 @@ export default function ProposalContent({ body }: { body: string }) {
           {preTitleDisplay}{commonProps.title}
         </h1>
 
-        <p className="mt-2 flex text-sm text-gray-500">
+        <div className="mt-2 flex text-sm text-gray-500">
           by&nbsp;
           <span>
             <FormattedAddress
@@ -42,7 +42,7 @@ export default function ProposalContent({ body }: { body: string }) {
               minified
             />
           </span>
-        </p>
+        </div>
         {commonProps.coauthors.length > 0 && (
           <p className="text-sm text-gray-500">
             co-authored with&nbsp;
