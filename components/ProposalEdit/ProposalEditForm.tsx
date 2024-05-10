@@ -64,6 +64,8 @@ const UIGuide = dynamic(() => import("@/components/common/UIGuide"), {
 
 type ProposalFormValues = Omit<ProposalUploadRequest, "signature">;
 
+type ICustomTransaction = CustomTransaction & { tenderlyStatus: string };
+
 interface ProposalCache {
   version: number;
   timestamp: number;
@@ -132,7 +134,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
       getValues("proposal.actions")?.filter(
         (a) =>
           a.type === "Custom Transaction" &&
-          (a.payload as CustomTransaction).tenderlyStatus !== "true",
+          (a.payload as ICustomTransaction).tenderlyStatus !== "true",
       ).length === 0;
     const simulationFailedInfo = _allSimulated
       ? ""
