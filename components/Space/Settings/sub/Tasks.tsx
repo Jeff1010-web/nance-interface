@@ -27,7 +27,7 @@ export default function Tasks({ spaceConfig }: { spaceConfig: SpaceConfig }) {
   const performTask = async (space: string, endpoint: string) => {
     const res = await fetch(`${NANCE_PROXY_API_URL}/tasks/${space}/${endpoint}`);
     const data = await res.json();
-    console.log(data);
+    console.debug(data);
     setTaskResult(data);
     setTaskLoading(false);
   };

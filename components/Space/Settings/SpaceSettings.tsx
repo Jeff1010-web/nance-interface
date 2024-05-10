@@ -2,25 +2,21 @@ import {
   IdentificationIcon,
   ChatBubbleOvalLeftIcon,
   KeyIcon,
-  CalendarDaysIcon,
+  // CalendarDaysIcon,
   HandRaisedIcon,
 } from "@heroicons/react/20/solid";
 import { useEffect, useState } from "react";
 import SettingsNav from "./SettingsNav";
-import { CreateFormValues, SpaceConfig } from "@nance/nance-sdk";
+import { CreateFormValues, SpaceConfig, SpaceInfo } from "@nance/nance-sdk";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import General from "./sub/General";
 import Tasks from "./sub/Tasks";
 import Dialog from "./sub/Dialog";
 import Execution from "./sub/Execution";
-import Schedule from "./sub/Schedule";
+// import Schedule from "./sub/Schedule";
 import { useCreateSpace } from "@/utils/hooks/NanceHooks";
 import { useSession } from "next-auth/react";
 import { Spinner } from "flowbite-react";
-import {
-  getCurrentEvent,
-  getCurrentGovernanceCycleDay,
-} from "@/utils/functions/nance";
 
 export default function SpaceSettings({
   spaceConfig,
@@ -30,7 +26,7 @@ export default function SpaceSettings({
   const navigation = [
     { name: "General", icon: IdentificationIcon, component: General },
     { name: "Tasks", icon: HandRaisedIcon, component: Tasks },
-    { name: "Schedule", icon: CalendarDaysIcon, component: Schedule },
+    // { name: "Schedule", icon: CalendarDaysIcon, component: Schedule },
     { name: "Dialog", icon: ChatBubbleOvalLeftIcon, component: Dialog },
     // { name: "Vote", icon: BuildingLibraryIcon, component: () => <div>Component for Vote</div> },
     { name: "Execution", icon: KeyIcon, component: Execution },
@@ -40,9 +36,7 @@ export default function SpaceSettings({
     navigation[0].name,
   );
   const [editMode, setEditMode] = useState<boolean>(false);
-  const [spaceOwners, setSpaceOwners] = useState<string[]>(
-    spaceConfig.spaceOwners,
-  );
+  const [spaceOwners, setSpaceOwners] = useState<string[]>(spaceConfig.spaceOwners);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { data: session } = useSession();
@@ -51,44 +45,30 @@ export default function SpaceSettings({
 
   // reset form to current config when edit is toggled
   useEffect(() => {
-    const currentEvent = getCurrentEvent(
-      spaceConfig.calendar!,
-      spaceConfig.cycleStageLengths as number[],
-      new Date(),
-    );
-    const currentGovernanceCycleDay = getCurrentGovernanceCycleDay(
-      currentEvent,
-      spaceConfig.cycleStageLengths as number[],
-      new Date(),
-    );
     // keep this in mind: our date variable is actually split into two parts, the date and the time (TimePicker)
     // so remember to set the date and time separately
     // here we use start of currentEvent to set time properly
-    const startOfCycle = new Date(
-      new Date(currentEvent.start).setDate(
-        new Date().getDate() - currentGovernanceCycleDay,
-      ),
-    );
+    const startOfCycle = new Date(spaceConfig.cycleStartReference);
     methods.reset({
       config: spaceConfig.config,
-      // spaceOwners: spaceOwners.map((address) => ({ address })),
-      governanceCycleForm: {
-        // subtract currentGovernanceCycleDay from today
-        startDate: startOfCycle,
-        temperatureCheckLength: spaceConfig.cycleStageLengths?.[0],
-        voteLength: spaceConfig.cycleStageLengths?.[1],
-        executionLength: spaceConfig.cycleStageLengths?.[2],
-        delayLength: spaceConfig.cycleStageLengths?.[3],
-        // here's form values for TimePicker
-        time: {
-          ampm: startOfCycle.getHours() > 12 ? "PM" : "AM",
-          hour:
-            startOfCycle.getHours() > 12
-              ? startOfCycle.getHours() % 12
-              : startOfCycle.getHours(),
-          minute: startOfCycle.getMinutes().toString(),
-        },
-      },
+      spaceOwners: spaceOwners.map((owner) => ({ address: owner })) as unknown as string[], // HACK
+      // governanceCycleForm: {
+      //   // subtract currentGovernanceCycleDay from today
+      //   startDate: spaceConfig.cycleStartReference,
+      //   temperatureCheckLength: spaceConfig.cycleStageLengths?.[0],
+      //   voteLength: spaceConfig.cycleStageLengths?.[1],
+      //   executionLength: spaceConfig.cycleStageLengths?.[2],
+      //   delayLength: spaceConfig.cycleStageLengths?.[3],
+      //   // here's form values for TimePicker
+      //   time: {
+      //     ampm: startOfCycle?.getHours() > 12 ? "PM" : "AM",
+      //     hour:
+      //       startOfCycle?.getHours() > 12
+      //         ? startOfCycle?.getHours() % 12
+      //         : startOfCycle?.getHours(),
+      //     minute: startOfCycle?.getMinutes().toString(),
+      //   },
+      // },
     });
   }, [editMode, spaceConfig]);
 
@@ -153,7 +133,7 @@ export default function SpaceSettings({
                 className={selectedSetting === item.name ? "" : "hidden"}
               >
                 <item.component
-                  spaceConfig={{ ...spaceConfig, spaceOwners: spaceOwners }}
+                  spaceConfig={{ ...spaceConfig, spaceOwners }}
                   edit={editMode}
                 />
               </div>

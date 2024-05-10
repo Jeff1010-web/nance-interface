@@ -1,5 +1,5 @@
-import { useFieldArray, useFormContext } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useFieldArray } from "react-hook-form";
+import { useState } from "react";
 import FormattedAddress from "../AddressCard/FormattedAddress";
 import ENSAddressInput from "../form/ENSAddressInput";
 import { PlusCircleIcon } from "@heroicons/react/24/solid";
@@ -9,7 +9,7 @@ export default function SpaceOwnersForm({ edit = true }: { edit?: boolean; }) {
     name: "spaceOwners",
   });
 
-  const spaceOwners = fields as { id: string, address: string }[]; // is there a better way to do this?
+  const spaceOwners = fields as { id: string, address: string }[]; // HACK: is there a better way to do this?
 
   const [addOwner, setAddOwner] = useState<string>(""); 
 

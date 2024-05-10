@@ -21,7 +21,7 @@
     "@hookform/error-message": "^2.0.1",
     "@jbx-protocol/juice-contracts-v3": "5.0.0",
     "@nance/nance-editor": "^1.7.0",
-    "@nance/nance-sdk": "^2.0.1",
+    "@nance/nance-sdk": "^2.1.2",
     "@popperjs/core": "^2.11.8",
     "@rainbow-me/rainbowkit": "^1.3.3",
     "@rainbow-me/rainbowkit-siwe-next-auth": "^0.3.1",

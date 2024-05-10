@@ -15,7 +15,7 @@ export default function ProposalContent({ body }: { body: string }) {
   const proposalId = commonProps.proposalId;
   const sourceSnapshot = commonProps.uuid === "snapshot"; // hack
   const preTitleDisplay = proposalIdPrefix ? `${proposalIdPrefix}${proposalId}: ` : "";
-  console.log(commonProps);
+  console.debug(commonProps);
   return (
     <div className="">
       <div className="flex flex-col px-4 py-5 sm:px-6">
