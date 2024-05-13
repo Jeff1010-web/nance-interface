@@ -14,8 +14,11 @@ export default function ProposalMetadata() {
   const { data } = useSpaceInfo({ space: commonProps.space}, shouldFetchSpaceInfo);
   return (
     <div className="my-4 rounded-md border bg-gray-100 px-4 py-5 sm:px-6">
-      <h2 className="mb-3 text-gray-500">Metadata</h2>
-
+      <Link
+        href={`${NANCE_API_URL}/${commonProps.space}/proposal/${commonProps.uuid}`}
+        className="mb-3 text-gray-500">
+          Metadata
+      </Link>
       <div className="gaps-4">
         {commonProps.actions && commonProps.actions.length > 0 && (
           <>
@@ -38,7 +41,7 @@ export default function ProposalMetadata() {
         <div className="mt-2 grid grid-cols-3">
           {commonProps!.governanceCycle && (
             <>
-              <span className="font-medium">Cycle</span>
+              <span className="font-medium">Cycle:</span>
               <span className="col-span-2">
                 <Link
                   className="col-span-2"
@@ -55,7 +58,7 @@ export default function ProposalMetadata() {
 
           {commonProps.snapshotSpace && commonProps.snapshotHash && (
             <>
-              <span className="font-medium">View on Snapshot:</span>
+              <span className="font-medium">Snapshot view:</span>
               <a
                 className="col-span-2"
                 target="_blank"

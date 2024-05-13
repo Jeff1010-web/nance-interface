@@ -16,7 +16,7 @@ import {
   Controller,
 } from "react-hook-form";
 import { useProposalUpload } from "@/utils/hooks/NanceHooks";
-import { CustomTransaction, ProposalUploadRequest } from "@nance/nance-sdk";
+import { CustomTransaction, ProposalUploadRequest, actionsToYaml, getActionsFromBody, trimActionsFromBody } from "@nance/nance-sdk";
 import MiddleStepModal from "../modal/MiddleStepModal";
 import Actions from "./Actions";
 import { driverSteps } from "./GuideSteps";
@@ -172,7 +172,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
         metadata.loadedProposal?.status === "Temperature Check" && !isNew
           ? "Temperature Check"
           : selected.value,
-      body: formData.proposal.body,
+      body: `${formData.proposal.body}\n\n${actionsToYaml(formData.proposal.actions)}`,
       hash,
     };
     console.debug("📚 Nance.editProposal.onSubmit ->", { formData, payload });
@@ -279,7 +279,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
         <Actions
           loadedActions={
             (metadata.fork ? metadata.loadedProposal?.actions?.map(({ uuid, ...rest }) => rest)
-              : metadata.loadedProposal?.actions) || []
+              : getActionsFromBody(metadata?.loadedProposal?.body || "")) || []
           }
         />
 
@@ -313,10 +313,10 @@ export default function ProposalEditForm({ space }: { space: string }) {
                   <Controller
                     name="proposal.body"
                     control={control}
-                    defaultValue={metadata.loadedProposal?.body || TEMPLATE}
+                    defaultValue={trimActionsFromBody(metadata.loadedProposal?.body) || TEMPLATE}
                     render={({ field: { onChange } }) => (
                       <NanceEditor
-                        initialValue={metadata.loadedProposal?.body || TEMPLATE}
+                        initialValue={trimActionsFromBody(metadata.loadedProposal?.body) || TEMPLATE}
                         onEditorChange={(value) => {
                           if (!cacheModalIsOpen) {
                             setProposalCache({

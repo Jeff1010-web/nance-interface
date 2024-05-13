@@ -17,6 +17,7 @@ import {
 import { STATUS } from "@/constants/Nance";
 import { useProposal } from "@/utils/hooks/NanceHooks";
 import { useParams } from "next/navigation";
+import { getActionsFromBody } from "@nance/nance-sdk";
 
 export default function NanceProposalPage() {
   // state
@@ -72,11 +73,10 @@ export default function NanceProposalPage() {
     author: proposal.authorAddress || snapshotProposal?.author || "",
     coauthors: proposal.coauthors || [],
     body: proposal.body || "",
-    created:
-      snapshotProposal?.start ||
-      (proposal.createdTime
-        ? Math.floor(new Date(proposal.createdTime).getTime() / 1000)
-        : 0),
+    created: (proposal.createdTime)
+      ? Math.floor(new Date(proposal.createdTime).getTime() / 1000)
+      : snapshotProposal?.start || 0,
+    edited: Math.floor(new Date(proposal?.lastEditedTime || "").getTime() / 1000),
     end: snapshotProposal?.end || 0,
     snapshot: snapshotProposal?.snapshot || "",
     snapshotHash: proposal.voteURL || "",
@@ -84,10 +84,12 @@ export default function NanceProposalPage() {
     discussion: proposal.discussionThreadURL || "",
     governanceCycle: proposal.governanceCycle,
     uuid: proposal.uuid || "",
-    actions: proposal?.actions || [],
+    actions: proposal.actions.length > 0 ? proposal.actions : getActionsFromBody(proposal.body) || [],
     proposalId: String(proposal.proposalId),
     minTokenPassingAmount: 0,
   };
+
+  console.debug(getActionsFromBody(proposal.body));
 
   return (
     <>

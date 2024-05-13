@@ -16,6 +16,7 @@ import { NetworkContext } from "@/context/NetworkContext";
 import { useSwitchNetwork } from "wagmi";
 import { getChainByNetworkName } from "config/custom-chains";
 import { getChainIdFromName } from "../SafeInjectIframeCard/helpers/utils";
+import { uuidGen } from "@/utils/functions/nance";
 
 export default function Actions({
   loadedActions,
@@ -43,7 +44,7 @@ export default function Actions({
 
   const newAction = (a: ActionItem) => {
     setOpen(false);
-    append({ type: a.name, payload: {} });
+    append({ type: a.name, uuid: uuidGen(), payload: {} });
   };
 
   const genFieldName = (index: number) => {

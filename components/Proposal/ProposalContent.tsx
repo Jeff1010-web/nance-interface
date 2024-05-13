@@ -16,6 +16,10 @@ export default function ProposalContent({ body }: { body: string }) {
   const sourceSnapshot = commonProps.uuid === "snapshot"; // hack
   const preTitleDisplay = proposalIdPrefix ? `${proposalIdPrefix}${proposalId}: ` : "";
   console.debug(commonProps);
+
+  const createdAt = format(toDate(commonProps.created * 1000), "MM/dd/yy KK:mm a");
+  const updatedAt = format(toDate(commonProps.edited * 1000), "MM/dd/yy KK:mm a");
+
   return (
     <div className="">
       <div className="flex flex-col px-4 py-5 sm:px-6">
@@ -59,12 +63,19 @@ export default function ProposalContent({ body }: { body: string }) {
             ))}
           </p>
         )}
+        <div className="font-mono text-xs text-gray-500 mt-1">
+          <p>
+            created&nbsp;
+            {createdAt}
+          </p>
 
-        <p className="text-sm text-gray-500">
-          on&nbsp;
-          {format(toDate(commonProps.created * 1000), "LLL dd, u KK:mm a")}
-        </p>
-
+          {commonProps.edited !== commonProps.created && (
+            <p>
+              updated&nbsp;
+              {updatedAt}
+            </p>
+          )}
+        </div>
         <ProposalMetadata />
         <ProposalSummaries />
       </div>

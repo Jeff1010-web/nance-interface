@@ -5,6 +5,8 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import ReactMarkdown from "react-markdown";
 import { h } from "hastscript";
+import { getActionYamlFromBody, trimActionsFromBody } from "@nance/nance-sdk";
+import { Disclosure } from "@headlessui/react";
 
 export default function MarkdownWithTOC({ body }: { body: string }) {
   return (
@@ -33,8 +35,30 @@ export default function MarkdownWithTOC({ body }: { body: string }) {
           h6: ({ node, ...props }) => <h6 className="group" {...props} />,
         }}
       >
-        {body}
+        { trimActionsFromBody(body) }
       </ReactMarkdown>
+      { getActionYamlFromBody(body) && (
+        <Disclosure as="div" className="text-gray bg-slate-200 rounded-lg">
+          {({ open }) => (
+            <>
+              <dt>
+                <Disclosure.Button className="flex w-fit p-2 font-mono text-sm">
+                  {open ? (
+                    "(hide trimmed action text) ↑"
+                  ) : (
+                    "(show trimmed action text) ↓"
+                  )}
+                </Disclosure.Button>
+              </dt>
+              <Disclosure.Panel as="dd" className="pr-4 pb-4">
+                <pre>
+                  {getActionYamlFromBody(body)}
+                </pre>
+              </Disclosure.Panel>
+            </>
+          )}
+        </Disclosure>
+      )}
     </article>
   );
 }

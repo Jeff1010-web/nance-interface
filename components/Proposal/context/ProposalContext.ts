@@ -11,6 +11,7 @@ export interface ProposalCommonProps {
   coauthors: string[];
   body: string;
   created: number;
+  edited: number;
   end: number;
   snapshot: string;
   snapshotHash: string;
@@ -40,6 +41,7 @@ export const ProposalContext = createContext<{
     coauthors: [],
     body: "",
     created: 0,
+    edited: 0,
     end: 0,
     snapshot: "",
     snapshotHash: "",
