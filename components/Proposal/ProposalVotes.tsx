@@ -9,12 +9,11 @@ import {
   useProposalVotes,
   VOTES_PER_PAGE,
 } from "@/utils/hooks/snapshot/Proposals";
-import { formatNumber } from "@/utils/functions/NumberFormatter";
+import { formatNumber, numToPrettyString } from "@/utils/functions/NumberFormatter";
 import { processChoices } from "@/utils/functions/snapshotUtil";
 import { classNames } from "@/utils/functions/tailwind";
 import ColorBar from "@/components/common/ColorBar";
 import NewVoteButton from "@/components/Vote/NewVoteButton";
-import VoterProfile from "@/components/Vote/VoterProfile";
 import FormattedAddress from "@/components/AddressCard/FormattedAddress";
 import { ProposalContext } from "./context/ProposalContext";
 
@@ -36,7 +35,6 @@ export default function ProposalVotes({
   snapshotSpace: string;
 }) {
   const { proposalInfo, commonProps } = useContext(ProposalContext);
-  const [selectedVoter, setSelectedVoter] = useState<string>("");
   const [query, setQuery] = useQueryParams({
     page: withDefault(NumberParam, 1),
     sortBy: withDefault(createEnumParam(["time", "vp"]), "time"),
@@ -152,65 +150,11 @@ export default function ProposalVotes({
           {loading && "loading..."}
           {votes?.map((vote) => (
             <li key={vote.id}>
-              <div
-                className={classNames(
-                  "flex flex-col",
-                  vote.voter === selectedVoter ? "shadow" : "",
-                )}
-              >
-                <div
-                  className="cursor-pointer"
-                  onClick={() =>
-                    vote.voter === selectedVoter
-                      ? setSelectedVoter("")
-                      : setSelectedVoter(vote.voter)
-                  }
-                >
-                  {isSimpleVoting && (
-                    <div className="flex justify-between text-sm">
-                      <div className="flex">
-                        <div className="inline">
-                          <FormattedAddress
-                            address={vote.voter}
-                            style="text-gray-900"
-                            minified
-                            copyable={false}
-                          />
-                        </div>
-                        &nbsp;
-                        <span
-                          className={classNames(
-                            getColorOfChoice(
-                              processChoices(
-                                proposalInfo?.type,
-                                vote.choice,
-                              ) as string,
-                            ),
-                            "",
-                          )}
-                        >
-                          voted{" "}
-                          {
-                            processChoices(
-                              proposalInfo?.type,
-                              vote.choice,
-                            ) as string
-                          }
-                        </span>
-                      </div>
-
-                      <div>
-                        {`${formatNumber(vote.vp)} (${(
-                          (vote.vp * 100) /
-                          (proposalInfo?.scores_total ?? 1)
-                        ).toFixed()}%)`}
-                      </div>
-                    </div>
-                  )}
-
-                  {!isSimpleVoting && (
-                    <div className="flex flex-col text-sm">
-                      <div>
+              <div className="flex flex-col">
+                {isSimpleVoting && (
+                  <div className="flex justify-between text-sm">
+                    <div className="flex">
+                      <div className="inline">
                         <FormattedAddress
                           address={vote.voter}
                           style="text-gray-900"
@@ -218,39 +162,75 @@ export default function ProposalVotes({
                           copyable={false}
                         />
                       </div>
+                        &nbsp;
+                      <span
+                        className={classNames(
+                          getColorOfChoice(
+                              processChoices(
+                                proposalInfo?.type,
+                                vote.choice,
+                              ) as string,
+                          ),
+                          "",
+                        )}
+                      >
+                          voted{" "}
+                        {
+                            processChoices(
+                              proposalInfo?.type,
+                              vote.choice,
+                            ) as string
+                        }
+                      </span>
+                    </div>
 
-                      <div className="text-xs font-semibold text-slate-700">
-                        {`${formatNumber(vote.vp)} (${(
-                          (vote.vp * 100) /
+                    <div>
+                      {`${formatNumber(vote.vp)} (${(
+                        (vote.vp * 100) /
                           (proposalInfo?.scores_total ?? 1)
-                        ).toFixed()}%)`}{" "}
-                        total
-                      </div>
+                      ).toFixed()}%)`}
+                    </div>
+                  </div>
+                )}
 
-                      <div className="py-2 text-sm text-gray-600">
-                        {(
+                {!isSimpleVoting && (
+                  <div className="flex flex-col text-sm">
+                    <div>
+                      <FormattedAddress
+                        address={vote.voter}
+                        style="text-gray-900"
+                        minified
+                        copyable={false}
+                      />
+                    </div>
+
+                    <div className="text-xs font-semibold text-slate-700">
+                      {`${formatNumber(vote.vp)} (${(
+                        (vote.vp * 100) /
+                          (proposalInfo?.scores_total ?? 1)
+                      ).toFixed()}%)`}{" "}
+                        total
+                    </div>
+
+                    <div className="py-2 text-sm text-gray-600">
+                      {(
                           processChoices(
                             proposalInfo?.type,
                             vote.choice,
                           ) as string[]
-                        ).map((choice, idx) => (
-                          <p key={`${vote.id} - ${idx}`}>{choice}</p>
-                        ))}
-                      </div>
+                      ).map((choice, idx) => (
+                        <p key={`${vote.id} - ${idx}`}>{choice}</p>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {vote.reason && (
-                    <div className="text-sm text-gray-600">{vote.reason}</div>
-                  )}
-                </div>
-
-                <VoterProfile
-                  space="jbdao.eth"
-                  proposal={proposalInfo?.id || ""}
-                  voter={vote.voter}
-                  isOpen={vote.voter === selectedVoter}
-                />
+                {vote.reason && (
+                  <div className="ml-1 flex flex-row">
+                    <div className="text-lg">↳</div>
+                    <div className="text-xs text-gray-600 ml-1 w-3/4 mt-1 border border-dashed border-gray-300 bg-gray-100 px-2 py-1 rounded-lg">{vote.reason}</div>
+                  </div>
+                )}
               </div>
             </li>
           ))}

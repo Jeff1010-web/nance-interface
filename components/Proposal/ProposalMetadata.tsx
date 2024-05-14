@@ -61,7 +61,7 @@ export default function ProposalMetadata() {
             <>
               <span className="font-medium">Discussion:</span>
               <a
-                className="col-span-2"
+                className="col-span-2 w-fit"
                 target="_blank"
                 rel="noreferrer"
                 href={openInDiscord(commonProps!.discussion)}
@@ -76,7 +76,7 @@ export default function ProposalMetadata() {
             <>
               <span className="font-medium">Snapshot view:</span>
               <a
-                className="col-span-2"
+                className="col-span-2 w-fit"
                 target="_blank"
                 rel="noreferrer"
                 href={`https://snapshot.org/#/${
@@ -86,19 +86,6 @@ export default function ProposalMetadata() {
                 {commonProps!.snapshotHash.substring(0, 8)}
                 <ArrowTopRightOnSquareIcon className="inline h-3 w-3 text-xs" />
               </a>
-            </>
-          )}
-
-          {commonProps.voteStart && commonProps.voteEnd && (
-            <>
-              <span className="font-medium">Vote start:</span>
-              <span className="col-span-2 font-mono">
-                {format(toDate(commonProps.voteStart * 1000), "MM/dd/yy hh:mm a")}
-              </span>
-              <span className="font-medium">Vote end:</span>
-              <span className="col-span-2 font-mono">
-                {format(toDate(commonProps.voteEnd * 1000), "MM/dd/yy hh:mm a")}
-              </span>
             </>
           )}
 

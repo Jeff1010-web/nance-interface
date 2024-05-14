@@ -75,6 +75,13 @@ export default function ProposalContent({ body }: { body: string }) {
               {updatedAt}
             </p>
           )}
+
+          {commonProps.voteStart > 0 && (
+            <p>
+              vote &nbsp; &nbsp;
+              {format(toDate(commonProps.voteStart * 1000), "MM/dd/yy hh:mm a")} - {format(toDate(commonProps.voteEnd * 1000), "MM/dd/yy hh:mm a")}
+            </p>
+          )}
         </div>
         <ProposalMetadata />
         <ProposalSummaries />
