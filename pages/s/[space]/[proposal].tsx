@@ -77,7 +77,8 @@ export default function NanceProposalPage() {
       ? Math.floor(new Date(proposal.createdTime).getTime() / 1000)
       : snapshotProposal?.start || 0,
     edited: Math.floor(new Date(proposal?.lastEditedTime || "").getTime() / 1000),
-    end: snapshotProposal?.end || 0,
+    voteStart: snapshotProposal?.start || 0,
+    voteEnd: snapshotProposal?.end || 0,
     snapshot: snapshotProposal?.snapshot || "",
     snapshotHash: proposal.voteURL || "",
     ipfs: snapshotProposal?.ipfs || proposal.ipfsURL || "",

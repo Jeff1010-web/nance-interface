@@ -12,7 +12,8 @@ export interface ProposalCommonProps {
   body: string;
   created: number;
   edited: number;
-  end: number;
+  voteStart: number;
+  voteEnd: number;
   snapshot: string;
   snapshotHash: string;
   ipfs: string;
@@ -42,7 +43,8 @@ export const ProposalContext = createContext<{
     body: "",
     created: 0,
     edited: 0,
-    end: 0,
+    voteStart: 0,
+    voteEnd: 0,
     snapshot: "",
     snapshotHash: "",
     ipfs: "",

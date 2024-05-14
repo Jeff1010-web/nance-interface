@@ -7,6 +7,7 @@ import ActionLabel from "@/components/ActionLabel/ActionLabel";
 import { ProposalContext } from "./context/ProposalContext";
 import { useSpaceInfo } from "@/utils/hooks/NanceHooks";
 import { SpaceContext } from "@/context/SpaceContext";
+import { format, toDate } from "date-fns";
 
 export default function ProposalMetadata() {
   const { commonProps } = useContext(ProposalContext);
@@ -22,7 +23,7 @@ export default function ProposalMetadata() {
       <div className="gaps-4">
         {commonProps.actions && commonProps.actions.length > 0 && (
           <>
-            <p className="col-span-2 font-medium">Actions</p>
+            <p className="col-span-2 font-medium">Actions:</p>
 
             <div className="col-span-2 mt-2 flex w-full flex-col space-y-2">
               <SpaceContext.Provider value={data?.data}>
@@ -56,6 +57,21 @@ export default function ProposalMetadata() {
             </>
           )}
 
+          {commonProps!.discussion && (
+            <>
+              <span className="font-medium">Discussion:</span>
+              <a
+                className="col-span-2"
+                target="_blank"
+                rel="noreferrer"
+                href={openInDiscord(commonProps!.discussion)}
+              >
+                {getDomain(commonProps!.discussion)}
+                <ArrowTopRightOnSquareIcon className="inline h-3 w-3 text-xs" />
+              </a>
+            </>
+          )}
+
           {commonProps.snapshotSpace && commonProps.snapshotHash && (
             <>
               <span className="font-medium">Snapshot view:</span>
@@ -73,18 +89,16 @@ export default function ProposalMetadata() {
             </>
           )}
 
-          {commonProps!.discussion && (
+          {commonProps.voteStart && commonProps.voteEnd && (
             <>
-              <span className="font-medium">Discussion:</span>
-              <a
-                className="col-span-2"
-                target="_blank"
-                rel="noreferrer"
-                href={openInDiscord(commonProps!.discussion)}
-              >
-                {getDomain(commonProps!.discussion)}
-                <ArrowTopRightOnSquareIcon className="inline h-3 w-3 text-xs" />
-              </a>
+              <span className="font-medium">Vote start:</span>
+              <span className="col-span-2 font-mono">
+                {format(toDate(commonProps.voteStart * 1000), "MM/dd/yy hh:mm a")}
+              </span>
+              <span className="font-medium">Vote end:</span>
+              <span className="col-span-2 font-mono">
+                {format(toDate(commonProps.voteEnd * 1000), "MM/dd/yy hh:mm a")}
+              </span>
             </>
           )}
 

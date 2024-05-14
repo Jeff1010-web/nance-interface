@@ -17,8 +17,8 @@ export default function ProposalContent({ body }: { body: string }) {
   const preTitleDisplay = proposalIdPrefix ? `${proposalIdPrefix}${proposalId}: ` : "";
   console.debug(commonProps);
 
-  const createdAt = format(toDate(commonProps.created * 1000), "MM/dd/yy KK:mm a");
-  const updatedAt = format(toDate(commonProps.edited * 1000), "MM/dd/yy KK:mm a");
+  const createdAt = format(toDate(commonProps.created * 1000), "MM/dd/yy hh:mm a");
+  const updatedAt = format(toDate(commonProps.edited * 1000), "MM/dd/yy hh:mm a");
 
   return (
     <div className="">
