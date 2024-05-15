@@ -16,7 +16,19 @@ import {
   Controller,
 } from "react-hook-form";
 import { useProposalUpload } from "@/utils/hooks/NanceHooks";
-import { CustomTransaction, ProposalUploadRequest, actionsToYaml, getActionsFromBody, trimActionsFromBody } from "@nance/nance-sdk";
+import {
+  CustomTransaction,
+  ProposalStatus as ProposalStatusType,
+  ProposalUploadRequest,
+  actionsToYaml,
+  // ===== SIGNATURE BASED AUTHENTICATION =====
+  // formatSnapshotProposalMessage,
+  // domain,
+  // SnapshotTypes,
+  // ==========================================
+  getActionsFromBody,
+  trimActionsFromBody
+} from "@nance/nance-sdk";
 import MiddleStepModal from "../modal/MiddleStepModal";
 import Actions from "./Actions";
 import { driverSteps } from "./GuideSteps";
@@ -28,7 +40,7 @@ import { ProposalSubmitButton } from "./ProposalSubmitButton";
 import DiscordUser from "../CreateSpace/sub/DiscordUser";
 import { classNames } from "@/utils/functions/tailwind";
 import { SpaceContext } from "@/context/SpaceContext";
-import { useAccount } from "wagmi";
+import { useAccount, useSignTypedData } from "wagmi";
 import { accessCheckWithGuild } from "@/utils/hooks/GuildxyzHooks";
 import "@nance/nance-editor/lib/css/editor.css";
 import "@nance/nance-editor/lib/css/dark.css";
@@ -87,11 +99,12 @@ export default function ProposalEditForm({ space }: { space: string }) {
   const [selected, setSelected] = useState(ProposalStatus[0]);
   const [submitWillFailReason, setSubmitWillFailReason] = useState<string>("");
   const [formDataPayload, setFormDataPayload] = useState<ProposalFormValues>();
-  const [authorDiscordId, setAuthorDiscordId] = useState<string | null>();
+  const [authorDiscordId, setAuthorDiscordId] = useState<string | undefined>();
   const [submitted, setSubmitted] = useState(false);
 
   // hooks
   const { address } = useAccount();
+  // const { signTypedDataAsync } = useSignTypedData(); // ===== SIGNATURE BASED AUTHENTICATION =====
   const [proposalCache, setProposalCache] = useLocalStorage<ProposalCache>(
     "ProposalCache",
     CACHE_VERSION,
@@ -160,28 +173,41 @@ export default function ProposalEditForm({ space }: { space: string }) {
   const processAndUploadProposal: SubmitHandler<ProposalFormValues> = async (
     formData,
   ) => {
-    let hash;
+    let uuid;
     if (!metadata.fork && metadata?.loadedProposal) {
-      hash = metadata.loadedProposal.uuid;
+      uuid = metadata.loadedProposal.uuid;
     }
 
-    const payload = {
+    const body = `${formData.proposal.body}\n\n${actionsToYaml(formData.proposal.actions)}`;
+    const proposal = {
       ...formData.proposal,
-      authorDiscordId: authorDiscordId,
+      body,
+      authorDiscordId,
       status:
         metadata.loadedProposal?.status === "Temperature Check" && !isNew
           ? "Temperature Check"
-          : selected.value,
-      body: `${formData.proposal.body}\n\n${actionsToYaml(formData.proposal.actions)}`,
-      hash,
+          : selected.value as ProposalStatusType,
     };
-    console.debug("📚 Nance.editProposal.onSubmit ->", { formData, payload });
+
+    if (!address || !spaceInfo?.snapshotSpace) return;
+    // ===== SIGNATURE BASED AUTHENTICATION =====
+    // const message = formatSnapshotProposalMessage(address, proposal, spaceInfo.snapshotSpace, new Date(), new Date());
+    // signTypedDataAsync({
+    //   types: SnapshotTypes.proposalTypes,
+    //   primaryType: "Proposal",
+    //   domain,
+    //   message: message as SnapshotTypes.Proposal as any,
+    // }).then(async (signature) => {
+    // ==========================================
 
     const req: ProposalUploadRequest = {
-      proposal: payload as any,
       space,
+      proposal,
+      // ===== SIGNATURE BASED AUTHENTICATION =====
+      // signature,
+      // address,
+      // ==========================================
     };
-    console.debug("📗 Nance.editProposal.submit ->", req);
     trigger(req)
       .then(async (res) => {
         setSubmitted(true);
@@ -200,6 +226,7 @@ export default function ProposalEditForm({ space }: { space: string }) {
       .catch((err) => {
         console.warn("📗 Nance.editProposal.onSignError ->", err);
       });
+    // }); // ===== SIGNATURE BASED AUTHENTICATION =====
   };
 
   // shortcut
