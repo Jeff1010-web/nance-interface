@@ -26,7 +26,6 @@ import ProposalVotes from "./ProposalVotes";
 import Notification from "@/components/common/Notification";
 import { ProposalContext } from "./context/ProposalContext";
 import ResultModal from "../modal/ResultModal";
-import ProposalTOC from "./ProposalTOC";
 
 const ProposalStatus = [
   {
@@ -152,12 +151,11 @@ export default function ProposalSidebar({
 
   return (
     <div
-      className="sticky bottom-6 top-6 bg-white px-4 py-5 opacity-100 shadow sm:rounded-lg sm:px-6"
+      className="lg:mt-5 sticky bottom-6 top-6 bg-white px-4 py-5 opacity-100 shadow sm:rounded-lg sm:px-6"
       style={{
         maxHeight: "calc(100vh - 1rem)",
       }}
     >
-      <ProposalTOC />
 
       <button
         onClick={() => {
