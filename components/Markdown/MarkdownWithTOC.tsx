@@ -10,7 +10,7 @@ import { Disclosure } from "@headlessui/react";
 
 export default function MarkdownWithTOC({ body }: { body: string }) {
   return (
-    <article className="prose md:prose-lg lg:prose-xl prose-indigo prose-table:table-fixed mx-auto break-words text-gray-500">
+    <article className="prose prose-lg prose-indigo break-words text-gray-500">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[
@@ -33,6 +33,13 @@ export default function MarkdownWithTOC({ body }: { body: string }) {
           h4: ({ node, ...props }) => <h4 className="group" {...props} />,
           h5: ({ node, ...props }) => <h5 className="group" {...props} />,
           h6: ({ node, ...props }) => <h6 className="group" {...props} />,
+          table: ({ node, ...props }) => (
+            <div className="overflow-x-auto">
+              <table className="text-center border-b" {...props} />
+            </div>
+          ),
+          th: ({ node, ...props }) => <th className="whitespace-nowrap border-r border-gray-200 last:border-r-0" {...props} />,
+          td: ({ node, ...props }) => <td className="whitespace-nowrap border-r border-gray-200 last:border-r-0" {...props} />,
         }}
       >
         { trimActionsFromBody(body) }
