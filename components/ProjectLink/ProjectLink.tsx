@@ -3,6 +3,7 @@ import useJBMSearch from "@/utils/hooks/juicebox/ProjectSmartSearch";
 import BasicFormattedCard from "../common/BasicFormattedCard";
 import { cidFromUrl, ipfsUrlOf, JBDAO_LOGO } from "@/constants/Juicebox";
 import Link from "next/link";
+import { Tooltip } from "flowbite-react";
 
 interface Props {
   /**
@@ -72,10 +73,13 @@ export default function ProjectLink({
         className={classNames(style, "hover:underline")}
         href={projectUrl}
       >
-        <p>
-          {displayMinifiedName}{" "}
-          <span className="text-xs text-gray-400">{subText}</span>
-        </p>
+        {subText ? (
+          <Tooltip content={subText}>
+            @{displayMinifiedName}{" "}
+          </Tooltip>
+        ): (
+          <p>@{displayMinifiedName}{" "} </p>
+        )}
       </Link>
     );
   }

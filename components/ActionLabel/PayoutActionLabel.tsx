@@ -5,6 +5,8 @@ import { useContext } from "react";
 import { ProposalContext } from "../Proposal/context/ProposalContext";
 import { dateRangesOfCycles } from "@/utils/functions/GovernanceCycle";
 import { SpaceContext } from "@/context/SpaceContext";
+import FormattedAddress from "../AddressCard/FormattedAddress";
+import { formatNumber } from "@/utils/functions/NumberFormatter";
 
 export default function PayoutActionLabel({ payout }: { payout: Payout }) {
   const { commonProps } = useContext(ProposalContext);
@@ -20,13 +22,17 @@ export default function PayoutActionLabel({ payout }: { payout: Payout }) {
     cycleStartDate: cycleStartDate as string,
   });
 
+  const total = (payout.count * payout.amountUSD).toLocaleString();
+
   return (
-    <span className="line-clamp-5">
-      ${Number(payout.amountUSD).toLocaleString()}
-      &nbsp;to
-      <JBSplitEntry mod={payout2JBSplit(payout)} />
-      {/* <FormattedAddress address={(action.payload as Payout).address} style="inline ml-1" /> */}
-      {`for ${payout.count} cycles (${dateRanges})`}
-    </span>
+    <div className="flex flex-col">
+      <span className="line-clamp-5">
+        ${Number(payout.amountUSD).toLocaleString()}
+        &nbsp;to
+        <JBSplitEntry mod={payout2JBSplit(payout)} />
+        {`for ${payout.count} cycles`} (<span className="font-mono text-sm">{dateRanges}</span>)
+      </span>
+      <div className="font-semibold italic text-emerald-600">Total Amount: ${total}</div>
+    </div>
   );
 }

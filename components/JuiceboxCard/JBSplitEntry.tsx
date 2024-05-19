@@ -1,10 +1,10 @@
 import { SplitDiffEntry, keyOfSplit } from "@/utils/functions/juicebox";
-import { classNames } from "@/utils/functions/tailwind";
 import { JBSplit } from "@/models/JuiceboxTypes";
 import { Status, SectionTableData } from "../form/DiffTableWithSection";
 import FormattedAddress from "../AddressCard/FormattedAddress";
 import ProjectLink from "../ProjectLink";
 import { shortenAddress } from "@/utils/functions/address";
+import { useEnsName } from "wagmi";
 
 export default function JBSplitEntry({
   mod,
@@ -15,6 +15,8 @@ export default function JBSplitEntry({
 }) {
   const { allocator, projectId, beneficiary } = mod;
 
+  const { data: ensName } = useEnsName({ address: beneficiary as `0x${string}`, chainId: 1 });
+
   let splitMode = "address";
   if (allocator !== "0x0000000000000000000000000000000000000000") {
     splitMode = "allocator";
@@ -22,15 +24,16 @@ export default function JBSplitEntry({
     splitMode = "project";
   }
 
-  const mainStyle = "text-sm";
+  const mainStyle = "text-base font-semibold";
 
+  
   if (splitMode === "project") {
     return (
       <div className="mx-1 inline-block">
         <ProjectLink
           projectId={projectId.toNumber()}
-          style={mainStyle}
-          subText={`token: ${shortenAddress(beneficiary)}`}
+          style={`${mainStyle} text-amber-600`}
+          subText={`Beneficiary of project payment tokens: ${ensName || shortenAddress(beneficiary)}`}
           minified
         />
       </div>
@@ -42,7 +45,7 @@ export default function JBSplitEntry({
       <div className="mx-1 inline-block">
         <FormattedAddress
           address={allocator}
-          style={mainStyle}
+          style={`${mainStyle} text-blue-500`}
           subText="allocator contract"
           minified
         />
@@ -52,7 +55,7 @@ export default function JBSplitEntry({
 
   return (
     <div className="mx-1 inline-block">
-      <FormattedAddress address={beneficiary} style={mainStyle} minified />
+      <FormattedAddress address={beneficiary} style={`${mainStyle} text-blue-800`} minified link copyable={false} />
     </div>
   );
 }

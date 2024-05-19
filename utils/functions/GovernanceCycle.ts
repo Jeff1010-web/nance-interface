@@ -18,5 +18,5 @@ export function dateRangesOfCycles({
   const startDate = addDays(new Date(currentCycleStartDate), (cycle - currentCycle) * CYCLE_LENGTH);
   const endDate = addDays(startDate, length * CYCLE_LENGTH);
 
-  return `${format(startDate, "LLL dd, u")} - ${format(endDate, "LLL dd, u")}`;
+  return `${format(startDate, "MM/dd/yy")} - ${format(endDate, "MM/dd/yy")}`;
 }

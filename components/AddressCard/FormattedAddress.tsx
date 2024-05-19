@@ -37,6 +37,11 @@ interface Props {
   minified?: boolean;
 
   /**
+   * Whether to render as a link.
+   */
+  link?: boolean;
+
+  /**
    * Whether the address is copyable. Default is `true`.
    */
   copyable?: boolean;
@@ -55,7 +60,8 @@ interface Props {
  * @param overrideURLPrefix Override the URL prefix. Default is `https://[goerli.]etherscan.io/address/`.
  * @param network Network to use for block explorer link. Default is `mainnet`.
  * @param openInNewWindow Open the link in a new window. Default is `true`.
- * @param minified Don't render the link and avatar.
+ * @param minified Don't render avatar.
+ * @param link Whether to render as a link.
  * @param copyable Whether the address is copyable. Default is `true`.
  * @param action The action to perform when the card is clicked.
  */
@@ -67,6 +73,7 @@ export default function FormattedAddress({
   network,
   openInNewWindow = true,
   minified = false,
+  link = false,
   copyable = true,
   action,
 }: Props) {
@@ -88,6 +95,19 @@ export default function FormattedAddress({
       setLabel(shortenAddress(address) || "Anon");
     }
   }, [ensName, address]);
+
+  if (minified && link) {
+    return (
+      <a
+        target={anchorTarget}
+        rel="noopener noreferrer"
+        className={classNames(style, "hover:underline")}
+        href={`${urlPrefix}${address ? encodeURIComponent(address) : ""}`}
+      >
+        {label}
+      </a>
+    );
+  }
 
   if (minified) {
     return (
