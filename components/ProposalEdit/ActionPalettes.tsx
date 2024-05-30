@@ -26,14 +26,14 @@ const items: ActionItem[] = [
     color: "bg-blue-500",
     icon: CurrencyDollarIcon,
   },
-  {
-    id: 2,
-    name: "Reserve",
-    description: "Apply to be added in reserved token list.",
-    url: "#",
-    color: "bg-blue-500",
-    icon: UserGroupIcon,
-  },
+  // {
+  //   id: 2,
+  //   name: "Reserve",
+  //   description: "Apply to be added in reserved token list.",
+  //   url: "#",
+  //   color: "bg-blue-500",
+  //   icon: UserGroupIcon,
+  // },
   {
     id: 3,
     name: "Transfer",
@@ -58,7 +58,7 @@ export default function ActionPalettes({
   setOpen,
   selectedAction,
   setSelectedAction,
-  space
+  space,
 }: any) {
   return (
     <Transition.Root show={open} as={Fragment}>

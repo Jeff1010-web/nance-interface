@@ -31,13 +31,15 @@ export default function PayoutActionForm({
           defaultValue={
             getValues(genFieldName("project")) > 0 ? "project" : "address"
           }
+          showType={false}
         />
       </div>
       <div className="col-span-4 sm:col-span-1">
         <UIntForm
-          label="Duration(Cycles)"
+          label="Duration"
           fieldName={genFieldName("count")}
           decimal={1}
+          fieldType="cycles"
         />
         <span className="text-xs text-gray-400">
           {dateRangesOfCycles({
@@ -73,6 +75,7 @@ export default function PayoutActionForm({
             defaultValue={projectOwner}
             disabled
             disabledTooltip="The token beneficiary must be the project owner"
+            showType={false}
           />
         )}
 
@@ -80,6 +83,7 @@ export default function PayoutActionForm({
           <AddressForm
             label="Receiver Address"
             fieldName={genFieldName("address")}
+            showType={false}
           />
         )}
       </div>
