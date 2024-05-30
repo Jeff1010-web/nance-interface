@@ -6,18 +6,18 @@ import { useAccount, useWalletClient } from "wagmi";
 import { useEthersSigner } from "@/utils/hooks/ViemAdapter";
 import Safe, {
   EthersAdapter,
-  SafeTransactionOptionalProps
+  SafeTransactionOptionalProps,
 } from "@safe-global/protocol-kit";
 import {
   MetaTransactionData,
   SafeTransaction,
-  SafeTransactionDataPartial
+  SafeTransactionDataPartial,
 } from "@safe-global/safe-core-sdk-types";
 import {
   safeNetworkAPI,
   useSafeNetworkAPI,
   V1,
-  SupportedSafeNetwork
+  SupportedSafeNetwork,
 } from "@/utils/hooks/Safe/SafeURL";
 import { useSafeAPIKit } from "./SafekitWrapper";
 import {
@@ -26,7 +26,7 @@ import {
   safeInfoJsonFetcher,
   validSafeFetcher,
   fetchSafeWithAddress,
-  basicFetcher
+  basicFetcher,
 } from "./SafeFetchers";
 
 export function useMultisigTransactionOf(
@@ -235,16 +235,20 @@ export function useIsValidAddress(
   );
 }
 
-export async function isValidSafe(address: string, network = 'Ethereum' as SupportedSafeNetwork) {
+export async function isValidSafe(
+  address: string,
+  network = "Ethereum" as SupportedSafeNetwork,
+) {
   const api = safeNetworkAPI(network);
   return fetchSafeWithAddress(`${api}/${V1}/safes/${address}`);
 }
 
-
 export function useSafeBalances(address: string, shouldFetch: boolean = true) {
   const api = useSafeNetworkAPI();
   return useSWR<SafeBalanceUsdResponse[], Error>(
-    shouldFetch ? `${api}/${V1}/safes/${address}/balances/usd/?trusted=true&exclude_spam=true` : null,
+    shouldFetch
+      ? `${api}/${V1}/safes/${address}/balances?trusted=true&exclude_spam=true`
+      : null,
     basicFetcher(),
     { shouldRetryOnError: false },
   );
