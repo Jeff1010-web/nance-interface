@@ -80,6 +80,7 @@
     "@types/react": "^18.0.15",
     "@types/uuid": "^9.0.8",
     "autoprefixer": "^10.4.7",
+    "daisyui": "latest",
     "eslint": "8.19.0",
     "eslint-config-next": "12.2.2",
     "eslint-plugin-storybook": "^0.6.15",

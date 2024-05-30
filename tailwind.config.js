@@ -13,8 +13,9 @@ module.exports = {
   },
   plugins: [
     require("flowbite/plugin"),
-    require('@tailwindcss/aspect-ratio'),
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography')
+    require("@tailwindcss/aspect-ratio"),
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/typography"),
+    require("daisyui"),
   ],
-}
+};
