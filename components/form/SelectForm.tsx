@@ -1,6 +1,7 @@
 import { classNames } from "@/utils/functions/tailwind";
 import { ErrorMessage } from "@hookform/error-message";
 import { useFormContext } from "react-hook-form";
+import TooltipInfo from "./TooltipInfo";
 
 export interface SelectOption {
   displayValue: string;
@@ -14,6 +15,7 @@ export default function SelectForm({
   fieldType = "string",
   defaultValue = "",
   showType = true,
+  tooltip = "",
 }: {
   label: string;
   fieldName: any;
@@ -21,6 +23,7 @@ export default function SelectForm({
   fieldType?: string;
   defaultValue?: string;
   showType?: boolean;
+  tooltip?: string;
 }) {
   const {
     register,
@@ -29,7 +32,9 @@ export default function SelectForm({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <div className="text-sm font-medium text-gray-700 flex space-x-1 items-center">
+        <span>{label}</span> {tooltip && <TooltipInfo content={tooltip} />}
+      </div>
       <div className="mt-1 flex rounded-md shadow-sm">
         {showType && (
           <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">

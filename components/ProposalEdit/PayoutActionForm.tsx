@@ -32,6 +32,7 @@ export default function PayoutActionForm({
             getValues(genFieldName("project")) > 0 ? "project" : "address"
           }
           showType={false}
+          tooltip="Send funds to juicebox project or address?"
         />
       </div>
       <div className="col-span-4 sm:col-span-1">
@@ -76,6 +77,7 @@ export default function PayoutActionForm({
             disabled
             disabledTooltip="The token beneficiary must be the project owner"
             showType={false}
+            tooltip="Who will receive the token after paying the project you specified?"
           />
         )}
 

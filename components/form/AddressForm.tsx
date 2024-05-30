@@ -4,6 +4,7 @@ import ENSAddressInput from "./ENSAddressInput";
 import { useEffect } from "react";
 import { classNames } from "@/utils/functions/tailwind";
 import { isAddress, zeroAddress } from "viem";
+import TooltipInfo from "./TooltipInfo";
 
 interface AddressFormProps {
   /**
@@ -38,6 +39,7 @@ interface AddressFormProps {
    * The tooltip to show when the input is disabled
    */
   disabledTooltip?: string;
+  tooltip?: string;
 }
 
 /**
@@ -65,6 +67,7 @@ export default function AddressForm({
   validate = undefined,
   showType = true,
   required = true,
+  tooltip = "",
 }: AddressFormProps) {
   const {
     control,
@@ -83,9 +86,9 @@ export default function AddressForm({
 
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-gray-700">
-        {label}
-      </label>
+      <div className="mb-1 text-sm font-medium text-gray-700 flex space-x-1 items-center">
+        <span>{label}</span> {tooltip && <TooltipInfo content={tooltip} />}
+      </div>
       <div className="mt-1 flex rounded-md shadow-sm">
         {showType && (
           <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
