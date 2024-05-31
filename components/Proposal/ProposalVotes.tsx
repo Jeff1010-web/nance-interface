@@ -141,7 +141,7 @@ export default function ProposalVotes({
               QUORUM {formatNumber(threshold)}
             </p>
             <p className="text-sm">
-              VOTER {formatNumber(proposalInfo?.votes || 0)}
+              VOTERS {formatNumber(proposalInfo?.votes || 0)}
             </p>
           </div>
         </div>

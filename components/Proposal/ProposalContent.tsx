@@ -1,4 +1,3 @@
-import { ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useContext } from "react";
 import ProposalNavigator from "./ProposalNavigator";
@@ -9,13 +8,16 @@ import { ProposalContext } from "./context/ProposalContext";
 import ProposalBadgeLabel from "../Space/sub/card/ProposalBadgeLabel";
 import { format, toDate } from "date-fns";
 import ProposalSummaries from "./ProposalSummaries";
+import ProposalMenu from "./ProposalMenu";
+import { ArrowLongLeftIcon } from "@heroicons/react/24/outline";
 
-export default function ProposalContent({ body }: { body: string }) {
+export default function ProposalContent() {
   const { commonProps, proposalIdPrefix } = useContext(ProposalContext);
   const proposalId = commonProps.proposalId;
   const sourceSnapshot = commonProps.uuid === "snapshot"; // hack
   const preTitleDisplay = proposalIdPrefix ? `${proposalIdPrefix}${proposalId}: ` : "";
   console.debug(commonProps);
+  const { body } = commonProps;
 
   const createdAt = format(toDate(commonProps.created * 1000), "MM/dd/yy hh:mm a");
   const updatedAt = format(toDate(commonProps.edited * 1000), "MM/dd/yy hh:mm a");
@@ -27,9 +29,12 @@ export default function ProposalContent({ body }: { body: string }) {
           <div className="inline-block">
             <ProposalBadgeLabel status={commonProps.status} />
           </div>
-          <Link href={`/s/${commonProps.space}`} className="w-fit">
-            <ArrowUturnLeftIcon className="h-5 w-5" />
-          </Link>
+          <div className="flex flex-row items-center space-x-5">
+            <Link href={`/s/${commonProps.space}`} className="text-sm flex flex-row">
+              <ArrowLongLeftIcon className="h-5 w-5" /> &nbsp; back
+            </Link>
+            <ProposalMenu />
+          </div>
         </div>
         <h1 id="applicant-information-title" className="text-3xl font-medium">
           {preTitleDisplay}{commonProps.title}

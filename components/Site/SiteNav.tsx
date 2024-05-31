@@ -45,11 +45,6 @@ export default function SiteNav({
     image: image || "/images/opengraph/OG_splash.png",
   };
 
-  const canForkProposal = !!proposalId;
-  let editProposalUrl = space ? `/s/${space}/edit` : "/edit";
-  if (canForkProposal) {
-    editProposalUrl = editProposalUrl + `?&proposalId=${proposalId}&fork=true`;
-  }
   const origin = process.env.NODE_ENV !== "development" ?
     "https://nance.app" :
     "http://localhost:3001";
@@ -126,9 +121,9 @@ export default function SiteNav({
                       <button
                         type="button"
                         className="text-md inline-flex w-fit items-center justify-center rounded-xl border border-transparent bg-[#0E76FD] px-3 py-2 font-bold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-black disabled:opacity-50"
-                        onClick={() => router.push(editProposalUrl)}
+                        onClick={() => router.push(`/s/${space}/edit`)}
                       >
-                        {canForkProposal ? "Fork Proposal" : "New Proposal"}
+                        New Proposal
                       </button>
                     )}
 
@@ -174,9 +169,9 @@ export default function SiteNav({
                     <button
                       type="button"
                       className="text-md inline-flex w-fit items-center justify-center rounded-xl border border-transparent bg-[#0E76FD] px-3 py-2 font-bold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-black disabled:opacity-50"
-                      onClick={() => router.push(editProposalUrl)}
+                      onClick={() => router.push(`/s/${space}/edit`)}
                     >
-                      {canForkProposal ? "Fork Proposal" : "New Proposal"}
+                      New Proposal
                     </button>
                   )}
 

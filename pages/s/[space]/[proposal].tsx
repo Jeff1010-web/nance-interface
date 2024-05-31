@@ -123,7 +123,7 @@ export default function NanceProposalPage() {
               <div className="space-y-6 lg:col-span-2">
                 {/* Content */}
                 <section aria-labelledby="proposal-title">
-                  <ProposalContent body={commonProps.body} />
+                  <ProposalContent />
                 </section>
 
                 {/* Display Options if not basic (For Against) */}
@@ -146,11 +146,12 @@ export default function NanceProposalPage() {
                 aria-labelledby="stats-title"
                 className="lg:col-span-1"
               >
-                <ProposalSidebar
-                  space={space}
-                  proposal={proposal}
-                  snapshotProposal={snapshotProposal}
-                />
+                { snapshotProposal && (
+                  <ProposalSidebar
+                    proposal={proposal}
+                    snapshotProposal={snapshotProposal}
+                  />
+                )}
               </section>
             </div>
 
