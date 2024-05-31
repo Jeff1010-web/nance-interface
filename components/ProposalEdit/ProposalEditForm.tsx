@@ -201,7 +201,6 @@ export default function ProposalEditForm({ space }: { space: string }) {
     // ==========================================
 
     const req: ProposalUploadRequest = {
-      space,
       proposal,
       // ===== SIGNATURE BASED AUTHENTICATION =====
       // signature,
