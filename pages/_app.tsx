@@ -20,6 +20,7 @@ import { NetworkContext } from "../context/NetworkContext";
 import { SNAPSHOT_HEADERS, SNAPSHOT_HUB } from "../constants/Snapshot";
 import { SWRConfig } from "swr";
 import console from "@/utils/functions/console.debug";
+import { Toaster } from "react-hot-toast";
 
 console.debug("Hello from _app.tsx! 🚀");
 
@@ -81,6 +82,7 @@ function WagmiWrappedApp({ Component, pageProps }: any) {
   return (
     <>
       <WagmiConfig config={wagmiConfig}>
+        <Toaster />
         <MyApp Component={Component} pageProps={pageProps} />
       </WagmiConfig>
 
