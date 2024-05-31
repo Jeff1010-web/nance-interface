@@ -150,7 +150,6 @@ export default function ReserveActionForm({
                   label="Percent"
                   fieldName={genFieldName(`splits.${index}.percent`)}
                   fieldType="per billion"
-                  decimal={9}
                   defaultValue={Number(field.percent)}
                 />
               </div>

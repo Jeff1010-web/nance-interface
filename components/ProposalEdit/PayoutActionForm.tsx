@@ -32,15 +32,15 @@ export default function PayoutActionForm({
             getValues(genFieldName("project")) > 0 ? "project" : "address"
           }
           showType={false}
-          tooltip="Send funds to juicebox project or address?"
+          tooltip="Send funds to a Juicebox project or EOA?"
         />
       </div>
       <div className="col-span-4 sm:col-span-1">
         <UIntForm
           label="Duration"
           fieldName={genFieldName("count")}
-          decimal={1}
           fieldType="cycles"
+          tooltip="How many Juicebox funding cycles will this payout last?"
         />
         <span className="text-xs text-gray-400">
           {dateRangesOfCycles({
@@ -56,6 +56,7 @@ export default function PayoutActionForm({
           label="Amount"
           fieldName={genFieldName("amountUSD")}
           fieldType="$"
+          tooltip="Amount in USD to be paid to the receiver each funding cycle"
         />
       </div>
 
@@ -75,9 +76,8 @@ export default function PayoutActionForm({
             fieldName={genFieldName("address")}
             defaultValue={projectOwner}
             disabled
-            disabledTooltip="The token beneficiary must be the project owner"
             showType={false}
-            tooltip="Who will receive the token after paying the project you specified?"
+            tooltip={`You've selected your payout to be sent to another Juicebox project. When a Juicebox project is paid, tokens are sent to the payer. The multisig of the space you are proposing to is the beneficiary of the tokens by default.`}
           />
         )}
 
